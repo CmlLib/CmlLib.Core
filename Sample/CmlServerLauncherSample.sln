@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27428.2043
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CmlServerLauncherSample", "CmlServerLauncherSample\CmlServerLauncherSample.csproj", "{AEBD52BF-110D-40A1-BB46-1404CF205084}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AEBD52BF-110D-40A1-BB46-1404CF205084}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AEBD52BF-110D-40A1-BB46-1404CF205084}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AEBD52BF-110D-40A1-BB46-1404CF205084}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AEBD52BF-110D-40A1-BB46-1404CF205084}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {732063B8-C81E-48B9-A32E-3BF51F6E4F9A}
+	EndGlobalSection
+EndGlobal
