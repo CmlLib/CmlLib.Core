@@ -1,6 +1,11 @@
 # MinecraftLauncherLibrary
 C# Minecraft Launch Library - Login, Download, Forge Launch
 
+1.3 이전의 버전만 실행 가능
+ServerLauncherSample 은 완성되지 않았습니다.
+CmlLibSample 프로젝트를 참고하세요.
+포지 실행은 완전하지 않아서 정품 런처에서 한번 실행한 버전만 이 라이브러리에서 실행가능합니다.
+
 Minecraft Launcher Library - CmlLib
 
 Use
