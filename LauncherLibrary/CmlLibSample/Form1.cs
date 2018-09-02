@@ -142,7 +142,7 @@ namespace CmlLibSample
                 launcher.ChangeProgressEvent += Launcher_ChangeProgressEvent;
                 launcher.ExceptionEvent += Launcher_ExceptionEvent;
 
-                var launch = launcher.Patch(versions, nn); // 게임 실행에 필요한 파일 다운로드 후 MLaunch(게임 실행) 객체 반환
+                var launch = launcher.Patch(versions, nn, false); // 게임 실행에 필요한 파일 다운로드 후 MLaunch(게임 실행) 객체 반환
                 launch.JavaPath = jj; //자바 경로같은거 설정
                 launch.LauncherName = ln;
                 launch.XmxRam = xmx;

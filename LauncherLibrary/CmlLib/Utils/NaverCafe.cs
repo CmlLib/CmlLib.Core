@@ -91,11 +91,10 @@ namespace CmlLib.Utils
                         if (item[i] != ' ')
                         {
                             chari = i;
-                            goto endfor;
+                            break;
                         }
                     }
 
-                    endfor:
                     sb.Append(item.Remove(0, chari));
                     sb.Append(" ");
                 }

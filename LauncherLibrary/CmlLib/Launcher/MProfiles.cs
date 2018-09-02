@@ -13,56 +13,89 @@ namespace CmlLib.Launcher
     public class MProfile
     {
         // 프로파일 파싱
-        internal MProfile(bool isweb, string json)
+        public static MProfile Parse(MProfileInfo info)
         {
-            var job = JObject.Parse(json);
+            string json;
+            if (info.IsWeb)
+            {
+                using (var wc = new WebClient())
+                {
+                    json = wc.DownloadString(info.Path);
+                    return ParseFromJson(json);
+                }
+            }
+            else
+                return ParseFromFile(info.Path);
+        }
 
-            Id = job["id"]?.ToString();
+        public static MProfile ParseFromFile(string path)
+        {
+            var json = File.ReadAllText(path);
+            return ParseFromJson(json);
+        }
+
+        private static MProfile ParseFromJson(string json)
+        {
+            var profile = new MProfile();
+            var job = JObject.Parse(json);
+            profile.Id = job["id"]?.ToString();
 
             var assetindex = (JObject)job["assetIndex"];
             if (assetindex != null)
             {
-                AssetId = n(assetindex["id"]?.ToString());
-                AssetUrl = n(assetindex["url"]?.ToString());
+                profile.AssetId = n(assetindex["id"]?.ToString());
+                profile.AssetUrl = n(assetindex["url"]?.ToString());
             }
 
-            ClientDownloadUrl = n(job["downloads"]?["client"]?["url"]?.ToString());
-            Libraries = MLibrary.ParseJson((JArray)job["libraries"]);
-            MainClass = n(job["mainClass"]?.ToString());
+            profile.ClientDownloadUrl = n(job["downloads"]?["client"]?["url"]?.ToString());
+            profile.Libraries = MLibrary.ParseJson((JArray)job["libraries"]);
+            profile.MainClass = n(job["mainClass"]?.ToString());
 
             var ma = job["minecraftArguments"]?.ToString();
             if (ma != null)
-                MinecraftArguments = ma;
+                profile.MinecraftArguments = ma;
             var ag = job["arguments"]?.ToString();
             if (ag != null)
-                MinecraftArguments = ag;
+                profile.Arguments = ag;
 
-            ReleaseTime = job["releaseTime"]?.ToString();
+            profile.ReleaseTime = job["releaseTime"]?.ToString();
 
             var ype = job["type"]?.ToString();
             switch (ype)
             {
                 case "release":
-                    Type = MProfileType.Release;
+                    profile.Type = MProfileType.Release;
                     break;
                 case "snapshot":
-                    Type = MProfileType.Snapshot;
+                    profile.Type = MProfileType.Snapshot;
                     break;
                 case "old_alpha":
-                    Type = MProfileType.OldAlpha;
+                    profile.Type = MProfileType.OldAlpha;
                     break;
                 default:
-                    Type = MProfileType.Unknown;
+                    profile.Type = MProfileType.Unknown;
                     break;
             }
 
             if (job["jar"] != null)
             {
-                IsForge = true;
-                InnerJarId = job["jar"].ToString();
+                profile.IsForge = true;
+                profile.InnerJarId = job["jar"].ToString();
             }
+
+            var path = Minecraft.Versions + profile.Id;
+            Directory.CreateDirectory(path);
+            File.WriteAllText(path + "\\" + profile.Id + ".json", json);
+
+            return profile;
         }
-        string n(string t)
+
+        public void WriteProfile()
+        {
+
+        }
+
+        static string n(string t)
         {
             return (t == null) ? "" : t;
         }
@@ -108,9 +141,13 @@ namespace CmlLib.Launcher
         /// </summary>
         public string MainClass { get; private set; }
         /// <summary>
-        /// 게임 인수
+        /// 실행 인수 (1.3 이전에 나온 버전)
         /// </summary>
-        public string MinecraftArguments { get; private set; } = ""; 
+        public string MinecraftArguments { get; private set; } = "";
+        /// <summary>
+        /// 실행 인수 JSON (1.3 부터 이후 버전)
+        /// </summary>
+        public string Arguments { get; private set; } = "";
         /// <summary>
         /// 프로파일의 생성된 날짜
         /// </summary>

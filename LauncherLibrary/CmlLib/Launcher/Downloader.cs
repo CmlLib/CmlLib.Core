@@ -64,6 +64,8 @@ namespace CmlLib.Launcher
         bool iscom = false;
         void d(WebClient wc, string a, string b)
         {
+            if (a == null) return;
+
             iscom = false;
             wc.DownloadFileAsync(new Uri(a), b);
             while (!iscom)

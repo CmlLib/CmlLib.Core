@@ -21,16 +21,16 @@ namespace CmlLib.Launcher
             ExceptionEvent += delegate { };
         }
 
-        public MLaunch Patch(MProfileInfo[] list, string profilename)
+        public MLaunch Patch(MProfileInfo[] list, string profilename, bool resource = true)
         {
             try
             {
-                var profile = download(list,profilename, true);
+                var profile = download(list,profilename, resource);
                 MProfile baseprofile = null;
 
                 if (profile.IsForge) //만약 포지 프로파일이라면
                 {
-                    baseprofile = download(list,profile.InnerJarId, true);
+                    baseprofile = download(list,profile.InnerJarId, resource);
                     profile.NativePath = baseprofile.NativePath;
                 }
 
@@ -57,7 +57,7 @@ namespace CmlLib.Launcher
                 throw new Exception("Can't Find Profile");
 
             d("Parse Profile");
-            MProfile profile = info.GetProfile();
+            MProfile profile = MProfile.Parse(info);
 
             d("Download Start");
             var downloader = new MDownloader(profile);

@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using Newtonsoft.Json.Linq;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace CmlLib.Utils
 {
@@ -58,14 +59,32 @@ namespace CmlLib.Utils
             }
         }
 
+        public async Task DownloadJavaTaskAsync()
+        {
+            string json = "";
+
+            WorkingPath = Path.GetTempPath() + "\\temp_download_runtime";
+
+            if (Directory.Exists(WorkingPath))
+                DeleteDirectory(WorkingPath);
+            Directory.CreateDirectory(WorkingPath);
+
+            using (var wc = new WebClient())
+            {
+                json = await wc.DownloadStringTaskAsync("http://launchermeta.mojang.com/mc/launcher.json");
+
+                var job = JObject.Parse(json)["windows"];
+                var url = job[Environment.Is64BitOperatingSystem ? "64" : "32"]["jre"]["url"].ToString();
+
+                Directory.CreateDirectory(RuntimeDirectory);
+                wc.DownloadProgressChanged += Wc_DownloadProgressChanged;
+                wc.DownloadFileCompleted += Wc_DownloadFileCompleted;
+                await wc.DownloadFileTaskAsync(new Uri(url), WorkingPath + "\\javatemp.lzma");
+            }
+        }
+
         private void Wc_DownloadFileCompleted(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
         {
-            //var data = Convert.FromBase64String(Properties.Resources.zipLib);
-            //File.WriteAllBytes(WorkingPath + "\\7za.exe", data);
-
-            //zip("e -y \"javatemp.lzma\"");
-            //zip("x -y -o\"" + RuntimeDirectory + "\" \"javatemp\"");
-
             var zip = new SevenZip(WorkingPath);
             zip.Decompress("javatemp.lzma", WorkingPath);
             zip.Decompress("javatemp", RuntimeDirectory);

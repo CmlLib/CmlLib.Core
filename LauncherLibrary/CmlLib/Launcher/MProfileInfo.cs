@@ -4,7 +4,6 @@ using System.Net;
 
 namespace CmlLib.Launcher
 {
-    public enum MProfileType { OldAlpha, Snapshot, Release, Unknown }
 
     public partial class MProfileInfo
     {
@@ -37,30 +36,5 @@ namespace CmlLib.Launcher
         [JsonProperty("url")]
         public string Path { get; set; }
 
-        /// <summary>
-        /// 프로파일을 다운로드하고 파싱해 반환합니다.
-        /// </summary>
-        /// <returns>파싱된 프로파일</returns>
-        public MProfile GetProfile()
-        {
-            string json;
-            if (IsWeb)
-            {
-                using (var wc = new WebClient())
-                {
-                    json = wc.DownloadString(Path);
-                    var path = Minecraft.Versions + Name;
-                    Directory.CreateDirectory(path);
-                    File.WriteAllText(path + "\\" + Name + ".json", json);
-                }
-            }
-            else
-            {
-                json = File.ReadAllText(Path);
-            }
-
-            var p = new MProfile(IsWeb, json);
-            return p;
-        }
     }
 }

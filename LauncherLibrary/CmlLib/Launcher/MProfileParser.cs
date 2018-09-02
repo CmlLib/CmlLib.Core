@@ -43,16 +43,24 @@ namespace CmlLib.Launcher
         /// <returns>프로파일 리스트</returns>
         public static MProfileInfo[] GetLocalProfileList(string path)
         {
-            var list = new List<MProfileInfo>();
-            foreach (DirectoryInfo item in new DirectoryInfo(path).GetDirectories())
+            var dirs = new DirectoryInfo(path).GetDirectories();
+            var arr = new MProfileInfo[dirs.Length];
+
+            for (int i = 0; i < dirs.Length; i++)
             {
-                var filepath = item.FullName + "\\" + item.Name + ".json";
+                var dir = dirs[i];
+                var filepath = dir.FullName + "\\" + dir.Name + ".json";
                 if (File.Exists(filepath))
                 {
-                    list.Add(new MProfileInfo { IsWeb = false, Name = item.Name, Path = filepath });
+                    var info = new MProfileInfo();
+                    info.IsWeb = false;
+                    info.Name = dir.Name;
+                    info.Path = filepath;
+                    arr[i] = info;
                 }
             }
-            return list.ToArray();
+
+            return arr;
         }
 
         /// <summary>
@@ -61,7 +69,6 @@ namespace CmlLib.Launcher
         /// <returns>프로파일 리스트</returns>
         public static MProfileInfo[] GetWebProfiles()
         {
-            List<MProfileInfo> list = new List<MProfileInfo>();
             JArray jarr;
             using (WebClient wc = new WebClient())
             {
@@ -69,13 +76,14 @@ namespace CmlLib.Launcher
                 jarr = JArray.Parse(jobj["versions"].ToString());
             }
 
-            foreach (JObject item in jarr)
+            var arr = new MProfileInfo[jarr.Count];
+            for (int i = 0; i < jarr.Count; i++)
             {
-                var obj = item.ToObject<MProfileInfo>();
+                var obj = jarr[i].ToObject<MProfileInfo>();
                 obj.IsWeb = true;
-                list.Add(obj);
+                arr[i] = obj;
             }
-            return list.ToArray();
+            return arr;
         }
     }
 }

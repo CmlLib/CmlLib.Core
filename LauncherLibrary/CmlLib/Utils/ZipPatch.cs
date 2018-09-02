@@ -19,6 +19,7 @@ namespace CmlLib.Utils
 
         public ZipPatch(string verUrl, string zipUrl, string localPath)
         {
+            DownloadProgressChanged += delegate { };
             PatchVerUrl = verUrl;
             PatchZipUrl = zipUrl;
             LocalVerPath = localPath;
@@ -36,7 +37,7 @@ namespace CmlLib.Utils
                 webver = wc.DownloadString(PatchVerUrl);
             }
 
-            return localver == webver;
+            return localver != webver;
         }
 
         public void Patch()

@@ -50,6 +50,7 @@
   <ItemGroup>
     <Compile Include="CmlLibLoader.cs" />
     <Compile Include="Launcher\ChangeProgressEventArgs.cs" />
+    <Compile Include="Launcher\MProfileType.cs" />
     <Compile Include="Launcher\Downloader.cs" />
     <Compile Include="Launcher\Launch.cs" />
     <Compile Include="Launcher\Login.cs" />

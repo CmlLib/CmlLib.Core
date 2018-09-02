@@ -109,6 +109,10 @@ namespace CmlLib.Launcher
         /// 라이브러리를 다운로드 할 수 있는 URL
         /// </summary>
         public string Url { get; private set; }
+        /// <summary>
+        /// 현재 OS 에서 필요한 라이브러리인지 확인
+        /// </summary>
+        public bool IsRequire { get; private set; }
     }
 
     class MLibraryNameParser

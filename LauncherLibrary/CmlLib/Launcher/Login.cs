@@ -27,7 +27,7 @@ namespace CmlLib.Launcher
         public MLoginResult Status { get; internal set; }
         public string Message { get; internal set; }
 
-        public static MSession getDefault(string username)
+        public static MSession GetOfflineSession(string username)
         {
             var login = new MSession();
             login.Username = username;
@@ -37,6 +37,16 @@ namespace CmlLib.Launcher
             login.Message = "";
             login.ClientToken = "";
             return login;
+        }
+
+        internal static MSession createEmpty()
+        {
+            var session = new MSession();
+            session.Username = "";
+            session.AccessToken = "";
+            session.UUID = "";
+            session.ClientToken = "";
+            return session;
         }
     }
 
@@ -65,7 +75,7 @@ namespace CmlLib.Launcher
         }
 
         public string TokenFile;
-        public bool AutoLogin = true;
+        public bool SaveSession = true;
 
         private void WriteLogin(MSession result)
         {
@@ -74,7 +84,7 @@ namespace CmlLib.Launcher
 
         private void WriteLogin(string us, string se, string id, string ct)
         {
-            if (!AutoLogin) return;
+            if (!SaveSession) return;
 
             //로그인 정보를 저장
             JObject jobj = new JObject(); //json 데이터 작성
@@ -83,7 +93,7 @@ namespace CmlLib.Launcher
             jobj.Add("uuid", id);
             jobj.Add("clientToken", ct);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(TokenFile ));
+            Directory.CreateDirectory(Path.GetDirectoryName(TokenFile));
 
             File.WriteAllText(TokenFile,jobj.ToString() , Encoding.UTF8);
         }
@@ -106,8 +116,13 @@ namespace CmlLib.Launcher
             return ClientToken;
         }
 
-        private MSession ReadTokenFile()
+        public MSession ReadTokenFile()
         {
+            if (!File.Exists(TokenFile))
+            {
+                return null;
+            }
+
             var filedata = File.ReadAllText(TokenFile, Encoding.UTF8);
             var job = JObject.Parse(filedata);
             var session = new MSession();
@@ -116,6 +131,13 @@ namespace CmlLib.Launcher
             session.Username = job["username"]?.ToString();
             session.ClientToken = job["clientToken"]?.ToString();
             return session;
+        }
+
+        private MSession getTokenFile()
+        {
+            var s = ReadTokenFile();
+            if (s == null) return MSession.createEmpty();
+            else return s;
         }
 
         private HttpWebResponse mojangRequest(string endpoint, string postdata)
@@ -210,7 +232,7 @@ namespace CmlLib.Launcher
 
             try
             {
-                var session = ReadTokenFile();
+                var session = getTokenFile();
 
                 JObject selectedProfile = new JObject();
                 selectedProfile.Add("id", session.UUID); //uuid 추가
@@ -253,7 +275,7 @@ namespace CmlLib.Launcher
             var result = new MSession();
             try
             {
-                var session = ReadTokenFile();
+                var session = getTokenFile();
 
                 JObject job = new JObject();
                 job.Add("accessToken", session.AccessToken);
@@ -293,7 +315,7 @@ namespace CmlLib.Launcher
         public void Invalidate()
         {
             var result = new MSession();
-            var session = ReadTokenFile();
+            var session = getTokenFile();
 
             var job = new JObject();
             job.Add("accessToken",session.AccessToken);

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 
 namespace CmlLib.Launcher
 {
@@ -21,12 +21,15 @@ namespace CmlLib.Launcher
                 "-XX:G1ReservePercent=20 " +
                 "-XX:MaxGCPauseMillis=50 " +
                 "-XX:G1HeapRegionSize=16M";
+
         }
 
         /// <summary>
         /// 기본 자바 파라미터
         /// </summary>
         public static string DefaultJavaParameter;
+
+        public static string SupportLaunchVersion = "1.3";
 
         public string JavaPath { get; set; } = "";
         public string XmxRam { get; set; }
@@ -48,9 +51,8 @@ namespace CmlLib.Launcher
             }
         }
 
-        int scWd = 900, scHt = 600;
-        public int ScreenWidth { get => scWd; set => scWd = (value <= 0) ? 900 : value; }
-        public int ScreenHeight { get => scHt; set => scHt = (value <= 0) ? 600 : value; }
+        public int ScreenWidth { get; set; }
+        public int ScreenHeight { get; set; }
 
         /// <summary>
         /// 설정한 프로퍼티로 인수를 만들고 게임을 실행합니다.
@@ -124,19 +126,57 @@ namespace CmlLib.Launcher
             if (Session == null)
                 Session = MSession.getDefault("test");
 
-            StringBuilder sb = new StringBuilder(StartProfile.MinecraftArguments);
-            sb.Replace("${auth_player_name}", Session.Username); //닉네임
-            sb.Replace("${version_name}", StartProfile.Id);
-            sb.Replace("${game_directory}", "\"" + Minecraft._Path + "\"");
-            sb.Replace("${assets_root}", "\"" + Minecraft._Assets + "\"");
-            sb.Replace("${assets_index_name}", profile.AssetId);
-            sb.Replace("${auth_uuid}", Session.UUID);
-            sb.Replace("${auth_access_token}", Session.AccessToken);
-            sb.Replace("${user_properties}", "{}");
-            sb.Replace("${user_type}", "Mojang");
-            sb.Replace("${game_assets}", "\"" + Minecraft.Assets + "vitual\\legacy\"");
-            sb.Replace("${auth_session}", Session.AccessToken);
-            
+            Dictionary<string, string> argDicts = new Dictionary<string, string>()
+            {
+                { "${auth_player_name}", Session.Username },
+                { "${version_name}", StartProfile.Id },
+                { "${game_directory}", "\"" + Minecraft._Path + "\"" },
+                { "${assets_root}", "\"" + Minecraft._Assets + "\"" },
+                { "${assets_index_name}", profile.AssetId },
+                { "${auth_uuid}", Session.UUID },
+                { "${auth_access_token}", Session.AccessToken },
+                { "${user_properties}", "{}" },
+                { "${user_type}", "Mojang" },
+                { "${game_assets}", "\"" + Minecraft.Assets + "vitual\\legacy\"" },
+                { "${auth_session}", Session.AccessToken },
+                { "${version_type}", "" }
+            };
+
+            StringBuilder sb = new StringBuilder();
+            if (StartProfile.Arguments != "") // Arguments Json 을 사용하는 1.3 과 그 이후의 버전
+            {
+                var jarr = (JArray)JObject.Parse(StartProfile.Arguments)["game"];
+                foreach (var item in jarr)
+                {
+                    if (!(item is JObject))
+                    {
+                        var str = item.ToString();
+
+                        if (str[0] != '$')
+                            sb.Append(str);
+
+                        foreach (var arg in argDicts)
+                        {
+                            if (arg.Key == str)
+                            {
+                                sb.Append(arg.Value);
+                                break;
+                            }
+                        }
+
+                        sb.Append(" ");
+                    }
+
+                }
+            }
+            else // MinecraftArguments 를 사용하는 1.3 이전의 버전
+            {
+                sb.Append(StartProfile.MinecraftArguments);
+                foreach (var item in argDicts)
+                {
+                    sb.Replace(item.Key, item.Value);
+                }
+            }
 
             if (ServerIp != "")
                 sb.Append(" --server " + ServerIp);
@@ -145,10 +185,13 @@ namespace CmlLib.Launcher
             else
                 sb.Replace(" --versionType ${version_type}","");
 
-            sb.Append(" --width ");
-            sb.Append(scWd.ToString());
-            sb.Append(" --height ");
-            sb.Append(scHt.ToString());
+            if (ScreenWidth != 0 && ScreenHeight != 0)
+            {
+                sb.Append(" --width ");
+                sb.Append(ScreenWidth);
+                sb.Append(" --height ");
+                sb.Append(ScreenHeight);
+            }
 
             argstring.Append(sb);
             return argstring.ToString();
