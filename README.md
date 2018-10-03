@@ -1,51 +1,98 @@
-# MinecraftLauncherLibrary
-C# Minecraft Launch Library - Login, Download, Forge Launch
+Minecraft Launcher Library
+======================
 
-1.3 이전의 버전만 실행 가능
-ServerLauncherSample 은 완성되지 않았습니다.
-CmlLibSample 프로젝트를 참고하세요.
-포지 실행은 완전하지 않아서 정품 런처에서 한번 실행한 버전만 이 라이브러리에서 실행가능합니다.
+### Online / Offline Login, Download, Launch with various options, Forge Support
 
-Minecraft Launcher Library - CmlLib
+#### Support ~1.3 , Forge
+#### Sample Project(not completed) : Sample_Url
 
-Use
-See Samples
+Made by AlphaBs.
 
-Functions
+github_url
 
-Launcher/Minecraft.cs : 
-Set Minecraft Download, Launch Path
+*Sorry about my poor english skill*
 
-Launcher/Login.cs : 
-Authentication (Login) - https://wiki.vg/Authentication
- - Authenticate
- - Refresh
- - Validate
- - Invalidate
+How To Use
+-------------
+#### 1. Prepare
+Build 'CmlLib' project yourself and add reference to your project.
 
-Launcher/MProfileInfo : 
-Get MC Profiles (1.5.2, 1.7.10, rd, alpha, beta, etc...)
+#### 2. Minecraft Initialize
+You must write this code before work.
 
-Launcher/MProfile : 
-MC Profile
+     Minecraft.Initialize("GAME_DIRECTORY");
 
-Launcher/Downloader : 
-Download Library, Game, Resource
+It set Game Directory that is used to download game files, load profiles, save login session, Launch, etc...
 
-Launcher/Launch : 
-Launch Game
+#### 3. Login
 
-Utils/MJava : 
-Download Minecraft Runtime
+     MLogin login = new MLogin();
+     MSession session = null;
 
-Utils/NaverCafe : 
-네이버 카페 공지사항이나 글 목록 파싱해서 불러와줌
+     session = login.TryAutoLogin();
+     if (session.Result != MLoginResult.Success)
+     {
+          session = login.Authenticate(
+               "YOUR_MOJANG_EMAIL",
+               "PASSWORD");
 
-Utils/SevenZip : 
-7za.exe Wrapper
+          if (session.result != MLoginResult.Success)
+               throw new Exception("Wrong Account");
+     }
 
-Utils/ZipPath : 
-Patch mod, forge
+     Console.WriteLine("Hello, " + session.Username);
+
+The 'session' is login result.
+if you want connect online-mode server, you should need this session.
+
+or you can use offline session :
+
+     MSession session = MSession.GetOfflineSession("USERNAME");
+
+note : you can't use old login which use username instead mojang email.
+
+#### 4. Get Profile Infos
+Profile contain various data which launcher need.
+
+All Game Versions has its profile, even old alpha version or forge.
+
+You can find at
+(GameDirectory)￦versions￦(any-version)￦(version-name).json.
+
+Profile info is Profile's Metadata, contains Name, Path, Type(Release, Snapshot, Old), etc...
+
+and this code get profile info :
+
+     MProfilesInfo[] infos = MProfileInfo.GetProfiles();
+
+or you can choose source :
+
+     // get profiles from mojang server
+     var web = MProfileInfo.GetProfilesFromWeb();
+     // get profiles from game directory
+     var local = MProfileInfi.GetProfilesFromLocal();
+
+#### 5. Choose ProfileInfo and Parse.
+
+In order to use profile's data, you should parse Profile from ProfileInfo.
+
+First, Search Profile Infos you want to launch : (very simple search algoritm)
+
+     MProfile profile = null;
+     foreach (var item in infos)
+     {
+          if (item.Name == "1.7.10")
+          {
+                profile = item;
+                break;
+          }
+     }
+
+Parse Profile is simple :
+
+     MProfile profile = MProfile.Parse(info);
+
+#### 6. 
 
 
-(this is old project)
+--Writing--
