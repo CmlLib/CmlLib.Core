@@ -31,6 +31,25 @@ namespace CmlLib.Launcher
         }
 
         /// <summary>
+        /// Download All files that require to launch
+        /// </summary>
+        /// <param name="resource"></param>
+        public void DownloadAll(bool resource = true)
+        {
+            DownloadLibraries();
+
+            if (resource)
+            {
+                DownloadIndex();
+                DownloadResource();
+            }
+
+            DownloadMinecraft();
+            CleanNatives();
+            ExtractNatives();
+        }
+
+        /// <summary>
         /// 실행에 필요한 라이브러리들을 프로파일에서 가져와 모두 다운로드합니다.
         /// </summary>
         public void DownloadLibraries()
@@ -47,7 +66,10 @@ namespace CmlLib.Launcher
                     try
                     {
                         l(MFile.Library, item.Name, maxCount, index); // 이벤트 발생
-                        if (item.Path != "" && !File.Exists(item.Path)) // 파일이 존재하지 않을 때만
+                        if (item.IsRequire &&
+                            item.Path != "" &&
+                            !File.Exists(item.Path) &&
+                            item.Url != "") // 파일이 존재하지 않을 때만
                         {
                             Directory.CreateDirectory(Path.GetDirectoryName(item.Path)); //파일 다운로드
                             d(wc, item.Url, item.Path);
@@ -97,8 +119,6 @@ namespace CmlLib.Launcher
         /// <param name="_path">압축 풀 폴더의 경로</param>
         public void ExtractNatives(string path)
         {
-            CleanNatives();
-
             Directory.CreateDirectory(path); //폴더생성
 
             foreach (var item in profile.Libraries) //네이티브 라이브러리 리스트를 foreach 로 하나씩 돌림
@@ -139,7 +159,8 @@ namespace CmlLib.Launcher
         {
             string path = Minecraft.Index + profile.AssetId + ".json"; //로컬 인덱스파일의 경로
 
-            if (!File.Exists(path)) //로컬에 없을때
+            if (!File.Exists(path) &&
+                profile.AssetUrl != "") //로컬에 없을때
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path)); //폴더생성
                 using (var wc = new WebClient())
@@ -154,11 +175,14 @@ namespace CmlLib.Launcher
         /// </summary>
         public void DownloadResource()
         {
+            var indexpath = Minecraft.Index + profile.AssetId + ".json";
+            if (!File.Exists(indexpath)) return;
+
             using (var wc = new WebClient())
             {
                 bool Isvirtual = false;
 
-                var json = File.ReadAllText(Minecraft.Index + profile.AssetId + ".json");
+                var json = File.ReadAllText(indexpath);
                 var index = JObject.Parse(json);
 
                 try
@@ -174,7 +198,7 @@ namespace CmlLib.Launcher
                 foreach (var item in list)
                 {
                     pi++;
-                    l(MFile.Resource,"", list.Count, pi);
+                    l(MFile.Resource, "", list.Count, pi);
                     JObject job = (JObject)item.Value;
                     string path = job["hash"].ToString()[0].ToString() + job["hash"].ToString()[1].ToString() + "/" + job["hash"].ToString(); //리소스 경로를 설정 ex) a9\a9ea생략85ad93d
                     string hashpath = (Minecraft.Assets + "objects\\" + path).Replace("/", "\\"); //해쉬 리소스 경로 설정
@@ -233,17 +257,19 @@ namespace CmlLib.Launcher
             ChangeFileProgressEvent(sender, e);
         }
 
-        private void l(MFile filetype , string filename, int max, int value)
+        private void l(MFile filetype, string filename, int max, int value)
         {
             try
             {
-                ChangeProgressEvent(new ChangeProgressEventArgs() {
+                ChangeProgressEvent(new ChangeProgressEventArgs()
+                {
                     FileKind = filetype,
                     FileName = filename,
                     MaxValue = max,
                     CurrentValue = value
                 });
-            } catch { }
+            }
+            catch { }
         }
 
         private void DeleteDirectory(string target_dir)
