@@ -117,21 +117,21 @@ namespace CmlLib.Launcher
         /// <summary>
         /// 프로파일의 id
         /// </summary>
-        public string Id { get; private set; }
+        public string Id { get; private set; } = "";
 
         /// <summary>
         /// 인덱스 파일의 ID
         /// </summary>
-        public string AssetId { get; private set; }
+        public string AssetId { get; private set; } = "";
         /// <summary>
         /// 인덱스 파일의 경로
         /// </summary>
-        public string AssetUrl { get; private set; }
+        public string AssetUrl { get; private set; } = "";
 
         /// <summary>
         /// 게임 다운로드 경로
         /// </summary>
-        public string ClientDownloadUrl { get; private set; }
+        public string ClientDownloadUrl { get; private set; } = "";
         /// <summary>
         /// 라이브러리 리스트
         /// </summary>
@@ -139,7 +139,7 @@ namespace CmlLib.Launcher
         /// <summary>
         /// 메인 클래스
         /// </summary>
-        public string MainClass { get; private set; }
+        public string MainClass { get; private set; } = "";
         /// <summary>
         /// 실행 인수 (1.3 이전에 나온 버전)
         /// </summary>
@@ -151,19 +151,19 @@ namespace CmlLib.Launcher
         /// <summary>
         /// 프로파일의 생성된 날짜
         /// </summary>
-        public string ReleaseTime { get; private set; }
+        public string ReleaseTime { get; private set; } = "";
         /// <summary>
         /// 프로파일의 종류
         /// </summary>
-        public MProfileType Type { get; private set; }
+        public MProfileType Type { get; private set; } = MProfileType.Unknown;
 
         /// <summary>
         /// 포지 프로파일일때 베이스가 되는 프로파일의 ID
         /// </summary>
-        public string InnerJarId { get; private set; }
+        public string InnerJarId { get; private set; } = "";
         /// <summary>
         /// 네이티브 라이브러리가 저장되 있는 경로
         /// </summary>
-        public string NativePath { get; set; }
+        public string NativePath { get; set; } = "";
     }
 }

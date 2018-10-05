@@ -17,7 +17,7 @@ namespace CmlLib.Launcher
                 try
                 {
                     // FORGE 라이브러리
-                    if (item["downloads"] == null) 
+                    if (item["downloads"] == null)
                     {
                         string forge = MLibraryNameParser.NameToPath(item);
 
@@ -40,7 +40,7 @@ namespace CmlLib.Launcher
 
                     // NATIVE 라이브러리
                     var classif = item["downloads"]["classifiers"];
-                    if (classif != null) 
+                    if (classif != null)
                     {
                         JObject job = null;
                         bool isgo = true;
@@ -63,7 +63,7 @@ namespace CmlLib.Launcher
 
                     // 일반 LIBRARY
                     var arti = item["downloads"]["artifact"];
-                    if (arti != null) 
+                    if (arti != null)
                     {
                         var job = (JObject)arti;
                         var obj = new MLibrary(false, name, job);
@@ -112,7 +112,7 @@ namespace CmlLib.Launcher
         /// <summary>
         /// 현재 OS 에서 필요한 라이브러리인지 확인
         /// </summary>
-        public bool IsRequire { get; private set; }
+        public bool IsRequire { get; private set; } = true;
     }
 
     class MLibraryNameParser
