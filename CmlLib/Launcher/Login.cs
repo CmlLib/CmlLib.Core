@@ -24,7 +24,7 @@ namespace CmlLib.Launcher
         public string UUID { get; internal set; }
         public string ClientToken { get; internal set; }
 
-        public MLoginResult Status { get; internal set; }
+        public MLoginResult Result { get; internal set; }
         public string Message { get; internal set; }
 
         public static MSession GetOfflineSession(string username)
@@ -33,7 +33,7 @@ namespace CmlLib.Launcher
             login.Username = username;
             login.AccessToken = "access_token";
             login.UUID = "user_uuid";
-            login.Status = MLoginResult.Success;
+            login.Result = MLoginResult.Success;
             login.Message = "";
             login.ClientToken = "";
             return login;
@@ -171,7 +171,7 @@ namespace CmlLib.Launcher
                 {
                     Response = res.ReadToEnd(); //받아옴
 
-                    if ((int)(resHeader).StatusCode == 200) //StatusCode 가 200 (성공) 일때만
+                    if ((int)(resHeader).StatusCode == 200) //ResultCode 가 200 (성공) 일때만
                     {
                         var jObj = JObject.Parse(Response); //json 파싱
                         result.AccessToken = jObj["accessToken"].ToString();
@@ -181,7 +181,7 @@ namespace CmlLib.Launcher
                         result.ClientToken = ClientToken;
 
                         WriteLogin(result); //로그인 정보 쓰기
-                        result.Status = MLoginResult.Success;
+                        result.Result = MLoginResult.Success;
                     }
                     else //로그인이 실패하였을때
                     {
@@ -193,14 +193,14 @@ namespace CmlLib.Launcher
                             case "Method Not Allowed":
                             case "Not Found":
                             case "Unsupported Media Type":
-                                result.Status = MLoginResult.BadRequest;
+                                result.Result = MLoginResult.BadRequest;
                                 break;
                             case "IllegalArgumentException":
                             case "ForbiddenOperationException":
-                                result.Status = MLoginResult.WrongAccount;
+                                result.Result = MLoginResult.WrongAccount;
                                 break;
                             default:
-                                result.Status = MLoginResult.UnknownError;
+                                result.Result = MLoginResult.UnknownError;
                                 break;
                         }
                     }
@@ -211,7 +211,7 @@ namespace CmlLib.Launcher
             catch //예외발생
             {
                 var o = new MSession();
-                o.Status = MLoginResult.UnknownError;
+                o.Result = MLoginResult.UnknownError;
                 return o;
             }
         }
@@ -220,7 +220,7 @@ namespace CmlLib.Launcher
         {
             MSession result;
             result = Validate();
-            if (result.Status != MLoginResult.Success)
+            if (result.Result != MLoginResult.Success)
                 result = Refresh();
 
             return result;
@@ -257,12 +257,12 @@ namespace CmlLib.Launcher
                     result.ClientToken = session.ClientToken;
 
                     WriteLogin(result); //로그인 정보 쓰기
-                    result.Status = MLoginResult.Success;
+                    result.Result = MLoginResult.Success;
                 }
             }
             catch
             {
-                result.Status = MLoginResult.UnknownError;
+                result.Result = MLoginResult.UnknownError;
             }
 
             return result;
@@ -284,23 +284,23 @@ namespace CmlLib.Launcher
                 var resHeader = mojangRequest("validate",job.ToString()); //리스폰 데이터 받아오기
                 using (var res = new StreamReader(resHeader.GetResponseStream()))
                 {
-                    int StatusCode = (int)((HttpWebResponse)resHeader).StatusCode;
+                    int ResultCode = (int)((HttpWebResponse)resHeader).StatusCode;
 
-                    if (StatusCode == 204)
+                    if (ResultCode == 204)
                     {
-                        result.Status = MLoginResult.Success;
+                        result.Result = MLoginResult.Success;
                         result.AccessToken = session.AccessToken;
                         result.UUID = session.UUID;
                         result.Username = session.Username;
                         result.ClientToken = session.ClientToken;
                     }
                     else
-                        result.Status = MLoginResult.NeedLogin;
+                        result.Result = MLoginResult.NeedLogin;
                 }
             }
             catch
             {
-                result.Status = MLoginResult.UnknownError;
+                result.Result = MLoginResult.UnknownError;
             }
 
             return result;

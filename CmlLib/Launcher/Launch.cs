@@ -124,7 +124,7 @@ namespace CmlLib.Launcher
             ///// GAME ARG /////                 
 
             if (Session == null)
-                Session = MSession.getDefault("test");
+                Session = MSession.GetOfflineSession("test");
 
             Dictionary<string, string> argDicts = new Dictionary<string, string>()
             {
