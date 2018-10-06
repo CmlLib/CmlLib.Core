@@ -4,6 +4,7 @@ using System.Net;
 using Newtonsoft.Json.Linq;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Ionic.Zip;
 
 namespace CmlLib.Utils
 {
@@ -85,41 +86,32 @@ namespace CmlLib.Utils
 
         private void Wc_DownloadFileCompleted(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
         {
-            //var zip = new SevenZip(WorkingPath);
-            //zip.Decompress("javatemp.lzma", WorkingPath);
-            //zip.Decompress("javatemp", RuntimeDirectory);
+            var lzma = WorkingPath + "\\javatemp.lzma";
+            var zip = WorkingPath + "\\javatemp.zip";
 
-            //if (!File.Exists(RuntimeDirectory + "\\bin\\javaw.exe"))
-            //{
-            //    try
-            //    {
-            //        DeleteDirectory(RuntimeDirectory);
-            //    }
-            //    catch { }
-            //    throw new Exception("Failed Download");
-            //}
+            SevenZipWrapper.DecompressFileLZMA(lzma, zip);
+            using (var extractor = ZipFile.Read(zip))
+            {
+                extractor.ExtractAll(RuntimeDirectory, ExtractExistingFileAction.OverwriteSilently);
+            }
 
-            //DownloadCompletedEvent(sender, new EventArgs());
+            if (!File.Exists(RuntimeDirectory + "\\bin\\javaw.exe"))
+            {
+                try
+                {
+                    DeleteDirectory(RuntimeDirectory);
+                }
+                catch { }
+                throw new Exception("Failed Download");
+            }
+
+            DownloadCompletedEvent(sender, new EventArgs());
         }
 
         private void Wc_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
         {
             DownloadProgressChangedEvent(sender, e);
         }
-
-        //private void zip(string arg)
-        //{
-        //    Process pr = new Process();
-        //    pr.StartInfo.WorkingDirectory = WorkingPath;
-        //    pr.StartInfo.FileName = WorkingPath + "\\7za.exe";
-        //    pr.StartInfo.Arguments = arg;
-        //    //pr.StartInfo.RedirectStandardOutput = true;
-        //    //pr.StartInfo.UseShellExecute = false;
-        //    pr.StartInfo.CreateNoWindow = true;
-        //    pr.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-        //    pr.Start();
-        //    pr.WaitForExit();
-        //}
 
         private static void DeleteDirectory(string target_dir)
         {
