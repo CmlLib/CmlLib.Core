@@ -3,24 +3,42 @@ Minecraft Launcher Library
 
 ### Online / Offline Login, Download, Launch with various options, Forge Support
 
-#### Support ~1.3 , Forge
-#### Sample Project(not completed) : Sample_Url
+### Support ~1.3 , Forge
+### Sample Project(not completed) : Sample_Url
 
-Made by AlphaBs.
+KOREANS :  
+상업적 사용 금지.  수정 후 재사용 가능.  
+자세한 내용은 LICENSE 단락을 확인하세요.  
+주문제작 문의는 아래 아이디로 디스코드 친추걸어주세요.
 
-github_url
+Contacts
+-------------
 
-*Sorry about my poor english skill*
+Email : ksi123456ab@naver.com  
+Discord : ksi123456ab#3719  
+KaKaoTalk : ksi123456ab
+
+License
+--------------
+
+<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="크리에이티브 커먼즈 라이선스" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a><br />이 저작물은 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">크리에이티브 커먼즈 저작자표시-비영리 4.0 국제 라이선스</a>에 따라 이용할 수 있습니다.
+
+****NO COMMERCIAL****
 
 How To Use
 -------------
+
+*Sorry about my poor english skill*
+
+If you want to learn more like java runtime download, detail launch options, full methods, go to [wiki](https://merong)
+
 #### 1. Prepare
 Build 'CmlLib' project yourself and add reference to your project.
 
 #### 2. Minecraft Initialize
-You must write this code before work.
+You should write this code before work.
 
-     Minecraft.Initialize("GAME_DIRECTORY");
+      Minecraft.Initialize("GAME_DIRECTORY");
 
 It set Game Directory that is used to download game files, load profiles, save login session, Launch, etc...
 
@@ -43,7 +61,7 @@ It set Game Directory that is used to download game files, load profiles, save l
      Console.WriteLine("Hello, " + session.Username);
 
 The 'session' is login result.
-if you want connect online-mode server, you should need this session.
+if you want to connect online-mode server, you use this session to launch.
 
 or you can use offline session :
 
@@ -54,12 +72,12 @@ note : you can't use old login which use username instead mojang email.
 #### 4. Get Profile Infos
 Profile contain various data which launcher need.
 
-All Game Versions has its profile, even old alpha version or forge.
+All Game Versions has its own profile, even old alpha version or forge.
 
 You can find at
 (GameDirectory)￦versions￦(any-version)￦(version-name).json.
 
-Profile info is Profile's Metadata, contains Name, Path, Type(Release, Snapshot, Old), etc...
+Profile info is Profile's Metadata, contains Name, Profile Path(Url), Type(Release, Snapshot, Old), ReleaseTime.
 
 and this code get profile info :
 
@@ -92,7 +110,49 @@ Parse Profile is simple :
 
      MProfile profile = MProfile.Parse(info);
 
-#### 6. 
+#### 6. Check & Download Game Files
 
+     MDownloader downloader = new MDownloader(profile);
+     downloader.ChangeFileChange +=
+          change_file;
+     downloader.ChangeProgressChange += 
+          change_progress;
+     downloader.DownloadAll();
 
---Writing--
+ChangeFileChange Event : Change Download File Name
+
+ChangeProgressChange : Change One File's Download Progress
+
+DownloadAll : Check And Download All Game Files
+
+DownloadAll() Method do this :
+
+     // downloader.DownloadAll() do this :
+     
+     downloader.DownloadLibrary(); // libraries
+     downloader.DownloadIndex(); // asset index
+     downloader.DownloadResource(); // assets / resources
+     downloader.DownloadMinecraft(); // game jar
+     downloader.CleanNatives(); // remove all natives
+     downloader.ExactNatives(); // make native
+
+It's so long. so just use DownloadAll();
+
+Each Download~~ method check game file exist, and if file doesn't exist, download game file from mojang server.
+
+#### 7. Make game args and Launch
+
+     MLaunch launch = new MLaunch(profile);
+     launch.GameArgs = new MLaunchArgs()
+     {
+
+     };
+     
+     var process = launch.MakeProcess();
+     process.Start();
+
+Set launch options, and Launch it!
+
+#### 8. Launch Forge
+
+goto [wiki](https://merong)
