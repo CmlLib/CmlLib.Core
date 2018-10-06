@@ -14,9 +14,6 @@ namespace CmlLibSample
         [STAThread]
         static void Main()
         {
-            Dll.LoadDll("Newtonsoft.Json.dll");
-            //Dll.LoadDll("CmlLib.dll");
-
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Form1());

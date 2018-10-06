@@ -59,7 +59,7 @@ namespace CmlLibSample
             var th = new Thread(new ThreadStart(delegate {
                 Minecraft.init(textBox1.Text);
 
-                versions = MProfileInfo.GetAllProfileList();
+                versions = MProfileInfo.GetProfiles();
                 Invoke((MethodInvoker)delegate {
                     foreach (var item in versions)
                     {
@@ -70,7 +70,7 @@ namespace CmlLibSample
                 var login = new MLogin();
                 MSession result = login.TryAutoLogin();
 
-                if (result.Status != MLoginResult.Success)
+                if (result.Result != MLoginResult.Success)
                     return;
 
                 MessageBox.Show("Auto Login Success!");
@@ -87,7 +87,7 @@ namespace CmlLibSample
             // 다시 프로파일 리스트를 불러옴
 
             Minecraft.init(textBox1.Text);
-            versions = MProfileInfo.GetAllProfileList();
+            versions = MProfileInfo.GetProfiles();
             Cb_Version.Items.Clear();
             foreach (var item in versions)
             {
@@ -104,14 +104,14 @@ namespace CmlLibSample
             var th = new Thread(new ThreadStart(delegate {
                 var login = new MLogin();
                 var result = login.Authenticate(Txt_Email.Text, Txt_Pw.Text);
-                if (result.Status == MLoginResult.Success)
+                if (result.Result == MLoginResult.Success)
                 {
                     MessageBox.Show("Login Success : " + result.Username);
                     session = result;
                 }
                 else
                 {
-                    MessageBox.Show(result.Status.ToString() + "\n" + result.Message);
+                    MessageBox.Show(result.Result.ToString() + "\n" + result.Message);
                     Invoke((MethodInvoker)delegate { Btn_Login.Enabled = true; });
                 }
             }));
@@ -137,18 +137,44 @@ namespace CmlLibSample
 
             var th = new Thread(new ThreadStart(delegate {
 
-                var launcher = new WrapLauncher(); // 다운로드 이벤트 등록
-                launcher.ChangeDownloadFileEvent += Launcher_ChangeDownloadFileEvent;
-                launcher.ChangeProgressEvent += Launcher_ChangeProgressEvent;
-                launcher.ExceptionEvent += Launcher_ExceptionEvent;
+                MProfile profile = null;
+                MProfile forgeProfile = null;
 
-                var launch = launcher.Patch(versions, nn, false); // 게임 실행에 필요한 파일 다운로드 후 MLaunch(게임 실행) 객체 반환
-                launch.JavaPath = jj; //자바 경로같은거 설정
+                foreach (var item in versions)
+                {
+                    if (item.Name == nn)
+                    {
+                        profile = MProfile.Parse(item);
+                        break;
+                    }
+                }
+
+                if (profile.IsForge)
+                {
+                    foreach (var item in versions)
+                    {
+                        if (item.Name == profile.InnerJarId)
+                        {
+                            forgeProfile = MProfile.Parse(item);
+                            break;
+                        }
+                    }
+
+                    DownloadGame(forgeProfile, true);
+                }
+
+                DownloadGame(profile, !profile.IsForge);
+
+                MLaunch launch = new MLaunch();
+                launch.BaseProfile = forgeProfile;
+                launch.StartProfile = profile;
+                launch.JavaPath = jj; //자바 경로같은거 설정자
                 launch.LauncherName = ln;
                 launch.XmxRam = xmx;
                 launch.ServerIp = server;
                 launch.Session = session;
                 launch.CustomJavaParameter = Txt_JavaArgs.Text;
+
                 if (Txt_ScWd.Text != "" && Txt_ScHt.Text != "")
                 {
                     launch.ScreenHeight = int.Parse(Txt_ScHt.Text);
@@ -167,19 +193,15 @@ namespace CmlLibSample
             th.Start();
         }
 
-        private void Launcher_ExceptionEvent(Exception ex, string msg)
+        private void DownloadGame(MProfile profile, bool downloadResource = true)
         {
-            MessageBox.Show(msg);
+            MDownloader downloader = new MDownloader(profile);
+            downloader.ChangeFileProgressEvent += Launcher_ChangeDownloadFileEvent;
+            downloader.ChangeProgressEvent += Launcher_ChangeProgressEvent;
+            downloader.DownloadAll(downloadResource);
         }
 
-        private void Launcher_ChangeProgressEvent(object sender, System.Net.DownloadProgressChangedEventArgs e)
-        {
-            Invoke((MethodInvoker)delegate {
-                progressBar2.Value = e.ProgressPercentage;
-            });
-        }
-
-        private void Launcher_ChangeDownloadFileEvent(ChangeProgressEventArgs e)
+        private void Launcher_ChangeProgressEvent(ChangeProgressEventArgs e)
         {
             Invoke((MethodInvoker)delegate {
                 Lv_Status.Text = e.FileName;
@@ -188,9 +210,16 @@ namespace CmlLibSample
             });
         }
 
+        private void Launcher_ChangeDownloadFileEvent(object sender, System.Net.DownloadProgressChangedEventArgs e)
+        {
+            Invoke((MethodInvoker)delegate {
+                progressBar2.Value = e.ProgressPercentage;
+            });
+        }
+
         private void invoker(string title, int max, int min) //스레드에서 상태표시
         {
-                invoker($"{title} - {min}/{max}");
+            invoker($"{title} - {min}/{max}");
         }
 
         private void invoker(string msg) //스레드에서 상태표시
