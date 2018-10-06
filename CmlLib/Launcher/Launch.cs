@@ -13,47 +13,25 @@ namespace CmlLib.Launcher
     /// </summary>
     public class MLaunch
     {
-        static MLaunch()
-        {
-            DefaultJavaParameter = 
+        /// <summary>
+        /// 기본 자바 파라미터
+        /// </summary>
+        public static string DefaultJavaParameter =
                 "-XX:+UnlockExperimentalVMOptions " +
                 "-XX:+UseG1GC " +
                 "-XX:G1NewSizePercent=20 " +
                 "-XX:G1ReservePercent=20 " +
                 "-XX:MaxGCPauseMillis=50 " +
                 "-XX:G1HeapRegionSize=16M";
-
-        }
-
-        /// <summary>
-        /// 기본 자바 파라미터
-        /// </summary>
-        public static string DefaultJavaParameter;
-
         public static string SupportLaunchVersion = "1.3";
 
-        public string JavaPath { get; set; } = "";
-        public string XmxRam { get; set; }
-        public MProfile StartProfile { get; set; }
-        public MProfile BaseProfile { get; set; } = null;
-        public MSession Session { get; set; }
-        public string LauncherName { get; set; } = "";
-        public string ServerIp { get; set; } = "";
-
-        string javaParams = DefaultJavaParameter;
-        public string CustomJavaParameter
+        public MLaunch(MLaunchOption option)
         {
-            get
-                => javaParams;
-            set
-            {
-                if (value == "") javaParams = DefaultJavaParameter;
-                else javaParams = value;
-            }
+            option.CheckVaild();
+            LaunchOption = option;
         }
 
-        public int ScreenWidth { get; set; }
-        public int ScreenHeight { get; set; }
+        public MLaunchOption LaunchOption { get; private set; }
 
         /// <summary>
         /// 설정한 프로퍼티로 인수를 만들고 게임을 실행합니다.
@@ -73,7 +51,7 @@ namespace CmlLib.Launcher
         {
             CleanNatives();
             CreateNatives();
-            return makeProcess(JavaPath, Minecraft.path, isdebug);
+            return makeProcess(LaunchOption.JavaPath, Minecraft.path, isdebug);
         }
 
         // 인수를 만들고 Process 객체를 만듬
@@ -94,61 +72,64 @@ namespace CmlLib.Launcher
         // 인수를 만듬
         string makeArg()
         {
-            var argstring = new StringBuilder();
-            var profile = StartProfile;
-            if (BaseProfile != null)
-                profile = BaseProfile;
+            var profile = LaunchOption.StartProfile;
+            if (LaunchOption.BaseProfile != null)
+                profile = LaunchOption.BaseProfile;
+
+            var sb = new StringBuilder();
 
             ///// JAVA ARG /////
 
-            string java_arg = javaParams;
-            java_arg += " -Djava.library.path=\"" + StartProfile.NativePath + "\" -cp ";
+            if (LaunchOption.CustomJavaParameter == "")
+                sb.Append(DefaultJavaParameter);
+            else
+                sb.Append(LaunchOption.CustomJavaParameter);
 
-            argstring.Append(java_arg);
+            sb.Append(" -Djava.library.path=\"" + LaunchOption.StartProfile.NativePath + "\" -cp ");
 
             List<MLibrary> libList = new List<MLibrary>();
-            if (BaseProfile != null)
-                libList.AddRange(StartProfile.Libraries);
+            if (LaunchOption.BaseProfile != null)
+                libList.AddRange(LaunchOption.StartProfile.Libraries);
             libList.AddRange(profile.Libraries);
 
             foreach (var item in libList)
             {
                 if (!item.IsNative)
-                    argstring.Append("\"" + item.Path.Replace("/", "\\") + "\";");
+                    sb.Append("\"" + item.Path.Replace("/", "\\") + "\";");
             }
 
             ///// JAVA ARG END /////
 
             string mcjarid = profile.Id;
 
-            argstring.Append("\"" + Minecraft.Versions + mcjarid + "\\" + mcjarid + ".jar\" ");
-            argstring.Append(StartProfile.MainClass + "  ");
+            sb.Append("\"" + Minecraft.Versions + mcjarid + "\\" + mcjarid + ".jar\" ");
+            sb.Append(LaunchOption.StartProfile.MainClass + "  ");
 
-            ///// GAME ARG /////                 
-
-            if (Session == null)
-                Session = MSession.GetOfflineSession("test");
+            ///// GAME ARG ///// 
 
             Dictionary<string, string> argDicts = new Dictionary<string, string>()
             {
-                { "${auth_player_name}", Session.Username },
-                { "${version_name}", StartProfile.Id },
+                { "${auth_player_name}", LaunchOption.Session.Username },
+                { "${version_name}", LaunchOption.StartProfile.Id },
                 { "${game_directory}", "\"" + Minecraft._Path + "\"" },
                 { "${assets_root}", "\"" + Minecraft._Assets + "\"" },
                 { "${assets_index_name}", profile.AssetId },
-                { "${auth_uuid}", Session.UUID },
-                { "${auth_access_token}", Session.AccessToken },
+                { "${auth_uuid}", LaunchOption.Session.UUID },
+                { "${auth_access_token}", LaunchOption.Session.AccessToken },
                 { "${user_properties}", "{}" },
                 { "${user_type}", "Mojang" },
                 { "${game_assets}", "\"" + Minecraft.Assets + "vitual\\legacy\"" },
-                { "${auth_session}", Session.AccessToken },
-                { "${version_type}", "release" }
+                { "${auth_session}", LaunchOption.Session.AccessToken }
             };
 
-            StringBuilder sb = new StringBuilder();
-            if (StartProfile.Arguments != "") // Arguments Json 을 사용하는 1.3 과 그 이후의 버전
+            if (LaunchOption.LauncherName == "")
+                argDicts.Add("${version_type}", "release");
+            else
+                argDicts.Add("${version_type}", LaunchOption.LauncherName);
+
+            if (LaunchOption.StartProfile.Arguments != "") // Arguments Json 을 사용하는 1.3 과 그 이후의 버전
             {
-                var jarr = (JArray)JObject.Parse(StartProfile.Arguments)["game"];
+                var jarr = (JArray)JObject.Parse(LaunchOption.StartProfile.Arguments)["game"];
                 foreach (var item in jarr)
                 {
                     if (!(item is JObject))
@@ -174,39 +155,36 @@ namespace CmlLib.Launcher
             }
             else // MinecraftArguments 를 사용하는 1.3 이전의 버전
             {
-                sb.Append(StartProfile.MinecraftArguments);
+                sb.Append(LaunchOption.StartProfile.MinecraftArguments);
                 foreach (var item in argDicts)
                 {
                     sb.Replace(item.Key, item.Value);
                 }
             }
 
-            if (ServerIp != "")
-                sb.Append(" --server " + ServerIp);
-            if (LauncherName != "")
-                sb.Replace("${version_type}", LauncherName.Replace(" ", "_"));
-            else
-                sb.Replace(" --versionType ${version_type}","");
+            // 추가 옵션들 설정
 
-            if (ScreenWidth != 0 && ScreenHeight != 0)
+            if (LaunchOption.ServerIp != "")
+                sb.Append(" --server " + LaunchOption.ServerIp);
+
+            if (LaunchOption.ScreenWidth > 0 && LaunchOption.ScreenHeight > 0)
             {
                 sb.Append(" --width ");
-                sb.Append(ScreenWidth);
+                sb.Append(LaunchOption.ScreenWidth);
                 sb.Append(" --height ");
-                sb.Append(ScreenHeight);
+                sb.Append(LaunchOption.ScreenHeight);
             }
 
-            argstring.Append(sb);
-            return argstring.ToString();
+            return sb.ToString();
         }
 
         private void CreateNatives()
         {
-            var path = ExtractNatives(StartProfile);
-            StartProfile.NativePath = path;
+            var path = ExtractNatives(LaunchOption.StartProfile);
+            LaunchOption.StartProfile.NativePath = path;
 
-            if (BaseProfile != null)
-                ExtractNatives(BaseProfile, path);
+            if (LaunchOption.BaseProfile != null)
+                ExtractNatives(LaunchOption.BaseProfile, path);
         }
 
         /// <summary>
@@ -235,7 +213,6 @@ namespace CmlLib.Launcher
                 {
                     if (item.IsNative)
                     {
-                        Console.WriteLine("native : {0} to {1}", item.Path,path);
                         using (var zip = ZipFile.Read(item.Path))
                         {
                             zip.ExtractAll(path, ExtractExistingFileAction.OverwriteSilently);
@@ -255,7 +232,7 @@ namespace CmlLib.Launcher
         {
             try
             {
-                DirectoryInfo di = new DirectoryInfo(Minecraft.Versions + StartProfile.Id);
+                DirectoryInfo di = new DirectoryInfo(Minecraft.Versions + LaunchOption.StartProfile.Id);
                 foreach (var item in di.GetDirectories("native*")) //native 라는 이름이 포함된 폴더를 모두 가져옴
                 {
                     DeleteDirectory(item.FullName);
