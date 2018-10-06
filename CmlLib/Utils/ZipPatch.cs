@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Threading;
 using System.Net;
+using Ionic.Zip;
 
 namespace CmlLib.Utils
 {
@@ -70,8 +71,10 @@ namespace CmlLib.Utils
 
             while (!iscom) Thread.Sleep(100);
 
-            var zip = new SevenZip(tmpZipPath);
-            zip.Decompress(tmpZipPath, CmlLib.Launcher.Minecraft.path);
+            using (var zip = ZipFile.Read(path))
+            {
+                zip.ExtractAll(Launcher.Minecraft.path, ExtractExistingFileAction.OverwriteSilently);
+            }
         }
     }
 }

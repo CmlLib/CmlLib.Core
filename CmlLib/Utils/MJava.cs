@@ -85,21 +85,21 @@ namespace CmlLib.Utils
 
         private void Wc_DownloadFileCompleted(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
         {
-            var zip = new SevenZip(WorkingPath);
-            zip.Decompress("javatemp.lzma", WorkingPath);
-            zip.Decompress("javatemp", RuntimeDirectory);
+            //var zip = new SevenZip(WorkingPath);
+            //zip.Decompress("javatemp.lzma", WorkingPath);
+            //zip.Decompress("javatemp", RuntimeDirectory);
 
-            if (!File.Exists(RuntimeDirectory + "\\bin\\javaw.exe"))
-            {
-                try
-                {
-                    DeleteDirectory(RuntimeDirectory);
-                }
-                catch { }
-                throw new Exception("Failed Download");
-            }
+            //if (!File.Exists(RuntimeDirectory + "\\bin\\javaw.exe"))
+            //{
+            //    try
+            //    {
+            //        DeleteDirectory(RuntimeDirectory);
+            //    }
+            //    catch { }
+            //    throw new Exception("Failed Download");
+            //}
 
-            DownloadCompletedEvent(sender, new EventArgs());
+            //DownloadCompletedEvent(sender, new EventArgs());
         }
 
         private void Wc_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
