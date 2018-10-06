@@ -24,7 +24,8 @@ namespace CmlLibSample
                 form.Show();
                 bool iscom = false;
 
-                java.DownloadProgressChangedEvent += (s, v) => {
+                java.DownloadProgressChangedEvent += (s, v) =>
+                {
                     form.ChangeProgress(v.ProgressPercentage);
                 };
                 java.DownloadCompletedEvent += (t, w) =>
@@ -56,11 +57,13 @@ namespace CmlLibSample
             // 자동 로그인 시도
 
             textBox1.Text = Environment.GetEnvironmentVariable("appdata") + "\\.minecraft";
-            var th = new Thread(new ThreadStart(delegate {
+            var th = new Thread(new ThreadStart(delegate
+            {
                 Minecraft.init(textBox1.Text);
 
                 versions = MProfileInfo.GetProfiles();
-                Invoke((MethodInvoker)delegate {
+                Invoke((MethodInvoker)delegate
+                {
                     foreach (var item in versions)
                     {
                         Cb_Version.Items.Add(item.Name);
@@ -101,7 +104,8 @@ namespace CmlLibSample
             // 로그인함
 
             Btn_Login.Enabled = false;
-            var th = new Thread(new ThreadStart(delegate {
+            var th = new Thread(new ThreadStart(delegate
+            {
                 var login = new MLogin();
                 var result = login.Authenticate(Txt_Email.Text, Txt_Pw.Text);
                 if (result.Result == MLoginResult.Success)
@@ -135,7 +139,8 @@ namespace CmlLibSample
             string ln = Txt_LauncherName.Text;
             string server = Txt_ServerIp.Text;
 
-            var th = new Thread(new ThreadStart(delegate {
+            var th = new Thread(new ThreadStart(delegate
+            {
 
                 MProfile profile = null;
                 MProfile forgeProfile = null;
@@ -165,27 +170,31 @@ namespace CmlLibSample
 
                 DownloadGame(profile, !profile.IsForge);
 
-                MLaunch launch = new MLaunch();
-                launch.BaseProfile = forgeProfile;
-                launch.StartProfile = profile;
-                launch.JavaPath = jj; //자바 경로같은거 설정자
-                launch.LauncherName = ln;
-                launch.XmxRam = xmx;
-                launch.ServerIp = server;
-                launch.Session = session;
-                launch.CustomJavaParameter = Txt_JavaArgs.Text;
+                MLaunchOption option = new MLaunchOption()
+                {
+                    BaseProfile = forgeProfile,
+                    StartProfile = profile,
+                    JavaPath = jj,
+                    LauncherName = ln,
+                    MaximumRamMb = int.Parse(xmx),
+                    ServerIp = server,
+                    Session = session,
+                    CustomJavaParameter = Txt_JavaArgs.Text
+                };
 
                 if (Txt_ScWd.Text != "" && Txt_ScHt.Text != "")
                 {
-                    launch.ScreenHeight = int.Parse(Txt_ScHt.Text);
-                    launch.ScreenWidth = int.Parse(Txt_ScWd.Text);
+                    option.ScreenHeight = int.Parse(Txt_ScHt.Text);
+                    option.ScreenWidth = int.Parse(Txt_ScWd.Text);
                 }
 
+                MLaunch launch = new MLaunch(option);
                 var pro = launch.GetProcess(); // 인수 생성 후 설정된 Process 객체 가져옴
                 System.IO.File.WriteAllText("mcarg.txt", pro.StartInfo.Arguments); // 만들어진 인수 파일로 저장 (디버그용)
                 pro.Start(); // Process 객체로 실행
 
-                this.Invoke((MethodInvoker)delegate {
+                this.Invoke((MethodInvoker)delegate
+                {
                     groupBox1.Enabled = true;
                     groupBox2.Enabled = true;
                 });
@@ -203,7 +212,8 @@ namespace CmlLibSample
 
         private void Launcher_ChangeProgressEvent(ChangeProgressEventArgs e)
         {
-            Invoke((MethodInvoker)delegate {
+            Invoke((MethodInvoker)delegate
+            {
                 Lv_Status.Text = e.FileName;
                 progressBar1.Maximum = e.MaxValue;
                 progressBar1.Value = e.CurrentValue;
@@ -212,7 +222,8 @@ namespace CmlLibSample
 
         private void Launcher_ChangeDownloadFileEvent(object sender, System.Net.DownloadProgressChangedEventArgs e)
         {
-            Invoke((MethodInvoker)delegate {
+            Invoke((MethodInvoker)delegate
+            {
                 progressBar2.Value = e.ProgressPercentage;
             });
         }
@@ -224,7 +235,8 @@ namespace CmlLibSample
 
         private void invoker(string msg) //스레드에서 상태표시
         {
-            Invoke((MethodInvoker)delegate {
+            Invoke((MethodInvoker)delegate
+            {
                 Lv_Status.Text = msg;
             });
         }
