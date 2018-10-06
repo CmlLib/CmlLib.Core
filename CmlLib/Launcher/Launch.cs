@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
+using System.IO;
 using System.Text;
 using Newtonsoft.Json.Linq;
+using Ionic.Zip;
 
 namespace CmlLib.Launcher
 {
@@ -70,6 +71,8 @@ namespace CmlLib.Launcher
         /// <returns>만들어진 Process 객체</returns>
         public Process GetProcess(bool isdebug = false)
         {
+            CleanNatives();
+            CreateNatives();
             return makeProcess(JavaPath, Minecraft.path, isdebug);
         }
 
@@ -99,7 +102,7 @@ namespace CmlLib.Launcher
             ///// JAVA ARG /////
 
             string java_arg = javaParams;
-            java_arg += " -Djava.library.path=\"" + profile.NativePath + "\" -cp ";
+            java_arg += " -Djava.library.path=\"" + StartProfile.NativePath + "\" -cp ";
 
             argstring.Append(java_arg);
 
@@ -139,7 +142,7 @@ namespace CmlLib.Launcher
                 { "${user_type}", "Mojang" },
                 { "${game_assets}", "\"" + Minecraft.Assets + "vitual\\legacy\"" },
                 { "${auth_session}", Session.AccessToken },
-                { "${version_type}", "" }
+                { "${version_type}", "release" }
             };
 
             StringBuilder sb = new StringBuilder();
@@ -197,6 +200,88 @@ namespace CmlLib.Launcher
             return argstring.ToString();
         }
 
+        private void CreateNatives()
+        {
+            var path = ExtractNatives(StartProfile);
+            StartProfile.NativePath = path;
+
+            if (BaseProfile != null)
+                ExtractNatives(BaseProfile, path);
+        }
+
+        /// <summary>
+        /// 네이티브 라이브러리들의 압축을 해제해 랜덤 폴더에 저장합니다.
+        /// </summary>
+        private string ExtractNatives(MProfile profile)
+        {
+            var ran = new Random();
+            int random = ran.Next(10000, 99999); //랜덤숫자 생성
+            string path = Minecraft.Versions + profile.Id + "\\natives-" + random.ToString(); //랜덤 숫자를 만들어 경로생성
+            ExtractNatives(profile, path);
+            return path;
+        }
+
+        /// <summary>
+        /// 네이티브 라이브러리들을 설정한 경로에 압축을 해제해 저장합니다.
+        /// </summary>
+        /// <param name="_path">압축 풀 폴더의 경로</param>
+        private void ExtractNatives(MProfile profile, string path)
+        {
+            Directory.CreateDirectory(path); //폴더생성
+
+            foreach (var item in profile.Libraries) //네이티브 라이브러리 리스트를 foreach 로 하나씩 돌림
+            {
+                try
+                {
+                    if (item.IsNative)
+                    {
+                        Console.WriteLine("native : {0} to {1}", item.Path,path);
+                        using (var zip = ZipFile.Read(item.Path))
+                        {
+                            zip.ExtractAll(path, ExtractExistingFileAction.OverwriteSilently);
+                        }
+                    }
+                }
+                catch { }
+            }
+
+            profile.NativePath = path;
+        }
+
+        /// <summary>
+        /// 저장된 네이티브 라이브러리들을 모두 제거합니다.
+        /// </summary>
+        public void CleanNatives()
+        {
+            try
+            {
+                DirectoryInfo di = new DirectoryInfo(Minecraft.Versions + StartProfile.Id);
+                foreach (var item in di.GetDirectories("native*")) //native 라는 이름이 포함된 폴더를 모두 가져옴
+                {
+                    DeleteDirectory(item.FullName);
+                }
+            }
+            catch { }
+        }
+
+        private void DeleteDirectory(string target_dir)
+        {
+            string[] files = Directory.GetFiles(target_dir);
+            string[] dirs = Directory.GetDirectories(target_dir);
+
+            foreach (string file in files)
+            {
+                File.SetAttributes(file, FileAttributes.Normal);
+                File.Delete(file);
+            }
+
+            foreach (string dir in dirs)
+            {
+                DeleteDirectory(dir);
+            }
+
+            Directory.Delete(target_dir, true);
+        }
 
         [Obsolete("GetProcess 메서드를 이용하세요.")]
         public Process GetDebugProcess()
