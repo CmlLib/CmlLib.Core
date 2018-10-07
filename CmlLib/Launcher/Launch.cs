@@ -118,7 +118,7 @@ namespace CmlLib.Launcher
                 { "${auth_access_token}", LaunchOption.Session.AccessToken },
                 { "${user_properties}", "{}" },
                 { "${user_type}", "Mojang" },
-                { "${game_assets}", "\"" + Minecraft.Assets + "vitual\\legacy\"" },
+                { "${game_assets}", "\"" + Minecraft.Assets + "virtual\\legacy\"" },
                 { "${auth_session}", LaunchOption.Session.AccessToken }
             };
 
