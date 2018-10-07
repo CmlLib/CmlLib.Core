@@ -185,6 +185,7 @@ namespace CmlLib.Launcher
                     iscomp = false;
                     wc.DownloadProgressChanged += Wc_DownloadProgressChanged;
                     wc.DownloadFileCompleted += Wc_DownloadFileCompleted;
+                    l(MFile.Minecraft, "", 1, 0);
                     wc.DownloadFileAsync(new Uri(profile.ClientDownloadUrl), Minecraft.Versions + id + "\\" + id + ".jar");
 
                     while (!iscomp)
@@ -203,6 +204,7 @@ namespace CmlLib.Launcher
         private void Wc_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
         {
             ChangeFileProgressEvent(sender, e);
+            l(MFile.Minecraft, "", 1, 1);
         }
 
         private void l(MFile filetype, string filename, int max, int value)
