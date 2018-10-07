@@ -3,8 +3,8 @@ Minecraft Launcher Library
 
 ### Online / Offline Login, Download, Launch with various options, Forge Support
 
-### Support ~1.3 , Forge
-### Sample Project(not completed) : Sample_Url
+### Support All Versions, Forge
+### Sample Project(not completed) : https://github.com/AlphaBs/AlphaMinecraftLauncher
 
 KOREANS :  
 상업적 사용 금지.  수정 후 재사용 가능.  
@@ -71,14 +71,9 @@ note : you can't use old login which use username instead mojang email.
 
 #### 4. Get Profile Infos
 Profile contain various data which launcher need.
-
 All Game Versions has its own profile, even old alpha version or forge.
-
-You can find at
-(GameDirectory)￦versions￦(any-version)￦(version-name).json.
-
-Profile info is Profile's Metadata, contains Name, Profile Path(Url), Type(Release, Snapshot, Old), ReleaseTime.
-
+You can find at (GameDirectory)￦versions￦(any-version)￦(version-name).json.
+MProfileInfo is Profile's Metadata, contains Name, Profile Path(Url), Type(Release, Snapshot, Old), ReleaseTime.
 and this code get profile info :
 
      MProfilesInfo[] infos = MProfileInfo.GetProfiles();
@@ -113,10 +108,8 @@ Parse Profile is simple :
 #### 6. Check & Download Game Files
 
      MDownloader downloader = new MDownloader(profile);
-     downloader.ChangeFileChange +=
-          change_file;
-     downloader.ChangeProgressChange += 
-          change_progress;
+     downloader.ChangeFileChange += change_file;
+     downloader.ChangeProgressChange += change_progress;
      downloader.DownloadAll();
 
 ChangeFileChange Event : Change Download File Name
@@ -133,8 +126,6 @@ DownloadAll() Method do this :
      downloader.DownloadIndex(); // asset index
      downloader.DownloadResource(); // assets / resources
      downloader.DownloadMinecraft(); // game jar
-     downloader.CleanNatives(); // remove all natives
-     downloader.ExactNatives(); // make native
 
 It's so long. so just use DownloadAll();
 
@@ -142,12 +133,21 @@ Each Download~~ method check game file exist, and if file doesn't exist, downloa
 
 #### 7. Make game args and Launch
 
-     MLaunch launch = new MLaunch(profile);
-     launch.GameArgs = new MLaunchArgs()
+     var option = new MLaunchOption()
      {
-
+          // must require
+          StartProfile = profile,
+          JavaPath = "java.exe", //SET YOUR JAVA PATH (if you want autoset, goto wiki)
+          MaximumRamMb = int.Parse(xmx),
+          Session = session,
+          
+          // not require
+          ServerIP = "", // connect server directly
+          LauncherName = "", // display launcher name at main window
+          CustomJavaParameter = "" // set your own java args
      };
      
+     var launch = new MLaunch(option);
      var process = launch.MakeProcess();
      process.Start();
 
