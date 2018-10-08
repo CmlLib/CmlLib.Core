@@ -54,7 +54,7 @@ namespace CmlLib.Launcher
         {
             using (var wc = new WebClient()) // 웹클라이언트 객체생성, 이벤트등록
             {
-                wc.DownloadProgressChanged += Wc_DownloadProgressChanged;
+                wc.DownloadProgressChanged += Library_DownloadProgressChanged;
                 wc.DownloadFileCompleted += wcd;
 
                 int index = 0; // 현재 다운로드중인 파일의 순서 (이벤트 생성용)
@@ -96,6 +96,10 @@ namespace CmlLib.Launcher
         private void wcd(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
         {
             iscom = true;
+        }
+        private void Library_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+        {
+            ChangeFileProgressEvent(sender, e);
         }
 
         ////////////////////////////////////////////////////
