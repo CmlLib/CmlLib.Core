@@ -17,6 +17,7 @@ namespace CmlLib.Utils
         public string PatchVerUrl = "";
         public string PatchZipUrl = "";
         public string LocalVerPath = "";
+        private string webver = "";
 
         public ZipPatch(string verUrl, string zipUrl, string localPath)
         {
@@ -32,7 +33,6 @@ namespace CmlLib.Utils
             if (File.Exists(LocalVerPath))
                 localver = File.ReadAllText(LocalVerPath, Encoding.UTF8);
 
-            string webver = "";
             using (var wc = new WebClient())
             {
                 webver = wc.DownloadString(PatchVerUrl);
@@ -55,6 +55,12 @@ namespace CmlLib.Utils
             //압축파일 저장 경로
             var path = tmpZipPath + @"\tmp.zip";
 
+            try
+            {
+                DeleteDirectory(Launcher.Minecraft.path);
+            }
+            catch { }
+
             bool iscom = false;
             using (var wc = new WebClient())
             {
@@ -71,10 +77,33 @@ namespace CmlLib.Utils
 
             while (!iscom) Thread.Sleep(100);
 
+            Directory.CreateDirectory(Launcher.Minecraft.path);
+
             using (var zip = ZipFile.Read(path))
             {
                 zip.ExtractAll(Launcher.Minecraft.path, ExtractExistingFileAction.OverwriteSilently);
             }
+
+            File.WriteAllText(LocalVerPath, webver);
+        }
+
+        private static void DeleteDirectory(string target_dir)
+        {
+            string[] files = Directory.GetFiles(target_dir);
+            string[] dirs = Directory.GetDirectories(target_dir);
+
+            foreach (string file in files)
+            {
+                File.SetAttributes(file, FileAttributes.Normal);
+                File.Delete(file);
+            }
+
+            foreach (string dir in dirs)
+            {
+                DeleteDirectory(dir);
+            }
+
+            Directory.Delete(target_dir, true);
         }
     }
 }
