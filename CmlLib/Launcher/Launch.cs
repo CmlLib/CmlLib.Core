@@ -85,6 +85,7 @@ namespace CmlLib.Launcher
             else
                 sb.Append(LaunchOption.CustomJavaParameter);
 
+            sb.Append(" -Xmx" + LaunchOption.MaximumRamMb + "m");
             sb.Append(" -Djava.library.path=\"" + LaunchOption.StartProfile.NativePath + "\" -cp ");
 
             List<MLibrary> libList = new List<MLibrary>();
