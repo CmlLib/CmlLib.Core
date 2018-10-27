@@ -18,13 +18,15 @@ namespace CmlLib.Utils
         public string PatchZipUrl = "";
         public string LocalVerPath = "";
         private string webver = "";
+        private string[] noupdate = new string[] { "" };
 
-        public ZipPatch(string verUrl, string zipUrl, string localPath)
+        public ZipPatch(string verUrl, string zipUrl, string localPath, string[] noupdate)
         {
             DownloadProgressChanged += delegate { };
             PatchVerUrl = verUrl;
             PatchZipUrl = zipUrl;
             LocalVerPath = localPath;
+            this.noupdate = noupdate;
         }
 
         public bool CheckHasUpdate()
@@ -57,7 +59,15 @@ namespace CmlLib.Utils
 
             try
             {
-                DeleteDirectory(Launcher.Minecraft.path);
+                var dir = new DirectoryInfo(Launcher.Minecraft.path);
+                foreach (var item in dir.GetDirectories())
+                {
+                    if (!noupdate.Contains(item.Name))
+                    {
+                        DeleteDirectory(item.FullName);
+                    }
+
+                }
             }
             catch { }
 
