@@ -35,11 +35,10 @@ namespace CmlLib.Launcher
         public static MProfileInfo[] GetProfilesFromLocal()
         {
             var dirs = new DirectoryInfo(Minecraft.Versions).GetDirectories();
-            var arr = new MProfileInfo[dirs.Length];
+            var arr = new List<MProfileInfo>();
 
-            for (int i = 0; i < dirs.Length; i++)
+            foreach(var dir in dirs)
             {
-                var dir = dirs[i];
                 var filepath = dir.FullName + "\\" + dir.Name + ".json";
                 if (File.Exists(filepath))
                 {
@@ -47,11 +46,11 @@ namespace CmlLib.Launcher
                     info.IsWeb = false;
                     info.Name = dir.Name;
                     info.Path = filepath;
-                    arr[i] = info;
+                    arr.Add(info);
                 }
             }
 
-            return arr;
+            return arr.ToArray();
         }
 
         /// <summary>
