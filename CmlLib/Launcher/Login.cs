@@ -27,6 +27,8 @@ namespace CmlLib.Launcher
         public MLoginResult Result { get; internal set; }
         public string Message { get; internal set; }
 
+        public string _RawResponse { get; internal set; }
+
         public static MSession GetOfflineSession(string username)
         {
             var login = new MSession();
@@ -171,6 +173,8 @@ namespace CmlLib.Launcher
                 {
                     Response = res.ReadToEnd(); //받아옴
 
+                    result._RawResponse = Response;
+
                     if ((int)(resHeader).StatusCode == 200) //ResultCode 가 200 (성공) 일때만
                     {
                         var jObj = JObject.Parse(Response); //json 파싱
@@ -248,7 +252,9 @@ namespace CmlLib.Launcher
                 var resHeader = mojangRequest("refresh", req.ToString()); //응답 가져오기
                 using (var res = new StreamReader(resHeader.GetResponseStream()))
                 {
-                    JObject job = JObject.Parse(res.ReadToEnd()); //json 파일 파싱
+                    var response = res.ReadToEnd();
+                    result._RawResponse = response;
+                    JObject job = JObject.Parse(response); //json 파일 파싱
 
                     result.AccessToken = job["accessToken"].ToString();
                     result.AccessToken = job["accessToken"].ToString();
