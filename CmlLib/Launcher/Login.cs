@@ -100,46 +100,45 @@ namespace CmlLib.Launcher
             File.WriteAllText(TokenFile,jobj.ToString() , Encoding.UTF8);
         }
 
-        private string GetClientToken()
+        private MSession GetLocalToken()
         {
-            string ClientToken;
+            Console.WriteLine("GetLocalToken");
+            MSession session;
 
             if (!File.Exists(TokenFile)) //로그인 정보가 없을경우
             {
-                ClientToken = Guid.NewGuid().ToString().Replace("-", "");      //새로운 클라이언트 토큰 생성
-                WriteLogin("", "", "", ClientToken);
+                Console.WriteLine("No Token Exist");
+                var ClientToken = Guid.NewGuid().ToString().Replace("-", "");      //새로운 클라이언트 토큰 생성
+                Console.WriteLine("New ClientToken : " + ClientToken);
+
+                session = MSession.createEmpty();
+                session.ClientToken = ClientToken;
+
+                WriteLogin(session);
             }
             else
             {   //로그인 정보가 남아있을경우 클라이언트 토큰 불러옴
-                var filedata = File.ReadAllText(TokenFile , Encoding.UTF8);
-                ClientToken = JObject.Parse(filedata)["clientToken"]?.ToString() ?? "";
+                Console.WriteLine("Client Token Exist!");
+                var filedata = File.ReadAllText(TokenFile, Encoding.UTF8);
+                Console.WriteLine(Convert.ToBase64String(Encoding.UTF8.GetBytes(filedata)));
+
+                try
+                {
+                    var job = JObject.Parse(filedata);
+                    session = new MSession();
+                    session.AccessToken = job["session"]?.ToString();
+                    session.UUID = job["uuid"]?.ToString();
+                    session.Username = job["username"]?.ToString();
+                    session.ClientToken = job["clientToken"]?.ToString();
+                }
+                catch (Newtonsoft.Json.JsonReaderException) // if JSON file isn't vaild
+                {
+                    DeleteTokenFile();
+                    session = GetLocalToken();
+                }
             }
 
-            return ClientToken;
-        }
-
-        public MSession ReadTokenFile()
-        {
-            if (!File.Exists(TokenFile))
-            {
-                return null;
-            }
-
-            var filedata = File.ReadAllText(TokenFile, Encoding.UTF8);
-            var job = JObject.Parse(filedata);
-            var session = new MSession();
-            session.AccessToken = job["session"]?.ToString();
-            session.UUID = job["uuid"]?.ToString();
-            session.Username = job["username"]?.ToString();
-            session.ClientToken = job["clientToken"]?.ToString();
             return session;
-        }
-
-        private MSession getTokenFile()
-        {
-            var s = ReadTokenFile();
-            if (s == null) return MSession.createEmpty();
-            else return s;
         }
 
         private HttpWebResponse mojangRequest(string endpoint, string postdata)
@@ -163,7 +162,7 @@ namespace CmlLib.Launcher
             {
                 MSession result = new MSession();
 
-                string ClientToken = GetClientToken();
+                string ClientToken = GetLocalToken().ClientToken;
                 string Response = "";
 
                 var req = "{ \"agent\" : { \"name\" : \"Minecraft\" , \"version\" : 1 }, \"username\" : \"" + id + "\", \"password\" : \"" + pw + "\", \"clientToken\" : \"" + ClientToken + "\"}";
@@ -236,7 +235,7 @@ namespace CmlLib.Launcher
 
             try
             {
-                var session = getTokenFile();
+                var session = GetLocalToken();
 
                 JObject selectedProfile = new JObject();
                 selectedProfile.Add("id", session.UUID); //uuid 추가
@@ -281,7 +280,7 @@ namespace CmlLib.Launcher
             var result = new MSession();
             try
             {
-                var session = getTokenFile();
+                var session = GetLocalToken();
 
                 JObject job = new JObject();
                 job.Add("accessToken", session.AccessToken);
@@ -321,7 +320,7 @@ namespace CmlLib.Launcher
         public void Invalidate()
         {
             var result = new MSession();
-            var session = getTokenFile();
+            var session = GetLocalToken();
 
             var job = new JObject();
             job.Add("accessToken",session.AccessToken);
