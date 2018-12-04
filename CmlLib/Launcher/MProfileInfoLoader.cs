@@ -14,14 +14,20 @@ namespace CmlLib.Launcher
         /// <returns>프로파일 리스트</returns>
         public static MProfileInfo[] GetProfiles()
         {
-            var list = new List<MProfileInfo>();
-            list.AddRange(GetProfilesFromLocal()); //먼저 로컬 프로파일을 불러옴
+            var list = new List<MProfileInfo>(GetProfilesFromLocal());
             foreach (var item in GetProfilesFromWeb()) //다음 웹 프로파일을 불러옴
             {
-                var prof = from arr in list
-                           where arr.Name == item.Name
-                           select arr;
-                if (prof.ToArray().Length == 0)
+                bool isexist = false;
+                foreach (var local in list)
+                {
+                    if (local.Name == item.Name)
+                    {
+                        isexist = true;
+                        break;
+                    }
+                }
+
+                if (!isexist)
                     list.Add(item);
             }
             return list.ToArray();
@@ -35,10 +41,11 @@ namespace CmlLib.Launcher
         public static MProfileInfo[] GetProfilesFromLocal()
         {
             var dirs = new DirectoryInfo(Minecraft.Versions).GetDirectories();
-            var arr = new List<MProfileInfo>();
+            var arr = new MProfileInfo[dirs.Length];
 
-            foreach(var dir in dirs)
+            for (int i = 0; i < dirs.Length; i++)
             {
+                var dir = dirs[i];
                 var filepath = dir.FullName + "\\" + dir.Name + ".json";
                 if (File.Exists(filepath))
                 {
@@ -46,7 +53,7 @@ namespace CmlLib.Launcher
                     info.IsWeb = false;
                     info.Name = dir.Name;
                     info.Path = filepath;
-                    arr.Add(info);
+                    arr[i] = (info);
                 }
             }
 
