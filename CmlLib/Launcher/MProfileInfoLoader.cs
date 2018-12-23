@@ -41,7 +41,7 @@ namespace CmlLib.Launcher
         public static MProfileInfo[] GetProfilesFromLocal()
         {
             var dirs = new DirectoryInfo(Minecraft.Versions).GetDirectories();
-            var arr = new MProfileInfo[dirs.Length];
+            var arr = new List<MProfileInfo>(dirs.Length);
 
             for (int i = 0; i < dirs.Length; i++)
             {
@@ -53,7 +53,7 @@ namespace CmlLib.Launcher
                     info.IsWeb = false;
                     info.Name = dir.Name;
                     info.Path = filepath;
-                    arr[i] = (info);
+                    arr.Add(info);
                 }
             }
 
