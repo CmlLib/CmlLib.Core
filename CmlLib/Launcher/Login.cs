@@ -102,14 +102,11 @@ namespace CmlLib.Launcher
 
         private MSession GetLocalToken()
         {
-            Console.WriteLine("GetLocalToken");
             MSession session;
 
             if (!File.Exists(TokenFile)) //로그인 정보가 없을경우
             {
-                Console.WriteLine("No Token Exist");
                 var ClientToken = Guid.NewGuid().ToString().Replace("-", "");      //새로운 클라이언트 토큰 생성
-                Console.WriteLine("New ClientToken : " + ClientToken);
 
                 session = MSession.createEmpty();
                 session.ClientToken = ClientToken;
@@ -118,10 +115,7 @@ namespace CmlLib.Launcher
             }
             else
             {   //로그인 정보가 남아있을경우 클라이언트 토큰 불러옴
-                Console.WriteLine("Client Token Exist!");
                 var filedata = File.ReadAllText(TokenFile, Encoding.UTF8);
-                Console.WriteLine(Convert.ToBase64String(Encoding.UTF8.GetBytes(filedata)));
-
                 try
                 {
                     var job = JObject.Parse(filedata);
