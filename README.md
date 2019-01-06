@@ -1,15 +1,14 @@
-Minecraft Launcher Library
+﻿Minecraft Launcher Library
 ======================
 
 ### Online / Offline Login, Download, Launch with various options, Forge Support
 
 ### Support All Versions, Forge
-### Sample Project(not completed) : https://github.com/AlphaBs/AlphaMinecraftLauncher
-
-KOREANS :  
-상업적 사용 금지.  수정 후 재사용 가능.  
-자세한 내용은 LICENSE 단락을 확인하세요.  
-주문제작 문의는 아래 아이디로 디스코드 친추걸어주세요.
+### Sample Project(not completed) : https://github.com/AlphaBs/AlphaMinecraftLauncher  
+  
+한국어
+-------------
+ =====>>> [한국어 README](https://github.com/AlphaBs/MinecraftLauncherLibrary/blob/master/README-kr.md)
 
 Contacts
 -------------
@@ -21,9 +20,16 @@ KaKaoTalk : ksi123456ab
 License
 --------------
 
-<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="크리에이티브 커먼즈 라이선스" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a><br />이 저작물은 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">크리에이티브 커먼즈 저작자표시-비영리 4.0 국제 라이선스</a>에 따라 이용할 수 있습니다.
+<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Creative Commons Attribution-NonCommercial 4.0 International License</a>.
 
 ****NO COMMERCIAL****
+
+Dependancy
+-------------
+Newtonsoft.Json
+DotNetZip
+
+Use Nuget-Restore
 
 How To Use
 -------------
@@ -33,7 +39,13 @@ How To Use
 If you want to learn more like java runtime download, detail launch options, full methods, go to [wiki](https://merong)
 
 #### 1. Prepare
-Build 'CmlLib' project yourself and add reference to your project.
+Open the 'CmlLib' Project, restore nuget packages, build CmlLib Project.
+and add reference to 'CmlLib.dll', 'Newtonsoft.Json.dll', 'DotNetZip.dll' to your own project.
+
+write this on the top of your source code.
+
+
+      using CmlLib.Launcher;
 
 #### 2. Minecraft Initialize
 You should write this code before work.
@@ -62,12 +74,11 @@ It set Game Directory that is used to download game files, load profiles, save l
 
 The 'session' is login result.
 if you want to connect online-mode server, you use this session to launch.
+note : you can't use old login which use username instead mojang email.
 
 or you can use offline session :
 
      MSession session = MSession.GetOfflineSession("USERNAME");
-
-note : you can't use old login which use username instead mojang email.
 
 #### 4. Get Profile Infos
 Profile contain various data which launcher need.
@@ -89,7 +100,7 @@ or you can choose source :
 
 In order to use profile's data, you should parse Profile from ProfileInfo.
 
-First, Search Profile Infos you want to launch : (very simple search algoritm)
+First, Search Profile Infos you want to launch : (very simple search algorithm)
 
      MProfile profile = null;
      foreach (var item in infos)
