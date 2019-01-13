@@ -15,6 +15,8 @@ namespace CmlLibSample
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            MessageBox.Show(CmlLib._Test.tstr);
+
             // 프로그램이 켜졌을때 자바 설치되있는지 확인
 
             var java = new CmlLib.Utils.MJava(Minecraft.mPath + "\\runtime");
@@ -104,22 +106,30 @@ namespace CmlLibSample
             // 로그인함
 
             Btn_Login.Enabled = false;
-            var th = new Thread(new ThreadStart(delegate
+            if (Txt_Pw.Text == "")
             {
-                var login = new MLogin();
-                var result = login.Authenticate(Txt_Email.Text, Txt_Pw.Text);
-                if (result.Result == MLoginResult.Success)
+                session = MSession.GetOfflineSession(Txt_Email.Text);
+                MessageBox.Show("Offline login Success : " + Txt_Email.Text);
+            }
+            else
+            {
+                var th = new Thread(new ThreadStart(delegate
                 {
-                    MessageBox.Show("Login Success : " + result.Username);
-                    session = result;
-                }
-                else
-                {
-                    MessageBox.Show(result.Result.ToString() + "\n" + result.Message);
-                    Invoke((MethodInvoker)delegate { Btn_Login.Enabled = true; });
-                }
-            }));
-            th.Start();
+                    var login = new MLogin();
+                    var result = login.Authenticate(Txt_Email.Text, Txt_Pw.Text);
+                    if (result.Result == MLoginResult.Success)
+                    {
+                        MessageBox.Show("Login Success : " + result.Username);
+                        session = result;
+                    }
+                    else
+                    {
+                        MessageBox.Show(result.Result.ToString() + "\n" + result.Message);
+                        Invoke((MethodInvoker)delegate { Btn_Login.Enabled = true; });
+                    }
+                }));
+                th.Start();
+            }
         }
 
         private void Btn_Launch_Click(object sender, EventArgs e)
@@ -128,6 +138,12 @@ namespace CmlLibSample
             // 실행할 버전으로 프로파일 검색하고 패치
             // 실행에 필요한 인수 설정
             // 실행
+
+            if (session == null)
+            {
+                MessageBox.Show("Login First");
+                return;
+            }
 
             if (Cb_Version.Text == "") return;
             groupBox1.Enabled = false;
