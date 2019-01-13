@@ -42,12 +42,6 @@ namespace CmlLib.Launcher
 
                         list.Add(new MLibrary(isn, libName, absoluteLibPath, url));
 
-                        Console.WriteLine("===============");
-                        Console.WriteLine(isn);
-                        Console.WriteLine(libName);
-                        Console.WriteLine(absoluteLibPath);
-                        Console.WriteLine(url);
-
                         continue;
                     }
 
