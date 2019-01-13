@@ -8,6 +8,6 @@ namespace CmlLib
 {
     public class _Test
     {
-        public static string tstr = "1";
+        public static string tstr = "3";
     }
 }

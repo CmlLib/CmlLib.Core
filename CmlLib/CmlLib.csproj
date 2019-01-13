@@ -88,6 +88,7 @@
     <Compile Include="Utils\NaverCafe.cs" />
     <Compile Include="Utils\SevenZipWrapper.cs" />
     <Compile Include="Utils\ZipPatch.cs" />
+    <Compile Include="_Test.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

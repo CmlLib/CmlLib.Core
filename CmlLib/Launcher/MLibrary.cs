@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CmlLib.Launcher
 {
@@ -9,6 +10,8 @@ namespace CmlLib.Launcher
     /// </summary>
     public class MLibrary
     {
+        static string DefaultLibraryServer = "https://libraries.minecraft.net/";
+
         internal static List<MLibrary> ParseJson(JArray json)
         {
             var list = new List<MLibrary>();
@@ -19,19 +22,31 @@ namespace CmlLib.Launcher
                     // FORGE 라이브러리
                     if (item["downloads"] == null)
                     {
-                        string forge = MLibraryNameParser.NameToPath(item);
+                        bool isn = item["natives"]?["windows"] != null;
+                        var nativeStr = "";
+                        if (isn)
+                            nativeStr = item["natives"]["windows"].ToString();
 
-                        if (forge == "") continue;
+                        var libName = item["name"]?.ToString();
+                        if (libName == null) continue;
 
-                        bool isn = false;
-                        if (forge.Contains("natives"))
-                            isn = true;
-                        else
-                            isn = false;
+                        var libPath = MLibraryNameParser.NameToPath(libName, nativeStr);
 
                         var url = item["url"]?.ToString();
-                        if (url == null) url = "";
-                        list.Add(new MLibrary(isn, item["name"]?.ToString(), forge, ""));
+                        if (url == null)
+                            url = DefaultLibraryServer + libPath;
+                        else if (url.Split('/').Last() == "")
+                            url += libPath;
+
+                        var absoluteLibPath = Minecraft.Library + libPath;
+
+                        list.Add(new MLibrary(isn, libName, absoluteLibPath, url));
+
+                        Console.WriteLine("===============");
+                        Console.WriteLine(isn);
+                        Console.WriteLine(libName);
+                        Console.WriteLine(absoluteLibPath);
+                        Console.WriteLine(url);
 
                         continue;
                     }
@@ -117,15 +132,14 @@ namespace CmlLib.Launcher
 
     class MLibraryNameParser
     {
-        public static string NameToPath(JObject job)
+        public static string NameToPath(string name, string native)
         {
             try
             {
-                string name = job["name"]?.ToString();
-
-                string front = name.Split(':')[0].Replace('.', '\\');
-                string back = "";
                 string[] tmp = name.Split(':');
+                string front = tmp[0].Replace('.', '/');
+                string back = "";
+
                 for (int i = 1; i <= tmp.Length - 1; i++)
                 {
                     if (i == tmp.Length - 1)
@@ -133,16 +147,11 @@ namespace CmlLib.Launcher
                     else
                         back += tmp[i] + ":";
                 }
-                string libpath = Minecraft.Library + front + "\\" + back.Replace(':', '\\') + "\\" + (back.Replace(':', '-'));
-                if (job.ToString().Contains("natives"))
-                {
-                    string window = job["natives"]["windows"].ToString();
-                    libpath += "-" + window + ".jar";
-                }
+                string libpath = front + "/" + back.Replace(':', '/') + "/" + (back.Replace(':', '-'));
+                if (native != "")
+                    libpath += "-" + native + ".jar";
                 else
-                {
                     libpath += ".jar";
-                }
                 return libpath;
             }
             catch
