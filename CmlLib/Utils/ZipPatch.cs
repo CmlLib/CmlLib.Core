@@ -17,14 +17,16 @@ namespace CmlLib.Utils
         public string PatchVerUrl = "";
         public string PatchZipUrl = "";
         public string LocalVerPath = "";
+        public string PatchPath = "";
         private string webver = "";
         private string[] noupdate = new string[] { "" };
 
-        public ZipPatch(string verUrl, string zipUrl, string localPath, string[] noupdate)
+        public ZipPatch(string verUrl, string zipUrl, string patchPath, string localPath, string[] noupdate)
         {
             DownloadProgressChanged += delegate { };
             PatchVerUrl = verUrl;
             PatchZipUrl = zipUrl;
+            PatchPath = patchPath;
             LocalVerPath = localPath;
             this.noupdate = noupdate;
         }
@@ -59,7 +61,7 @@ namespace CmlLib.Utils
 
             try
             {
-                var dir = new DirectoryInfo(Launcher.Minecraft.path);
+                var dir = new DirectoryInfo(PatchPath);
                 foreach (var item in dir.GetDirectories())
                 {
                     if (!noupdate.Contains(item.Name))
@@ -87,11 +89,11 @@ namespace CmlLib.Utils
 
             while (!iscom) Thread.Sleep(100);
 
-            Directory.CreateDirectory(Launcher.Minecraft.path);
+            Directory.CreateDirectory(PatchPath);
 
             using (var zip = ZipFile.Read(path))
             {
-                zip.ExtractAll(Launcher.Minecraft.path, ExtractExistingFileAction.OverwriteSilently);
+                zip.ExtractAll(PatchPath, ExtractExistingFileAction.OverwriteSilently);
             }
 
             File.WriteAllText(LocalVerPath, webver);

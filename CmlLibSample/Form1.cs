@@ -19,7 +19,7 @@ namespace CmlLibSample
 
             // 프로그램이 켜졌을때 자바 설치되있는지 확인
 
-            var java = new CmlLib.Utils.MJava(Minecraft.mPath + "\\runtime");
+            var java = new CmlLib.Utils.MJava(Minecraft.DefaultPath + "\\runtime");
             if (!java.CheckJavaw())
             {
                 var form = new Form2();
@@ -45,7 +45,7 @@ namespace CmlLibSample
                 }
             }
 
-            Txt_Java.Text = Minecraft.mPath + "\\runtime\\bin\\javaw.exe";
+            Txt_Java.Text = Minecraft.DefaultPath + "\\runtime\\bin\\javaw.exe";
         }
 
         MProfileInfo[] versions;
@@ -221,26 +221,27 @@ namespace CmlLibSample
         private void DownloadGame(MProfile profile, bool downloadResource = true)
         {
             MDownloader downloader = new MDownloader(profile);
-            downloader.ChangeFileProgressEvent += Launcher_ChangeDownloadFileEvent;
-            downloader.ChangeProgressEvent += Launcher_ChangeProgressEvent;
+            downloader.ChangeFile += Downloader_ChangeFile;
+            downloader.ChangeProgress += Downloader_ChangeProgress;
             downloader.DownloadAll(downloadResource);
         }
 
-        private void Launcher_ChangeProgressEvent(ChangeProgressEventArgs e)
-        {
-            Invoke((MethodInvoker)delegate
-            {
-                Lv_Status.Text = e.FileName;
-                progressBar1.Maximum = e.MaxValue;
-                progressBar1.Value = e.CurrentValue;
-            });
-        }
-
-        private void Launcher_ChangeDownloadFileEvent(object sender, System.Net.DownloadProgressChangedEventArgs e)
+        private void Downloader_ChangeProgress(object sender, System.ComponentModel.ProgressChangedEventArgs e)
         {
             Invoke((MethodInvoker)delegate
             {
                 progressBar2.Value = e.ProgressPercentage;
+            });
+
+        }
+
+        private void Downloader_ChangeFile(DownloadFileChangedEventArgs e)
+        {
+            Invoke((MethodInvoker)delegate
+            {
+                Lv_Status.Text = e.FileKind.ToString() + " : " + e.FileName;
+                progressBar1.Maximum = e.MaxValue;
+                progressBar1.Value = e.CurrentValue;
             });
         }
 

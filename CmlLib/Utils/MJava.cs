@@ -10,7 +10,7 @@ namespace CmlLib.Utils
 {
     public class MJava
     {
-        public static string DefaultRuntimeDirectory = CmlLib.Launcher.Minecraft.mPath + "\\runtime";
+        public static string DefaultRuntimeDirectory = CmlLib.Launcher.Minecraft.DefaultPath + "\\runtime";
 
         public event DownloadProgressChangedEventHandler DownloadProgressChangedEvent;
         public event EventHandler DownloadCompletedEvent;

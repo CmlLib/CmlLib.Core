@@ -60,7 +60,7 @@ namespace CmlLib.Launcher
         /// <summary>
         /// 로그인 세션이 저장되는 기본 폴더입니다.
         /// </summary>
-        public static readonly string DefaultLoginSessionFile = Minecraft.mPath + "\\logintoken.json";
+        public static readonly string DefaultLoginSessionFile = Minecraft.DefaultPath + "\\logintoken.json";
 
         /// <summary>
         /// DefaultLoginSessionFile 필드의 값으로 로그인 세션을 저장합니다.

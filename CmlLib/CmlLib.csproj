@@ -57,7 +57,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Launcher\ChangeProgressEventArgs.cs" />
+    <Compile Include="Launcher\DownloadFileChangedEventArgs.cs" />
     <Compile Include="Launcher\MLaunchOption.cs" />
     <Compile Include="Launcher\MProfileType.cs" />
     <Compile Include="Launcher\Downloader.cs" />
@@ -68,6 +68,8 @@
     <Compile Include="Launcher\MProfileInfo.cs" />
     <Compile Include="Launcher\MProfileInfoLoader.cs" />
     <Compile Include="Launcher\MProfiles.cs" />
+    <Compile Include="Launcher\WebDownload.cs" />
+    <Compile Include="Launcher\MNative.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SevenZip\Common\CommandLineParser.cs" />
     <Compile Include="SevenZip\Common\CRC.cs" />

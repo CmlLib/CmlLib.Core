@@ -4,20 +4,22 @@ using System.Net;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using System.Threading;
+using System.ComponentModel;
 
 namespace CmlLib.Launcher
 {
-    public delegate void MChangeDownloadProgress(ChangeProgressEventArgs e);
+    public delegate void DownloadFileChangedHandler(DownloadFileChangedEventArgs e);
 
     /// <summary>
     /// 게임 실행에 필요한 라이브러리, 게임, 리소스 등을 다운로드합니다.
     /// </summary>
     public class MDownloader
     {
-        public event MChangeDownloadProgress ChangeProgressEvent;
-        public event DownloadProgressChangedEventHandler ChangeFileProgressEvent;
+        public event DownloadFileChangedHandler ChangeFile;
+        public event ProgressChangedEventHandler ChangeProgress;
 
         MProfile profile;
+        WebDownload web;
 
         /// <summary>
         /// 실행에 필요한 파일들을 profile 에서 불러옵니다.
@@ -25,9 +27,10 @@ namespace CmlLib.Launcher
         /// <param name="_profile">불러올 프로파일</param>
         public MDownloader(MProfile _profile)
         {
-            ChangeProgressEvent += delegate { };
-            ChangeFileProgressEvent += delegate { };
             this.profile = _profile;
+
+            web = new WebDownload();
+            web.DownloadProgressChangedEvent += Web_DownloadProgressChangedEvent;
         }
 
         /// <summary>
@@ -52,57 +55,31 @@ namespace CmlLib.Launcher
         /// </summary>
         public void DownloadLibraries()
         {
-            using (var wc = new WebClient()) // 웹클라이언트 객체생성, 이벤트등록
+            int index = 0; // 현재 다운로드중인 파일의 순서 (이벤트 생성용)
+            int maxCount = profile.Libraries.Count; // 모든 파일의 갯수
+            foreach (var item in profile.Libraries) // 프로파일의 모든 라이브러리 반복
             {
-                wc.DownloadProgressChanged += Library_DownloadProgressChanged;
-                wc.DownloadFileCompleted += wcd;
-
-                int index = 0; // 현재 다운로드중인 파일의 순서 (이벤트 생성용)
-                int maxCount = profile.Libraries.Count; // 모든 파일의 갯수
-                foreach (var item in profile.Libraries) // 프로파일의 모든 라이브러리 반복
+                try
                 {
-                    try
+                    if (CheckDownloadRequireLibrary(item)) // 파일이 존재하지 않을 때만
                     {
-                        l(MFile.Library, item.Name, maxCount, index); // 이벤트 발생
-                        if (item.IsRequire &&
-                            item.Path != "" &&
-                            !File.Exists(item.Path) &&
-                            item.Url != "") // 파일이 존재하지 않을 때만
-                        {
-                            Directory.CreateDirectory(Path.GetDirectoryName(item.Path)); //파일 다운로드
-                            d(wc, item.Url, item.Path);
-                        }
-                        index++;
+                        Directory.CreateDirectory(Path.GetDirectoryName(item.Path)); //파일 다운로드
+                        web.DownloadFile(item.Url, item.Path);
                     }
-                    catch { }
+
+                    l(MFile.Library, item.Name, maxCount, ++index); // 이벤트 발생
                 }
+                catch { }
             }
         }
 
-        // 아래 코드는 비동기 코드를 동기적으로 실행하는 코드
-
-        bool iscom = false;
-        void d(WebClient wc, string a, string b)
+        private bool CheckDownloadRequireLibrary(MLibrary lib)
         {
-            if (a == null) return;
-
-            iscom = false;
-            wc.DownloadFileAsync(new Uri(a), b);
-            while (!iscom)
-            {
-                Thread.Sleep(50);
-            }
+            return lib.IsRequire
+                && lib.Path != ""
+                && !File.Exists(lib.Path)
+                && lib.Url != "";
         }
-        private void wcd(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
-        {
-            iscom = true;
-        }
-        private void Library_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
-        {
-            ChangeFileProgressEvent(sender, e);
-        }
-
-        ////////////////////////////////////////////////////
 
         /// <summary>
         /// 다운로드 받아야 할 리소스 파일들이 저장된 인덱스 파일을 다운로드합니다.
@@ -111,13 +88,13 @@ namespace CmlLib.Launcher
         {
             string path = Minecraft.Index + profile.AssetId + ".json"; //로컬 인덱스파일의 경로
 
-            if (!File.Exists(path) &&
-                profile.AssetUrl != "") //로컬에 없을때
+            if (!File.Exists(path) && profile.AssetUrl != "") //로컬에 없을때
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path)); //폴더생성
+
                 using (var wc = new WebClient())
                 {
-                    wc.DownloadFile(profile.AssetUrl, path); //파일 다운로드
+                    wc.DownloadFile(profile.AssetUrl, path);
                 }
             }
         }
@@ -137,41 +114,39 @@ namespace CmlLib.Launcher
                 var json = File.ReadAllText(indexpath);
                 var index = JObject.Parse(json);
 
-                try
-                {
-                    if (index["virtual"].ToString().ToLower() == "true") //virtual 이 true 인지 확인
-                        Isvirtual = true;
-                }
-                catch { }
+                if ((index["virtual"]?.ToString()?.ToLower() ?? "false") == "true") //virtual 이 true 인지 확인
+                    Isvirtual = true;
 
-                var list = (JObject)index["objects"]; //리소스 리스트를 생성 ('objects' 오브젝트)
+                var list = (JObject) index["objects"]; //리소스 리스트를 생성
+                var count = list.Count;
+                var i = 0;
 
-                int pi = 0;
                 foreach (var item in list)
                 {
-                    pi++;
-                    l(MFile.Resource, "", list.Count, pi);
-                    JObject job = (JObject)item.Value;
-                    string path = job["hash"].ToString()[0].ToString() + job["hash"].ToString()[1].ToString() + "/" + job["hash"].ToString(); //리소스 경로를 설정 ex) a9\a9ea생략85ad93d
-                    string hashpath = (Minecraft.Assets + "objects\\" + path).Replace("/", "\\"); //해쉬 리소스 경로 설정
-                    string filepath = (Minecraft.Assets + "virtual\\legacy\\" + item.Key).Replace("/", "\\"); //legacy 폴더에 저장할 리소스경로 설정
-                    Directory.CreateDirectory(Path.GetDirectoryName(hashpath)); //폴더생성
+                    JToken job = item.Value;
 
-                    if (!File.Exists(hashpath)) //해쉬 리소스 경로에 파일이 없을때
+                    // download hash resource
+                    var hash = job["hash"]?.ToString();
+                    var hashName = hash.Substring(0, 2) + "\\" + hash;
+                    var hashPath = Minecraft.AssetObject + hashName;
+                    var hashUrl = "http://resources.download.minecraft.net/" + hashName;
+                    Directory.CreateDirectory(Path.GetDirectoryName(hashPath));
+
+                    if (!File.Exists(hashPath))
+                        wc.DownloadFile(hashUrl, hashPath); //다운로드
+
+                    if (Isvirtual) //virtual 이 true 이고 파일이 없을떄
                     {
-                        wc.DownloadFile("http://resources.download.minecraft.net/" + path, hashpath); //다운로드
+                        var resPath = Minecraft.AssetLegacy + item.Key;
+
+                        Directory.CreateDirectory(Path.GetDirectoryName(resPath));
+                        File.Copy(hashPath, resPath, true);
                     }
 
-                    if (Isvirtual && !File.Exists(filepath)) //virtual 이 true 이고 파일이 없을떄
-                    {
-                        Directory.CreateDirectory(Path.GetDirectoryName(filepath));
-                        File.Copy(hashpath, filepath, true); //다운로드
-                    }
+                    l(MFile.Resource, profile.AssetId, count, ++i);
                 }
             }
         }
-
-        bool iscomp = false;
 
         /// <summary>
         /// 마인크래프트를 다운로드합니다.
@@ -180,50 +155,33 @@ namespace CmlLib.Launcher
         {
             if (profile.ClientDownloadUrl == "") return;
 
+            l(MFile.Minecraft, profile.Id, 1, 0);
+
             string id = profile.Id;
             if (!File.Exists(Minecraft.Versions + id + "\\" + id + ".jar")) //파일이 없을때
             {
                 Directory.CreateDirectory(Minecraft.Versions + id); //폴더생성
-                using (var wc = new WebClient())
-                {
-                    iscomp = false;
-                    wc.DownloadProgressChanged += Wc_DownloadProgressChanged;
-                    wc.DownloadFileCompleted += Wc_DownloadFileCompleted;
-                    l(MFile.Minecraft, "", 1, 0);
-                    wc.DownloadFileAsync(new Uri(profile.ClientDownloadUrl), Minecraft.Versions + id + "\\" + id + ".jar");
-
-                    while (!iscomp)
-                    {
-                        Thread.Sleep(100);
-                    }
-                }
+                web.DownloadFile(profile.ClientDownloadUrl, Minecraft.Versions + id + "\\" + id + ".jar");
             }
+
+            l(MFile.Minecraft, profile.Id, 1, 1);
         }
 
-        private void Wc_DownloadFileCompleted(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
+        private void l(MFile file, string name, int max, int value)
         {
-            iscomp = true;
-        }
-
-        private void Wc_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
-        {
-            ChangeFileProgressEvent(sender, e);
-            l(MFile.Minecraft, "", 1, 1);
-        }
-
-        private void l(MFile filetype, string filename, int max, int value)
-        {
-            try
+            var e = new DownloadFileChangedEventArgs()
             {
-                ChangeProgressEvent(new ChangeProgressEventArgs()
-                {
-                    FileKind = filetype,
-                    FileName = filename,
-                    MaxValue = max,
-                    CurrentValue = value
-                });
-            }
-            catch { }
+                FileKind = file,
+                FileName = name,
+                MaxValue = max,
+                CurrentValue = value
+            };
+            ChangeFile?.Invoke(e);
+        }
+
+        private void Web_DownloadProgressChangedEvent(object sender, ProgressChangedEventArgs e)
+        {
+            ChangeProgress?.Invoke(this, e);
         }
     }
 }

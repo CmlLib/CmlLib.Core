@@ -20,7 +20,7 @@ namespace CmlLib.Launcher
         public int ScreenWidth { get; set; } = 0;
         public int ScreenHeight { get; set; } = 0;
 
-        internal void CheckVaild()
+        internal void CheckValid()
         {
             var exMsg = ""; // error message
 

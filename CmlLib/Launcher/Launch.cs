@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Ionic.Zip;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-using Newtonsoft.Json.Linq;
-using Ionic.Zip;
 
 namespace CmlLib.Launcher
 {
@@ -27,7 +27,7 @@ namespace CmlLib.Launcher
 
         public MLaunch(MLaunchOption option)
         {
-            option.CheckVaild();
+            option.CheckValid();
             LaunchOption = option;
         }
 
@@ -49,27 +49,22 @@ namespace CmlLib.Launcher
         /// <returns>만들어진 Process 객체</returns>
         public Process GetProcess(bool isdebug = false)
         {
-            CleanNatives();
-            CreateNatives();
-            return makeProcess(LaunchOption.JavaPath, Minecraft.path, isdebug);
-        }
+            var native = new MNative(LaunchOption);
+            native.CleanNatives();
+            native.CreateNatives();
 
-        // 인수를 만들고 Process 객체를 만듬
-        Process makeProcess(string filename,string work,bool isdebug)
-        {
             string arg = makeArg();
             Process mc = new Process();
-            mc.StartInfo.FileName = filename;
+            mc.StartInfo.FileName = LaunchOption.JavaPath;
             mc.StartInfo.Arguments = arg;
-            mc.StartInfo.WorkingDirectory = work;
+            mc.StartInfo.WorkingDirectory = Minecraft.path;
 
             if (isdebug)
-                System.IO.File.WriteAllText("mc_arg.txt", mc.StartInfo.Arguments);
+                File.WriteAllText("mc_arg.txt", mc.StartInfo.Arguments);
 
             return mc;
         }
 
-        // 인수를 만듬
         string makeArg()
         {
             var profile = LaunchOption.StartProfile;
@@ -179,69 +174,6 @@ namespace CmlLib.Launcher
             return sb.ToString();
         }
 
-        private void CreateNatives()
-        {
-            var path = ExtractNatives(LaunchOption.StartProfile);
-            LaunchOption.StartProfile.NativePath = path;
-
-            if (LaunchOption.BaseProfile != null)
-                ExtractNatives(LaunchOption.BaseProfile, path);
-        }
-
-        /// <summary>
-        /// 네이티브 라이브러리들의 압축을 해제해 랜덤 폴더에 저장합니다.
-        /// </summary>
-        private string ExtractNatives(MProfile profile)
-        {
-            var ran = new Random();
-            int random = ran.Next(10000, 99999); //랜덤숫자 생성
-            string path = Minecraft.Versions + profile.Id + "\\natives-" + random.ToString(); //랜덤 숫자를 만들어 경로생성
-            ExtractNatives(profile, path);
-            return path;
-        }
-
-        /// <summary>
-        /// 네이티브 라이브러리들을 설정한 경로에 압축을 해제해 저장합니다.
-        /// </summary>
-        /// <param name="_path">압축 풀 폴더의 경로</param>
-        private void ExtractNatives(MProfile profile, string path)
-        {
-            Directory.CreateDirectory(path); //폴더생성
-
-            foreach (var item in profile.Libraries) //네이티브 라이브러리 리스트를 foreach 로 하나씩 돌림
-            {
-                try
-                {
-                    if (item.IsNative)
-                    {
-                        using (var zip = ZipFile.Read(item.Path))
-                        {
-                            zip.ExtractAll(path, ExtractExistingFileAction.OverwriteSilently);
-                        }
-                    }
-                }
-                catch { }
-            }
-
-            profile.NativePath = path;
-        }
-
-        /// <summary>
-        /// 저장된 네이티브 라이브러리들을 모두 제거합니다.
-        /// </summary>
-        public void CleanNatives()
-        {
-            try
-            {
-                DirectoryInfo di = new DirectoryInfo(Minecraft.Versions + LaunchOption.StartProfile.Id);
-                foreach (var item in di.GetDirectories("native*")) //native 라는 이름이 포함된 폴더를 모두 가져옴
-                {
-                    DeleteDirectory(item.FullName);
-                }
-            }
-            catch { }
-        }
-
         private void DeleteDirectory(string target_dir)
         {
             string[] files = Directory.GetFiles(target_dir);
@@ -259,22 +191,6 @@ namespace CmlLib.Launcher
             }
 
             Directory.Delete(target_dir, true);
-        }
-
-        [Obsolete("GetProcess 메서드를 이용하세요.")]
-        public Process GetDebugProcess()
-        {
-            var mc = new Process();
-            mc.StartInfo.FileName = "cmd.exe";
-            mc.StartInfo.Arguments = "/c \"java.exe " + makeArg() + "\"";
-            mc.StartInfo.WorkingDirectory = Minecraft.path;
-            return mc;
-        }
-
-        [Obsolete("GetProcess 메서드를 이용하세요.")]
-        public void DebugStart_java_exe(string javafolder)
-        {
-            makeProcess("java.exe", javafolder, true).Start();
         }
     }
 }
