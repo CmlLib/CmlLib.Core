@@ -61,13 +61,13 @@ namespace CmlLib.Launcher
             {
                 try
                 {
-                    if (CheckDownloadRequireLibrary(item)) // 파일이 존재하지 않을 때만
-                    {
-                        Directory.CreateDirectory(Path.GetDirectoryName(item.Path)); //파일 다운로드
-                        web.DownloadFile(item.Url, item.Path);
-                    }
+                if (CheckDownloadRequireLibrary(item)) // 파일이 존재하지 않을 때만
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(item.Path)); //파일 다운로드
+                    web.DownloadFile(item.Url, item.Path);
+                }
 
-                    l(MFile.Library, item.Name, maxCount, ++index); // 이벤트 발생
+                l(MFile.Library, item.Name, maxCount, ++index); // 이벤트 발생
                 }
                 catch { }
             }
@@ -117,7 +117,7 @@ namespace CmlLib.Launcher
                 if ((index["virtual"]?.ToString()?.ToLower() ?? "false") == "true") //virtual 이 true 인지 확인
                     Isvirtual = true;
 
-                var list = (JObject) index["objects"]; //리소스 리스트를 생성
+                var list = (JObject)index["objects"]; //리소스 리스트를 생성
                 var count = list.Count;
                 var i = 0;
 
@@ -139,8 +139,11 @@ namespace CmlLib.Launcher
                     {
                         var resPath = Minecraft.AssetLegacy + item.Key;
 
-                        Directory.CreateDirectory(Path.GetDirectoryName(resPath));
-                        File.Copy(hashPath, resPath, true);
+                        if (!File.Exists(resPath))
+                        {
+                            Directory.CreateDirectory(Path.GetDirectoryName(resPath));
+                            File.Copy(hashPath, resPath, true);
+                        }
                     }
 
                     l(MFile.Resource, profile.AssetId, count, ++i);
