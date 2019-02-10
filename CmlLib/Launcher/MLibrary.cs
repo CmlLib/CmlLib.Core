@@ -19,6 +19,8 @@ namespace CmlLib.Launcher
             {
                 try
                 {
+                    var name = item["name"]?.ToString();
+
                     // FORGE 라이브러리
                     if (item["downloads"] == null)
                     {
@@ -27,25 +29,12 @@ namespace CmlLib.Launcher
                         if (isn)
                             nativeStr = item["natives"]["windows"].ToString();
 
-                        var libName = item["name"]?.ToString();
-                        if (libName == null) continue;
+                        if (name == null) continue;
 
-                        var libPath = MLibraryNameParser.NameToPath(libName, nativeStr);
-
-                        var url = item["url"]?.ToString();
-                        if (url == null)
-                            url = DefaultLibraryServer + libPath;
-                        else if (url.Split('/').Last() == "")
-                            url += libPath;
-
-                        var absoluteLibPath = Minecraft.Library + libPath;
-
-                        list.Add(new MLibrary(isn, libName, absoluteLibPath, url));
+                        list.Add(new MLibrary(name, nativeStr, item));
 
                         continue;
                     }
-
-                    var name = item["name"]?.ToString();
 
                     // NATIVE 라이브러리
                     var classif = item["downloads"]["classifiers"];
@@ -54,18 +43,22 @@ namespace CmlLib.Launcher
                         JObject job = null;
                         bool isgo = true;
 
+                        var nativeId = "";
+
                         if (classif["natives-windows-64"] != null && Environment.Is64BitOperatingSystem)
-                            job = (JObject)classif["natives-windows-64"];
+                            nativeId = "natives-windows-64";
                         else if (classif["natives-windows-32"] != null)
-                            job = (JObject)classif["natives-windows-32"];
+                            nativeId = "natives-windows-32";
                         else if (classif["natives-windows"] != null)
-                            job = (JObject)classif["natives-windows"];
+                            nativeId = "natives-windows";
                         else
                             isgo = false;
 
+                        job = (JObject)classif[nativeId];
+
                         if (isgo)
                         {
-                            var obj = new MLibrary(true, name, job);
+                            var obj = new MLibrary(name, nativeId, job);
                             list.Add(obj);
                         }
                     }
@@ -75,7 +68,8 @@ namespace CmlLib.Launcher
                     if (arti != null)
                     {
                         var job = (JObject)arti;
-                        var obj = new MLibrary(false, name, job);
+
+                        var obj = new MLibrary(name, "", job);
                         list.Add(obj);
                     }
                 }
@@ -85,16 +79,22 @@ namespace CmlLib.Launcher
             return list;
         }
 
-        internal MLibrary(bool isn, string name, JObject job)
+        internal MLibrary(string name, string nativeId, JObject job)
         {
-            IsNative = isn;
-            Name = name;
+            var path = job["path"]?.ToString();
+            if (path == null || path == "")
+                path = MLibraryNameParser.NameToPath(name, nativeId);
 
-            if (job != null)
-            {
-                Path = Minecraft.Library + job["path"]?.ToString();
-                Url = job["url"]?.ToString();
-            }
+            var url = job["url"]?.ToString();
+            if (url == null)
+                url = DefaultLibraryServer + path;
+            else if (url.Split('/').Last() == "")
+                url += path;
+
+            IsNative = (nativeId != "");
+            Name = name;
+            Path = Minecraft.Library + path;
+            Url = url;
         }
 
         internal MLibrary(bool isn, string name, string path, string url)
