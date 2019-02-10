@@ -3,6 +3,7 @@ using System.Threading;
 using System.Windows.Forms;
 using CmlLib.Launcher;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace CmlLibSample
 {
@@ -26,11 +27,11 @@ namespace CmlLibSample
                 form.Show();
                 bool iscom = false;
 
-                java.DownloadProgressChangedEvent += (s, v) =>
+                java.DownloadProgressChanged += (s, v) =>
                 {
                     form.ChangeProgress(v.ProgressPercentage);
                 };
-                java.DownloadCompletedEvent += (t, w) =>
+                java.UnzipCompleted += (t, w) =>
                 {
                     form.Close();
                     this.Show();
@@ -205,9 +206,17 @@ namespace CmlLibSample
                 }
 
                 MLaunch launch = new MLaunch(option);
-                var pro = launch.GetProcess(); // 인수 생성 후 설정된 Process 객체 가져옴
-                System.IO.File.WriteAllText("mcarg.txt", pro.StartInfo.Arguments); // 만들어진 인수 파일로 저장 (디버그용)
-                pro.Start(); // Process 객체로 실행
+
+                if (true)
+                {
+                    StartDebug(launch);
+                }
+                else
+                {
+                    var pro = launch.GetProcess(); // 인수 생성 후 설정된 Process 객체 가져옴
+                    System.IO.File.WriteAllText("mcarg.txt", pro.StartInfo.Arguments); // 만들어진 인수 파일로 저장 (디버그용)
+                    pro.Start(); // Process 객체로 실행
+                }
 
                 this.Invoke((MethodInvoker)delegate
                 {
@@ -257,5 +266,61 @@ namespace CmlLibSample
                 Lv_Status.Text = msg;
             });
         }
+
+        #region DEBUG PROCESS
+
+        private void StartDebug(MLaunch launch)
+        {
+            Console.WriteLine("GameStartMode : Debug");
+
+            var process = launch.GetProcess();
+
+            Console.WriteLine("Trying Write Game Args");
+            try
+            {
+                System.IO.File.WriteAllText("launcher.txt", process.StartInfo.Arguments);
+            }
+            catch
+            {
+                Console.WriteLine("Write Game Args Failed");
+            }
+
+            Console.WriteLine("Setting Debug Process");
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.RedirectStandardError = true;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.EnableRaisingEvents = true;
+            process.ErrorDataReceived += Process_ErrorDataReceived;
+            process.OutputDataReceived += Process_OutputDataReceived;
+
+            Console.WriteLine("Start Debug Process");
+            process.Start();
+            process.BeginErrorReadLine();
+            process.BeginOutputReadLine();
+
+            //Dispatcher.Invoke(new Action(delegate
+            //{
+            //    Console.WriteLine("Start Log Window");
+            //    LogWindow.Log.Show();
+            //}));
+        }
+
+        private void Process_OutputDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            output(e.Data);
+        }
+
+        private void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            output(e.Data);
+        }
+
+        void output(string msg)
+        {
+            msg += "\n";
+            Console.WriteLine(msg);
+        }
+
+        #endregion
     }
 }
