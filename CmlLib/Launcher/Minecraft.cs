@@ -58,8 +58,8 @@ namespace CmlLib.Launcher
 
             _Index = resPath + "\\assets\\indexes";
             _Assets = resPath + "\\assets";
-            AssetObject = Assets + "objects";
-            AssetLegacy = Assets + "virtual\\legacy";
+            _AssetObject = Assets + "objects";
+            _AssetLegacy = Assets + "virtual\\legacy";
 
             Directory.CreateDirectory(Library);
             Directory.CreateDirectory(Versions);
