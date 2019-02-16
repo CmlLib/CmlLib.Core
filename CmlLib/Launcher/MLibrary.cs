@@ -91,15 +91,11 @@ namespace CmlLib.Launcher
             else if (url.Split('/').Last() == "")
                 url += path;
 
+            Hash = job["sha1"]?.ToString() ?? "";
             IsNative = (nativeId != "");
             Name = name;
             Path = Minecraft.Library + path;
             Url = url;
-        }
-
-        internal MLibrary(bool isn, string name, string path, string url)
-        {
-            IsNative = isn; Name = name; Path = path; Url = url;
         }
 
         /// <summary>
@@ -122,6 +118,8 @@ namespace CmlLib.Launcher
         /// 현재 OS 에서 필요한 라이브러리인지 확인
         /// </summary>
         public bool IsRequire { get; private set; } = true;
+
+        public string Hash { get; private set; } = "";
     }
 
     class MLibraryNameParser

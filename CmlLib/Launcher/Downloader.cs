@@ -18,6 +18,8 @@ namespace CmlLib.Launcher
         public event DownloadFileChangedHandler ChangeFile;
         public event ProgressChangedEventHandler ChangeProgress;
 
+        public bool CheckHash { get; set; } = true;
+
         MProfile profile;
         WebDownload web;
 
@@ -61,15 +63,17 @@ namespace CmlLib.Launcher
             {
                 try
                 {
-                if (CheckDownloadRequireLibrary(item)) // 파일이 존재하지 않을 때만
+                    if (CheckDownloadRequireLibrary(item)) // 파일이 존재하지 않을 때만
+                    {
+                        Directory.CreateDirectory(Path.GetDirectoryName(item.Path)); //파일 다운로드
+                        web.DownloadFile(item.Url, item.Path);
+                    } 
+                }
+                catch
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(item.Path)); //파일 다운로드
-                    web.DownloadFile(item.Url, item.Path);
                 }
 
                 l(MFile.Library, item.Name, maxCount, ++index); // 이벤트 발생
-                }
-                catch { }
             }
         }
 
@@ -77,8 +81,8 @@ namespace CmlLib.Launcher
         {
             return lib.IsRequire
                 && lib.Path != ""
-                && !File.Exists(lib.Path)
-                && lib.Url != "";
+                && lib.Url != ""
+                && !CheckFileValidation(lib.Path, lib.Hash);
         }
 
         /// <summary>
@@ -88,7 +92,7 @@ namespace CmlLib.Launcher
         {
             string path = Minecraft.Index + profile.AssetId + ".json"; //로컬 인덱스파일의 경로
 
-            if (!File.Exists(path) && profile.AssetUrl != "") //로컬에 없을때
+            if (profile.AssetUrl != "" && !CheckFileValidation(path, profile.AssetHash))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path)); //폴더생성
 
@@ -185,6 +189,38 @@ namespace CmlLib.Launcher
         private void Web_DownloadProgressChangedEvent(object sender, ProgressChangedEventArgs e)
         {
             ChangeProgress?.Invoke(this, e);
+        }
+
+        private bool CheckFileValidation(string path, string hash)
+        {
+            return File.Exists(path) && CheckSHA1(path, hash);
+        }
+
+        private bool CheckSHA1(string path, string compareHash)
+        {
+            try
+            {
+                if (!CheckHash)
+                    return true;
+
+                if (compareHash == null || compareHash == "")
+                    return true;
+
+                var fileHash = "";
+
+                using (var file = File.OpenRead(path))
+                using (var hasher = new System.Security.Cryptography.SHA1CryptoServiceProvider())
+                {
+                    var binaryHash = hasher.ComputeHash(file);
+                    fileHash = BitConverter.ToString(binaryHash).Replace("-", "").ToLower();
+                }
+
+                return fileHash == compareHash;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

@@ -45,6 +45,7 @@ namespace CmlLib.Launcher
             {
                 profile.AssetId = n(assetindex["id"]?.ToString());
                 profile.AssetUrl = n(assetindex["url"]?.ToString());
+                profile.AssetHash = n(assetindex["sha1"]?.ToString());
             }
 
             profile.ClientDownloadUrl = n(job["downloads"]?["client"]?["url"]?.ToString());
@@ -127,6 +128,7 @@ namespace CmlLib.Launcher
         /// 인덱스 파일의 경로
         /// </summary>
         public string AssetUrl { get; private set; } = "";
+        public string AssetHash { get; private set; } = "";
 
         /// <summary>
         /// 게임 다운로드 경로
