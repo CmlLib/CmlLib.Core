@@ -43,21 +43,23 @@ namespace CmlLib.Launcher
             var assetindex = (JObject)job["assetIndex"];
             if (assetindex != null)
             {
-                profile.AssetId = n(assetindex["id"]?.ToString());
-                profile.AssetUrl = n(assetindex["url"]?.ToString());
-                profile.AssetHash = n(assetindex["sha1"]?.ToString());
+                profile.AssetId = assetindex["id"]?.ToString();
+                profile.AssetUrl = assetindex["url"]?.ToString();
+                profile.AssetHash = assetindex["sha1"]?.ToString();
             }
 
-            profile.ClientDownloadUrl = n(job["downloads"]?["client"]?["url"]?.ToString());
+            var client = job["downloads"]?["client"];
+            if (client != null)
+            {
+                profile.ClientDownloadUrl = client["url"]?.ToString();
+                profile.ClientHash = client["sha1"]?.ToString();
+            }
+
             profile.Libraries = MLibrary.ParseJson((JArray)job["libraries"]);
             profile.MainClass = n(job["mainClass"]?.ToString());
 
-            var ma = job["minecraftArguments"]?.ToString();
-            if (ma != null)
-                profile.MinecraftArguments = ma;
-            var ag = job["arguments"]?.ToString();
-            if (ag != null)
-                profile.Arguments = ag;
+            profile.MinecraftArguments = job["minecraftArguments"]?.ToString();
+            profile.Arguments = job["arguments"]?.ToString();
 
             profile.ReleaseTime = job["releaseTime"]?.ToString();
 
@@ -89,11 +91,6 @@ namespace CmlLib.Launcher
             File.WriteAllText(path + "\\" + profile.Id + ".json", json);
 
             return profile;
-        }
-
-        public void WriteProfile()
-        {
-
         }
 
         static string n(string t)
@@ -134,6 +131,9 @@ namespace CmlLib.Launcher
         /// 게임 다운로드 경로
         /// </summary>
         public string ClientDownloadUrl { get; private set; } = "";
+
+        public string ClientHash { get; private set; } = "";
+
         /// <summary>
         /// 라이브러리 리스트
         /// </summary>
