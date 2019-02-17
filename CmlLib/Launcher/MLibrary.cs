@@ -91,7 +91,7 @@ namespace CmlLib.Launcher
             else if (url.Split('/').Last() == "")
                 url += path;
 
-            Hash = job["sha1"]?.ToString();
+            Hash = job["sha1"]?.ToString() ?? "";
             IsNative = (nativeId != "");
             Name = name;
             Path = Minecraft.Library + path;
