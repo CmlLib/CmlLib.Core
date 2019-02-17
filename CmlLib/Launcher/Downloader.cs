@@ -165,7 +165,8 @@ namespace CmlLib.Launcher
             l(MFile.Minecraft, profile.Id, 1, 0);
 
             string id = profile.Id;
-            if (!File.Exists(Minecraft.Versions + id + "\\" + id + ".jar")) //파일이 없을때
+            var path = Minecraft.Versions + id + "\\" + id + ".jar";
+            if (!CheckFileValidation(path, profile.ClientHash))
             {
                 Directory.CreateDirectory(Minecraft.Versions + id); //폴더생성
                 web.DownloadFile(profile.ClientDownloadUrl, Minecraft.Versions + id + "\\" + id + ".jar");

@@ -48,7 +48,13 @@ namespace CmlLib.Launcher
                 profile.AssetHash = n(assetindex["sha1"]?.ToString());
             }
 
-            profile.ClientDownloadUrl = n(job["downloads"]?["client"]?["url"]?.ToString());
+            var client = job["downloads"]?["client"];
+            if (client != null)
+            {
+                profile.ClientDownloadUrl = client["url"]?.ToString();
+                profile.ClientHash = client["sha1"]?.ToString();
+            }
+
             profile.Libraries = MLibrary.ParseJson((JArray)job["libraries"]);
             profile.MainClass = n(job["mainClass"]?.ToString());
 
@@ -134,6 +140,7 @@ namespace CmlLib.Launcher
         /// 게임 다운로드 경로
         /// </summary>
         public string ClientDownloadUrl { get; private set; } = "";
+        public string ClientHash { get; private set; } = "";
         /// <summary>
         /// 라이브러리 리스트
         /// </summary>
