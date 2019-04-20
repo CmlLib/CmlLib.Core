@@ -58,7 +58,7 @@ namespace CmlLib.Launcher
         public void DownloadLibraries()
         {
             int index = 0; // 현재 다운로드중인 파일의 순서 (이벤트 생성용)
-            int maxCount = profile.Libraries.Count; // 모든 파일의 갯수
+            int maxCount = profile.Libraries.Length; // 모든 파일의 갯수
             foreach (var item in profile.Libraries) // 프로파일의 모든 라이브러리 반복
             {
                 try

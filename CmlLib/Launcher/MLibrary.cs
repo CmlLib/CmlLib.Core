@@ -12,9 +12,9 @@ namespace CmlLib.Launcher
     {
         static string DefaultLibraryServer = "https://libraries.minecraft.net/";
 
-        internal static List<MLibrary> ParseJson(JArray json)
+        internal static MLibrary[] ParseJson(JArray json)
         {
-            var list = new List<MLibrary>();
+            var list = new List<MLibrary>(json.Count);
             foreach (JObject item in json)
             {
                 try
@@ -76,7 +76,7 @@ namespace CmlLib.Launcher
                 catch { }
             }
 
-            return list;
+            return list.ToArray();
         }
 
         internal MLibrary(string name, string nativeId, JObject job)

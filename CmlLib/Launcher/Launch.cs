@@ -68,7 +68,10 @@ namespace CmlLib.Launcher
         string makeArg()
         {
             var profile = LaunchOption.StartProfile;
-            if (LaunchOption.BaseProfile != null)
+
+            var hasBase = LaunchOption.BaseProfile != null;
+
+            if (hasBase)
                 profile = LaunchOption.BaseProfile;
 
             var sb = new StringBuilder();
@@ -81,17 +84,22 @@ namespace CmlLib.Launcher
                 sb.Append(LaunchOption.CustomJavaParameter);
 
             sb.Append(" -Xmx" + LaunchOption.MaximumRamMb + "m");
-            sb.Append(" -Djava.library.path=\"" + LaunchOption.StartProfile.NativePath + "\" -cp ");
+            sb.Append(" -Djava.library.path=\"" + LaunchOption.StartProfile.NativePath + "\"");
+            sb.Append(" -cp ");
 
-            List<MLibrary> libList = new List<MLibrary>();
-            if (LaunchOption.BaseProfile != null)
-                libList.AddRange(LaunchOption.StartProfile.Libraries);
-            libList.AddRange(profile.Libraries);
-
-            foreach (var item in libList)
+            foreach (var item in profile.Libraries)
             {
                 if (!item.IsNative)
                     sb.Append("\"" + item.Path.Replace("/", "\\") + "\";");
+            }
+
+            if (hasBase)
+            {
+                foreach (var item in LaunchOption.StartProfile.Libraries)
+                {
+                    if (!item.IsNative)
+                        sb.Append("\"" + item.Path.Replace("/", "\\") + "\";");
+                }
             }
 
             ///// JAVA ARG END /////
@@ -130,19 +138,16 @@ namespace CmlLib.Launcher
                 {
                     if (!(item is JObject))
                     {
-                        var str = item.ToString();
+                        var argStr = item.ToString();
 
-                        if (str[0] != '$')
-                            sb.Append(str);
+                        if (argStr[0] != '$')
+                            sb.Append(argStr);
 
-                        foreach (var arg in argDicts)
-                        {
-                            if (arg.Key == str)
-                            {
-                                sb.Append(arg.Value);
-                                break;
-                            }
-                        }
+                        var argValue = "";
+                        if (argDicts.TryGetValue(argStr, out argValue))
+                            sb.Append(argValue);
+                        else
+                            sb.Append(argStr);
 
                         sb.Append(" ");
                     }
@@ -151,11 +156,14 @@ namespace CmlLib.Launcher
             }
             else // MinecraftArguments 를 사용하는 1.3 이전의 버전
             {
-                sb.Append(LaunchOption.StartProfile.MinecraftArguments);
+                var gameArgBuilder = new StringBuilder(LaunchOption.StartProfile.MinecraftArguments);
+
                 foreach (var item in argDicts)
                 {
-                    sb.Replace(item.Key, item.Value);
+                    gameArgBuilder.Replace(item.Key, item.Value);
                 }
+
+                sb.Append(gameArgBuilder.ToString());
             }
 
             // 추가 옵션들 설정

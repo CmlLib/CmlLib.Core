@@ -144,7 +144,7 @@ namespace CmlLib.Launcher
         /// <summary>
         /// 라이브러리 리스트
         /// </summary>
-        public List<MLibrary> Libraries { get; private set; }
+        public MLibrary[] Libraries { get; private set; }
         /// <summary>
         /// 메인 클래스
         /// </summary>
