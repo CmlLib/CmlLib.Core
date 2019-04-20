@@ -68,6 +68,7 @@ namespace CmlLib.Launcher
             profile.ReleaseTime = job["releaseTime"]?.ToString();
 
             var ype = job["type"]?.ToString();
+            profile.TypeStr = ype;
             switch (ype)
             {
                 case "release":
@@ -165,6 +166,8 @@ namespace CmlLib.Launcher
         /// 프로파일의 종류
         /// </summary>
         public MProfileType Type { get; private set; } = MProfileType.Unknown;
+
+        public string TypeStr { get; private set; } = "";
 
         /// <summary>
         /// 포지 프로파일일때 베이스가 되는 프로파일의 ID

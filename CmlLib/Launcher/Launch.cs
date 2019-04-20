@@ -127,7 +127,7 @@ namespace CmlLib.Launcher
             };
 
             if (LaunchOption.LauncherName == "")
-                argDicts.Add("${version_type}", "release");
+                argDicts.Add("${version_type}", profile.TypeStr);
             else
                 argDicts.Add("${version_type}", LaunchOption.LauncherName);
 
@@ -142,12 +142,14 @@ namespace CmlLib.Launcher
 
                         if (argStr[0] != '$')
                             sb.Append(argStr);
-
-                        var argValue = "";
-                        if (argDicts.TryGetValue(argStr, out argValue))
-                            sb.Append(argValue);
                         else
-                            sb.Append(argStr);
+                        {
+                            var argValue = "";
+                            if (argDicts.TryGetValue(argStr, out argValue))
+                                sb.Append(handleEmpty(argValue));
+                            else
+                                sb.Append(argStr);
+                        }
 
                         sb.Append(" ");
                     }
@@ -160,7 +162,7 @@ namespace CmlLib.Launcher
 
                 foreach (var item in argDicts)
                 {
-                    gameArgBuilder.Replace(item.Key, item.Value);
+                    gameArgBuilder.Replace(item.Key, handleEmpty(item.Value));
                 }
 
                 sb.Append(gameArgBuilder.ToString());
@@ -199,6 +201,14 @@ namespace CmlLib.Launcher
             }
 
             Directory.Delete(target_dir, true);
+        }
+
+        private string handleEmpty(string input)
+        {
+            if (input.Contains(" "))
+                return "\"" + input + "\"";
+            else
+                return input;
         }
     }
 }
