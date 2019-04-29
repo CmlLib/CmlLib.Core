@@ -115,8 +115,8 @@ namespace CmlLib.Launcher
             {
                 { "${auth_player_name}", LaunchOption.Session.Username },
                 { "${version_name}", LaunchOption.StartProfile.Id },
-                { "${game_directory}", "\"" + Minecraft._Path + "\"" },
-                { "${assets_root}", "\"" + Minecraft._Assets + "\"" },
+                { "${game_directory}", Minecraft._Path },
+                { "${assets_root}", Minecraft._Assets },
                 { "${assets_index_name}", profile.AssetId },
                 { "${auth_uuid}", LaunchOption.Session.UUID },
                 { "${auth_access_token}", LaunchOption.Session.AccessToken },
