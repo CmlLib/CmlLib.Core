@@ -52,25 +52,13 @@ namespace CmlLib.Launcher
         }
     }
 
-    /// <summary>
-    /// 모장 서버에 로그인을 요청합니다.
-    /// </summary>
     public class MLogin
     {
-        /// <summary>
-        /// 로그인 세션이 저장되는 기본 폴더입니다.
-        /// </summary>
+
         public static readonly string DefaultLoginSessionFile = Minecraft.DefaultPath + "\\logintoken.json";
 
-        /// <summary>
-        /// DefaultLoginSessionFile 필드의 값으로 로그인 세션을 저장합니다.
-        /// </summary>
         public MLogin() : this(DefaultLoginSessionFile) { }
 
-        /// <summary>
-        /// 로그인 세션을 저장할 파일을 지정하고 로그인 객체를 생성합니다.
-        /// </summary>
-        /// <param name="tokenpath">세션 저장할 파일 경로</param>
         public MLogin(string tokenpath)
         {
             TokenFile = tokenpath;
@@ -84,12 +72,12 @@ namespace CmlLib.Launcher
             WriteLogin(result.Username, result.AccessToken, result.UUID, result.ClientToken);
         }
 
+        // Save Login Session
         private void WriteLogin(string us, string se, string id, string ct)
         {
             if (!SaveSession) return;
 
-            //로그인 정보를 저장
-            JObject jobj = new JObject(); //json 데이터 작성
+            JObject jobj = new JObject(); // create session json
             jobj.Add("username", us);
             jobj.Add("session", se);
             jobj.Add("uuid", id);
@@ -100,21 +88,21 @@ namespace CmlLib.Launcher
             File.WriteAllText(TokenFile,jobj.ToString() , Encoding.UTF8);
         }
 
-        private MSession GetLocalToken()
+        public MSession GetLocalToken()
         {
             MSession session;
 
-            if (!File.Exists(TokenFile)) //로그인 정보가 없을경우
+            if (!File.Exists(TokenFile)) // no session data
             {
-                var ClientToken = Guid.NewGuid().ToString().Replace("-", "");      //새로운 클라이언트 토큰 생성
+                var ClientToken = Guid.NewGuid().ToString().Replace("-", ""); // create new clienttoken
 
                 session = MSession.createEmpty();
                 session.ClientToken = ClientToken;
 
                 WriteLogin(session);
             }
-            else
-            {   //로그인 정보가 남아있을경우 클라이언트 토큰 불러옴
+            else // exists session data
+            {
                 var filedata = File.ReadAllText(TokenFile, Encoding.UTF8);
                 try
                 {
@@ -150,66 +138,70 @@ namespace CmlLib.Launcher
             return res;
         }
 
-        public MSession Authenticate(string id, string pw) //로그인
+        public MSession Authenticate(string id, string pw)
         {
-            try
+            MSession result = new MSession();
+
+            string ClientToken = GetLocalToken().ClientToken;
+
+            var job = new JObject
             {
-                MSession result = new MSession();
+                { "username", id },
+                { "password", pw },
+                { "clientToken", ClientToken },
 
-                string ClientToken = GetLocalToken().ClientToken;
-                string Response = "";
-
-                var req = "{ \"agent\" : { \"name\" : \"Minecraft\" , \"version\" : 1 }, \"username\" : \"" + id + "\", \"password\" : \"" + pw + "\", \"clientToken\" : \"" + ClientToken + "\"}";
-                var resHeader = mojangRequest("authenticate", req);
-
-                using (var res = new StreamReader(resHeader.GetResponseStream()))
-                {
-                    Response = res.ReadToEnd(); //받아옴
-
-                    result._RawResponse = Response;
-
-                    if ((int)(resHeader).StatusCode == 200) //ResultCode 가 200 (성공) 일때만
+                { "agent", new JObject
                     {
-                        var jObj = JObject.Parse(Response); //json 파싱
-                        result.AccessToken = jObj["accessToken"].ToString();
-                        result.AccessToken = jObj["accessToken"].ToString();
-                        result.UUID = jObj["selectedProfile"]["id"].ToString();
-                        result.Username = jObj["selectedProfile"]["name"].ToString();
-                        result.ClientToken = ClientToken;
-
-                        WriteLogin(result); //로그인 정보 쓰기
-                        result.Result = MLoginResult.Success;
+                        { "name", "Minecraft" },
+                        { "version", 1 }
                     }
-                    else //로그인이 실패하였을때
-                    {
-                        var json = JObject.Parse(Response); //에러메세지 불러옴
-                        var msg = json["error"]?.ToString();
-
-                        switch (msg) //메세지를 상황에 맞게 바꿈
-                        {
-                            case "Method Not Allowed":
-                            case "Not Found":
-                            case "Unsupported Media Type":
-                                result.Result = MLoginResult.BadRequest;
-                                break;
-                            case "IllegalArgumentException":
-                            case "ForbiddenOperationException":
-                                result.Result = MLoginResult.WrongAccount;
-                                break;
-                            default:
-                                result.Result = MLoginResult.UnknownError;
-                                break;
-                        }
-                    }
-
-                    return result;
                 }
-            }
-            catch //예외발생
+            };
+
+            var resHeader = mojangRequest("authenticate", job.ToString());
+
+            using (var res = new StreamReader(resHeader.GetResponseStream()))
             {
-                var o = new MSession();
-                o.Result = MLoginResult.UnknownError;
-                return o;
+                var Response = res.ReadToEnd();
+                
+                result.ClientToken = ClientToken;
+
+                if (resHeader.StatusCode == HttpStatusCode.OK) // ResultCode == 200
+                {
+                    var jObj = JObject.Parse(Response); //json parse
+                    result.AccessToken = jObj["accessToken"].ToString();
+                    result.UUID = jObj["selectedProfile"]["id"].ToString();
+                    result.Username = jObj["selectedProfile"]["name"].ToString();
+
+                    WriteLogin(result); //로그인 정보 쓰기
+                    result.Result = MLoginResult.Success;
+                }
+                else //로그인이 실패하였을때
+                {
+                    var json = JObject.Parse(Response); 
+
+                    var error = json["error"]?.ToString(); // error type
+                    result._RawResponse = Response;
+                    result.Message = json["message"]?.ToString() ?? ""; // detail error message
+
+                    switch (error)
+                    {
+                        case "Method Not Allowed":
+                        case "Not Found":
+                        case "Unsupported Media Type":
+                            result.Result = MLoginResult.BadRequest;
+                            break;
+                        case "IllegalArgumentException":
+                        case "ForbiddenOperationException":
+                            result.Result = MLoginResult.WrongAccount;
+                            break;
+                        default:
+                            result.Result = MLoginResult.UnknownError;
+                            break;
+                    }
+                }
+
+                return result;
             }
         }
 
@@ -231,18 +223,19 @@ namespace CmlLib.Launcher
             {
                 var session = GetLocalToken();
 
-                JObject selectedProfile = new JObject();
-                selectedProfile.Add("id", session.UUID); //uuid 추가
-                selectedProfile.Add("name", session.Username); //유저네임 추가
+                var req = new JObject
+                {
+                    { "accessToken", session.AccessToken },
+                    { "clientToken", session.ClientToken },
+                    { "selectedProfile", new JObject()
+                        {
+                            { "id", session.UUID },
+                            { "name", session.Username }
+                        }
+                    }
+                };
 
-                JObject req = new JObject
-                    {
-                        { "accessToken", session.AccessToken }, //새로고침할 토큰 (오래된 토큰)
-                        { "clientToken", session.ClientToken }, //클라이언트 고유 토큰
-                        { "selectedProfile", selectedProfile } //////
-                    };
-
-                var resHeader = mojangRequest("refresh", req.ToString()); //응답 가져오기
+                var resHeader = mojangRequest("refresh", req.ToString());
                 using (var res = new StreamReader(resHeader.GetResponseStream()))
                 {
                     var response = res.ReadToEnd();
@@ -276,16 +269,16 @@ namespace CmlLib.Launcher
             {
                 var session = GetLocalToken();
 
-                JObject job = new JObject();
-                job.Add("accessToken", session.AccessToken);
-                job.Add("clientToken", session.ClientToken);
+                JObject job = new JObject
+                {
+                    { "accessToken", session.AccessToken },
+                    { "clientToken", session.ClientToken }
+                };
 
-                var resHeader = mojangRequest("validate",job.ToString()); //리스폰 데이터 받아오기
+                var resHeader = mojangRequest("validate", job.ToString());
                 using (var res = new StreamReader(resHeader.GetResponseStream()))
                 {
-                    int ResultCode = (int)((HttpWebResponse)resHeader).StatusCode;
-
-                    if (ResultCode == 204)
+                    if (resHeader.StatusCode == HttpStatusCode.NoContent) // StatusCode == 204
                     {
                         result.Result = MLoginResult.Success;
                         result.AccessToken = session.AccessToken;
@@ -311,16 +304,30 @@ namespace CmlLib.Launcher
                 File.Delete(TokenFile);
         }
 
-        public void Invalidate()
+        public bool Invalidate()
         {
-            var result = new MSession();
             var session = GetLocalToken();
 
-            var job = new JObject();
-            job.Add("accessToken",session.AccessToken);
-            job.Add("clientToken", session.ClientToken);
+            var job = new JObject
+            {
+                { "accessToken", session.AccessToken },
+                { "clientToken", session.ClientToken }
+            };
 
-            mojangRequest("signout", job.ToString());
+            var res = mojangRequest("invalidate", job.ToString());
+            return res.StatusCode == HttpStatusCode.OK; // 200
+        }
+
+        public bool Signout(string id, string pw)
+        {
+            var job = new JObject
+            {
+                { "username", id },
+                { "password", pw }
+            };
+
+            var res = mojangRequest("signout", job.ToString());
+            return res.StatusCode == HttpStatusCode.NoContent; // 204
         }
     }
 
