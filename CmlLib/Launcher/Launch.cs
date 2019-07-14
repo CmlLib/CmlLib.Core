@@ -87,12 +87,6 @@ namespace CmlLib.Launcher
             sb.Append(" -Djava.library.path=\"" + LaunchOption.StartProfile.NativePath + "\"");
             sb.Append(" -cp ");
 
-            foreach (var item in profile.Libraries)
-            {
-                if (!item.IsNative)
-                    sb.Append("\"" + item.Path.Replace("/", "\\") + "\";");
-            }
-
             if (hasBase)
             {
                 foreach (var item in LaunchOption.StartProfile.Libraries)
@@ -100,6 +94,12 @@ namespace CmlLib.Launcher
                     if (!item.IsNative)
                         sb.Append("\"" + item.Path.Replace("/", "\\") + "\";");
                 }
+            }
+
+            foreach (var item in profile.Libraries)
+            {
+                if (!item.IsNative)
+                    sb.Append("\"" + item.Path.Replace("/", "\\") + "\";");
             }
 
             ///// JAVA ARG END /////
