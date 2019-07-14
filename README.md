@@ -52,7 +52,8 @@ You should write this code before work.
 
       Minecraft.Initialize("GAME_DIRECTORY");
 
-It set Game Directory that is used to download game files, load profiles, save login session, Launch, etc...
+It set Game Directory that is used to download game files, load profiles, save login session, Launch, etc...  
+**DO NOT USE Relative Path. Only use abstract path.**
 
 #### 3. Login
 
