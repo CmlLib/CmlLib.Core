@@ -48,16 +48,17 @@
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.progressBar2 = new System.Windows.Forms.ProgressBar();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.Txt_JavaArgs = new System.Windows.Forms.TextBox();
+            this.Txt_ScHt = new System.Windows.Forms.TextBox();
+            this.Txt_ScWd = new System.Windows.Forms.TextBox();
+            this.label11 = new System.Windows.Forms.Label();
+            this.label10 = new System.Windows.Forms.Label();
+            this.label9 = new System.Windows.Forms.Label();
             this.Txt_ServerIp = new System.Windows.Forms.TextBox();
             this.Txt_LauncherName = new System.Windows.Forms.TextBox();
             this.label8 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
-            this.label9 = new System.Windows.Forms.Label();
-            this.label10 = new System.Windows.Forms.Label();
-            this.label11 = new System.Windows.Forms.Label();
-            this.Txt_ScWd = new System.Windows.Forms.TextBox();
-            this.Txt_ScHt = new System.Windows.Forms.TextBox();
-            this.Txt_JavaArgs = new System.Windows.Forms.TextBox();
+            this.button2 = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -257,6 +258,54 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Option (not required)";
             // 
+            // Txt_JavaArgs
+            // 
+            this.Txt_JavaArgs.Location = new System.Drawing.Point(133, 131);
+            this.Txt_JavaArgs.Name = "Txt_JavaArgs";
+            this.Txt_JavaArgs.Size = new System.Drawing.Size(225, 21);
+            this.Txt_JavaArgs.TabIndex = 7;
+            // 
+            // Txt_ScHt
+            // 
+            this.Txt_ScHt.Location = new System.Drawing.Point(133, 104);
+            this.Txt_ScHt.Name = "Txt_ScHt";
+            this.Txt_ScHt.Size = new System.Drawing.Size(225, 21);
+            this.Txt_ScHt.TabIndex = 6;
+            // 
+            // Txt_ScWd
+            // 
+            this.Txt_ScWd.Location = new System.Drawing.Point(133, 77);
+            this.Txt_ScWd.Name = "Txt_ScWd";
+            this.Txt_ScWd.Size = new System.Drawing.Size(225, 21);
+            this.Txt_ScWd.TabIndex = 5;
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(13, 134);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(114, 12);
+            this.label11.TabIndex = 4;
+            this.label11.Text = "Custom Java Arg : ";
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(31, 107);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(96, 12);
+            this.label10.TabIndex = 3;
+            this.label10.Text = "Screen Height : ";
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(36, 80);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(91, 12);
+            this.label9.TabIndex = 2;
+            this.label9.Text = "Screen Width : ";
+            // 
             // Txt_ServerIp
             // 
             this.Txt_ServerIp.Location = new System.Drawing.Point(133, 48);
@@ -289,59 +338,22 @@
             this.label7.TabIndex = 0;
             this.label7.Text = "Launcher Name : ";
             // 
-            // label9
+            // button2
             // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(36, 80);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(91, 12);
-            this.label9.TabIndex = 2;
-            this.label9.Text = "Screen Width : ";
-            // 
-            // label10
-            // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(31, 107);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(96, 12);
-            this.label10.TabIndex = 3;
-            this.label10.Text = "Screen Height : ";
-            // 
-            // label11
-            // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(13, 134);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(114, 12);
-            this.label11.TabIndex = 4;
-            this.label11.Text = "Custom Java Arg : ";
-            // 
-            // Txt_ScWd
-            // 
-            this.Txt_ScWd.Location = new System.Drawing.Point(133, 77);
-            this.Txt_ScWd.Name = "Txt_ScWd";
-            this.Txt_ScWd.Size = new System.Drawing.Size(225, 21);
-            this.Txt_ScWd.TabIndex = 5;
-            // 
-            // Txt_ScHt
-            // 
-            this.Txt_ScHt.Location = new System.Drawing.Point(133, 104);
-            this.Txt_ScHt.Name = "Txt_ScHt";
-            this.Txt_ScHt.Size = new System.Drawing.Size(225, 21);
-            this.Txt_ScHt.TabIndex = 6;
-            // 
-            // Txt_JavaArgs
-            // 
-            this.Txt_JavaArgs.Location = new System.Drawing.Point(133, 131);
-            this.Txt_JavaArgs.Name = "Txt_JavaArgs";
-            this.Txt_JavaArgs.Size = new System.Drawing.Size(225, 21);
-            this.Txt_JavaArgs.TabIndex = 7;
+            this.button2.Location = new System.Drawing.Point(285, 4);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(90, 23);
+            this.button2.TabIndex = 14;
+            this.button2.Text = "Login Option";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.Button2_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(409, 447);
+            this.ClientSize = new System.Drawing.Size(413, 447);
+            this.Controls.Add(this.button2);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.progressBar2);
             this.Controls.Add(this.progressBar1);
@@ -392,6 +404,7 @@
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.Button button2;
     }
 }
 

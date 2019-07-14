@@ -109,6 +109,7 @@ namespace CmlLibSample
             Btn_Login.Enabled = false;
             if (Txt_Pw.Text == "")
             {
+                //MessageBox.Show("배포용. 복돌기능 막혀잇습니다.");
                 session = MSession.GetOfflineSession(Txt_Email.Text);
                 MessageBox.Show("Offline login Success : " + Txt_Email.Text);
             }
@@ -322,5 +323,11 @@ namespace CmlLibSample
         }
 
         #endregion
+
+        private void Button2_Click(object sender, EventArgs e)
+        {
+            var form3 = new Form3();
+            form3.Show();
+        }
     }
 }
