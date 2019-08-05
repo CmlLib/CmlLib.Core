@@ -10,6 +10,7 @@ namespace CmlLib.Launcher
     /// </summary>
     public class MLibrary
     {
+        public static bool CheckOSRules = true; // temp code. if your os is not windows, change this to false;
         static string DefaultLibraryServer = "https://libraries.minecraft.net/";
 
         internal static MLibrary[] ParseJson(JArray json)
@@ -21,7 +22,21 @@ namespace CmlLib.Launcher
                 {
                     var name = item["name"]?.ToString();
 
-                    // FORGE 라이브러리
+                    // check rules array
+                    var rules = item["rules"];
+                    if (CheckOSRules && rules != null)
+                    {
+                        var isRequire = checkAllowLibrary((JArray)rules);
+
+                        //debug
+                        //Console.WriteLine(rules.ToString());
+                        //Console.WriteLine(isRequire);
+
+                        if (!isRequire)
+                            continue;
+                    }
+
+                    // FORGE library
                     if (item["downloads"] == null)
                     {
                         bool isn = item["natives"]?["windows"] != null;
@@ -36,7 +51,7 @@ namespace CmlLib.Launcher
                         continue;
                     }
 
-                    // NATIVE 라이브러리
+                    // NATIVE library
                     var classif = item["downloads"]["classifiers"];
                     if (classif != null)
                     {
@@ -63,7 +78,7 @@ namespace CmlLib.Launcher
                         }
                     }
 
-                    // 일반 LIBRARY
+                    // COMMON library
                     var arti = item["downloads"]["artifact"];
                     if (arti != null)
                     {
@@ -77,6 +92,45 @@ namespace CmlLib.Launcher
             }
 
             return list.ToArray();
+        }
+
+        internal static bool checkAllowLibrary(JArray arr)
+        {
+            foreach (JObject job in arr)
+            {
+                var action = true; // true : "allow", false : "disallow"
+                var containWindow = true; // if os array contains "windows"
+
+                foreach (var item in job)
+                {
+                    // action
+                    if (item.Key == "action")
+                        action = (item.Value.ToString() == "allow" ? true : false);
+
+                    // os (containWindow)
+                    else if (item.Key == "os")
+                    {
+                        foreach (var os in (JObject)item.Value)
+                        {
+                            if (os.Key == "name" && os.Value.ToString() == "windows")
+                            {
+                                containWindow = true;
+                                break;
+                            }
+                        }
+                        containWindow = false;
+                    }
+                }
+
+                if (!action && containWindow)
+                    return false;
+                else if (action && containWindow)
+                    return true;
+                else if (action && !containWindow)
+                    return false;
+            }
+
+            return true;
         }
 
         internal MLibrary(string name, string nativeId, JObject job)
