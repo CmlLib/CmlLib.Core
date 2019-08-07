@@ -167,4 +167,4 @@ Set launch options, and Launch it!
 
 #### 8. Launch Forge
 
-goto [wiki](https://merong)
+goto [wiki](https://github.com/AlphaBs/MinecraftLauncherLibrary/wiki/Launch-forge)
