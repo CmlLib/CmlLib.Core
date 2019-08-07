@@ -10,147 +10,9 @@ namespace CmlLib.Launcher
     /// </summary>
     public class MLibrary
     {
-        public static bool CheckOSRules = true; // temp code. if your os is not windows, change this to false;
-        static string DefaultLibraryServer = "https://libraries.minecraft.net/";
+        // class structure
 
-        internal static MLibrary[] ParseJson(JArray json)
-        {
-            var list = new List<MLibrary>(json.Count);
-            foreach (JObject item in json)
-            {
-                try
-                {
-                    var name = item["name"]?.ToString();
-
-                    // check rules array
-                    var rules = item["rules"];
-                    if (CheckOSRules && rules != null)
-                    {
-                        var isRequire = checkAllowLibrary((JArray)rules);
-
-                        //debug
-                        //Console.WriteLine(rules.ToString());
-                        //Console.WriteLine(isRequire);
-
-                        if (!isRequire)
-                            continue;
-                    }
-
-                    // FORGE library
-                    if (item["downloads"] == null)
-                    {
-                        bool isn = item["natives"]?["windows"] != null;
-                        var nativeStr = "";
-                        if (isn)
-                            nativeStr = item["natives"]["windows"].ToString();
-
-                        if (name == null) continue;
-
-                        list.Add(new MLibrary(name, nativeStr, item));
-
-                        continue;
-                    }
-
-                    // NATIVE library
-                    var classif = item["downloads"]["classifiers"];
-                    if (classif != null)
-                    {
-                        JObject job = null;
-                        bool isgo = true;
-
-                        var nativeId = "";
-
-                        if (classif["natives-windows-64"] != null && Environment.Is64BitOperatingSystem)
-                            nativeId = "natives-windows-64";
-                        else if (classif["natives-windows-32"] != null)
-                            nativeId = "natives-windows-32";
-                        else if (classif["natives-windows"] != null)
-                            nativeId = "natives-windows";
-                        else
-                            isgo = false;
-
-                        job = (JObject)classif[nativeId];
-
-                        if (isgo)
-                        {
-                            var obj = new MLibrary(name, nativeId, job);
-                            list.Add(obj);
-                        }
-                    }
-
-                    // COMMON library
-                    var arti = item["downloads"]["artifact"];
-                    if (arti != null)
-                    {
-                        var job = (JObject)arti;
-
-                        var obj = new MLibrary(name, "", job);
-                        list.Add(obj);
-                    }
-                }
-                catch { }
-            }
-
-            return list.ToArray();
-        }
-
-        internal static bool checkAllowLibrary(JArray arr)
-        {
-            foreach (JObject job in arr)
-            {
-                var action = true; // true : "allow", false : "disallow"
-                var containWindow = true; // if os array contains "windows"
-
-                foreach (var item in job)
-                {
-                    // action
-                    if (item.Key == "action")
-                        action = (item.Value.ToString() == "allow" ? true : false);
-
-                    // os (containWindow)
-                    else if (item.Key == "os")
-                    {
-                        foreach (var os in (JObject)item.Value)
-                        {
-                            if (os.Key == "name" && os.Value.ToString() == "windows")
-                            {
-                                containWindow = true;
-                                break;
-                            }
-                        }
-                        containWindow = false;
-                    }
-                }
-
-                if (!action && containWindow)
-                    return false;
-                else if (action && containWindow)
-                    return true;
-                else if (action && !containWindow)
-                    return false;
-            }
-
-            return true;
-        }
-
-        internal MLibrary(string name, string nativeId, JObject job)
-        {
-            var path = job["path"]?.ToString();
-            if (path == null || path == "")
-                path = MLibraryNameParser.NameToPath(name, nativeId);
-
-            var url = job["url"]?.ToString();
-            if (url == null)
-                url = DefaultLibraryServer + path;
-            else if (url.Split('/').Last() == "")
-                url += path;
-
-            Hash = job["sha1"]?.ToString() ?? "";
-            IsNative = (nativeId != "");
-            Name = name;
-            Path = Minecraft.Library + path;
-            Url = url;
-        }
+        private MLibrary() { }
 
         /// <summary>
         /// true 이면 네이티브 라이브러리, 아니면 일반 라이브러리입니다.
@@ -174,35 +36,191 @@ namespace CmlLib.Launcher
         public bool IsRequire { get; private set; } = true;
 
         public string Hash { get; private set; } = "";
-    }
 
-    class MLibraryNameParser
-    {
-        public static string NameToPath(string name, string native)
+        // class builder
+        internal class Parser
         {
-            try
-            {
-                string[] tmp = name.Split(':');
-                string front = tmp[0].Replace('.', '/');
-                string back = "";
+            public static bool CheckOSRules = true;
+            static string DefaultLibraryServer = "https://libraries.minecraft.net/";
 
-                for (int i = 1; i <= tmp.Length - 1; i++)
-                {
-                    if (i == tmp.Length - 1)
-                        back += tmp[i];
-                    else
-                        back += tmp[i] + ":";
-                }
-                string libpath = front + "/" + back.Replace(':', '/') + "/" + (back.Replace(':', '-'));
-                if (native != "")
-                    libpath += "-" + native + ".jar";
-                else
-                    libpath += ".jar";
-                return libpath;
-            }
-            catch
+            public static MLibrary[] ParseJson(JArray json)
             {
-                return "";
+                var list = new List<MLibrary>(json.Count);
+                foreach (JObject item in json)
+                {
+                    try
+                    {
+                        var name = item["name"]?.ToString();
+
+                        // check rules array
+                        var rules = item["rules"];
+                        if (CheckOSRules && rules != null)
+                        {
+                            var isRequire = checkAllowLibrary((JArray)rules);
+
+                            if (!isRequire)
+                                continue;
+                        }
+
+                        // FORGE library
+                        if (item["downloads"] == null)
+                        {
+                            bool isn = item["natives"]?["windows"] != null;
+                            var nativeStr = "";
+                            if (isn)
+                                nativeStr = item["natives"]["windows"].ToString();
+
+                            if (name == null) continue;
+
+                            list.Add(createMLibrary(name, nativeStr, item));
+
+                            continue;
+                        }
+
+                        // NATIVE library
+                        var classif = item["downloads"]["classifiers"];
+                        if (classif != null)
+                        {
+                            JObject job = null;
+                            bool isgo = true;
+
+                            var nativeId = "";
+
+                            if (classif["natives-windows-64"] != null && Environment.Is64BitOperatingSystem)
+                                nativeId = "natives-windows-64";
+                            else if (classif["natives-windows-32"] != null)
+                                nativeId = "natives-windows-32";
+                            else if (classif["natives-windows"] != null)
+                                nativeId = "natives-windows";
+                            else
+                                isgo = false;
+
+                            job = (JObject)classif[nativeId];
+
+                            if (isgo)
+                            {
+                                var obj = createMLibrary(name, nativeId, job);
+                                list.Add(obj);
+                            }
+                        }
+
+                        // COMMON library
+                        var arti = item["downloads"]["artifact"];
+                        if (arti != null)
+                        {
+                            var job = (JObject)arti;
+
+                            var obj = createMLibrary(name, "", job);
+                            list.Add(obj);
+                        }
+                    }
+                    catch { }
+                }
+
+                return list.ToArray();
+            }
+
+            private static bool checkAllowLibrary(JArray arr)
+            {
+                var osName = getOSName();
+
+                foreach (JObject job in arr)
+                {
+                    var action = true; // true : "allow", false : "disallow"
+                    var containCurrentOS = true; // if 'os' JArray contains current os name
+
+                    foreach (var item in job)
+                    {
+                        // action
+                        if (item.Key == "action")
+                            action = (item.Value.ToString() == "allow" ? true : false);
+
+                        // os (containCurrentOS)
+                        else if (item.Key == "os")
+                        {
+                            foreach (var os in (JObject)item.Value)
+                            {
+                                if (os.Key == "name" && os.Value.ToString() == osName)
+                                {
+                                    containCurrentOS = true;
+                                    break;
+                                }
+                            }
+                            containCurrentOS = false;
+                        }
+                    }
+
+                    if (!action && containCurrentOS)
+                        return false;
+                    else if (action && containCurrentOS)
+                        return true;
+                    else if (action && !containCurrentOS)
+                        return false;
+                }
+
+                return true;
+            }
+
+            private static string getOSName()
+            {
+                var osType = Environment.OSVersion.Platform;
+
+                if (osType == PlatformID.MacOSX)
+                    return "osx";
+                else if (osType == PlatformID.Unix)
+                    return "linux";
+                else
+                    return "windows";
+            }
+
+            private static string NameToPath(string name, string native)
+            {
+                try
+                {
+                    string[] tmp = name.Split(':');
+                    string front = tmp[0].Replace('.', '/');
+                    string back = "";
+
+                    for (int i = 1; i <= tmp.Length - 1; i++)
+                    {
+                        if (i == tmp.Length - 1)
+                            back += tmp[i];
+                        else
+                            back += tmp[i] + ":";
+                    }
+                    string libpath = front + "/" + back.Replace(':', '/') + "/" + (back.Replace(':', '-'));
+                    if (native != "")
+                        libpath += "-" + native + ".jar";
+                    else
+                        libpath += ".jar";
+                    return libpath;
+                }
+                catch
+                {
+                    return "";
+                }
+            }
+
+            private static MLibrary createMLibrary(string name, string nativeId, JObject job)
+            {
+                var path = job["path"]?.ToString();
+                if (path == null || path == "")
+                    path = NameToPath(name, nativeId);
+
+                var url = job["url"]?.ToString();
+                if (url == null)
+                    url = DefaultLibraryServer + path;
+                else if (url.Split('/').Last() == "")
+                    url += path;
+
+                var library = new MLibrary();
+                library.Hash = job["sha1"]?.ToString() ?? "";
+                library.IsNative = (nativeId != "");
+                library.Name = name;
+                library.Path = Minecraft.Library + path;
+                library.Url = url;
+
+                return library;
             }
         }
     }

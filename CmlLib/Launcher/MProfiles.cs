@@ -55,7 +55,7 @@ namespace CmlLib.Launcher
                 profile.ClientHash = client["sha1"]?.ToString();
             }
 
-            profile.Libraries = MLibrary.ParseJson((JArray)job["libraries"]);
+            profile.Libraries = MLibrary.Parser.ParseJson((JArray)job["libraries"]);
             profile.MainClass = n(job["mainClass"]?.ToString());
 
             var ma = job["minecraftArguments"]?.ToString();
