@@ -28,7 +28,7 @@ License
 
 Dependancy
 -------------
-Newtonsoft.Json
+Newtonsoft.Json  
 DotNetZip
 
 Use Nuget-Restore
@@ -38,7 +38,9 @@ How To Use
 
 *Sorry about my poor english skill*
 
-If you want to learn more like java runtime download, detail launch options, full methods, go to [wiki](https://merong)
+If you want to learn more like java runtime download, detail launch options, full methods, go to wiki
+
+**[Sample Code](https://github.com/AlphaBs/MinecraftLauncherLibrary/wiki/Launch-forge)**
 
 #### 1. Prepare
 Open the 'CmlLib' Project, restore nuget packages, build CmlLib Project.
