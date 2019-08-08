@@ -130,7 +130,15 @@ ChangeFileChange Event : Change Download File Name
 
 ChangeProgressChange : Change One File's Download Progress
 
-DownloadAll : Check And Download All Game Files
+     private void Downloader_ChangeProgress(object sender, System.ComponentModel.ProgressChangedEventArgs e)
+     {
+         Console.WriteLine("{0}%", e.ProgressPercentage);
+     }
+ 
+     private void Downloader_ChangeFile(DownloadFileChangedEventArgs e)
+     {
+         Console.WriteLine("[{0}] {1} - {2}/{3}", e.FileKind.ToString(), e.FileName, e.CurrentValue, e.MaxValue);
+     }
 
 DownloadAll() Method do this :
 
