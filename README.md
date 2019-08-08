@@ -4,8 +4,10 @@
 ### Online / Offline Login, Download, Launch with various options, Forge Support
 
 ### Support All Versions, Forge
-### Sample Project(not completed) : https://github.com/AlphaBs/AlphaMinecraftLauncher  
-  
+### Sample Project(not completed) : https://github.com/AlphaBs/AlphaMinecraftLauncher
+#### instead, see CmlLibSample project in this repo
+
+
 한국어
 -------------
  =====>>> [한국어 README](https://github.com/AlphaBs/MinecraftLauncherLibrary/blob/master/README-kr.md)
