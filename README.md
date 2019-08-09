@@ -4,8 +4,10 @@
 ### Online / Offline Login, Download, Launch with various options, Forge Support
 
 ### Support All Versions, Forge
-### Sample Project(not completed) : https://github.com/AlphaBs/AlphaMinecraftLauncher  
-  
+### Sample Project(not completed) : https://github.com/AlphaBs/AlphaMinecraftLauncher
+#### instead, see CmlLibSample project in this repo
+
+
 한국어
 -------------
  =====>>> [한국어 README](https://github.com/AlphaBs/MinecraftLauncherLibrary/blob/master/README-kr.md)
@@ -26,7 +28,7 @@ License
 
 Dependancy
 -------------
-Newtonsoft.Json
+Newtonsoft.Json  
 DotNetZip
 
 Use Nuget-Restore
@@ -36,7 +38,9 @@ How To Use
 
 *Sorry about my poor english skill*
 
-If you want to learn more like java runtime download, detail launch options, full methods, go to [wiki](https://merong)
+If you want to learn more like java runtime download, detail launch options, full methods, go to wiki
+
+**[Sample Code](https://github.com/AlphaBs/MinecraftLauncherLibrary/wiki/Launch-forge)**
 
 #### 1. Prepare
 Open the 'CmlLib' Project, restore nuget packages, build CmlLib Project.
@@ -128,7 +132,15 @@ ChangeFileChange Event : Change Download File Name
 
 ChangeProgressChange : Change One File's Download Progress
 
-DownloadAll : Check And Download All Game Files
+     private void Downloader_ChangeProgress(object sender, System.ComponentModel.ProgressChangedEventArgs e)
+     {
+         Console.WriteLine("{0}%", e.ProgressPercentage);
+     }
+ 
+     private void Downloader_ChangeFile(DownloadFileChangedEventArgs e)
+     {
+         Console.WriteLine("[{0}] {1} - {2}/{3}", e.FileKind.ToString(), e.FileName, e.CurrentValue, e.MaxValue);
+     }
 
 DownloadAll() Method do this :
 
@@ -167,4 +179,4 @@ Set launch options, and Launch it!
 
 #### 8. Launch Forge
 
-goto [wiki](https://merong)
+goto [wiki](https://github.com/AlphaBs/MinecraftLauncherLibrary/wiki/Launch-forge)
