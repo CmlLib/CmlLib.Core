@@ -62,7 +62,7 @@ namespace CmlLibSample
             textBox1.Text = Environment.GetEnvironmentVariable("appdata") + "\\.minecraft";
             var th = new Thread(new ThreadStart(delegate
             {
-                Minecraft.init(textBox1.Text);
+                Minecraft.Initialize(textBox1.Text);
 
                 versions = MProfileInfo.GetProfiles();
                 Invoke((MethodInvoker)delegate
@@ -92,7 +92,7 @@ namespace CmlLibSample
             // 다시 Minecraft.init 를 해줌
             // 다시 프로파일 리스트를 불러옴
 
-            Minecraft.init(textBox1.Text);
+            Minecraft.Initialize(textBox1.Text);
             versions = MProfileInfo.GetProfiles();
             Cb_Version.Items.Clear();
             foreach (var item in versions)
