@@ -106,7 +106,7 @@ namespace CmlLib.Launcher
 
             string mcjarid = profile.Id;
 
-            sb.Append(handleEmpty(Minecraft.Versions + mcjarid + "\\" + mcjarid + ".jar "));
+            sb.Append(handleEmpty(Minecraft.Versions + mcjarid + "\\" + mcjarid + ".jar") + " ");
             sb.Append(LaunchOption.StartProfile.MainClass + "  ");
 
             ///// GAME ARG ///// 
