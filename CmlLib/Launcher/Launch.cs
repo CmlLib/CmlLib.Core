@@ -84,7 +84,7 @@ namespace CmlLib.Launcher
                 sb.Append(LaunchOption.CustomJavaParameter);
 
             sb.Append(" -Xmx" + LaunchOption.MaximumRamMb + "m");
-            sb.Append(" -Djava.library.path=\"" + LaunchOption.StartProfile.NativePath + "\"");
+            sb.Append(" -Djava.library.path=" + handleEmpty(LaunchOption.StartProfile.NativePath));
             sb.Append(" -cp ");
 
             if (hasBase)
@@ -92,21 +92,21 @@ namespace CmlLib.Launcher
                 foreach (var item in LaunchOption.StartProfile.Libraries)
                 {
                     if (!item.IsNative)
-                        sb.Append("\"" + item.Path.Replace("/", "\\") + "\";");
+                        sb.Append(handleEmpty(item.Path.Replace("/", "\\") + ";"));
                 }
             }
 
             foreach (var item in profile.Libraries)
             {
                 if (!item.IsNative)
-                    sb.Append("\"" + item.Path.Replace("/", "\\") + "\";");
+                    sb.Append(handleEmpty(item.Path.Replace("/", "\\") + ";"));
             }
 
             ///// JAVA ARG END /////
 
             string mcjarid = profile.Id;
 
-            sb.Append("\"" + Minecraft.Versions + mcjarid + "\\" + mcjarid + ".jar\" ");
+            sb.Append(handleEmpty(Minecraft.Versions + mcjarid + "\\" + mcjarid + ".jar "));
             sb.Append(LaunchOption.StartProfile.MainClass + "  ");
 
             ///// GAME ARG ///// 
@@ -122,7 +122,7 @@ namespace CmlLib.Launcher
                 { "${auth_access_token}", LaunchOption.Session.AccessToken },
                 { "${user_properties}", "{}" },
                 { "${user_type}", "Mojang" },
-                { "${game_assets}", "\"" + Minecraft.AssetLegacy },
+                { "${game_assets}", Minecraft.AssetLegacy },
                 { "${auth_session}", LaunchOption.Session.AccessToken }
             };
 

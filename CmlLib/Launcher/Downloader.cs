@@ -169,7 +169,7 @@ namespace CmlLib.Launcher
             if (!CheckFileValidation(path, profile.ClientHash))
             {
                 Directory.CreateDirectory(Minecraft.Versions + id); //폴더생성
-                web.DownloadFile(profile.ClientDownloadUrl, Minecraft.Versions + id + "\\" + id + ".jar");
+                web.DownloadFile(profile.ClientDownloadUrl, path);
             }
 
             l(MFile.Minecraft, profile.Id, 1, 1);
