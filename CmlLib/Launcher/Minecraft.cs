@@ -34,7 +34,7 @@ namespace CmlLib.Launcher
         /// </summary>
         /// <param name="p">경로</param>
         /// <param name="useCustomAssets">true 로 설정하면 다운로드 시간 단축을 위한 경로 통합을 사용하지 않게 할 수 있습니다.</param>
-        public static void init(string p,bool useCustomAssets = false)
+        public static void Initialize(string p,bool useCustomAssets = false)
         {
             path = p;
             _Path = p;
