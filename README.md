@@ -1,5 +1,6 @@
-﻿Minecraft Launcher Library
+﻿Csharp Minecraft Launcher Library  
 ======================
+### CmlLib 0.0.6 <1.4>
 
 ### Online / Offline Login, Download, Launch with various options, Forge Support
 
