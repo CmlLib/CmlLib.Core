@@ -92,14 +92,14 @@ namespace CmlLib.Launcher
                 foreach (var item in LaunchOption.StartProfile.Libraries)
                 {
                     if (!item.IsNative)
-                        sb.Append(handleEmpty(item.Path.Replace("/", "\\") + ";"));
+                        sb.Append(handleEmpty(item.Path.Replace("/", "\\")) + ";");
                 }
             }
 
             foreach (var item in profile.Libraries)
             {
                 if (!item.IsNative)
-                    sb.Append(handleEmpty(item.Path.Replace("/", "\\") + ";"));
+                    sb.Append(handleEmpty(item.Path.Replace("/", "\\")) + ";");
             }
 
             ///// JAVA ARG END /////
@@ -146,7 +146,10 @@ namespace CmlLib.Launcher
                         {
                             var argValue = "";
                             if (argDicts.TryGetValue(argStr, out argValue))
+                            {
+                                Console.WriteLine(argValue);
                                 sb.Append(handleEmpty(argValue));
+                            }
                             else
                                 sb.Append(argStr);
                         }
