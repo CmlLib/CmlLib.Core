@@ -146,10 +146,7 @@ namespace CmlLib.Launcher
                         {
                             var argValue = "";
                             if (argDicts.TryGetValue(argStr, out argValue))
-                            {
-                                Console.WriteLine(argValue);
                                 sb.Append(handleEmpty(argValue));
-                            }
                             else
                                 sb.Append(argStr);
                         }
