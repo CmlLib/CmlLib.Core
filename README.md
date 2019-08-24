@@ -125,8 +125,8 @@ Parse Profile is simple :
 #### 6. Check & Download Game Files
 
      MDownloader downloader = new MDownloader(profile);
-     downloader.ChangeFileChange += change_file;
-     downloader.ChangeProgressChange += change_progress;
+     downloader.ChangeFile += change_file;
+     downloader.ChangeProgress += change_progress;
      downloader.DownloadAll();
 
 ChangeFileChange Event : Change Download File Name
