@@ -91,6 +91,12 @@ namespace CmlLib.Launcher
                 profile.InnerJarId = job["jar"].ToString();
             }
 
+            if (job["inheritsFrom"] != null)
+            {
+                profile.IsForge = true;
+                profile.InnerJarId = job["inheritsFrom"].ToString();
+            }
+
             var path = Minecraft.Versions + profile.Id;
             Directory.CreateDirectory(path);
             File.WriteAllText(path + "\\" + profile.Id + ".json", json);
