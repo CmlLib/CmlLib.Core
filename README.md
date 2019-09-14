@@ -1,6 +1,6 @@
 ﻿Csharp Minecraft Launcher Library  
 ======================
-### CmlLib 0.0.6 <1.4>
+### CmlLib 0.0.8 <1.4 forge, optifine>
 
 ### Online / Offline Login, Download, Launch with various options, Forge Support
 
@@ -106,21 +106,7 @@ or you can choose source :
 
 In order to use profile's data, you should parse Profile from ProfileInfo.
 
-First, Search Profile Infos you want to launch : (very simple search algorithm)
-
-     MProfile profile = null;
-     foreach (var item in infos)
-     {
-          if (item.Name == "1.7.10")
-          {
-                profile = item;
-                break;
-          }
-     }
-
-Parse Profile is simple :
-
-     MProfile profile = MProfile.Parse(info);
+     MProfile profile = MProfile.GetProfile(infos, "1.14.4");
 
 #### 6. Check & Download Game Files
 
@@ -178,6 +164,3 @@ Each Download~~ method check game file exist, and if file doesn't exist, downloa
 
 Set launch options, and Launch it!
 
-#### 8. Launch Forge
-
-goto [wiki](https://github.com/AlphaBs/MinecraftLauncherLibrary/wiki/Launch-forge)
