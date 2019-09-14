@@ -56,6 +56,9 @@ namespace CmlLib.Launcher
                         }
                         containCurrentOS = false;
                     }
+
+                    else if (item.Key == "features") // etc
+                        return false;
                 }
 
                 if (!action && containCurrentOS)

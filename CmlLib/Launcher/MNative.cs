@@ -18,9 +18,6 @@ namespace CmlLib.Launcher
         {
             var path = ExtractNatives(LaunchOption.StartProfile);
             LaunchOption.StartProfile.NativePath = path;
-
-            if (LaunchOption.BaseProfile != null)
-                ExtractNatives(LaunchOption.BaseProfile, path);
         }
 
         /// <summary>

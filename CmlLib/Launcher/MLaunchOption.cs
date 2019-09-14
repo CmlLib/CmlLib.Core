@@ -11,7 +11,6 @@ namespace CmlLib.Launcher
         public string JavaPath { get; set; } = "";
         public int MaximumRamMb { get; set; } = 1024;
         public MProfile StartProfile { get; set; } = null;
-        public MProfile BaseProfile { get; set; } = null;
         public MSession Session { get; set; } = null;
         public string LauncherName { get; set; } = "";
         public string ServerIp { get; set; } = "";

@@ -13,6 +13,30 @@ namespace CmlLib.Launcher
     public class MProfile
     {
         // 프로파일 파싱
+
+        public static MProfile GetProfile(MProfileInfo[] infos, string name)
+        {
+            MProfile startProfile = null;
+            MProfile baseProfile = null;
+
+            foreach (var item in infos)
+            {
+                if (item.Name == name)
+                {
+                    startProfile = Parse(item);
+                    break;
+                }
+            }
+
+            if (startProfile.IsInherted)
+            {
+                baseProfile = GetProfile(infos, startProfile.ParentProfileId);
+                inhert(baseProfile, startProfile);
+            }
+
+            return startProfile;
+        }
+
         public static MProfile Parse(MProfileInfo info)
         {
             string json;
@@ -21,7 +45,7 @@ namespace CmlLib.Launcher
                 using (var wc = new WebClient())
                 {
                     json = wc.DownloadString(info.Path);
-                    return ParseFromJson(json);
+                    return ParseFromJson(json, true);
                 }
             }
             else
@@ -31,10 +55,10 @@ namespace CmlLib.Launcher
         public static MProfile ParseFromFile(string path)
         {
             var json = File.ReadAllText(path);
-            return ParseFromJson(json);
+            return ParseFromJson(json, false);
         }
 
-        private static MProfile ParseFromJson(string json)
+        private static MProfile ParseFromJson(string json, bool writeProfile = true)
         {
             var profile = new MProfile();
             var job = JObject.Parse(json);
@@ -61,9 +85,15 @@ namespace CmlLib.Launcher
             var ma = job["minecraftArguments"]?.ToString();
             if (ma != null)
                 profile.MinecraftArguments = ma;
-            var ag = job["arguments"]?.ToString();
+
+            var ag = job["arguments"];
             if (ag != null)
-                profile.Arguments = ag;
+            {
+                if (ag["game"] != null)
+                    profile.GameArguments = argParse((JArray)ag["game"]);
+                if (ag["jvm"] != null)
+                    profile.JvmArguments = argParse((JArray)ag["jvm"]);
+            }
 
             profile.ReleaseTime = job["releaseTime"]?.ToString();
 
@@ -85,28 +115,118 @@ namespace CmlLib.Launcher
                     break;
             }
 
-            if (job["jar"] != null)
-            {
-                profile.IsForge = true;
-                profile.InnerJarId = job["jar"].ToString();
-            }
-
             if (job["inheritsFrom"] != null)
             {
-                profile.IsForge = true;
-                profile.InnerJarId = job["inheritsFrom"].ToString();
+                profile.IsInherted = true;
+                profile.ParentProfileId = job["inheritsFrom"].ToString();
             }
+            else
+                profile.Jar = profile.Id;
 
-            var path = Minecraft.Versions + profile.Id;
-            Directory.CreateDirectory(path);
-            File.WriteAllText(path + "\\" + profile.Id + ".json", json);
+            if (writeProfile)
+            {
+                var path = Minecraft.Versions + profile.Id;
+                Directory.CreateDirectory(path);
+                File.WriteAllText(path + "\\" + profile.Id + ".json", json);
+            }
 
             return profile;
         }
 
-        public void WriteProfile()
+        static string[] argParse(JArray arr)
         {
+            var strList = new List<string>(arr.Count);
+            var ruleChecker = new MRule();
 
+            foreach (var item in arr)
+            {
+                if (item is JObject)
+                {
+                    bool allow = true;
+
+                    if (item["rules"] != null)
+                        allow = ruleChecker.CheckOSRequire((JArray)item["rules"]);
+
+                    var value = item["value"];
+                    if (allow && value != null)
+                    {
+                        if (value is JArray)
+                        {
+                            foreach (var str in value)
+                            {
+                                strList.Add(str.ToString());
+                            }
+                        }
+                        else
+                            strList.Add(value.ToString());
+                    }
+                }
+                else
+                    strList.Add(item.ToString());
+            }
+
+            return strList.ToArray();
+        }
+
+        static MProfile inhert(MProfile parentProfile, MProfile childProfile)
+        {
+            // Inhert list
+            // Overload : AssetId, AssetUrl, AssetHash, ClientDownloadUrl, ClientHash, MainClass, MinecraftArguments
+            // Combine : Libraries, GameArguments, JvmArguments
+
+            // Overloads
+
+            if (nc(childProfile.AssetId))
+                childProfile.AssetId = parentProfile.AssetId;
+
+            if (nc(childProfile.AssetUrl))
+                childProfile.AssetUrl = parentProfile.AssetUrl;
+
+            if (nc(childProfile.AssetHash))
+                childProfile.AssetHash = parentProfile.AssetHash;
+
+            if (nc(childProfile.ClientDownloadUrl))
+                childProfile.ClientDownloadUrl = parentProfile.ClientDownloadUrl;
+
+            if (nc(childProfile.ClientHash))
+                childProfile.ClientHash = parentProfile.ClientHash;
+
+            if (nc(childProfile.MainClass))
+                childProfile.MainClass = parentProfile.MainClass;
+
+            if (nc(childProfile.MinecraftArguments))
+                childProfile.MinecraftArguments = parentProfile.MinecraftArguments;
+
+            childProfile.Jar = parentProfile.Jar;
+
+            // Combine
+
+            if (parentProfile.Libraries != null)
+            {
+                if (childProfile.Libraries != null)
+                    childProfile.Libraries = childProfile.Libraries.Concat(parentProfile.Libraries).ToArray();
+                else
+                    childProfile.Libraries = parentProfile.Libraries;
+            }
+
+            if (parentProfile.GameArguments != null)
+            {
+                if (childProfile.GameArguments != null)
+                    childProfile.GameArguments = childProfile.GameArguments.Concat(parentProfile.GameArguments).ToArray();
+                else
+                    childProfile.GameArguments = parentProfile.GameArguments;
+            }
+
+
+            if (parentProfile.JvmArguments != null)
+            {
+                if (childProfile.JvmArguments != null)
+                    childProfile.JvmArguments = childProfile.JvmArguments.Concat(parentProfile.JvmArguments).ToArray();
+                else
+                    childProfile.JvmArguments = parentProfile.JvmArguments;
+            }
+
+            return childProfile;
         }
 
         static string n(string t)
@@ -114,74 +234,35 @@ namespace CmlLib.Launcher
             return (t == null) ? "" : t;
         }
 
-        public void ChangeAssets(string Id, string Url)
+        static bool nc(string t)
         {
-            AssetId = Id; AssetUrl = Url;
+            return (t == null) || (t == "");
         }
 
-        /// <summary>
-        /// true 이면 모장 서버에 있는 프로파일, false 이면 로컬에 있는 프로파일
-        /// </summary>
         public bool IsWeb { get; private set; }
-        /// <summary>
-        /// true 이면 포지 프로파일
-        /// </summary>
-        public bool IsForge { get; private set; } = false;
 
-        /// <summary>
-        /// 프로파일의 id
-        /// </summary>
+        public bool IsInherted { get; private set; } = false;
+        public string ParentProfileId { get; private set; } = "";
+
         public string Id { get; private set; } = "";
 
-        /// <summary>
-        /// 인덱스 파일의 ID
-        /// </summary>
         public string AssetId { get; private set; } = "";
-        /// <summary>
-        /// 인덱스 파일의 경로
-        /// </summary>
         public string AssetUrl { get; private set; } = "";
         public string AssetHash { get; private set; } = "";
 
-        /// <summary>
-        /// 게임 다운로드 경로
-        /// </summary>
+        public string Jar { get; private set; } = "";
         public string ClientDownloadUrl { get; private set; } = "";
         public string ClientHash { get; private set; } = "";
-        /// <summary>
-        /// 라이브러리 리스트
-        /// </summary>
         public MLibrary[] Libraries { get; private set; }
-        /// <summary>
-        /// 메인 클래스
-        /// </summary>
         public string MainClass { get; private set; } = "";
-        /// <summary>
-        /// 실행 인수 (1.3 이전에 나온 버전)
-        /// </summary>
         public string MinecraftArguments { get; private set; } = "";
-        /// <summary>
-        /// 실행 인수 JSON (1.3 부터 이후 버전)
-        /// </summary>
-        public string Arguments { get; private set; } = "";
-        /// <summary>
-        /// 프로파일의 생성된 날짜
-        /// </summary>
+        public string[] GameArguments { get; private set; }
+        public string[] JvmArguments { get; private set; }
         public string ReleaseTime { get; private set; } = "";
-        /// <summary>
-        /// 프로파일의 종류
-        /// </summary>
         public MProfileType Type { get; private set; } = MProfileType.Unknown;
 
         public string TypeStr { get; private set; } = "";
 
-        /// <summary>
-        /// 포지 프로파일일때 베이스가 되는 프로파일의 ID
-        /// </summary>
-        public string InnerJarId { get; private set; } = "";
-        /// <summary>
-        /// 네이티브 라이브러리가 저장되 있는 경로
-        /// </summary>
         public string NativePath { get; set; } = "";
     }
 }

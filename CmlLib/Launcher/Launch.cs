@@ -69,11 +69,6 @@ namespace CmlLib.Launcher
         {
             var profile = LaunchOption.StartProfile;
 
-            var hasBase = LaunchOption.BaseProfile != null;
-
-            if (hasBase)
-                profile = LaunchOption.BaseProfile;
-
             var sb = new StringBuilder();
 
             ///// JAVA ARG /////
@@ -87,15 +82,6 @@ namespace CmlLib.Launcher
             sb.Append(" -Djava.library.path=" + handleEmpty(LaunchOption.StartProfile.NativePath));
             sb.Append(" -cp ");
 
-            if (hasBase)
-            {
-                foreach (var item in LaunchOption.StartProfile.Libraries)
-                {
-                    if (!item.IsNative)
-                        sb.Append(handleEmpty(item.Path.Replace("/", "\\")) + ";");
-                }
-            }
-
             foreach (var item in profile.Libraries)
             {
                 if (!item.IsNative)
@@ -104,7 +90,7 @@ namespace CmlLib.Launcher
 
             ///// JAVA ARG END /////
 
-            string mcjarid = profile.Id;
+            string mcjarid = profile.Jar;
 
             sb.Append(handleEmpty(Minecraft.Versions + mcjarid + "\\" + mcjarid + ".jar") + " ");
             sb.Append(LaunchOption.StartProfile.MainClass + "  ");
@@ -131,29 +117,24 @@ namespace CmlLib.Launcher
             else
                 argDicts.Add("${version_type}", LaunchOption.LauncherName);
 
-            if (LaunchOption.StartProfile.Arguments != "") // Arguments Json 을 사용하는 1.3 과 그 이후의 버전
+            if (LaunchOption.StartProfile.GameArguments != null) // Arguments Json 을 사용하는 1.3 과 그 이후의 버전
             {
-                var jarr = (JArray)JObject.Parse(LaunchOption.StartProfile.Arguments)["game"];
-                foreach (var item in jarr)
+                foreach (var item in LaunchOption.StartProfile.GameArguments)
                 {
-                    if (!(item is JObject))
+                    var argStr = item.ToString();
+
+                    if (argStr[0] != '$')
+                        sb.Append(argStr);
+                    else
                     {
-                        var argStr = item.ToString();
-
-                        if (argStr[0] != '$')
-                            sb.Append(argStr);
+                        var argValue = "";
+                        if (argDicts.TryGetValue(argStr, out argValue))
+                            sb.Append(handleEmpty(argValue));
                         else
-                        {
-                            var argValue = "";
-                            if (argDicts.TryGetValue(argStr, out argValue))
-                                sb.Append(handleEmpty(argValue));
-                            else
-                                sb.Append(argStr);
-                        }
-
-                        sb.Append(" ");
+                            sb.Append(argStr);
                     }
 
+                    sb.Append(" ");
                 }
             }
             else // MinecraftArguments 를 사용하는 1.3 이전의 버전

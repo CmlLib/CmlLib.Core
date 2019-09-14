@@ -159,38 +159,12 @@ namespace CmlLibSample
 
             var th = new Thread(new ThreadStart(delegate
             {
+                var profile = MProfile.GetProfile(versions, nn);
 
-                MProfile profile = null;
-                MProfile forgeProfile = null;
-
-                foreach (var item in versions)
-                {
-                    if (item.Name == nn)
-                    {
-                        profile = MProfile.Parse(item);
-                        break;
-                    }
-                }
-
-                if (profile.IsForge)
-                {
-                    foreach (var item in versions)
-                    {
-                        if (item.Name == profile.InnerJarId)
-                        {
-                            forgeProfile = MProfile.Parse(item);
-                            break;
-                        }
-                    }
-
-                    DownloadGame(forgeProfile, true);
-                }
-
-                DownloadGame(profile, !profile.IsForge);
+                DownloadGame(profile);
 
                 MLaunchOption option = new MLaunchOption()
                 {
-                    BaseProfile = forgeProfile,
                     StartProfile = profile,
                     JavaPath = jj,
                     LauncherName = ln,
