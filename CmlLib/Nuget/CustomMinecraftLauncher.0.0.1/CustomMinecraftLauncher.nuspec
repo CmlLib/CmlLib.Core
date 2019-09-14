@@ -2,14 +2,14 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
     <id>CustomMinecraftLauncher</id>
-    <version>0.0.7</version>
+    <version>0.0.8</version>
     <title>Minecraft Custom Launcher Library</title>
     <authors>ksi123456ab</authors>
     <owners>ksi123456ab</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <projectUrl>https://github.com/AlphaBs/MinecraftLauncherLibrary</projectUrl>
-    <description>Minecraft Custom Launcher Library for C#. see github</description>
-    <releaseNotes>support 1.4</releaseNotes>
+    <description>Minecraft Custom Launcher Library for C#. see github to learn how to use.</description>
+    <releaseNotes>support 1.4 forge, optifine</releaseNotes>
     <copyright>Copyright 2019</copyright>
     <tags>Minecraft Launcher</tags>
     <dependencies>
