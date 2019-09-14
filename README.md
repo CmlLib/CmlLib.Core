@@ -41,7 +41,7 @@ How To Use
 
 If you want to learn more like java runtime download, detail launch options, full methods, go to wiki
 
-**[Sample Code](https://github.com/AlphaBs/MinecraftLauncherLibrary/wiki/Launch-forge)**
+**[Sample Code](https://github.com/AlphaBs/MinecraftLauncherLibrary/wiki/Sample-Code)**
 
 #### 1. Prepare
 Open the 'CmlLib' Project, restore nuget packages, build CmlLib Project.
