@@ -45,6 +45,7 @@ namespace CmlLib.Launcher
 
             public static MLibrary[] ParseJson(JArray json)
             {
+                var ruleChecker = new MRule();
                 var list = new List<MLibrary>(json.Count);
                 foreach (JObject item in json)
                 {
@@ -56,7 +57,7 @@ namespace CmlLib.Launcher
                         var rules = item["rules"];
                         if (CheckOSRules && rules != null)
                         {
-                            var isRequire = checkAllowLibrary((JArray)rules);
+                            var isRequire = ruleChecker.CheckOSRequire((JArray)rules);
 
                             if (!isRequire)
                                 continue;
@@ -118,59 +119,6 @@ namespace CmlLib.Launcher
                 }
 
                 return list.ToArray();
-            }
-
-            private static bool checkAllowLibrary(JArray arr)
-            {
-                var osName = getOSName();
-
-                foreach (JObject job in arr)
-                {
-                    var action = true; // true : "allow", false : "disallow"
-                    var containCurrentOS = true; // if 'os' JArray contains current os name
-
-                    foreach (var item in job)
-                    {
-                        // action
-                        if (item.Key == "action")
-                            action = (item.Value.ToString() == "allow" ? true : false);
-
-                        // os (containCurrentOS)
-                        else if (item.Key == "os")
-                        {
-                            foreach (var os in (JObject)item.Value)
-                            {
-                                if (os.Key == "name" && os.Value.ToString() == osName)
-                                {
-                                    containCurrentOS = true;
-                                    break;
-                                }
-                            }
-                            containCurrentOS = false;
-                        }
-                    }
-
-                    if (!action && containCurrentOS)
-                        return false;
-                    else if (action && containCurrentOS)
-                        return true;
-                    else if (action && !containCurrentOS)
-                        return false;
-                }
-
-                return true;
-            }
-
-            private static string getOSName()
-            {
-                var osType = Environment.OSVersion.Platform;
-
-                if (osType == PlatformID.MacOSX)
-                    return "osx";
-                else if (osType == PlatformID.Unix)
-                    return "linux";
-                else
-                    return "windows";
             }
 
             private static string NameToPath(string name, string native)

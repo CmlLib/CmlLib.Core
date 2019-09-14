@@ -68,6 +68,7 @@
     <Compile Include="Launcher\MProfileInfo.cs" />
     <Compile Include="Launcher\MProfileInfoLoader.cs" />
     <Compile Include="Launcher\MProfiles.cs" />
+    <Compile Include="Launcher\MRule.cs" />
     <Compile Include="Launcher\WebDownload.cs" />
     <Compile Include="Launcher\MNative.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
