@@ -162,9 +162,9 @@ namespace CmlLib.Launcher
         {
             if (profile.ClientDownloadUrl == "") return;
 
-            l(MFile.Minecraft, profile.Id, 1, 0);
+            l(MFile.Minecraft, profile.Jar, 1, 0);
 
-            string id = profile.Id;
+            string id = profile.Jar;
             var path = Minecraft.Versions + id + "\\" + id + ".jar";
             if (!CheckFileValidation(path, profile.ClientHash))
             {
