@@ -129,17 +129,6 @@ ChangeProgressChange : Change One File's Download Progress
          Console.WriteLine("[{0}] {1} - {2}/{3}", e.FileKind.ToString(), e.FileName, e.CurrentValue, e.MaxValue);
      }
 
-DownloadAll() Method do this :
-
-     // downloader.DownloadAll() do this :
-     
-     downloader.DownloadLibrary(); // libraries
-     downloader.DownloadIndex(); // asset index
-     downloader.DownloadResource(); // assets / resources
-     downloader.DownloadMinecraft(); // game jar
-
-It's so long. so just use DownloadAll();
-
 Each Download~~ method check game file exist, and if file doesn't exist, download game file from mojang server.
 
 #### 7. Make game args and Launch
