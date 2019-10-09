@@ -44,8 +44,8 @@ If you want to learn more like java runtime download, detail launch options, ful
 **[Sample Code](https://github.com/AlphaBs/MinecraftLauncherLibrary/wiki/Sample-Code)**
 
 #### 1. Prepare
-Open the 'CmlLib' Project, restore nuget packages, build CmlLib Project.
-and add reference to 'CmlLib.dll', 'Newtonsoft.Json.dll', 'DotNetZip.dll' to your own project.
+
+Install Nuget Package 'CustomMinecraftLauncher'  
 
 write this on the top of your source code.
 
