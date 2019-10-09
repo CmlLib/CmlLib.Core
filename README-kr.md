@@ -43,7 +43,9 @@ Nuget 복구 기능을 사용하세요.
 **[샘플 ](https://github.com/AlphaBs/MinecraftLauncherLibrary/wiki/Sample-Code)**
 
 #### 1. 준비
-소스코드를 다운받고, CmlLib 프로젝트를 컴파일 한 뒤에 당신의 프로젝트 파일에 CmlLib.dll , DotNetZip.dll , Newtonsoft.Json.dll 파일을 참조 추가하세요.
+
+Nuget 패키지 'CustomMinecraftLauncher' 를 설치하세요.  
+Nuget 패키지 설치방법은 인터넷 검색하면 나옵니다.  
 
 그리고 소스코드 최상단에 이걸 넣으세요 :
 
