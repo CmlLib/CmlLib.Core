@@ -1,13 +1,14 @@
 ﻿Csharp Minecraft Launcher Library  
 ======================
-### CmlLib 0.0.8 <1.4 forge, optifine>
+### CmlLib 0.0.9 <1.4 forge, optifine>
 
 ### Online / Offline Login, Download, Launch with various options, Forge Support
 
-### Support All Versions, Forge
-### Sample Project(not completed) : https://github.com/AlphaBs/AlphaMinecraftLauncher
-#### instead, see CmlLibSample project in this repo
 
+### Support All Versions, Forge
+### see CmlLibSample project in this repo
+
+Only Windows (use [pml](https://github.com/AlphaBs/pml) if you want crossplatform)
 
 한국어
 -------------
@@ -26,6 +27,12 @@ License
 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Creative Commons Attribution-NonCommercial 4.0 International License</a>.
 
 ****NO COMMERCIAL****
+
+pml
+-------------
+Cross-Platform Python Minecraft Launcher Library  
+If you need cross-platform mc launcher, use this python library.  
+[pml github](https://github.com/AlphaBs/pml)
 
 Dependancy
 -------------
