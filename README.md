@@ -28,10 +28,11 @@ License
 
 ****NO COMMERCIAL****
 
-pml
+Crossplatform
 -------------
-Cross-Platform Python Minecraft Launcher Library  
-If you need cross-platform mc launcher, use this python library.  
+This library doesn't support crossplatform. Only Windows  
+if you want Cross-Platform Minecraft Launcher Library,  
+use this python library.  
 [pml github](https://github.com/AlphaBs/pml)
 
 Dependancy
@@ -46,15 +47,16 @@ How To Use
 
 *Sorry about my poor english skill*
 
-If you want to learn more like java runtime download, detail launch options, full methods, go to wiki
+If you want to learn more features of this library such as to download java runtime or launch with more detailed options, go to wiki
 
 **[Sample Code](https://github.com/AlphaBs/MinecraftLauncherLibrary/wiki/Sample-Code)**
 
 #### 1. Prepare
 
 Install Nuget Package 'CustomMinecraftLauncher'  
+or download dll files in Release tab (CmlLib.dll, Newtonsoft.Json.dll, DotNetZip.dll) and add reference
 
-write this on the top of your source code.
+write this on the top of your source code:  
 
 
       using CmlLib.Launcher;
@@ -65,7 +67,7 @@ You should write this code before work.
       Minecraft.Initialize("GAME_DIRECTORY");
 
 It set Game Directory that is used to download game files, load profiles, save login session, Launch, etc...  
-**DO NOT USE Relative Path. Only use abstract path.**
+**You can't use relative path.**
 
 #### 3. Login
 
@@ -80,14 +82,13 @@ It set Game Directory that is used to download game files, load profiles, save l
                "PASSWORD");
 
           if (session.result != MLoginResult.Success)
-               throw new Exception("Wrong Account");
+               throw new Exception("Failed login : " + session.result.ToString());
      }
 
      Console.WriteLine("Hello, " + session.Username);
 
 The 'session' is login result.
-if you want to connect online-mode server, you use this session to launch.
-note : you can't use old login which use username instead mojang email.
+note : you can't use old login using username instead of mojang email.
 
 or you can use offline session :
 
@@ -95,14 +96,15 @@ or you can use offline session :
 
 #### 4. Get Profile Infos
 Profile contain various data which launcher need.
-All Game Versions has its own profile, even old alpha version or forge.
-You can find at (GameDirectory)￦versions￦(any-version)￦(version-name).json.
-MProfileInfo is Profile's Metadata, contains Name, Profile Path(Url), Type(Release, Snapshot, Old), ReleaseTime.
+All Game Versions has its own profile, even old alpha version and forge.
+You can find it at (GameDirectory)￦versions￦(any-version)￦(version-name).json.
+MProfileInfo is metadata of profile, containing Name, Profile Path(Url), Type(Release, Snapshot, Old), ReleaseTime.
 and this code get profile info :
 
      MProfilesInfo[] infos = MProfileInfo.GetProfiles();
 
-or you can choose source :
+It will return all metadata from mojang web server and your game directory.  
+but you can choose source :
 
      // get profiles from mojang server
      var web = MProfileInfo.GetProfilesFromWeb();
@@ -111,7 +113,8 @@ or you can choose source :
 
 #### 5. Choose ProfileInfo and Parse.
 
-In order to use profile's data, you should parse Profile from ProfileInfo.
+In order to use profile data, you should parse profile.  
+This simple code will search version from metadatas, and return parsed profile data.
 
      MProfile profile = MProfile.GetProfile(infos, "1.14.4");
 
@@ -122,21 +125,23 @@ In order to use profile's data, you should parse Profile from ProfileInfo.
      downloader.ChangeProgress += change_progress;
      downloader.DownloadAll();
 
-ChangeFileChange Event : Change Download File Name
+ChangeFile : when download file was changed
 
-ChangeProgressChange : Change One File's Download Progress
+ChangeProgress : when the progress of current downloading file was changed
 
      private void Downloader_ChangeProgress(object sender, System.ComponentModel.ProgressChangedEventArgs e)
      {
+         // 20%, 30%, 80%, ...
          Console.WriteLine("{0}%", e.ProgressPercentage);
      }
  
      private void Downloader_ChangeFile(DownloadFileChangedEventArgs e)
      {
+         // [Library] hi.jar - 3/51
          Console.WriteLine("[{0}] {1} - {2}/{3}", e.FileKind.ToString(), e.FileName, e.CurrentValue, e.MaxValue);
      }
 
-Each Download~~ method check game file exist, and if file doesn't exist, download game file from mojang server.
+Download method check the existence of game file, and download game file from mojang server if file is not exist or not valid(compare hash).  
 
 #### 7. Make game args and Launch
 
@@ -145,7 +150,7 @@ Each Download~~ method check game file exist, and if file doesn't exist, downloa
           // must require
           StartProfile = profile,
           JavaPath = "java.exe", //SET YOUR JAVA PATH (if you want autoset, goto wiki)
-          MaximumRamMb = int.Parse(xmx),
+          MaximumRamMb = 1024,
           Session = session,
           
           // not require
@@ -158,5 +163,15 @@ Each Download~~ method check game file exist, and if file doesn't exist, downloa
      var process = launch.MakeProcess();
      process.Start();
 
-Set launch options, and Launch it!
+set launch options, and launch it!
+
+
+#### More Information
+
+**[Sample Code](https://github.com/AlphaBs/MinecraftLauncherLibrary/wiki/Sample-Code)**  
+
+launch forge : You don't need any additional work to launch forge  
+
+bugs : go to issue tab
+
 
