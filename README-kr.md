@@ -15,8 +15,7 @@
 -------------
 
 Email : ksi123456ab@naver.com  
-Discord : ksi123456ab#3719  
-KaKaoTalk : ksi123456ab
+Discord : ksi123456ab#3719
 
 라이센스
 --------------
@@ -32,7 +31,7 @@ KaKaoTalk : ksi123456ab
 Newtonaoft.Json
 DotNetZip
 
-Nuget 복구 기능을 사용하세요.
+Nuget 사용하세요.
 
 사용 방법
 -------------
@@ -130,9 +129,7 @@ ChangeProgressChange : 다운받는 파일의 진행률
          Console.WriteLine("[{0}] {1} - {2}/{3}", e.FileKind.ToString(), e.FileName, e.CurrentValue, e.MaxValue);
      }
 
-DownloadAll : 모든 게임 파일을 확인/다운로드
-
-각각의 Download~~~ 메서드는 게임파일이 있는지 확인하고 없으면 모장 서버에서 다운받는 일을 합니다.
+Download 메서드는 게임파일이 있는지 확인하고 없으면 모장 서버에서 다운받는 일을 합니다.
 
 #### 7. 실행 인수 만들고 실행
 
@@ -155,3 +152,7 @@ DownloadAll : 모든 게임 파일을 확인/다운로드
      process.Start();
 
 실행 옵션을 지정하고 실행하면 됩니다.
+
+#### 포지
+
+위 코드대로 만들면 포지실행 됩니다.
