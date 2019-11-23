@@ -100,7 +100,7 @@ You can find it at (GameDirectory)￦versions￦(any-version)￦(version-name).j
 MProfileInfo is metadata of profile, containing Name, Profile Path(Url), Type(Release, Snapshot, Old), ReleaseTime.
 and this code get profile info :
 
-     MProfilesInfo[] infos = MProfileInfo.GetProfiles();
+     MProfileInfo[] infos = MProfileInfo.GetProfiles();
 
 It will return all metadata from mojang web server and your game directory.  
 but you can choose source :
@@ -108,7 +108,7 @@ but you can choose source :
      // get profiles from mojang server
      var web = MProfileInfo.GetProfilesFromWeb();
      // get profiles from game directory
-     var local = MProfileInfi.GetProfilesFromLocal();
+     var local = MProfileInfo.GetProfilesFromLocal();
 
 #### 5. Choose ProfileInfo and Parse.
 
