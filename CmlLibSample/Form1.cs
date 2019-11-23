@@ -159,7 +159,7 @@ namespace CmlLibSample
 
             var th = new Thread(new ThreadStart(delegate
             {
-                var profile = MProfile.GetProfile(versions, nn);
+                var profile = MProfile.FindProfile(versions, nn);
 
                 DownloadGame(profile);
 
@@ -224,8 +224,8 @@ namespace CmlLibSample
             Invoke((MethodInvoker)delegate
             {
                 Lv_Status.Text = e.FileKind.ToString() + " : " + e.FileName;
-                progressBar1.Maximum = e.MaxValue;
-                progressBar1.Value = e.CurrentValue;
+                progressBar1.Maximum = e.TotalFileCount;
+                progressBar1.Value = e.ProgressedFileCount;
             });
         }
 
