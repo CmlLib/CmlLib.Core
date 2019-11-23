@@ -12,7 +12,7 @@ namespace CmlLib.Launcher
     {
         public MFile FileKind;
         public string FileName;
-        public int MaxValue;
-        public int CurrentValue;
+        public int TotalFileCount;
+        public int ProgressedFileCount;
     }
 }
