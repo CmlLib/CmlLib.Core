@@ -12,9 +12,7 @@ namespace CmlLib.Launcher
 {
     public class MProfile
     {
-        // 프로파일 파싱
-
-        public static MProfile GetProfile(MProfileInfo[] infos, string name)
+        public static MProfile FindProfile(MProfileInfo[] infos, string name)
         {
             MProfile startProfile = null;
             MProfile baseProfile = null;
@@ -30,11 +28,17 @@ namespace CmlLib.Launcher
 
             if (startProfile.IsInherted)
             {
-                baseProfile = GetProfile(infos, startProfile.ParentProfileId);
+                baseProfile = FindProfile(infos, startProfile.ParentProfileId);
                 inhert(baseProfile, startProfile);
             }
 
             return startProfile;
+        }
+
+        [Obsolete("Use 'FindProfile' Method.")]
+        public static MProfile GetProfile(MProfileInfo[] infos, string name)
+        {
+            return FindProfile(infos, name);
         }
 
         public static MProfile Parse(MProfileInfo info)
@@ -99,21 +103,6 @@ namespace CmlLib.Launcher
 
             var ype = job["type"]?.ToString();
             profile.TypeStr = ype;
-            switch (ype)
-            {
-                case "release":
-                    profile.Type = MProfileType.Release;
-                    break;
-                case "snapshot":
-                    profile.Type = MProfileType.Snapshot;
-                    break;
-                case "old_alpha":
-                    profile.Type = MProfileType.OldAlpha;
-                    break;
-                default:
-                    profile.Type = MProfileType.Unknown;
-                    break;
-            }
 
             if (job["inheritsFrom"] != null)
             {
@@ -229,12 +218,12 @@ namespace CmlLib.Launcher
             return childProfile;
         }
 
-        static string n(string t)
+        static string n(string t) // handle null string
         {
             return (t == null) ? "" : t;
         }
 
-        static bool nc(string t)
+        static bool nc(string t) // check null string
         {
             return (t == null) || (t == "");
         }
@@ -259,7 +248,7 @@ namespace CmlLib.Launcher
         public string[] GameArguments { get; private set; }
         public string[] JvmArguments { get; private set; }
         public string ReleaseTime { get; private set; } = "";
-        public MProfileType Type { get; private set; } = MProfileType.Unknown;
+        public MProfileType Type { get; private set; } = MProfileType.Release;
 
         public string TypeStr { get; private set; } = "";
 
