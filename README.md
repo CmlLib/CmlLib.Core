@@ -1,13 +1,14 @@
 ﻿Csharp Minecraft Launcher Library  
 ======================
-### CmlLib 0.0.8 <1.4 forge, optifine>
+### CmlLib 0.0.9 <1.4 forge, optifine>
 
 ### Online / Offline Login, Download, Launch with various options, Forge Support
 
-### Support All Versions, Forge
-### Sample Project(not completed) : https://github.com/AlphaBs/AlphaMinecraftLauncher
-#### instead, see CmlLibSample project in this repo
 
+### Support All Versions, Forge
+### see CmlLibSample project in this repo
+
+Only Windows (use [pml](https://github.com/AlphaBs/pml) if you want crossplatform)
 
 한국어
 -------------
@@ -18,7 +19,6 @@ Contacts
 
 Email : ksi123456ab@naver.com  
 Discord : ksi123456ab#3719  
-KaKaoTalk : ksi123456ab
 
 License
 --------------
@@ -26,6 +26,13 @@ License
 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Creative Commons Attribution-NonCommercial 4.0 International License</a>.
 
 ****NO COMMERCIAL****
+
+Crossplatform
+-------------
+This library doesn't support crossplatform. Only Windows  
+if you want Cross-Platform Minecraft Launcher Library,  
+use this python library.  
+[pml github](https://github.com/AlphaBs/pml)
 
 Dependancy
 -------------
@@ -39,15 +46,16 @@ How To Use
 
 *Sorry about my poor english skill*
 
-If you want to learn more like java runtime download, detail launch options, full methods, go to wiki
+If you want to learn more features of this library such as to download java runtime or launch with more detailed options, go to wiki
 
 **[Sample Code](https://github.com/AlphaBs/MinecraftLauncherLibrary/wiki/Sample-Code)**
 
 #### 1. Prepare
-Open the 'CmlLib' Project, restore nuget packages, build CmlLib Project.
-and add reference to 'CmlLib.dll', 'Newtonsoft.Json.dll', 'DotNetZip.dll' to your own project.
 
-write this on the top of your source code.
+Install Nuget Package 'CustomMinecraftLauncher'  
+or download dll files in Release tab (CmlLib.dll, Newtonsoft.Json.dll, DotNetZip.dll) and add reference
+
+write this on the top of your source code:  
 
 
       using CmlLib.Launcher;
@@ -58,7 +66,7 @@ You should write this code before work.
       Minecraft.Initialize("GAME_DIRECTORY");
 
 It set Game Directory that is used to download game files, load profiles, save login session, Launch, etc...  
-**DO NOT USE Relative Path. Only use abstract path.**
+**You can't use relative path.**
 
 #### 3. Login
 
@@ -73,14 +81,13 @@ It set Game Directory that is used to download game files, load profiles, save l
                "PASSWORD");
 
           if (session.result != MLoginResult.Success)
-               throw new Exception("Wrong Account");
+               throw new Exception("Failed login : " + session.result.ToString());
      }
 
      Console.WriteLine("Hello, " + session.Username);
 
 The 'session' is login result.
-if you want to connect online-mode server, you use this session to launch.
-note : you can't use old login which use username instead mojang email.
+note : you can't use old login using username instead of mojang email.
 
 or you can use offline session :
 
@@ -88,23 +95,25 @@ or you can use offline session :
 
 #### 4. Get Profile Infos
 Profile contain various data which launcher need.
-All Game Versions has its own profile, even old alpha version or forge.
-You can find at (GameDirectory)￦versions￦(any-version)￦(version-name).json.
-MProfileInfo is Profile's Metadata, contains Name, Profile Path(Url), Type(Release, Snapshot, Old), ReleaseTime.
+All Game Versions has its own profile, even old alpha version and forge.
+You can find it at (GameDirectory)￦versions￦(any-version)￦(version-name).json.
+MProfileInfo is metadata of profile, containing Name, Profile Path(Url), Type(Release, Snapshot, Old), ReleaseTime.
 and this code get profile info :
 
-     MProfilesInfo[] infos = MProfileInfo.GetProfiles();
+     MProfileInfo[] infos = MProfileInfo.GetProfiles();
 
-or you can choose source :
+It will return all metadata from mojang web server and your game directory.  
+but you can choose source :
 
      // get profiles from mojang server
      var web = MProfileInfo.GetProfilesFromWeb();
      // get profiles from game directory
-     var local = MProfileInfi.GetProfilesFromLocal();
+     var local = MProfileInfo.GetProfilesFromLocal();
 
 #### 5. Choose ProfileInfo and Parse.
 
-In order to use profile's data, you should parse Profile from ProfileInfo.
+In order to use profile data, you should parse profile.  
+This simple code will search version from metadatas, and return parsed profile data.
 
      MProfile profile = MProfile.GetProfile(infos, "1.14.4");
 
@@ -115,32 +124,23 @@ In order to use profile's data, you should parse Profile from ProfileInfo.
      downloader.ChangeProgress += change_progress;
      downloader.DownloadAll();
 
-ChangeFileChange Event : Change Download File Name
+ChangeFile : when download file was changed
 
-ChangeProgressChange : Change One File's Download Progress
+ChangeProgress : when the progress of current downloading file was changed
 
      private void Downloader_ChangeProgress(object sender, System.ComponentModel.ProgressChangedEventArgs e)
      {
+         // 20%, 30%, 80%, ...
          Console.WriteLine("{0}%", e.ProgressPercentage);
      }
  
      private void Downloader_ChangeFile(DownloadFileChangedEventArgs e)
      {
+         // [Library] hi.jar - 3/51
          Console.WriteLine("[{0}] {1} - {2}/{3}", e.FileKind.ToString(), e.FileName, e.CurrentValue, e.MaxValue);
      }
 
-DownloadAll() Method do this :
-
-     // downloader.DownloadAll() do this :
-     
-     downloader.DownloadLibrary(); // libraries
-     downloader.DownloadIndex(); // asset index
-     downloader.DownloadResource(); // assets / resources
-     downloader.DownloadMinecraft(); // game jar
-
-It's so long. so just use DownloadAll();
-
-Each Download~~ method check game file exist, and if file doesn't exist, download game file from mojang server.
+Download method check the existence of game file, and download game file from mojang server if file is not exist or not valid(compare hash).  
 
 #### 7. Make game args and Launch
 
@@ -149,7 +149,7 @@ Each Download~~ method check game file exist, and if file doesn't exist, downloa
           // must require
           StartProfile = profile,
           JavaPath = "java.exe", //SET YOUR JAVA PATH (if you want autoset, goto wiki)
-          MaximumRamMb = int.Parse(xmx),
+          MaximumRamMb = 1024,
           Session = session,
           
           // not require
@@ -162,5 +162,15 @@ Each Download~~ method check game file exist, and if file doesn't exist, downloa
      var process = launch.MakeProcess();
      process.Start();
 
-Set launch options, and Launch it!
+set launch options, and launch it!
+
+
+#### More Information
+
+**[Sample Code](https://github.com/AlphaBs/MinecraftLauncherLibrary/wiki/Sample-Code)**  
+
+launch forge : You don't need any additional work to launch forge  
+
+bugs : go to issue tab
+
 

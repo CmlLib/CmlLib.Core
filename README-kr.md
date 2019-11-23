@@ -15,8 +15,7 @@
 -------------
 
 Email : ksi123456ab@naver.com  
-Discord : ksi123456ab#3719  
-KaKaoTalk : ksi123456ab
+Discord : ksi123456ab#3719
 
 라이센스
 --------------
@@ -32,7 +31,7 @@ KaKaoTalk : ksi123456ab
 Newtonaoft.Json
 DotNetZip
 
-Nuget 복구 기능을 사용하세요.
+Nuget 사용하세요.
 
 사용 방법
 -------------
@@ -40,8 +39,12 @@ Nuget 복구 기능을 사용하세요.
 
 자바 런타임 다운로드, 세부적인 실행 옵션,  등등 모든 기능을 보고 싶다면 위키로 가세요. [wiki](https://merong)
 
+**[샘플 ](https://github.com/AlphaBs/MinecraftLauncherLibrary/wiki/Sample-Code)**
+
 #### 1. 준비
-소스코드를 다운받고, CmlLib 프로젝트를 컴파일 한 뒤에 당신의 프로젝트 파일에 CmlLib.dll , DotNetZip.dll , Newtonsoft.Json.dll 파일을 참조 추가하세요.
+
+Nuget 패키지 'CustomMinecraftLauncher' 를 설치하세요.  
+Nuget 패키지 설치방법은 인터넷 검색하면 나옵니다.  
 
 그리고 소스코드 최상단에 이걸 넣으세요 :
 
@@ -103,23 +106,7 @@ MProfileInfo 는 프로필의 이름, 경로(URL), 종류(릴리즈, 스냅샷, 
 
 프로필의 데이터를 사용하기 위해서는 MProfileInfo 의 정보를 사용해서 해당 프로필을 파싱해야 합니다.
 
-먼저, 실행할 프로필을 검색합니다. (간단한 검색 알고리즘 사용) : 
-
-     MProfile profile = null;
-     foreach (var item in infos)
-     {
-          if (item.Name == "1.7.10") // 1.7.10 검색
-          {
-                profile = item;
-                break;
-          }
-     }
-
-프로파일 파싱하기 :
-
-     MProfile profile = MProfile.Parse(info);
-
-Parse 메서드에 실행할 MProfileInfo의 인스턴스를 넣어주면 됩니다.
+     MProfile profile = MProfile.GetProfile(infos, "1.14.4");
 
 #### 6. 게임 파일 확인 / 다운로드
 
@@ -132,20 +119,17 @@ ChangeFileChange Event : 다운받는 파일이름이 바뀔때
 
 ChangeProgressChange : 다운받는 파일의 진행률
 
-DownloadAll : 모든 게임 파일을 확인/다운로드
+     private void Downloader_ChangeProgress(object sender, System.ComponentModel.ProgressChangedEventArgs e)
+     {
+         Console.WriteLine("{0}%", e.ProgressPercentage);
+     }
+ 
+     private void Downloader_ChangeFile(DownloadFileChangedEventArgs e)
+     {
+         Console.WriteLine("[{0}] {1} - {2}/{3}", e.FileKind.ToString(), e.FileName, e.CurrentValue, e.MaxValue);
+     }
 
-DownloadAll() 메서드는 아래와 같은 역할을 합니다 :
-
-     // downloader.DownloadAll() do this :
-     
-     downloader.DownloadLibrary(); // libraries
-     downloader.DownloadIndex(); // asset index
-     downloader.DownloadResource(); // assets / resources
-     downloader.DownloadMinecraft(); // game jar
-
-너무 기니까 그냥 DownloadAll() 하세요.
-
-각각의 Download~~~ 메서드는 게임파일이 있는지 확인하고 없으면 모장 서버에서 다운받는 일을 합니다.
+Download 메서드는 게임파일이 있는지 확인하고 없으면 모장 서버에서 다운받는 일을 합니다.
 
 #### 7. 실행 인수 만들고 실행
 
@@ -169,6 +153,6 @@ DownloadAll() 메서드는 아래와 같은 역할을 합니다 :
 
 실행 옵션을 지정하고 실행하면 됩니다.
 
-#### 8. 포지 실행 방법
+#### 포지
 
-위키 참고 [wiki](https://merong)
+위 코드대로 만들면 포지실행 됩니다.
