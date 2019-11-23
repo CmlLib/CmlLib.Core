@@ -41,11 +41,11 @@ namespace CmlLib.Launcher
 
             Library = path + "\\libraries\\";
             Versions = path + "\\versions\\";
-            Resource = path + "\\resource\\";
+            Resource = path + "\\resources\\";
 
             _Library = path + "\\libraries";
             _Versions = path + "\\versions";
-            _Resource = path + "\\resource";
+            _Resource = path + "\\resources";
 
             var resPath = DefaultPath;
             if (useCustomAssets)
