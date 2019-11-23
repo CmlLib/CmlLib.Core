@@ -60,9 +60,9 @@
     <Compile Include="Launcher\DownloadFileChangedEventArgs.cs" />
     <Compile Include="Launcher\MLaunchOption.cs" />
     <Compile Include="Launcher\MProfileType.cs" />
-    <Compile Include="Launcher\Downloader.cs" />
-    <Compile Include="Launcher\Launch.cs" />
-    <Compile Include="Launcher\Login.cs" />
+    <Compile Include="Launcher\MDownloader.cs" />
+    <Compile Include="Launcher\MLaunch.cs" />
+    <Compile Include="Launcher\MLogin.cs" />
     <Compile Include="Launcher\Minecraft.cs" />
     <Compile Include="Launcher\MLibrary.cs" />
     <Compile Include="Launcher\MProfileInfo.cs" />

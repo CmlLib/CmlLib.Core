@@ -103,6 +103,7 @@ namespace CmlLib.Launcher
 
             var ype = job["type"]?.ToString();
             profile.TypeStr = ype;
+            profile.Type = MProfileTypeConverter.FromString(ype);
 
             if (job["inheritsFrom"] != null)
             {
@@ -248,7 +249,7 @@ namespace CmlLib.Launcher
         public string[] GameArguments { get; private set; }
         public string[] JvmArguments { get; private set; }
         public string ReleaseTime { get; private set; } = "";
-        public MProfileType Type { get; private set; } = MProfileType.Release;
+        public MProfileType Type { get; private set; } = MProfileType.Custom;
 
         public string TypeStr { get; private set; } = "";
 
