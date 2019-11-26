@@ -11,9 +11,9 @@ using CmlLib.Launcher;
 
 namespace CmlLibSample
 {
-    public partial class Form3 : Form
+    public partial class Logout_and_Cache : Form
     {
-        public Form3()
+        public Logout_and_Cache()
         {
             InitializeComponent();
         }
