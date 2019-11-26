@@ -14,7 +14,7 @@ namespace CmlLibSample
             InitializeComponent();
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private void Main_Load(object sender, EventArgs e)
         {
             MessageBox.Show(CmlLib._Test.tstr);
 
@@ -52,7 +52,7 @@ namespace CmlLibSample
         MProfileInfo[] versions;
         MSession session;
 
-        private void Form1_Shown(object sender, EventArgs e)
+        private void Main_Shown(object sender, EventArgs e)
         {
             // 런처가 실행되었을때
             // Minecraft.init
