@@ -4,6 +4,8 @@ using CmlLib.Launcher;
 
 namespace CmlLibSample
 {
+    // Download Java Runtime
+
     public partial class Download_Form : Form
     {
         public void ChangeProgress(int p)

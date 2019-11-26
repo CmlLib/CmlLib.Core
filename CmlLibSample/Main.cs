@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using CmlLib.Launcher;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 
 namespace CmlLibSample
 {
@@ -18,7 +19,7 @@ namespace CmlLibSample
         {
             MessageBox.Show(CmlLib._Test.tstr);
 
-            // 프로그램이 켜졌을때 자바 설치되있는지 확인
+            // Check java runtime
 
             var java = new CmlLib.Utils.MJava(Minecraft.DefaultPath + "\\runtime");
             if (!java.CheckJavaw())
@@ -49,15 +50,13 @@ namespace CmlLibSample
             Txt_Java.Text = Minecraft.DefaultPath + "\\runtime\\bin\\javaw.exe";
         }
 
+        bool allowOffline = true;
         MProfileInfo[] versions;
         MSession session;
 
         private void Main_Shown(object sender, EventArgs e)
         {
-            // 런처가 실행되었을때
-            // Minecraft.init
-            // MProfileInfo 리스트 불러옴
-            // 자동 로그인 시도
+            // Initialize launcher
 
             Path.Text = Environment.GetEnvironmentVariable("appdata") + "\\.minecraft";
             var th = new Thread(new ThreadStart(delegate
@@ -73,6 +72,8 @@ namespace CmlLibSample
                     }
                 });
 
+                // Try auto login
+
                 var login = new MLogin();
                 MSession result = login.TryAutoLogin();
 
@@ -81,16 +82,17 @@ namespace CmlLibSample
 
                 MessageBox.Show("Auto Login Success!");
                 session = result;
-                Invoke((MethodInvoker)delegate { Btn_Login.Enabled = false; });
+                Invoke((MethodInvoker)delegate {
+                    Btn_Login.Enabled = false;
+                    Btn_Login.Text = "Auto Login\nSuccess";
+                });
             }));
             th.Start();
         }
 
         private void Btn_apply_Click(object sender, EventArgs e)
         {
-            // Apply 버튼 눌럿을때
-            // 다시 Minecraft.init 를 해줌
-            // 다시 프로파일 리스트를 불러옴
+            // Apply
 
             Minecraft.Initialize(Path.Text);
             versions = MProfileInfo.GetProfiles();
@@ -103,15 +105,22 @@ namespace CmlLibSample
 
         private void Btn_Login_Click(object sender, EventArgs e)
         {
-            // 로그인 버튼 눌렀을때
-            // 로그인함
+            // Login
 
             Btn_Login.Enabled = false;
             if (Txt_Pw.Text == "")
             {
-                //MessageBox.Show("배포용. 복돌기능 막혀잇습니다.");
-                session = MSession.GetOfflineSession(Txt_Email.Text);
-                MessageBox.Show("Offline login Success : " + Txt_Email.Text);
+                if (allowOffline)
+                {
+                    session = MSession.GetOfflineSession(Txt_Email.Text);
+                    MessageBox.Show("Offline login Success : " + Txt_Email.Text);
+                }
+                else
+                {
+                    MessageBox.Show("Password was empty");
+                    Btn_Login.Enabled = true;
+                    return;
+                }
             }
             else
             {
@@ -136,10 +145,7 @@ namespace CmlLibSample
 
         private void Btn_Launch_Click(object sender, EventArgs e)
         {
-            // 실행 버튼 눌렀을때
-            // 실행할 버전으로 프로파일 검색하고 패치
-            // 실행에 필요한 인수 설정
-            // 실행
+            // Launch
 
             if (session == null)
             {
@@ -151,25 +157,25 @@ namespace CmlLibSample
             groupBox1.Enabled = false;
             groupBox2.Enabled = false;
 
-            string nn = Cb_Version.Text;
-            string jj = Txt_Java.Text;
+            string startVersion = Cb_Version.Text;
+            string javaPath = Txt_Java.Text;
             string xmx = Txt_Ram.Text;
-            string ln = Txt_LauncherName.Text;
-            string server = Txt_ServerIp.Text;
+            string launcherName = Txt_LauncherName.Text;
+            string serverIp = Txt_ServerIp.Text;
 
             var th = new Thread(new ThreadStart(delegate
             {
-                var profile = MProfile.FindProfile(versions, nn);
+                var profile = MProfile.FindProfile(versions, startVersion); // Find Profile
 
-                DownloadGame(profile);
+                DownloadGame(profile); // Download game files
 
-                MLaunchOption option = new MLaunchOption()
+                MLaunchOption option = new MLaunchOption() // Set options
                 {
                     StartProfile = profile,
-                    JavaPath = jj,
-                    LauncherName = ln,
+                    JavaPath = javaPath,
+                    LauncherName = launcherName,
                     MaximumRamMb = int.Parse(xmx),
-                    ServerIp = server,
+                    ServerIp = serverIp,
                     Session = session,
                     CustomJavaParameter = Txt_JavaArgs.Text
                 };
@@ -180,18 +186,10 @@ namespace CmlLibSample
                     option.ScreenWidth = int.Parse(Txt_ScWd.Text);
                 }
 
-                MLaunch launch = new MLaunch(option);
+                MLaunch launch = new MLaunch(option); // Start Process
+                var process = launch.GetProcess();
 
-                if (true)
-                {
-                    StartDebug(launch);
-                }
-                else
-                {
-                    var pro = launch.GetProcess(); // 인수 생성 후 설정된 Process 객체 가져옴
-                    System.IO.File.WriteAllText("mcarg.txt", pro.StartInfo.Arguments); // 만들어진 인수 파일로 저장 (디버그용)
-                    pro.Start(); // Process 객체로 실행
-                }
+                DebugProcess(process);
 
                 this.Invoke((MethodInvoker)delegate
                 {
@@ -229,38 +227,14 @@ namespace CmlLibSample
             });
         }
 
-        private void invoker(string title, int max, int min) //스레드에서 상태표시
-        {
-            invoker($"{title} - {min}/{max}");
-        }
-
-        private void invoker(string msg) //스레드에서 상태표시
-        {
-            Invoke((MethodInvoker)delegate
-            {
-                Lv_Status.Text = msg;
-            });
-        }
-
         #region DEBUG PROCESS
 
-        private void StartDebug(MLaunch launch)
+        private void DebugProcess(Process process)
         {
-            Console.WriteLine("GameStartMode : Debug");
+            Console.WriteLine("Write game args");
+            File.WriteAllText("launcher.txt", process.StartInfo.Arguments);
 
-            var process = launch.GetProcess();
-
-            Console.WriteLine("Trying Write Game Args");
-            try
-            {
-                System.IO.File.WriteAllText("launcher.txt", process.StartInfo.Arguments);
-            }
-            catch
-            {
-                Console.WriteLine("Write Game Args Failed");
-            }
-
-            Console.WriteLine("Setting Debug Process");
+            Console.WriteLine("Set Debug Process");
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.RedirectStandardError = true;
             process.StartInfo.RedirectStandardOutput = true;
@@ -272,12 +246,6 @@ namespace CmlLibSample
             process.Start();
             process.BeginErrorReadLine();
             process.BeginOutputReadLine();
-
-            //Dispatcher.Invoke(new Action(delegate
-            //{
-            //    Console.WriteLine("Start Log Window");
-            //    LogWindow.Log.Show();
-            //}));
         }
 
         private void Process_OutputDataReceived(object sender, DataReceivedEventArgs e)
