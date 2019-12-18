@@ -9,7 +9,7 @@ Only for Windows (use [pml](https://github.com/AlphaBs/pml) if you want crosspla
 
 ## 한국어
 
- =====>>> [한국어 README](https://github.com/AlphaBs/MinecraftLauncherLibrary/blob/master/README-kr.md)
+ =====>>> [한국어 README](https://github.com/AlphaBs/MinecraftLauncherLibrary/blob/master/docs/README-kr.md)
 
 ## Contacts
 
