@@ -1,65 +1,66 @@
-﻿마인크래프트 런처 라이브러리
-======================
+﻿# Csharp 마인크래프트 런처 라이브러리
 
-### 정품 / 복돌 로그인, 다운로드, 다양한 옵션으로 실행, 포지 실행 가능
+## CmlLib 1.0.0
+ 
+ 모든 게임 버전 지원, 포지 지원  
+ 윈도우만 지원
 
-### 지원 버전 : 모든 버전, 포지
-### 샘플 프로젝트(미완성) : https://github.com/AlphaBs/AlphaMinecraftLauncher
-### 소스코드 안에 CmlLibSample 프로젝트 참고
-
-상업적 사용 금지.  수정 후 재사용 가능.  
-자세한 내용은 라이센스 단락을 확인하세요.  
-주문제작 문의는 아래 아이디로 디스코드 친추걸어주세요.
-
-연락
--------------
+## Contacts
 
 Email : ksi123456ab@naver.com  
-Discord : ksi123456ab#3719
+Discord : ksi123456ab#3719  
 
-라이센스
---------------
+## License
 
-<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="크리에이티브 커먼즈 라이선스" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a><br />이 저작물은 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">크리에이티브 커먼즈 저작자표시-비영리 4.0 국제 라이선스</a>에 따라 이용할 수 있습니다.
+<a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="크리에이티브 커먼즈 라이선스" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />이 저작물은 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">크리에이티브 커먼즈 저작자표시 4.0 국제 라이선스</a>에 따라 이용할 수 있습니다.
 
-****상업적 이용 금지****
+## Crossplatform
 
-종속성
--------------
+이 라이브러리는 윈도우만 지원합니다.  
+크로스플랫폼 라이브러리가 필요하다면 pml을 사용하세요.  
+[pml github](https://github.com/AlphaBs/pml)
 
+## Dependency
 
-Newtonaoft.Json
+Newtonsoft.Json  
 DotNetZip
 
-Nuget 사용하세요.
+## Functions
 
-사용 방법
--------------
+- [x] 정품/복돌 로그인
+- [x] 게임 서버에서 게임 파일 다운로드
+- [x] 모든 버전 실행 (1.14.4 까지 태스트)
+- [x] 포지, 옵티파인 등 커스텀 버전 실행 가능
+- [x] 자바 런타임 다운로드
+- [x] 다양한 실행 옵션 (서버 주소, 창 크기, 런처 이름 등)
+- [ ] .NET CORE 로 포팅 (크로스플랫폼) ([pml](https://github.com/AlphaBs/pml))
+
+## How To Use
+
+아래는 간략한 사용방법만 소개합니다. 자세한 정보는 wiki로
+
+**[Sample Code](https://github.com/AlphaBs/MinecraftLauncherLibrary/wiki/Sample-Code)**
+
+### **1. 준비**
+
+Nuget 패키지 관리자에서 'CustomMinecraftLauncher' 를 검색하고 설치하세요.  
+혹은 release 에서 dll 파일들(CmlLib.dll, Newtonsoft.Json.dll, DotNetZip.dll)을 다운받고 참조 추가를 해주세요. 
+
+소스 최상단에 아래 코드를 입력하세요 :  
 
 
-자바 런타임 다운로드, 세부적인 실행 옵션,  등등 모든 기능을 보고 싶다면 위키로 가세요. [wiki](https://merong)
+      using CmlLib.Launcher;
 
-**[샘플 ](https://github.com/AlphaBs/MinecraftLauncherLibrary/wiki/Sample-Code)**
+### **2. 게임 폴더**
 
-#### 1. 준비
+라이브러리 기능을 사용하기 전에 게임 폴더 설정을 반드시 해주세요.
 
-Nuget 패키지 'CustomMinecraftLauncher' 를 설치하세요.  
-Nuget 패키지 설치방법은 인터넷 검색하면 나옵니다.  
+      Minecraft.Initialize("게임폴더 경로");
 
-그리고 소스코드 최상단에 이걸 넣으세요 :
+위 코드가 게임 파일 다운로드, 프로필 로드, 게임 세션 저장, 실행 등에 필요한 게임 폴더를 설정합니다.  
+**절대 경로를 입력해 주세요.**
 
-
-using CmlLib.Launcher;
-
-#### 2. 마인크래프트 폴더 설정
-실행 코드를 적기 전에, 반드시 마인크래프트 폴더를 설정해야 합니다.
-
-      Minecraft.Initialize("설정할 마인크래프트 폴더의 경로");
-
-이 경로가 게임 파일을 다운로드하고, 실행할때 사용됩니다.  
-**상대 경로 사용 불가능. 반드시 절대 경로만 입력하세요.**
-
-#### 3. 로그인
+### **3. 로그인**
 
      MLogin login = new MLogin();
      MSession session = null;
@@ -68,91 +69,97 @@ using CmlLib.Launcher;
      if (session.Result != MLoginResult.Success)
      {
           session = login.Authenticate(
-               "모장 이메일",
+               "모장이메일",
                "비밀번호");
 
           if (session.result != MLoginResult.Success)
-               throw new Exception("Wrong Account");
+               throw new Exception("로그인 실패 : " + session.result.ToString());
      }
 
      Console.WriteLine("Hello, " + session.Username);
 
-'session' 변수에 로그인 결과가 저장됩니다.
-정품 서버에 접속하려면 실행할때 이 세션을 넣어주면 됩니다.
+session 변수에 로그인 결과가 저장됩니다.  
+참고 : 모장 이메일 대신 닉네임을 입력하는 옛날 로그인 방식은 사용할 수 없습니다.  
 
-아니면 복돌 세션도 사용할 수 있습니다 : 
+혹은 복돌 로그인도 사용할 수 있습니다 :
 
      MSession session = MSession.GetOfflineSession("닉네임");
 
-참고 : 정품 로그인에서 이메일 대신 닉네임으로 로그인하는 옛날 로그인 방식은 사용 불가능합니다.
+### **4. 프로필 불러오기**
 
-#### 4. 프로필 정보 가져오기
-프로필에는 실행에 필요한 다양한 정보가 포함되어 있습니다.
-모든 버전들은 자신만의 프로필이 있습니다. 스냅샷, 옛날 버전들, 포지조차도 자신의 프로필이 있습니다.
-이 프로필은 (마크경로)￦versions￦(아무 버전)￦(버전이름).json 파일에 있습니다.
-MProfileInfo 는 프로필의 이름, 경로(URL), 종류(릴리즈, 스냅샷, 올드), 릴리즈타임이 포함된 메타데이터가 들어있는 클래스입니다.
-아래 코드로 모든 MProfileInfo 들을 가져올 수 있습니다 :
+프로필은 런처에서 사용하는 다양한 정보가 포함되어 있습니다. 모든 버전은 프로필을 가지고 있으며,  (GameDirectory)￦versions￦(any-version)￦(version-name).json 파일 혹은 모장 서버에 저장되어 있습니다.  
 
-     MProfilesInfo[] infos = MProfileInfo.GetProfiles();
+MProfileInfo 은 프로필의 메타데이터를 나타내는 클래스입니다. 
 
-아니면 프로필 정보를 가져올 곳을 선택할 수도 있습니다.
+     MProfileInfo[] infos = MProfileInfo.GetProfiles();
+     foreach (var item in infos)
+     {
+          Console.WriteLine(item.Type + " : " + item.Name);
+     }
 
-     // 모장 서버에서 가져오기
-     var web = MProfileInfo.GetProfilesFromWeb();
-     // versions 폴더에서 가져오기
-     var local = MProfileInfi.GetProfilesFromLocal();
+위 코드는 모장 서버에 저장된 프로필과 게임 폴더에 저장된 모든 프로필을 표시합니다.  
 
-#### 5. 프로필을 선택하고 파싱
+### **5. 프로필 선택, 파싱**
 
-프로필의 데이터를 사용하기 위해서는 MProfileInfo 의 정보를 사용해서 해당 프로필을 파싱해야 합니다.
+프로필을 사용하기 위해서는 프로필을 파싱해야 합니다. 아래 코드는 프로필을 찾고 파싱해서 반환해줍니다.  
 
-     MProfile profile = MProfile.GetProfile(infos, "1.14.4");
+     MProfile profile = MProfile.FindProfile(infos, "1.14.4");
 
-#### 6. 게임 파일 확인 / 다운로드
+### **6. 게임 파일 확인/다운로드**
 
-     MDownloader downloader = new MDownloader(profile); // 위에서 파싱한 프로필
-     downloader.ChangeFileChange += change_file;
-     downloader.ChangeProgressChange += change_progress;
+     MDownloader downloader = new MDownloader(profile);
+     downloader.ChangeFile += change_file;
+     downloader.ChangeProgress += change_progress;
      downloader.DownloadAll();
 
-ChangeFileChange Event : 다운받는 파일이름이 바뀔때
-
-ChangeProgressChange : 다운받는 파일의 진행률
+다운로드 이벤트 헨들러 :  
 
      private void Downloader_ChangeProgress(object sender, System.ComponentModel.ProgressChangedEventArgs e)
      {
+         // 다운로드하는 파일의 진행률
+         // 20%, 30%, 80%, ...
          Console.WriteLine("{0}%", e.ProgressPercentage);
      }
  
      private void Downloader_ChangeFile(DownloadFileChangedEventArgs e)
      {
-         Console.WriteLine("[{0}] {1} - {2}/{3}", e.FileKind.ToString(), e.FileName, e.CurrentValue, e.MaxValue);
+         // 다운로드하는 파일이 바뀌었을때
+         // [Library] hi.jar - 3/51
+         Console.WriteLine("[{0}] {1} - {2}/{3}", e.FileKind.ToString(), e.FileName, e.ProgressedFileCount, e.TotalFileCount);
      }
 
-Download 메서드는 게임파일이 있는지 확인하고 없으면 모장 서버에서 다운받는 일을 합니다.
+DownloadAll() 메서드는 게임 파일의 존재 여부, 무결성을 검사하고 올바르지 않은 파일이라면 게임 파일을 모장 서버에서 다운로드하는 역할을 합니다.   
 
-#### 7. 실행 인수 만들고 실행
+### **7. 게임 인수 생성 후 실행**
 
      var option = new MLaunchOption()
      {
-          // 필수 옵션
+          // 필수 인수
           StartProfile = profile,
-          JavaPath = "java.exe", //자바 경로 (자동 자바 설치는 위키 참고)
-          MaximumRamMb = 1024,
-          Session = session, // 로그인 세션
+          JavaPath = "java.exe", //자바 경로 설정
+          MaximumRamMb = 1024, // MB
+          Session = session,
           
           // 필수 아님
-          ServerIP = "", // 설정한 아이피로 바로 잡속
-          LauncherName = "", // 메인 화면에 표시할 런처 이름
-          CustomJavaParameter = "" // 커스텀 자바 파라미터
+          ServerIP = "", // 서버로 바로 접속
+          LauncherName = "", // 게임 메인화면에 런처 이름 표시
+          CustomJavaParameter = "" // JVM 인수 설정
      };
      
      var launch = new MLaunch(option);
-     var process = launch.MakeProcess();
+     var process = launch.GetProcess();
      process.Start();
 
-실행 옵션을 지정하고 실행하면 됩니다.
+게임 옵션을 설정하고 실행하면 됩니다.  
 
-#### 포지
+### **8. More Information**
 
-위 코드대로 만들면 포지실행 됩니다.
+**[Sample Code](https://github.com/AlphaBs/MinecraftLauncherLibrary/wiki/Sample-Code)**  
+
+포지 실행 : 위 코드대로 만들면 실행 됩니다. 
+
+버그 : issue 에서 알려주세요.
+
+
+
+
