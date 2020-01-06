@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using System.Net;
 using System.IO;
@@ -48,8 +45,7 @@ namespace CmlLib.Launcher
 
     public class MLogin
     {
-
-        public static readonly string DefaultLoginSessionFile = Minecraft.DefaultPath + "\\logintoken.json";
+        public static readonly string DefaultLoginSessionFile = Path.Combine(Minecraft.GetOSDefaultPath(), "logintoken.json");
 
         public MLogin() : this(DefaultLoginSessionFile) { }
 
@@ -119,7 +115,7 @@ namespace CmlLib.Launcher
 
         private HttpWebResponse mojangRequest(string endpoint, string postdata)
         {
-            var http = WebRequest.CreateHttp("https://authserver.mojang.com/" + endpoint);
+            var http = WebRequest.CreateHttp(MojangServer.Auth + endpoint);
             http.ContentType = "application/json";
             http.Method = "POST";
             using (var req = new StreamWriter(http.GetRequestStream()))

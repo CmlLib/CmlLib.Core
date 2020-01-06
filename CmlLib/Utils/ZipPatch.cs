@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Threading;
 using System.Net;
-using Ionic.Zip;
+using System.ComponentModel;
 
 namespace CmlLib.Utils
 {
     public class ZipPatch
     {
-        public event DownloadProgressChangedEventHandler DownloadProgressChanged;
+        public event ProgressChangedEventHandler DownloadProgressChanged;
 
         public string PatchVerUrl = "";
         public string PatchZipUrl = "";
@@ -55,7 +55,7 @@ namespace CmlLib.Utils
             Directory.CreateDirectory(tmpZipPath);
 
             //압축파일 저장 경로
-            var path = tmpZipPath + @"\tmp.zip";
+            var path = Path.Combine(tmpZipPath, "tmp.zip");
 
             try
             {
@@ -64,7 +64,7 @@ namespace CmlLib.Utils
                 {
                     if (!noupdate.Contains(item.Name))
                     {
-                        DeleteDirectory(item.FullName);
+                        IOUtil.DeleteDirectory(item.FullName);
                     }
 
                 }
@@ -89,31 +89,14 @@ namespace CmlLib.Utils
 
             Directory.CreateDirectory(PatchPath);
 
-            using (var zip = ZipFile.Read(path))
+            var z = new SharpZip(path);
+            z.ProgressEvent += (object s, int p) =>
             {
-                zip.ExtractAll(PatchPath, ExtractExistingFileAction.OverwriteSilently);
-            }
+                DownloadProgressChanged?.Invoke(this, new ProgressChangedEventArgs(p, null));
+            };
+            z.Unzip(PatchPath);
 
             File.WriteAllText(LocalVerPath, webver);
-        }
-
-        private static void DeleteDirectory(string target_dir)
-        {
-            string[] files = Directory.GetFiles(target_dir);
-            string[] dirs = Directory.GetDirectories(target_dir);
-
-            foreach (string file in files)
-            {
-                File.SetAttributes(file, FileAttributes.Normal);
-                File.Delete(file);
-            }
-
-            foreach (string dir in dirs)
-            {
-                DeleteDirectory(dir);
-            }
-
-            Directory.Delete(target_dir, true);
         }
     }
 }

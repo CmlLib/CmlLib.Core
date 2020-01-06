@@ -1,9 +1,7 @@
 ﻿using System;
-using System.IO.Compression;
 using System.Net;
 using System.IO;
 using Newtonsoft.Json.Linq;
-using System.Threading;
 using System.ComponentModel;
 
 namespace CmlLib.Launcher
@@ -83,7 +81,7 @@ namespace CmlLib.Launcher
         /// </summary>
         public void DownloadIndex()
         {
-            string path = Minecraft.Index + profile.AssetId + ".json";
+            string path = Path.Combine(Minecraft.Index, profile.AssetId + ".json");
 
             if (profile.AssetUrl != "" && !CheckFileValidation(path, profile.AssetHash))
             {
@@ -101,7 +99,7 @@ namespace CmlLib.Launcher
         /// </summary>
         public void DownloadResource()
         {
-            var indexpath = Minecraft.Index + profile.AssetId + ".json";
+            var indexpath = Path.Combine(Minecraft.Index, profile.AssetId + ".json");
             if (!File.Exists(indexpath)) return;
 
             using (var wc = new WebClient())
@@ -130,9 +128,9 @@ namespace CmlLib.Launcher
 
                     // download hash resource
                     var hash = job["hash"]?.ToString();
-                    var hashName = hash.Substring(0, 2) + "\\" + hash;
-                    var hashPath = Minecraft.AssetObject + hashName;
-                    var hashUrl = "http://resources.download.minecraft.net/" + hashName;
+                    var hashName = hash.Substring(0, 2) + "/" + hash;
+                    var hashPath = Path.Combine(Minecraft.AssetObject, hashName);
+                    var hashUrl = MojangServer.ResourceDownload + hashName;
                     Directory.CreateDirectory(Path.GetDirectoryName(hashPath));
 
                     if (!File.Exists(hashPath))
@@ -140,7 +138,7 @@ namespace CmlLib.Launcher
 
                     if (isVirtual)
                     {
-                        var resPath = Minecraft.AssetLegacy + item.Key;
+                        var resPath = Path.Combine(Minecraft.AssetLegacy, item.Key);
 
                         if (!File.Exists(resPath))
                         {
@@ -151,7 +149,7 @@ namespace CmlLib.Launcher
 
                     if (mapResource)
                     {
-                        var resPath = Minecraft.Resource + item.Key;
+                        var resPath = Path.Combine(Minecraft.Resource, item.Key);
 
                         if (!File.Exists(resPath))
                         {
@@ -175,10 +173,10 @@ namespace CmlLib.Launcher
             l(MFile.Minecraft, profile.Jar, 1, 0);
 
             string id = profile.Jar;
-            var path = Minecraft.Versions + id + "\\" + id + ".jar";
+            var path = Path.Combine(Minecraft.Versions, id, id + ".jar");
             if (!CheckFileValidation(path, profile.ClientHash))
             {
-                Directory.CreateDirectory(Minecraft.Versions + id); 
+                Directory.CreateDirectory(Path.Combine(Minecraft.Versions, id)); 
                 web.DownloadFile(profile.ClientDownloadUrl, path);
             }
 

@@ -1,15 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CmlLib.Launcher
 {
     public class Minecraft
     {
-        public static string DefaultPath = Environment.GetEnvironmentVariable("appdata") + "\\.minecraft";
+        public readonly static string
+            MacDefaultPath = "",
+            LinuxDefaultPath = "",
+            WindowsDefaultPath = Environment.GetEnvironmentVariable("appdata") + "\\.minecraft";
 
         public static string path = "";
         public static string Library;
@@ -20,55 +19,55 @@ namespace CmlLib.Launcher
         public static string AssetObject;
         public static string AssetLegacy;
 
-        public static string _Path;
-        public static string _Library;
-        public static string _Versions;
-        public static string _Resource;
-        public static string _Index;
-        public static string _Assets;
-        public static string _AssetObject;
-        public static string _AssetLegacy;
+        /// <summary>
+        /// Set Minecraft Path
+        /// </summary>
+        public static void Initialize(string p)
+        {
+            Initialize(p, p);
+        }
 
         /// <summary>
         /// Set Minecraft Path
         /// </summary>
         /// <param name="p">path</param>
-        /// <param name="useCustomAssets">if useCustomAssets is false, it will set aseets dir to %appdata%\.minecraft\assets</param>
-        public static void Initialize(string p,bool useCustomAssets = false)
+        /// <param name="assetsPath">set base path of Index, Assets, AssetObject, AssetLegacy</param>
+        public static void Initialize(string p, string assetsPath)
         {
-            path = p;
-            _Path = p;
+            path = c(p);
 
-            Library = path + "\\libraries\\";
-            Versions = path + "\\versions\\";
-            Resource = path + "\\resources\\";
+            Library = c(path + "/libraries");
+            Versions = c(path + "/versions");
+            Resource = c(path + "/resources");
 
-            _Library = path + "\\libraries";
-            _Versions = path + "\\versions";
-            _Resource = path + "\\resources";
+            Index = c(assetsPath + "/assets/indexes");
+            Assets = c(assetsPath + "/assets");
+            AssetObject = c(Assets + "/objects");
+            AssetLegacy = c(Assets + "/virtual/legacy");
+        }
 
-            var resPath = DefaultPath;
-            if (useCustomAssets)
-                resPath = path;
+        static string c(string path)
+        {
+            var p = Path.GetFullPath(path);
+            if (!Directory.Exists(p))
+                Directory.CreateDirectory(p);
 
-            Index = resPath + "\\assets\\indexes\\";
-            Assets = resPath + "\\assets\\";
-            AssetObject = Assets + "objects\\";
-            AssetLegacy = Assets + "virtual\\legacy\\";
+            return p;
+        }
 
-            _Index = resPath + "\\assets\\indexes";
-            _Assets = resPath + "\\assets";
-            _AssetObject = Assets + "objects";
-            _AssetLegacy = Assets + "virtual\\legacy";
-
-            Directory.CreateDirectory(Library);
-            Directory.CreateDirectory(Versions);
-            Directory.CreateDirectory(Index);
-            Directory.CreateDirectory(Resource);
-            Directory.CreateDirectory(AssetObject);
-            Directory.CreateDirectory(AssetLegacy);
-
-            path += "\\";
+        public static string GetOSDefaultPath()
+        {
+            switch (MRule.OSName)
+            {
+                case "osx":
+                    return MacDefaultPath;
+                case "linux":
+                    return LinuxDefaultPath;
+                case "windows":
+                    return WindowsDefaultPath;
+                default:
+                    return Environment.CurrentDirectory;
+            }
         }
     }
 }

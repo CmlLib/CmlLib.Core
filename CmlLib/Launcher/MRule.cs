@@ -1,22 +1,24 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CmlLib.Launcher
 {
     public class MRule
     {
-        public MRule()
+        static MRule()
         {
             OSName = getOSName();
+
+            if (Environment.Is64BitOperatingSystem)
+                Arch = "64";
+            else
+                Arch = "32";
         }
 
-        public string OSName { get; private set; }
+        public static string OSName { get; private set; }
+        public static string Arch { get; private set; }
 
-        private string getOSName()
+        private static string getOSName()
         {
             var osType = Environment.OSVersion.Platform;
 

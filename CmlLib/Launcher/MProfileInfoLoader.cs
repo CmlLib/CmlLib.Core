@@ -43,7 +43,7 @@ namespace CmlLib.Launcher
             for (int i = 0; i < dirs.Length; i++)
             {
                 var dir = dirs[i];
-                var filepath = dir.FullName + "\\" + dir.Name + ".json";
+                var filepath = System.IO.Path.Combine(dir.FullName, dir.Name + ".json");
                 if (File.Exists(filepath))
                 {
                     var info = new MProfileInfo();
@@ -65,7 +65,7 @@ namespace CmlLib.Launcher
             JArray jarr;
             using (WebClient wc = new WebClient())
             {
-                var jobj = JObject.Parse(wc.DownloadString("https://launchermeta.mojang.com/mc/game/version_manifest.json"));
+                var jobj = JObject.Parse(wc.DownloadString(MojangServer.Profile));
                 jarr = JArray.Parse(jobj["versions"].ToString());
             }
 

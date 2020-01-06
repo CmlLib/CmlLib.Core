@@ -1,12 +1,9 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CmlLib.Launcher
 {
@@ -115,9 +112,9 @@ namespace CmlLib.Launcher
 
             if (writeProfile)
             {
-                var path = Minecraft.Versions + profile.Id;
+                var path = Path.Combine(Minecraft.Versions, profile.Id);
                 Directory.CreateDirectory(path);
-                File.WriteAllText(path + "\\" + profile.Id + ".json", json);
+                File.WriteAllText(Path.Combine(path, profile.Id + ".json"), json);
             }
 
             return profile;

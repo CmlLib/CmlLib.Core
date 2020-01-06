@@ -24,7 +24,6 @@ namespace CmlLib.Launcher
         internal class Parser
         {
             public static bool CheckOSRules = true;
-            static string DefaultLibraryServer = "https://libraries.minecraft.net/";
 
             public static MLibrary[] ParseJson(JArray json)
             {
@@ -47,54 +46,43 @@ namespace CmlLib.Launcher
                         }
 
                         // FORGE library
-                        if (item["downloads"] == null)
+                        var downloads = item["downloads"];
+                        if (downloads == null)
                         {
-                            bool isn = item["natives"]?["windows"] != null;
-                            var nativeStr = "";
-                            if (isn)
-                                nativeStr = item["natives"]["windows"].ToString();
+                            var natives = downloads["natives"];
+                            var nativeId = "";
 
-                            if (name == null) continue;
+                            if (natives != null)
+                                nativeId = natives[MRule.OSName]?.ToString();
 
-                            list.Add(createMLibrary(name, nativeStr, item));
+                            list.Add(createMLibrary(name, nativeId, item));
 
                             continue;
                         }
 
                         // NATIVE library
-                        var classif = item["downloads"]["classifiers"];
+                        var classif = item["downloads"]?["classifiers"];
                         if (classif != null)
                         {
-                            JObject job = null;
-                            bool isgo = true;
-
                             var nativeId = "";
 
-                            if (classif["natives-windows-64"] != null && Environment.Is64BitOperatingSystem)
-                                nativeId = "natives-windows-64";
-                            else if (classif["natives-windows-32"] != null)
-                                nativeId = "natives-windows-32";
-                            else if (classif["natives-windows"] != null)
-                                nativeId = "natives-windows";
-                            else
-                                isgo = false;
+                            var nativeObj = item["natives"];
+                            if (nativeObj != null)
+                                nativeId = nativeObj[MRule.OSName]?.ToString();
 
-                            job = (JObject)classif[nativeId];
-
-                            if (isgo)
+                            if (nativeId != null && classif[nativeId] != null)
                             {
-                                var obj = createMLibrary(name, nativeId, job);
-                                list.Add(obj);
+                                nativeId = nativeId.Replace("${arch}", MRule.Arch);
+                                var lObj = (JObject)classif[nativeId];
+                                list.Add(createMLibrary(name, nativeId, lObj));
                             }
                         }
 
                         // COMMON library
-                        var arti = item["downloads"]["artifact"];
+                        var arti = item["downloads"]?["artifact"];
                         if (arti != null)
                         {
-                            var job = (JObject)arti;
-
-                            var obj = createMLibrary(name, "", job);
+                            var obj = createMLibrary(name, "", (JObject)arti);
                             list.Add(obj);
                         }
                     }
@@ -140,7 +128,7 @@ namespace CmlLib.Launcher
 
                 var url = job["url"]?.ToString();
                 if (url == null)
-                    url = DefaultLibraryServer + path;
+                    url = MojangServer.Library + path;
                 else if (url.Split('/').Last() == "")
                     url += path;
 
@@ -148,7 +136,7 @@ namespace CmlLib.Launcher
                 library.Hash = job["sha1"]?.ToString() ?? "";
                 library.IsNative = (nativeId != "");
                 library.Name = name;
-                library.Path = Minecraft.Library + path;
+                library.Path = System.IO.Path.Combine(Minecraft.Library, path);
                 library.Url = url;
 
                 return library;

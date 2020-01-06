@@ -2,16 +2,15 @@
 using System.IO;
 using System.Net;
 using Newtonsoft.Json.Linq;
-using System.Diagnostics;
 using System.Threading.Tasks;
-using Ionic.Zip;
 using System.ComponentModel;
+using CmlLib.Launcher;
 
 namespace CmlLib.Utils
 {
     public class MJava
     {
-        public static string DefaultRuntimeDirectory = CmlLib.Launcher.Minecraft.DefaultPath + "\\runtime";
+        public static string DefaultRuntimeDirectory = Path.Combine(Minecraft.GetOSDefaultPath(), "runtime");
 
         public event ProgressChangedEventHandler DownloadProgressChanged;
         public event EventHandler DownloadCompleted;
@@ -27,12 +26,12 @@ namespace CmlLib.Utils
 
         public bool CheckJava()
         {
-            return File.Exists(RuntimeDirectory + "\\bin\\java.exe");
+            return File.Exists(Path.Combine(RuntimeDirectory, "bin", "java.exe"));
         }
 
         public bool CheckJavaw()
         {
-            return File.Exists(RuntimeDirectory + "\\bin\\javaw.exe");
+            return File.Exists(Path.Combine(RuntimeDirectory, "bin", "javaw.exe"));
         }
 
         string WorkingPath;
@@ -40,10 +39,10 @@ namespace CmlLib.Utils
         {
             string json = "";
 
-            WorkingPath = Path.GetTempPath() + "\\temp_download_runtime";
+            WorkingPath = Path.Combine(Path.GetTempPath(), "temp_download_runtime");
 
             if (Directory.Exists(WorkingPath))
-                DeleteDirectory(WorkingPath);
+                IOUtil.DeleteDirectory(WorkingPath);
             Directory.CreateDirectory(WorkingPath);
 
             using (var wc = new WebClient())
@@ -56,7 +55,7 @@ namespace CmlLib.Utils
                 Directory.CreateDirectory(RuntimeDirectory);
                 wc.DownloadProgressChanged += Wc_DownloadProgressChanged;
                 wc.DownloadFileCompleted += Wc_DownloadFileCompleted;
-                wc.DownloadFileAsync(new Uri(url), WorkingPath + "\\javatemp.lzma");
+                wc.DownloadFileAsync(new Uri(url), Path.Combine(WorkingPath, "javatemp.lzma"));
             }
         }
 
@@ -64,10 +63,10 @@ namespace CmlLib.Utils
         {
             string json = "";
 
-            WorkingPath = Path.GetTempPath() + "\\temp_download_runtime";
+            WorkingPath = Path.Combine(Path.GetTempPath(), "temp_download_runtime");
 
             if (Directory.Exists(WorkingPath))
-                DeleteDirectory(WorkingPath);
+                IOUtil.DeleteDirectory(WorkingPath);
             Directory.CreateDirectory(WorkingPath);
 
             using (var wc = new WebClient())
@@ -80,7 +79,7 @@ namespace CmlLib.Utils
                 Directory.CreateDirectory(RuntimeDirectory);
                 wc.DownloadProgressChanged += Wc_DownloadProgressChanged;
                 wc.DownloadFileCompleted += Wc_DownloadFileCompleted;
-                await wc.DownloadFileTaskAsync(new Uri(url), WorkingPath + "\\javatemp.lzma");
+                await wc.DownloadFileTaskAsync(new Uri(url), Path.Combine(WorkingPath, "javatemp.lzma"));
             }
         }
 
@@ -88,10 +87,10 @@ namespace CmlLib.Utils
         {
             string json = "";
 
-            WorkingPath = Path.GetTempPath() + "\\temp_download_runtime";
+            WorkingPath = Path.Combine(Path.GetTempPath(), "temp_download_runtime");
 
             if (Directory.Exists(WorkingPath))
-                DeleteDirectory(WorkingPath);
+                IOUtil.DeleteDirectory(WorkingPath);
             Directory.CreateDirectory(WorkingPath);
 
             var javaUrl = "";
@@ -107,7 +106,7 @@ namespace CmlLib.Utils
 
             var downloader = new CmlLib.Launcher.WebDownload();
             downloader.DownloadProgressChangedEvent += Downloader_DownloadProgressChangedEvent;
-            downloader.DownloadFile(javaUrl, WorkingPath + "\\javatemp.lzma");
+            downloader.DownloadFile(javaUrl, Path.Combine(WorkingPath, "javatemp.lzma"));
 
             DownloadComplete();
         }
@@ -121,22 +120,16 @@ namespace CmlLib.Utils
         {
             DownloadCompleted?.Invoke(this, new EventArgs());
 
-            var lzma = WorkingPath + "\\javatemp.lzma";
-            var zip = WorkingPath + "\\javatemp.zip";
+            var lzma = Path.Combine(WorkingPath, "javatemp.lzma");
+            var zip = Path.Combine(WorkingPath, "javatemp.zip");
 
             SevenZipWrapper.DecompressFileLZMA(lzma, zip);
-            using (var extractor = ZipFile.Read(zip))
-            {
-                extractor.ExtractAll(RuntimeDirectory, ExtractExistingFileAction.OverwriteSilently);
-            }
+            var z = new SharpZip(zip);
+            z.Unzip(RuntimeDirectory);
 
-            if (!File.Exists(RuntimeDirectory + "\\bin\\javaw.exe"))
+            if (!CheckJavaw())
             {
-                try
-                {
-                    DeleteDirectory(RuntimeDirectory);
-                }
-                catch { }
+                IOUtil.DeleteDirectory(WorkingPath);
                 throw new Exception("Failed Download");
             }
 
@@ -151,25 +144,6 @@ namespace CmlLib.Utils
         private void Wc_DownloadProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             DownloadProgressChanged?.Invoke(this, e);
-        }
-
-        private static void DeleteDirectory(string target_dir)
-        {
-            string[] files = Directory.GetFiles(target_dir);
-            string[] dirs = Directory.GetDirectories(target_dir);
-
-            foreach (string file in files)
-            {
-                File.SetAttributes(file, FileAttributes.Normal);
-                File.Delete(file);
-            }
-
-            foreach (string dir in dirs)
-            {
-                DeleteDirectory(dir);
-            }
-
-            Directory.Delete(target_dir, true);
         }
     }
 }

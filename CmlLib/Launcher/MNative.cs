@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
-using CmlLib.Launcher;
-using Ionic.Zip;
+using CmlLib.Utils;
 
 namespace CmlLib.Launcher
 {
@@ -24,7 +23,7 @@ namespace CmlLib.Launcher
         {
             var ran = new Random();
             int random = ran.Next(10000, 99999);
-            string path = Minecraft.Versions + profile.Id + "\\natives-" + random.ToString();
+            string path = Path.Combine(Minecraft.Versions, profile.Id, "natives-" + random.ToString());
             ExtractNatives(profile, path);
             return path;
         }
@@ -39,10 +38,8 @@ namespace CmlLib.Launcher
                 {
                     if (item.IsNative)
                     {
-                        using (var zip = ZipFile.Read(item.Path))
-                        {
-                            zip.ExtractAll(path, ExtractExistingFileAction.OverwriteSilently);
-                        }
+                        var z = new SharpZip(item.Path);
+                        z.Unzip(path);
                     }
                 }
                 catch { }
@@ -56,31 +53,13 @@ namespace CmlLib.Launcher
             try
             {
                 DirectoryInfo di = new DirectoryInfo(Minecraft.Versions + LaunchOption.StartProfile.Id);
-                foreach (var item in di.GetDirectories("native*"))
+                foreach (var item in di.GetDirectories())
                 {
-                    DeleteDirectory(item.FullName);
+                    if (item.Name.Contains("natives"))
+                        IOUtil.DeleteDirectory(item.FullName);
                 }
             }
             catch { }
-        }
-
-        private void DeleteDirectory(string target_dir)
-        {
-            string[] files = Directory.GetFiles(target_dir);
-            string[] dirs = Directory.GetDirectories(target_dir);
-
-            foreach (string file in files)
-            {
-                File.SetAttributes(file, FileAttributes.Normal);
-                File.Delete(file);
-            }
-
-            foreach (string dir in dirs)
-            {
-                DeleteDirectory(dir);
-            }
-
-            Directory.Delete(target_dir, true);
         }
     }
 }
