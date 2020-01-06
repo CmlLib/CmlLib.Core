@@ -9,14 +9,8 @@ using System.IO;
 
 namespace CmlLib.Launcher
 {
-    /// <summary>
-    /// 로그인 결과를 알려줍니다. 
-    /// </summary>
     public enum MLoginResult { Success, BadRequest, WrongAccount, NeedLogin, UnknownError }
 
-    /// <summary>
-    /// 닉네임, 엑세스토큰, UUID 가 저장된 세션 클래스입니다.
-    /// </summary>
     public class MSession
     {
         public string Username { get; internal set; }
@@ -173,10 +167,10 @@ namespace CmlLib.Launcher
                     result.UUID = jObj["selectedProfile"]["id"].ToString();
                     result.Username = jObj["selectedProfile"]["name"].ToString();
 
-                    WriteLogin(result); //로그인 정보 쓰기
+                    WriteLogin(result);
                     result.Result = MLoginResult.Success;
                 }
-                else //로그인이 실패하였을때
+                else // fail to login
                 {
                     var json = JObject.Parse(Response); 
 
@@ -215,7 +209,7 @@ namespace CmlLib.Launcher
             return result;
         }
 
-        public MSession Refresh() //엑세스 토큰 새로가져오기
+        public MSession Refresh()
         {
             var result = new MSession();
 
@@ -240,7 +234,7 @@ namespace CmlLib.Launcher
                 {
                     var response = res.ReadToEnd();
                     result._RawResponse = response;
-                    JObject job = JObject.Parse(response); //json 파일 파싱
+                    JObject job = JObject.Parse(response);
 
                     result.AccessToken = job["accessToken"].ToString();
                     result.AccessToken = job["accessToken"].ToString();
@@ -248,7 +242,7 @@ namespace CmlLib.Launcher
                     result.Username = job["selectedProfile"]["name"].ToString();
                     result.ClientToken = session.ClientToken;
 
-                    WriteLogin(result); //로그인 정보 쓰기
+                    WriteLogin(result);
                     result.Result = MLoginResult.Success;
                 }
             }
@@ -260,10 +254,8 @@ namespace CmlLib.Launcher
             return result;
         }
 
-        public MSession Validate() //현재 토큰이 유효한 토큰인지 검사
+        public MSession Validate()
         {
-            //(오래된 토큰은 사용불가능하므로 RefreshLogin 메서드로 새로가져와야함)
-
             var result = new MSession();
             try
             {

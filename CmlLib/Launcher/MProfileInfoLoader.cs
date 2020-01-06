@@ -9,12 +9,11 @@ namespace CmlLib.Launcher
     public partial class MProfileInfo
     {
         /// <summary>
-        /// 웹, 로컬에 있는 모든 프로파일을 가져옵니다.
+        /// Get All MProfileInfo from mojang server and local
         /// </summary>
-        /// <returns>프로파일 리스트</returns>
         public static MProfileInfo[] GetProfiles()
         {
-            var list = new List<MProfileInfo>(GetProfilesFromLocal());
+            var list = new HashSet<MProfileInfo>(GetProfilesFromLocal());
             foreach (var item in GetProfilesFromWeb()) //다음 웹 프로파일을 불러옴
             {
                 bool isexist = false;
@@ -34,10 +33,8 @@ namespace CmlLib.Launcher
         }
 
         /// <summary>
-        /// 설정한 경로에서 다운로드된 프로파일 목록을 검색하고 반환합니다. 
+        /// Get All MProfileInfo from local
         /// </summary>
-        /// <param name="path">검색할 폴더의 경로</param>
-        /// <returns>프로파일 리스트</returns>
         public static MProfileInfo[] GetProfilesFromLocal()
         {
             var dirs = new DirectoryInfo(Minecraft.Versions).GetDirectories();
@@ -61,9 +58,8 @@ namespace CmlLib.Launcher
         }
 
         /// <summary>
-        /// 모장 서버에서 존재하는 모든 프로파일을 가져와 반환합니다.
+        /// Get All MProfileInfo from mojang server
         /// </summary>
-        /// <returns>프로파일 리스트</returns>
         public static MProfileInfo[] GetProfilesFromWeb()
         {
             JArray jarr;

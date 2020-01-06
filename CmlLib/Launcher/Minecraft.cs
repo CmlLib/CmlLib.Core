@@ -30,10 +30,10 @@ namespace CmlLib.Launcher
         public static string _AssetLegacy;
 
         /// <summary>
-        /// 설정한 경로를 게임 실행, 다운로드 경로로 설정합니다.
+        /// Set Minecraft Path
         /// </summary>
-        /// <param name="p">경로</param>
-        /// <param name="useCustomAssets">true 로 설정하면 다운로드 시간 단축을 위한 경로 통합을 사용하지 않게 할 수 있습니다.</param>
+        /// <param name="p">path</param>
+        /// <param name="useCustomAssets">if useCustomAssets is false, it will set aseets dir to %appdata%\.minecraft\assets</param>
         public static void Initialize(string p,bool useCustomAssets = false)
         {
             path = p;

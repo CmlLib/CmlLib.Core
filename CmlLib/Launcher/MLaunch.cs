@@ -8,14 +8,9 @@ using System.Text;
 
 namespace CmlLib.Launcher
 {
-    /// <summary>
-    /// 게임 실행에 필요한 파라미터 생성, 게임 실행을 합니다.
-    /// </summary>
+
     public class MLaunch
     {
-        /// <summary>
-        /// 기본 자바 파라미터
-        /// </summary>
         public static string DefaultJavaParameter =
                 "-XX:+UnlockExperimentalVMOptions " +
                 "-XX:+UseG1GC " +
@@ -34,19 +29,18 @@ namespace CmlLib.Launcher
         public MLaunchOption LaunchOption { get; private set; }
 
         /// <summary>
-        /// 설정한 프로퍼티로 인수를 만들고 게임을 실행합니다.
+        /// Start Game
         /// </summary>
-        /// <param name="isdebug">true 로 설정하면 디버그 모드가 됩니다.</param>
+        /// <param name="isdebug">if isdebug is true, game output will be printed.</param>
         public void Start(bool isdebug = false)
         {
             GetProcess(isdebug).Start();
         }
 
         /// <summary>
-        /// 설정한 프로퍼티로 인수를 만들어 Process 객체를 만들고 반환합니다.
+        /// Build game process and return it
         /// </summary>
-        /// <param name="isdebug">true 로 설정하면 디버그 모드가 됩니다.</param>
-        /// <returns>만들어진 Process 객체</returns>
+        /// <param name="isdebug">if isdebug is true, game output will be printed.</param>
         public Process GetProcess(bool isdebug = false)
         {
             var native = new MNative(LaunchOption);
@@ -117,7 +111,7 @@ namespace CmlLib.Launcher
             else
                 argDicts.Add("${version_type}", LaunchOption.LauncherName);
 
-            if (LaunchOption.StartProfile.GameArguments != null) // Arguments Json 을 사용하는 1.3 과 그 이후의 버전
+            if (LaunchOption.StartProfile.GameArguments != null) // Arguments Json (version >= 1.3)
             {
                 foreach (var item in LaunchOption.StartProfile.GameArguments)
                 {
@@ -137,7 +131,7 @@ namespace CmlLib.Launcher
                     sb.Append(" ");
                 }
             }
-            else // MinecraftArguments 를 사용하는 1.3 이전의 버전
+            else // MinecraftArguments 
             {
                 var gameArgBuilder = new StringBuilder(LaunchOption.StartProfile.MinecraftArguments);
 
@@ -149,7 +143,7 @@ namespace CmlLib.Launcher
                 sb.Append(gameArgBuilder.ToString());
             }
 
-            // 추가 옵션들 설정
+            // options
 
             if (LaunchOption.ServerIp != "")
                 sb.Append(" --server " + LaunchOption.ServerIp);

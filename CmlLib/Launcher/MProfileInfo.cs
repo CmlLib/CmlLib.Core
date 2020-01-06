@@ -36,5 +36,26 @@ namespace CmlLib.Launcher
         [JsonProperty("url")]
         public string Path { get; set; }
 
+        public override bool Equals(object obj)
+        {
+            var info = obj as MProfileInfo;
+
+            if (info != null)
+                return info.Name.Equals(this.Name);
+            else if (obj is string)
+                return info.Name.Equals(obj.ToString());
+            else
+                return base.Equals(obj);
+        }
+
+        public override string ToString()
+        {
+            return this.Type + " " + this.Name;
+        }
+
+        public override int GetHashCode()
+        {
+            return this.Name.GetHashCode();
+        }
     }
 }

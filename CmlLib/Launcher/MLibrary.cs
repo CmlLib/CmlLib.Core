@@ -5,34 +5,17 @@ using System.Linq;
 
 namespace CmlLib.Launcher
 {
-    /// <summary>
-    /// 라이브러리
-    /// </summary>
     public class MLibrary
     {
         // class structure
 
         private MLibrary() { }
 
-        /// <summary>
-        /// true 이면 네이티브 라이브러리, 아니면 일반 라이브러리입니다.
-        /// </summary>
         public bool IsNative { get; private set; }
-        /// <summary>
-        /// 라이브러리의 이름
-        /// </summary>
+
         public string Name { get; private set; }
-        /// <summary>
-        /// 라이브러리가 설치되야 할 경로
-        /// </summary>
         public string Path { get; private set; }
-        /// <summary>
-        /// 라이브러리를 다운로드 할 수 있는 URL
-        /// </summary>
         public string Url { get; private set; }
-        /// <summary>
-        /// 현재 OS 에서 필요한 라이브러리인지 확인
-        /// </summary>
         public bool IsRequire { get; private set; } = true;
 
         public string Hash { get; private set; } = "";

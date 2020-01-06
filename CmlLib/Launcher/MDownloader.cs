@@ -10,9 +10,6 @@ namespace CmlLib.Launcher
 {
     public delegate void DownloadFileChangedHandler(DownloadFileChangedEventArgs e);
 
-    /// <summary>
-    /// 게임 실행에 필요한 라이브러리, 게임, 리소스 등을 다운로드합니다.
-    /// </summary>
     public class MDownloader
     {
         public event DownloadFileChangedHandler ChangeFile;
@@ -23,10 +20,6 @@ namespace CmlLib.Launcher
         MProfile profile;
         WebDownload web;
 
-        /// <summary>
-        /// 실행에 필요한 파일들을 profile 에서 불러옵니다.
-        /// </summary>
-        /// <param name="_profile">불러올 프로파일</param>
         public MDownloader(MProfile _profile)
         {
             this.profile = _profile;
@@ -53,19 +46,19 @@ namespace CmlLib.Launcher
         }
 
         /// <summary>
-        /// 실행에 필요한 라이브러리들을 프로파일에서 가져와 모두 다운로드합니다.
+        /// Download all required library files
         /// </summary>
         public void DownloadLibraries()
         {
-            int index = 0; // 현재 다운로드중인 파일의 순서 (이벤트 생성용)
-            int maxCount = profile.Libraries.Length; // 모든 파일의 갯수
-            foreach (var item in profile.Libraries) // 프로파일의 모든 라이브러리 반복
+            int index = 0;
+            int maxCount = profile.Libraries.Length;
+            foreach (var item in profile.Libraries)
             {
                 try
                 {
-                    if (CheckDownloadRequireLibrary(item)) // 파일이 존재하지 않을 때만
+                    if (CheckDownloadRequireLibrary(item))
                     {
-                        Directory.CreateDirectory(Path.GetDirectoryName(item.Path)); //파일 다운로드
+                        Directory.CreateDirectory(Path.GetDirectoryName(item.Path));
                         web.DownloadFile(item.Url, item.Path);
                     } 
                 }
@@ -73,7 +66,7 @@ namespace CmlLib.Launcher
                 {
                 }
 
-                l(MFile.Library, item.Name, maxCount, ++index); // 이벤트 발생
+                l(MFile.Library, item.Name, maxCount, ++index); // event
             }
         }
 
@@ -86,15 +79,15 @@ namespace CmlLib.Launcher
         }
 
         /// <summary>
-        /// 다운로드 받아야 할 리소스 파일들이 저장된 인덱스 파일을 다운로드합니다.
+        /// Download index file
         /// </summary>
         public void DownloadIndex()
         {
-            string path = Minecraft.Index + profile.AssetId + ".json"; //로컬 인덱스파일의 경로
+            string path = Minecraft.Index + profile.AssetId + ".json";
 
             if (profile.AssetUrl != "" && !CheckFileValidation(path, profile.AssetHash))
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(path)); //폴더생성
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
 
                 using (var wc = new WebClient())
                 {
@@ -104,7 +97,7 @@ namespace CmlLib.Launcher
         }
 
         /// <summary>
-        /// BGM, 효과음, 언어팩 등 리소스파일들을 다운로드합니다.
+        /// Download assets and copy to legacy or resources
         /// </summary>
         public void DownloadResource()
         {
@@ -127,7 +120,7 @@ namespace CmlLib.Launcher
                 if (mapResourceValue != null && mapResourceValue == "true")
                     mapResource = true;
 
-                var list = (JObject)index["objects"]; //리소스 리스트를 생성
+                var list = (JObject)index["objects"];
                 var count = list.Count;
                 var i = 0;
 
@@ -143,9 +136,9 @@ namespace CmlLib.Launcher
                     Directory.CreateDirectory(Path.GetDirectoryName(hashPath));
 
                     if (!File.Exists(hashPath))
-                        wc.DownloadFile(hashUrl, hashPath); //다운로드
+                        wc.DownloadFile(hashUrl, hashPath);
 
-                    if (isVirtual) //virtual 이 true 이고 파일이 없을떄
+                    if (isVirtual)
                     {
                         var resPath = Minecraft.AssetLegacy + item.Key;
 
@@ -173,7 +166,7 @@ namespace CmlLib.Launcher
         }
 
         /// <summary>
-        /// 마인크래프트를 다운로드합니다.
+        /// Download client jar
         /// </summary>
         public void DownloadMinecraft()
         {
@@ -185,7 +178,7 @@ namespace CmlLib.Launcher
             var path = Minecraft.Versions + id + "\\" + id + ".jar";
             if (!CheckFileValidation(path, profile.ClientHash))
             {
-                Directory.CreateDirectory(Minecraft.Versions + id); //폴더생성
+                Directory.CreateDirectory(Minecraft.Versions + id); 
                 web.DownloadFile(profile.ClientDownloadUrl, path);
             }
 
