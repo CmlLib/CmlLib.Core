@@ -18,7 +18,7 @@ namespace CmlLib.Launcher
                 "-XX:G1ReservePercent=20 " +
                 "-XX:MaxGCPauseMillis=50 " +
                 "-XX:G1HeapRegionSize=16M";
-        public static string SupportLaunchVersion = "1.3";
+        public static string SupportLaunchVersion = "1.15.1";
 
         public MLaunch(MLaunchOption option)
         {
@@ -31,17 +31,15 @@ namespace CmlLib.Launcher
         /// <summary>
         /// Start Game
         /// </summary>
-        /// <param name="isdebug">if isdebug is true, game output will be printed.</param>
-        public void Start(bool isdebug = false)
+        public void Start()
         {
-            GetProcess(isdebug).Start();
+            GetProcess().Start();
         }
 
         /// <summary>
         /// Build game process and return it
         /// </summary>
-        /// <param name="isdebug">if isdebug is true, game output will be printed.</param>
-        public Process GetProcess(bool isdebug = false)
+        public Process GetProcess()
         {
             var native = new MNative(LaunchOption);
             native.CleanNatives();
@@ -52,9 +50,6 @@ namespace CmlLib.Launcher
             mc.StartInfo.FileName = LaunchOption.JavaPath;
             mc.StartInfo.Arguments = arg;
             mc.StartInfo.WorkingDirectory = Minecraft.path;
-
-            if (isdebug)
-                File.WriteAllText("mc_arg.txt", mc.StartInfo.Arguments);
 
             return mc;
         }
