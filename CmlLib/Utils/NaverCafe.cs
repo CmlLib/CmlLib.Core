@@ -5,11 +5,23 @@ using System.Text.RegularExpressions;
 
 namespace CmlLib.Utils
 {
-    class NaverCafe
+    public class NaverCafePost
+    {
+        public NaverCafePost(string name, string url)
+        {
+            this.Title = name;
+            this.Url = url;
+        }
+        
+        public string Title { get; private set; }
+        public string Url { get; private set; }
+    }
+
+    public class NaverCafe
     {
         static string cafeurl = "http://cafe.naver.com";
 
-        public static List<KeyValuePair<string , string>> GetNotices(string clubid)
+        public static NaverCafePost[] GetNotices(string clubid)
         {
             string html = "";
             using (var wc = new WebClient())
@@ -20,7 +32,7 @@ namespace CmlLib.Utils
 
             var boardlist = spl(html, "list_area notice_board", "</ul>");
 
-            var resultlist = new List<KeyValuePair<string, string>>();
+            var resultlist = new List<NaverCafePost>(boardlist.Length);
             foreach (var item in Regex.Split(boardlist, "</li>"))
             {
                 try
@@ -29,17 +41,17 @@ namespace CmlLib.Utils
                         continue;
 
                     var url = cafeurl + spl(item, "href=\"", "\"");
-                    var tit = cleaner(spl(item, "class=\"tit\">", "</"));
+                    var tit = spl(item, "class=\"tit\">", "</").Trim();
 
-                    resultlist.Add(new KeyValuePair<string, string>(tit, url));
+                    resultlist.Add(new NaverCafePost(tit, url));
                 }
                 catch { }
             }
 
-            return resultlist;
+            return resultlist.ToArray();
         }
 
-        public static List<KeyValuePair<string, string>> GetPosts(string clubid, string menuid)
+        public static NaverCafePost[] GetPosts(string clubid, string menuid)
         {
             string requrl = $"https://m.cafe.naver.com/ArticleList.nhn?search.clubid={clubid}&search.menuid={menuid}";
 
@@ -52,7 +64,7 @@ namespace CmlLib.Utils
 
             var boardlist = spl(html, "<ul class=\"list_area\">", "</ul>");
 
-            var resultlist = new List<KeyValuePair<string, string>>();
+            var resultlist = new List<NaverCafePost>(boardlist.Length);
             foreach (var item in Regex.Split(boardlist, "</li>"))
             {
                 try
@@ -61,46 +73,19 @@ namespace CmlLib.Utils
                         continue;
 
                     var url = cafeurl + spl(item, "href=\"", "\"");
-                    var tit = cleaner(spl(item, "class=\"tit\">", "</"));
+                    var tit = spl(item, "class=\"tit\">", "</").Trim();
 
-                    resultlist.Add(new KeyValuePair<string, string>(tit, url));
+                    resultlist.Add(new NaverCafePost(tit, url));
                 }
                 catch { }
             }
 
-            return resultlist;
+            return resultlist.ToArray();
         }
 
         static string spl(string o, string f, string b)
         {
             return Regex.Split(Regex.Split(o, f)[1], b)[0];
-        }
-
-        static string cleaner(string str)
-        {
-            var sb = new StringBuilder();
-
-            var line = str.Split('\n');
-            foreach (var item in line)
-            {
-                if (item.Replace(" ", "") != "")
-                {
-                    int chari = -1;
-                    for (int i = 0; i < item.Length; i++)
-                    {
-                        if (item[i] != ' ')
-                        {
-                            chari = i;
-                            break;
-                        }
-                    }
-
-                    sb.Append(item.Remove(0, chari));
-                    sb.Append(" ");
-                }
-            }
-
-            return sb.ToString();
         }
     }
 }

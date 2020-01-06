@@ -52,8 +52,6 @@ namespace CmlLib.Utils
             var tmpZipPath = Path.Combine(Path.GetTempPath(), rnd);
 
             //폴더 생성
-            if (Directory.Exists(tmpZipPath))
-                Directory.Delete(tmpZipPath, true);
             Directory.CreateDirectory(tmpZipPath);
 
             //압축파일 저장 경로
