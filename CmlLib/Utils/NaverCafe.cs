@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -21,66 +22,72 @@ namespace CmlLib.Utils
     {
         static string cafeurl = "http://cafe.naver.com";
 
-        public static NaverCafePost[] GetNotices(string clubid)
+        public static NaverCafePost[] GetNotices(string clubid, string cafename)
         {
-            string html = "";
-            using (var wc = new WebClient())
-            {
-                var data = wc.DownloadData("https://m.cafe.naver.com/NoticeList.nhn?search.clubid=" + clubid);
-                html = Encoding.UTF8.GetString(data);
-            }
+            string requrl = $"https://apis.naver.com/cafe-web/cafe2/ArticleList.json?search.clubid={clubid}&search.queryType=lastArticle&search.menuid=&search.page=1";
 
-            var boardlist = spl(html, "list_area notice_board", "</ul>");
-
-            var resultlist = new List<NaverCafePost>(boardlist.Length);
-            foreach (var item in Regex.Split(boardlist, "</li>"))
-            {
-                try
-                {
-                    if (!item.Contains("href"))
-                        continue;
-
-                    var url = cafeurl + spl(item, "href=\"", "\"");
-                    var tit = spl(item, "class=\"tit\">", "</").Trim();
-
-                    resultlist.Add(new NaverCafePost(tit, url));
-                }
-                catch { }
-            }
-
-            return resultlist.ToArray();
-        }
-
-        public static NaverCafePost[] GetPosts(string clubid, string menuid)
-        {
-            string requrl = $"https://m.cafe.naver.com/ArticleList.nhn?search.clubid={clubid}&search.menuid={menuid}";
-
-            string html = "";
+            string res = "";
             using (var wc = new WebClient())
             {
                 var data = wc.DownloadData(requrl);
-                html = Encoding.UTF8.GetString(data);
+                res = Encoding.UTF8.GetString(data);
             }
 
-            var boardlist = spl(html, "<ul class=\"list_area\">", "</ul>");
+            var job = JObject.Parse(res);
+            if (job["message"]?["status"]?.ToString() != "200")
+                return new NaverCafePost[0];
 
-            var resultlist = new List<NaverCafePost>(boardlist.Length);
-            foreach (var item in Regex.Split(boardlist, "</li>"))
+            var listtoken = job["message"]?["result"]?["articleList"];
+            if (listtoken == null)
+                return new NaverCafePost[0];
+
+            var boardlist = (JArray)listtoken;
+            var result = new List<NaverCafePost>(boardlist.Count);
+
+            foreach (JObject item in boardlist)
             {
-                try
-                {
-                    if (!item.Contains("board_box"))
-                        continue;
+                var articleId = item["articleId"]?.ToString();
+                var title = item["subject"]?.ToString();
 
-                    var url = cafeurl + spl(item, "href=\"", "\"");
-                    var tit = spl(item, "class=\"tit\">", "</").Trim();
-
-                    resultlist.Add(new NaverCafePost(tit, url));
-                }
-                catch { }
+                var url = $"{cafeurl}/{cafename}/{articleId}";
+                result.Add(new NaverCafePost(title, url));
             }
 
-            return resultlist.ToArray();
+            return result.ToArray();
+        }
+
+        public static NaverCafePost[] GetPosts(string clubid, string menuid, string cafename)
+        {
+            string requrl = $"https://apis.naver.com/cafe-web/cafe2/ArticleList.json?search.clubid={clubid}&search.queryType=lastArticle&search.menuid={menuid}&search.page=1";
+
+            string res = "";
+            using (var wc = new WebClient())
+            {
+                var data = wc.DownloadData(requrl);
+                res = Encoding.UTF8.GetString(data);
+            }
+
+            var job = JObject.Parse(res);
+            if (job["message"]?["status"]?.ToString() != "200")
+                return new NaverCafePost[0];
+
+            var listtoken = job["message"]?["result"]?["articleList"];
+            if (listtoken == null)
+                return new NaverCafePost[0];
+
+            var boardlist = (JArray)listtoken;
+            var result = new List<NaverCafePost>(boardlist.Count);
+
+            foreach (JObject item in boardlist)
+            {
+                var articleId = item["articleId"]?.ToString();
+                var title = item["subject"]?.ToString();
+
+                var url = $"{cafeurl}/{cafename}/{articleId}";
+                result.Add(new NaverCafePost(title, url));
+            }
+
+            return result.ToArray();
         }
 
         static string spl(string o, string f, string b)
