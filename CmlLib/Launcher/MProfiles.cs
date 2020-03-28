@@ -25,17 +25,11 @@ namespace CmlLib.Launcher
 
             if (startProfile.IsInherted)
             {
-                baseProfile = FindProfile(infos, startProfile.ParentProfileId);
+                baseProfile = FindProfile(mc, infos, startProfile.ParentProfileId);
                 inhert(baseProfile, startProfile);
             }
 
             return startProfile;
-        }
-
-        [Obsolete("Use 'FindProfile' Method.")]
-        public static MProfile GetProfile(MProfileInfo[] infos, string name)
-        {
-            return FindProfile(infos, name);
         }
 
         public static MProfile Parse(Minecraft mc, MProfileInfo info)
