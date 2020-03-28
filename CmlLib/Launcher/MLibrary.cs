@@ -49,7 +49,7 @@ namespace CmlLib.Launcher
                         var downloads = item["downloads"];
                         if (downloads == null)
                         {
-                            var natives = downloads["natives"];
+                            var natives = item["natives"];
                             var nativeId = "";
 
                             if (natives != null)
@@ -98,16 +98,11 @@ namespace CmlLib.Launcher
                 {
                     string[] tmp = name.Split(':');
                     string front = tmp[0].Replace('.', '/');
-                    string back = "";
+                    string back = name.Substring(name.IndexOf(':') + 1);
 
-                    for (int i = 1; i <= tmp.Length - 1; i++)
-                    {
-                        if (i == tmp.Length - 1)
-                            back += tmp[i];
-                        else
-                            back += tmp[i] + ":";
-                    }
-                    string libpath = front + "/" + back.Replace(':', '/') + "/" + (back.Replace(':', '-'));
+
+                    string libpath = front + "/" + back.Replace(':', '/') + "/" + back.Replace(':', '-');
+
                     if (native != "")
                         libpath += "-" + native + ".jar";
                     else
