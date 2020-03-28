@@ -29,7 +29,7 @@ namespace CmlLib.Launcher
                 versionname + ".json"
             );
 
-            var installer = $"${MavenServer}${mcversion}-${forgeversion}/forge-${mcversion}-${forgeversion}-installer.jar";
+            var installer = $"{MavenServer}{mcversion}-{forgeversion}/forge-{mcversion}-{forgeversion}-installer.jar";
 
             var jsondata = new StringBuilder();
             var res = WebRequest.Create(installer).GetResponse().GetResponseStream();
