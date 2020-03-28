@@ -2,7 +2,7 @@
 
 namespace CmlLib.Launcher
 {
-    public enum MFile { Library, Resource, Minecraft };
+    public enum MFile { Runtime, Library, Resource, Minecraft };
 
     public class DownloadFileChangedEventArgs : EventArgs
     {

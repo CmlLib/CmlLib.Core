@@ -14,7 +14,6 @@ namespace CmlLib.Utils
 
         public event ProgressChangedEventHandler DownloadProgressChanged;
         public event EventHandler DownloadCompleted;
-        public event EventHandler UnzipCompleted;
         public string RuntimeDirectory { get; private set; }
 
         public MJava() : this(DefaultRuntimeDirectory) { }
@@ -24,124 +23,56 @@ namespace CmlLib.Utils
             RuntimeDirectory = runtimePath;
         }
 
-        public bool CheckJava()
+        public string CheckJava()
         {
-            return File.Exists(Path.Combine(RuntimeDirectory, "bin", "java.exe"));
-        }
+            var javapath = Path.Combine(RuntimeDirectory, "bin", "java.exe");
 
-        public bool CheckJavaw()
-        {
-            return File.Exists(Path.Combine(RuntimeDirectory, "bin", "javaw.exe"));
-        }
-
-        string WorkingPath;
-        public void DownloadJavaAsync()
-        {
-            string json = "";
-
-            WorkingPath = Path.Combine(Path.GetTempPath(), "temp_download_runtime");
-
-            if (Directory.Exists(WorkingPath))
-                IOUtil.DeleteDirectory(WorkingPath);
-            Directory.CreateDirectory(WorkingPath);
-
-            using (var wc = new WebClient())
+            if (!File.Exists(javapath))
             {
-                json = wc.DownloadString("http://launchermeta.mojang.com/mc/launcher.json");
+                string json = "";
 
-                var job = JObject.Parse(json)["windows"];
-                var url = job[Environment.Is64BitOperatingSystem ? "64" : "32"]["jre"]["url"].ToString();
+                var WorkingPath = Path.Combine(Path.GetTempPath(), "temp_download_runtime");
 
-                Directory.CreateDirectory(RuntimeDirectory);
-                wc.DownloadProgressChanged += Wc_DownloadProgressChanged;
-                wc.DownloadFileCompleted += Wc_DownloadFileCompleted;
-                wc.DownloadFileAsync(new Uri(url), Path.Combine(WorkingPath, "javatemp.lzma"));
-            }
-        }
+                if (Directory.Exists(WorkingPath))
+                    IOUtil.DeleteDirectory(WorkingPath);
+                Directory.CreateDirectory(WorkingPath);
 
-        public async Task DownloadJavaTaskAsync()
-        {
-            string json = "";
+                var javaUrl = "";
+                using (var wc = new WebClient())
+                {
+                    json = wc.DownloadString("http://launchermeta.mojang.com/mc/launcher.json");
 
-            WorkingPath = Path.Combine(Path.GetTempPath(), "temp_download_runtime");
+                    var job = JObject.Parse(json)[MRule.OSName];
+                    javaUrl = job[MRule.Arch]["jre"]["url"].ToString();
 
-            if (Directory.Exists(WorkingPath))
-                IOUtil.DeleteDirectory(WorkingPath);
-            Directory.CreateDirectory(WorkingPath);
+                    Directory.CreateDirectory(RuntimeDirectory);
+                }
 
-            using (var wc = new WebClient())
-            {
-                json = await wc.DownloadStringTaskAsync("http://launchermeta.mojang.com/mc/launcher.json");
+                var downloader = new CmlLib.Launcher.WebDownload();
+                downloader.DownloadProgressChangedEvent += Downloader_DownloadProgressChangedEvent;
+                downloader.DownloadFile(javaUrl, Path.Combine(WorkingPath, "javatemp.lzma"));
 
-                var job = JObject.Parse(json)["windows"];
-                var url = job[Environment.Is64BitOperatingSystem ? "64" : "32"]["jre"]["url"].ToString();
+                DownloadCompleted?.Invoke(this, new EventArgs());
 
-                Directory.CreateDirectory(RuntimeDirectory);
-                wc.DownloadProgressChanged += Wc_DownloadProgressChanged;
-                wc.DownloadFileCompleted += Wc_DownloadFileCompleted;
-                await wc.DownloadFileTaskAsync(new Uri(url), Path.Combine(WorkingPath, "javatemp.lzma"));
-            }
-        }
+                var lzma = Path.Combine(WorkingPath, "javatemp.lzma");
+                var zip = Path.Combine(WorkingPath, "javatemp.zip");
 
-        public void DownloadJava()
-        {
-            string json = "";
+                SevenZipWrapper.DecompressFileLZMA(lzma, zip);
+                var z = new SharpZip(zip);
+                z.Unzip(RuntimeDirectory);
 
-            WorkingPath = Path.Combine(Path.GetTempPath(), "temp_download_runtime");
+                if (!File.Exists(javapath))
+                {
+                    IOUtil.DeleteDirectory(WorkingPath);
+                    throw new Exception("Failed Download");
+                }
 
-            if (Directory.Exists(WorkingPath))
-                IOUtil.DeleteDirectory(WorkingPath);
-            Directory.CreateDirectory(WorkingPath);
-
-            var javaUrl = "";
-            using (var wc = new WebClient())
-            {
-                json = wc.DownloadString("http://launchermeta.mojang.com/mc/launcher.json");
-
-                var job = JObject.Parse(json)["windows"];
-                javaUrl = job[Environment.Is64BitOperatingSystem ? "64" : "32"]["jre"]["url"].ToString();
-
-                Directory.CreateDirectory(RuntimeDirectory);
             }
 
-            var downloader = new CmlLib.Launcher.WebDownload();
-            downloader.DownloadProgressChangedEvent += Downloader_DownloadProgressChangedEvent;
-            downloader.DownloadFile(javaUrl, Path.Combine(WorkingPath, "javatemp.lzma"));
-
-            DownloadComplete();
-        }
-
-        private void Wc_DownloadFileCompleted(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
-        {
-            DownloadComplete();
-        }
-
-        private void DownloadComplete()
-        {
-            DownloadCompleted?.Invoke(this, new EventArgs());
-
-            var lzma = Path.Combine(WorkingPath, "javatemp.lzma");
-            var zip = Path.Combine(WorkingPath, "javatemp.zip");
-
-            SevenZipWrapper.DecompressFileLZMA(lzma, zip);
-            var z = new SharpZip(zip);
-            z.Unzip(RuntimeDirectory);
-
-            if (!CheckJavaw())
-            {
-                IOUtil.DeleteDirectory(WorkingPath);
-                throw new Exception("Failed Download");
-            }
-
-            UnzipCompleted?.Invoke(this, new EventArgs());
+            return javapath;
         }
 
         private void Downloader_DownloadProgressChangedEvent(object sender, System.ComponentModel.ProgressChangedEventArgs e)
-        {
-            DownloadProgressChanged?.Invoke(this, e);
-        }
-
-        private void Wc_DownloadProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             DownloadProgressChanged?.Invoke(this, e);
         }
