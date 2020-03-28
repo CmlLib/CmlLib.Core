@@ -1,5 +1,4 @@
-﻿using SmartFormat;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -47,7 +46,7 @@ namespace CmlLib.Launcher
             native.CleanNatives();
             native.CreateNatives();
 
-            string arg = makeArg();
+            string arg = CreateArg();
             Process mc = new Process();
             mc.StartInfo.FileName = LaunchOption.JavaPath;
             mc.StartInfo.Arguments = arg;
@@ -56,7 +55,7 @@ namespace CmlLib.Launcher
             return mc;
         }
 
-        string makeArg()
+        public string CreateArg()
         {
             var profile = LaunchOption.StartProfile;
 
@@ -125,7 +124,7 @@ namespace CmlLib.Launcher
             if (profile.GameArguments != null)
                 args.AddRange(argumentInsert(profile.GameArguments, gameDict));
             else
-                args.Add(stringInsert(profile.MinecraftArguments, gameDict));
+                args.AddRange(argumentInsert(profile.MinecraftArguments.Split(' '), gameDict));
 
             // options
             if (LaunchOption.ServerIp != "")
@@ -149,7 +148,7 @@ namespace CmlLib.Launcher
 
                 if (m.Success)
                 {
-                    var argKey = m.Value.Substring(2, m.Value.Length - 3); // ${argKey}
+                    var argKey = m.Groups[1].Value; // ${argKey}
                     var argValue = "";
 
                     Console.WriteLine(argKey);
@@ -164,11 +163,6 @@ namespace CmlLib.Launcher
             }
 
             return args.ToArray();
-        }
-
-        string stringInsert(string arg, Dictionary<string, string> dicts)
-        {
-            return Smart.Format(arg, dicts).Replace("$", "");
         }
 
         string replaceByPos(string input, string replace, int startIndex, int length)
