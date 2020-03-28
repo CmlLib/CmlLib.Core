@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using CmlLib.Launcher;
 using CmlLib.Utils;
 
@@ -13,37 +15,8 @@ namespace CmlLibCoreSample
             p.Start();
         }
 
-        private static void Z_ProgressEvent(object sender, int e)
-        {
-            Console.WriteLine(e);
-        }
-
         void Start()
         {
-            // initialize
-
-            var minecraftFolder = Minecraft.GetOSDefaultPath();
-            Console.WriteLine("Initialize Minecraft in {0}", minecraftFolder);
-
-            Minecraft.Initialize(minecraftFolder);
-
-            // check java
-
-            var j = new MJava();
-            var java = Path.Combine(j.RuntimeDirectory, "bin", "java.exe");
-
-            if (!j.CheckJavaw())
-            {
-                Console.WriteLine("Start downloading java");
-                j.DownloadProgressChanged += J_DownloadProgressChanged;
-                j.DownloadCompleted += J_DownloadCompleted;
-                j.UnzipCompleted += J_UnzipCompleted;
-                j.DownloadJava();
-                Console.WriteLine();
-            }
-
-            Console.WriteLine("Set java path : {0}", java);
-
             // login
 
             bool premiumMode = false;
@@ -80,84 +53,37 @@ namespace CmlLibCoreSample
 
             Console.WriteLine("Success to login : {0} / {1} / {2}", session.Username, session.UUID, session.AccessToken);
 
-            // get profile info
+            // initializing launcher
 
-            var infos = MProfileInfo.GetProfiles();
-            foreach (var item in infos)
+            var path = Minecraft.GetOSDefaultPath(); // mc directory
+
+            var launcher = new CmlLib.Cml(path);
+            launcher.ProgressChanged += Downloader_ChangeProgress;
+            launcher.FileChanged += Downloader_ChangeFile;
+
+            Console.WriteLine($"Initialized in {launcher.Minecraft.path}");
+
+            var launchOption = new MLaunchOption
             {
-                Console.WriteLine("[{0}] {1} ({2})", item.MType.ToString(), item.Name, item.IsWeb ? "web" : "local");
-            }
-
-            // get profile
-
-            Console.WriteLine("Input version name : ");
-            var version = Console.ReadLine();
-
-            var profile = MProfile.FindProfile(infos, version);
-            if (profile == null)
-            {
-                Console.WriteLine("Can't find profile");
-                Console.ReadLine();
-                return;
-            }
-
-            // download
-
-            Console.WriteLine("Start downloading {0}", version);
-
-            var downloader = new MDownloader(profile);
-            downloader.ChangeFile += Downloader_ChangeFile;
-            downloader.ChangeProgress += Downloader_ChangeProgress;
-            downloader.DownloadAll();
-
-            // launch
-
-            Console.WriteLine("Launch Game");
-
-            var javapath = java;
-            var xmx = 1024;
-
-            Console.WriteLine("Java Path : {0}", javapath);
-            Console.WriteLine("Xmx : {0}", xmx);
-
-            var option = new MLaunchOption()
-            {
-                // must require
-                StartProfile = profile,
-                JavaPath = javapath, //SET YOUR JAVA PATH (if you want autoset, goto wiki)
-                MaximumRamMb = xmx, // MB
-                Session = session,
-
-                // not require
-                ServerIp = "", // connect server directly
-                LauncherName = "", // display launcher name at main window
-                CustomJavaParameter = "" // set your own java args
+                MaximumRamMb = 1024,
+                Session = session
             };
 
-            var launch = new MLaunch(option);
-            var process = launch.GetProcess();
-            Console.WriteLine(process.StartInfo.Arguments);
+            Process process;
+
+            // launch forge
+            process = launcher.Launch("1.12.2", "14.23.5.2768", launchOption);
+
+            // launch vanila
+            //process = launcher.Launch("1.12.2", launchOption);
+
+            Console.Write(process.StartInfo.Arguments);
             process.Start();
 
             Console.WriteLine("Started");
             Console.ReadLine();
+
             return;
-        }
-
-        private void J_UnzipCompleted(object sender, EventArgs e)
-        {
-            Console.WriteLine("Java Unzip Completed");
-        }
-
-        private void J_DownloadCompleted(object sender, EventArgs e)
-        {
-            Console.WriteLine("Unzip java");
-        }
-
-        private void J_DownloadProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
-        {
-            Console.WriteLine("Java : {0}%", e.ProgressPercentage);
-            Console.SetCursorPosition(0, Console.CursorTop - 1);
         }
 
         int nextline = -1;
