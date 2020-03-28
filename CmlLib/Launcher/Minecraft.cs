@@ -33,6 +33,7 @@ namespace CmlLib.Launcher
         public string Assets { get; set; }
         public string AssetObject { get; set; }
         public string AssetLegacy { get; set; }
+        public string Runtime { get; set; }
 
         public Minecraft(string p)
         {
@@ -51,6 +52,8 @@ namespace CmlLib.Launcher
             Library = c(path + "/libraries");
             Versions = c(path + "/versions");
             Resource = c(path + "/resources");
+
+            Runtime = c(path + "/runtime");
 
             Index = c(assetsPath + "/assets/indexes");
             Assets = c(assetsPath + "/assets");
