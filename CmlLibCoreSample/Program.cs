@@ -12,13 +12,13 @@ namespace CmlLibCoreSample
         static void Main()
         {
             var p = new Program();
-            p.Start();
+
+            var session = p.Login();
+            p.Start(session);
         }
 
-        void Start()
+        MSession Login()
         {
-            // login
-
             bool premiumMode = false;
             MSession session;
 
@@ -44,7 +44,7 @@ namespace CmlLibCoreSample
                     {
                         Console.WriteLine("failed to login. {0} : {1}", session.Result.ToString(), session.Message);
                         Console.ReadLine();
-                        return;
+                        return null;
                     }
                 }
             }
@@ -53,8 +53,12 @@ namespace CmlLibCoreSample
 
             Console.WriteLine("Success to login : {0} / {1} / {2}", session.Username, session.UUID, session.AccessToken);
 
-            // initializing launcher
+            return session;
+        }
 
+        void Start(MSession session)
+        { 
+            // initializing launcher
             var path = Minecraft.GetOSDefaultPath(); // mc directory
 
             var launcher = new CmlLib.Cml(path);
@@ -69,13 +73,11 @@ namespace CmlLibCoreSample
                 Session = session
             };
 
-            Process process;
-
             // launch forge
-            process = launcher.Launch("1.12.2", "14.23.5.2768", launchOption);
+            //var process = launcher.Launch("1.12.2", "14.23.5.2768", launchOption);
 
             // launch vanila
-            //process = launcher.Launch("1.12.2", launchOption);
+            var process = launcher.Launch("1.15.2", launchOption);
 
             Console.Write(process.StartInfo.Arguments);
             process.Start();
@@ -85,6 +87,8 @@ namespace CmlLibCoreSample
 
             return;
         }
+
+        // Event
 
         int nextline = -1;
 
