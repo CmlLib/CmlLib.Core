@@ -25,8 +25,10 @@ namespace CmlLib.Launcher
         {
             option.CheckValid();
             LaunchOption = option;
+            this.Minecraft = option.StartProfile.Minecraft;
         }
 
+        Minecraft Minecraft;
         public MLaunchOption LaunchOption { get; private set; }
 
         /// <summary>

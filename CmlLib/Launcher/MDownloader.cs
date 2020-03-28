@@ -17,10 +17,12 @@ namespace CmlLib.Launcher
 
         MProfile profile;
         WebDownload web;
+        Minecraft Minecraft;
 
         public MDownloader(MProfile _profile)
         {
             this.profile = _profile;
+            this.Minecraft = _profile.Minecraft;
 
             web = new WebDownload();
             web.DownloadProgressChangedEvent += Web_DownloadProgressChangedEvent;

@@ -11,9 +11,9 @@ namespace CmlLib.Launcher
         /// <summary>
         /// Get All MProfileInfo from mojang server and local
         /// </summary>
-        public static MProfileInfo[] GetProfiles()
+        public static MProfileInfo[] GetProfiles(Minecraft mc)
         {
-            var list = new HashSet<MProfileInfo>(GetProfilesFromLocal());
+            var list = new HashSet<MProfileInfo>(GetProfilesFromLocal(mc));
             foreach (var item in GetProfilesFromWeb()) //다음 웹 프로파일을 불러옴
             {
                 bool isexist = false;
@@ -35,9 +35,9 @@ namespace CmlLib.Launcher
         /// <summary>
         /// Get All MProfileInfo from local
         /// </summary>
-        public static MProfileInfo[] GetProfilesFromLocal()
+        public static MProfileInfo[] GetProfilesFromLocal(Minecraft mc)
         {
-            var dirs = new DirectoryInfo(Minecraft.Versions).GetDirectories();
+            var dirs = new DirectoryInfo(mc.Versions).GetDirectories();
             var arr = new List<MProfileInfo>(dirs.Length);
 
             for (int i = 0; i < dirs.Length; i++)

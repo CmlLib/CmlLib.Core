@@ -25,7 +25,7 @@ namespace CmlLib.Launcher
         {
             public static bool CheckOSRules = true;
 
-            public static MLibrary[] ParseJson(JArray json)
+            public static MLibrary[] ParseJson(string libraryPath, JArray json)
             {
                 var ruleChecker = new MRule();
                 var list = new List<MLibrary>(json.Count);
@@ -55,7 +55,7 @@ namespace CmlLib.Launcher
                             if (natives != null)
                                 nativeId = natives[MRule.OSName]?.ToString();
 
-                            list.Add(createMLibrary(name, nativeId, item));
+                            list.Add(createMLibrary(libraryPath, name, nativeId, item));
 
                             continue;
                         }
@@ -74,7 +74,7 @@ namespace CmlLib.Launcher
                             {
                                 nativeId = nativeId.Replace("${arch}", MRule.Arch);
                                 var lObj = (JObject)classif[nativeId];
-                                list.Add(createMLibrary(name, nativeId, lObj));
+                                list.Add(createMLibrary(libraryPath, name, nativeId, lObj));
                             }
                         }
 
@@ -82,7 +82,7 @@ namespace CmlLib.Launcher
                         var arti = item["downloads"]?["artifact"];
                         if (arti != null)
                         {
-                            var obj = createMLibrary(name, "", (JObject)arti);
+                            var obj = createMLibrary(libraryPath, name, "", (JObject)arti);
                             list.Add(obj);
                         }
                     }
@@ -115,7 +115,7 @@ namespace CmlLib.Launcher
                 }
             }
 
-            private static MLibrary createMLibrary(string name, string nativeId, JObject job)
+            private static MLibrary createMLibrary(string libraryPath, string name, string nativeId, JObject job)
             {
                 var path = job["path"]?.ToString();
                 if (path == null || path == "")
@@ -131,7 +131,7 @@ namespace CmlLib.Launcher
                 library.Hash = job["sha1"]?.ToString() ?? "";
                 library.IsNative = (nativeId != "");
                 library.Name = name;
-                library.Path = System.IO.Path.Combine(Minecraft.Library, path);
+                library.Path = System.IO.Path.Combine(libraryPath, path);
                 library.Url = url;
 
                 return library;

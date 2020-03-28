@@ -9,7 +9,7 @@ namespace CmlLib.Launcher
 {
     public class MProfile
     {
-        public static MProfile FindProfile(MProfileInfo[] infos, string name)
+        public static MProfile FindProfile(Minecraft mc, MProfileInfo[] infos, string name)
         {
             MProfile startProfile = null;
             MProfile baseProfile = null;
@@ -18,7 +18,7 @@ namespace CmlLib.Launcher
             {
                 if (item.Name == name)
                 {
-                    startProfile = Parse(item);
+                    startProfile = Parse(mc, item);
                     break;
                 }
             }
@@ -38,7 +38,7 @@ namespace CmlLib.Launcher
             return FindProfile(infos, name);
         }
 
-        public static MProfile Parse(MProfileInfo info)
+        public static MProfile Parse(Minecraft mc, MProfileInfo info)
         {
             string json;
             if (info.IsWeb)
@@ -46,20 +46,20 @@ namespace CmlLib.Launcher
                 using (var wc = new WebClient())
                 {
                     json = wc.DownloadString(info.Path);
-                    return ParseFromJson(json, true);
+                    return ParseFromJson(mc, json, true);
                 }
             }
             else
-                return ParseFromFile(info.Path);
+                return ParseFromFile(mc, info.Path);
         }
 
-        public static MProfile ParseFromFile(string path)
+        public static MProfile ParseFromFile(Minecraft mc, string path)
         {
             var json = File.ReadAllText(path);
-            return ParseFromJson(json, false);
+            return ParseFromJson(mc, json, false);
         }
 
-        private static MProfile ParseFromJson(string json, bool writeProfile = true)
+        private static MProfile ParseFromJson(Minecraft mc, string json, bool writeProfile = true)
         {
             var profile = new MProfile();
             var job = JObject.Parse(json);
@@ -80,7 +80,7 @@ namespace CmlLib.Launcher
                 profile.ClientHash = client["sha1"]?.ToString();
             }
 
-            profile.Libraries = MLibrary.Parser.ParseJson((JArray)job["libraries"]);
+            profile.Libraries = MLibrary.Parser.ParseJson(mc.Library, (JArray)job["libraries"]);
             profile.MainClass = n(job["mainClass"]?.ToString());
 
             var ma = job["minecraftArguments"]?.ToString();
@@ -112,11 +112,12 @@ namespace CmlLib.Launcher
 
             if (writeProfile)
             {
-                var path = Path.Combine(Minecraft.Versions, profile.Id);
+                var path = Path.Combine(mc.Versions, profile.Id);
                 Directory.CreateDirectory(path);
                 File.WriteAllText(Path.Combine(path, profile.Id + ".json"), json);
             }
 
+            profile.Minecraft = mc;
             return profile;
         }
 
@@ -226,6 +227,7 @@ namespace CmlLib.Launcher
             return (t == null) || (t == "");
         }
 
+        public Minecraft Minecraft { get; private set; }
         public bool IsWeb { get; private set; }
 
         public bool IsInherted { get; private set; } = false;

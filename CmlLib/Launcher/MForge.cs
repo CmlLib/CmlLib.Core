@@ -13,9 +13,11 @@ namespace CmlLib.Launcher
     {
         const string MavenServer = "https://files.minecraftforge.net/maven/net/minecraftforge/forge/";
 
-        public MForge()
-        {
+        Minecraft Minecraft;
 
+        public MForge(Minecraft mc)
+        {
+            this.Minecraft = mc;
         }
 
         public event DownloadFileChangedHandler FileChanged;

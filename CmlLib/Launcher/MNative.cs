@@ -23,7 +23,7 @@ namespace CmlLib.Launcher
         {
             var ran = new Random();
             int random = ran.Next(10000, 99999);
-            string path = Path.Combine(Minecraft.Versions, profile.Id, "natives-" + random.ToString());
+            string path = Path.Combine(profile.Minecraft.Versions, profile.Id, "natives-" + random.ToString());
             ExtractNatives(profile, path);
             return path;
         }
@@ -52,7 +52,8 @@ namespace CmlLib.Launcher
         {
             try
             {
-                DirectoryInfo di = new DirectoryInfo(Minecraft.Versions + LaunchOption.StartProfile.Id);
+                var path = Path.Join(LaunchOption.StartProfile.Minecraft.Versions, LaunchOption.StartProfile.Id);
+                DirectoryInfo di = new DirectoryInfo(path);
                 foreach (var item in di.GetDirectories())
                 {
                     if (item.Name.Contains("natives"))
