@@ -5,7 +5,7 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace CmlLib.Launcher
+namespace CmlLib.Core
 {
 
     public class MLaunch

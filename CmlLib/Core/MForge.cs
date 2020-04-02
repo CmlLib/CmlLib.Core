@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 using ICSharpCode.SharpZipLib.Zip;
 using CmlLib.Utils;
 
-namespace CmlLib.Launcher
+namespace CmlLib.Core
 {
     public class MForge
     {

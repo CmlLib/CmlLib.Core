@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 
-namespace CmlLib.Launcher
+namespace CmlLib.Core
 {
     public partial class MProfileInfo
     {

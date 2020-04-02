@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CmlLib.Launcher
+namespace CmlLib.Core
 {
     public class MojangServer
     {

@@ -4,7 +4,7 @@ using Newtonsoft.Json.Linq;
 using System.Net;
 using System.IO;
 
-namespace CmlLib.Launcher
+namespace CmlLib.Core
 {
     public enum MLoginResult { Success, BadRequest, WrongAccount, NeedLogin, UnknownError }
 

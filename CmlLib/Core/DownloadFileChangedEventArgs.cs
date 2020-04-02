@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CmlLib.Launcher
+namespace CmlLib.Core
 {
     public enum MFile { Runtime, Library, Resource, Minecraft };
 

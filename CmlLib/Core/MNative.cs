@@ -2,7 +2,7 @@
 using System.IO;
 using CmlLib.Utils;
 
-namespace CmlLib.Launcher
+namespace CmlLib.Core
 {
     public class MNative
     {

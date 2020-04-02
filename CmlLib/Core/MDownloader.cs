@@ -4,7 +4,7 @@ using System.IO;
 using Newtonsoft.Json.Linq;
 using System.ComponentModel;
 
-namespace CmlLib.Launcher
+namespace CmlLib.Core
 {
     public delegate void DownloadFileChangedHandler(DownloadFileChangedEventArgs e);
 

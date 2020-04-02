@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using CmlLib.Launcher;
+using CmlLib.Core;
 using CmlLib.Utils;
 
 namespace CmlLibCoreSample
@@ -67,10 +67,15 @@ namespace CmlLibCoreSample
 
             Console.WriteLine($"Initialized in {launcher.Minecraft.path}");
 
+            foreach (var item in launcher.ProfileInfos)
+            {
+                Console.WriteLine(item.Name);
+            }
+
             var launchOption = new MLaunchOption
             {
                 MaximumRamMb = 1024,
-                Session = session
+                Session = session,
             };
 
             // launch forge

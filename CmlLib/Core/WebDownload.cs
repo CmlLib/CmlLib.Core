@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Net;
 
-namespace CmlLib.Launcher
+namespace CmlLib.Core
 {
     class WebDownload
     {
