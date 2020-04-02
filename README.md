@@ -37,11 +37,11 @@ SharpZipLib
 
 If you want to learn more features of this library such as to download java runtime or launch with more detailed options, go to wiki
 
-**[Sample Code](https://github.com/AlphaBs/MinecraftLauncherLibrary/wiki/Sample-Code)**
+**[Sample Code](https://github.com/AlphaBs/CmlLib.Core/wiki/Sample-Code)**
 
 ### **Install**
 
-Install Nuget Package 'CustomMinecraftLauncher'  
+Install Nuget Package 'CmlLib.Core'  
 or download dll files in Release tab and add reference to your project.
 
 write this on the top of your source code:
