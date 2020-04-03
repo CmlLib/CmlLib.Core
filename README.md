@@ -1,5 +1,7 @@
 ﻿# CmlLib.Core
 
+# This project is not completed!!! Use [CmlLib](https://github.com/AlphaBs/MinecraftLauncherLibrary)
+
 ## Minecraft Launcher Library
 
 This library is minecraft launcher library for .NET Core and .NET Framework  
