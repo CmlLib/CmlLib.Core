@@ -44,45 +44,44 @@ namespace CmlLib.Core
                             if (!isRequire)
                                 continue;
                         }
+                        
+                        // forge clientreq
+                        var req = item["clientreq"]?.ToString();
+                        if (req != null && req.ToLower() != "true")
+                            continue;
 
-                        // FORGE library
-                        var downloads = item["downloads"];
-                        if (downloads == null)
+                        // support TLauncher
+                        var artifact = item["artifact"] ?? item["downloads"]?["artifact"];
+                        var classifiers = item["classifies"] ?? item["downloads"]?["classifiers"];
+                        var natives = item["natives"];
+
+                        // NATIVE library
+                        if (classifiers != null)
                         {
-                            var natives = item["natives"];
                             var nativeId = "";
 
                             if (natives != null)
                                 nativeId = natives[MRule.OSName]?.ToString();
 
-                            list.Add(createMLibrary(libraryPath, name, nativeId, item));
-
-                            continue;
-                        }
-
-                        // NATIVE library
-                        var classif = item["downloads"]?["classifiers"];
-                        if (classif != null)
-                        {
-                            var nativeId = "";
-
-                            var nativeObj = item["natives"];
-                            if (nativeObj != null)
-                                nativeId = nativeObj[MRule.OSName]?.ToString();
-
-                            if (nativeId != null && classif[nativeId] != null)
+                            if (nativeId != null && classifiers[nativeId] != null)
                             {
                                 nativeId = nativeId.Replace("${arch}", MRule.Arch);
-                                var lObj = (JObject)classif[nativeId];
+                                var lObj = (JObject)classifiers[nativeId];
                                 list.Add(createMLibrary(libraryPath, name, nativeId, lObj));
                             }
                         }
 
                         // COMMON library
-                        var arti = item["downloads"]?["artifact"];
-                        if (arti != null)
+                        if (artifact != null)
                         {
-                            var obj = createMLibrary(libraryPath, name, "", (JObject)arti);
+                            var obj = createMLibrary(libraryPath, name, "", (JObject)artifact);
+                            list.Add(obj);
+                        }
+                        
+                        // library
+                        if (classifiers == null && artifact == null)
+                        {
+                            var obj = createMLibrary(libraryPath, name, "", item);
                             list.Add(obj);
                         }
                     }
@@ -99,7 +98,6 @@ namespace CmlLib.Core
                     string[] tmp = name.Split(':');
                     string front = tmp[0].Replace('.', '/');
                     string back = name.Substring(name.IndexOf(':') + 1);
-
 
                     string libpath = front + "/" + back.Replace(':', '/') + "/" + back.Replace(':', '-');
 
@@ -127,8 +125,10 @@ namespace CmlLib.Core
                 else if (url.Split('/').Last() == "")
                     url += path;
 
+                var hash = job["sha1"] ?? job["checksums"]?[0];
+
                 var library = new MLibrary();
-                library.Hash = job["sha1"]?.ToString() ?? "";
+                library.Hash = hash?.ToString() ?? "";
                 library.IsNative = (nativeId != "");
                 library.Name = name;
                 library.Path = System.IO.Path.Combine(libraryPath, path);

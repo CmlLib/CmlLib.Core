@@ -1,4 +1,4 @@
-﻿using CmlLib.Launcher;
+﻿using CmlLib.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +9,6 @@ namespace CmlLib
 {
     public class _Test
     {
-        public static string tstr = "8";
+        public static string tstr = "0";
     }
 }

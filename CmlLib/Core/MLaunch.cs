@@ -153,8 +153,6 @@ namespace CmlLib.Core
                     var argKey = m.Groups[1].Value; // ${argKey}
                     var argValue = "";
 
-                    Console.WriteLine(argKey);
-
                     if (dicts.TryGetValue(argKey, out argValue))
                         args.Add(replaceByPos(item, argValue, m.Index, m.Length)); // replace ${argKey} to dicts value
                     else

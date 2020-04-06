@@ -52,20 +52,22 @@ namespace CmlLibCoreSample
                 session = MSession.GetOfflineSession("tester123");
 
             Console.WriteLine("Success to login : {0} / {1} / {2}", session.Username, session.UUID, session.AccessToken);
-
             return session;
         }
 
         void Start(MSession session)
-        { 
+        {
             // initializing launcher
             var path = Minecraft.GetOSDefaultPath(); // mc directory
+            //var path = @"C:\test\testmc";
 
             var launcher = new CmlLib.Cml(path);
             launcher.ProgressChanged += Downloader_ChangeProgress;
             launcher.FileChanged += Downloader_ChangeFile;
 
             Console.WriteLine($"Initialized in {launcher.Minecraft.path}");
+
+            launcher.UpdateProfileInfos();
 
             foreach (var item in launcher.ProfileInfos)
             {
@@ -79,12 +81,16 @@ namespace CmlLibCoreSample
             };
 
             // launch forge
-            //var process = launcher.Launch("1.12.2", "14.23.5.2768", launchOption);
+            // var process = launcher.Launch("1.12.2", "14.23.5.2768", launchOption);
 
             // launch vanila
-            var process = launcher.Launch("1.15.2", launchOption);
+            // var process = launcher.Launch("1.15.2", launchOption);
 
-            Console.Write(process.StartInfo.Arguments);
+            // launch by user input
+            Console.WriteLine("input version : ");
+            var process = launcher.Launch(Console.ReadLine(), launchOption);
+
+            Console.WriteLine(process.StartInfo.Arguments);
             process.Start();
 
             Console.WriteLine("Started");
