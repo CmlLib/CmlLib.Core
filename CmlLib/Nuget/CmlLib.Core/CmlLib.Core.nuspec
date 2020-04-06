@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>CmlLib.Core</id>
+    <version>0.1.0</version>
+    <title>Minecraft Launcher Library</title>
+    <authors>ksi123456ab</authors>
+    <owners>ksi123456ab</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <projectUrl>https://github.com/AlphaBs/MinecraftLauncherLibrary</projectUrl>
+    <description>Minecraft Launcher Library. Support all versions, forge, optifine and crossplatform. see github to learn how to use.</description>
+    <releaseNotes>support 1.15.2 forge, optifine</releaseNotes>
+    <license type="expression">MIT</license>
+    <copyright>Copyright 2020</copyright>
+    <tags>Crossplatform Minecraft Launcher</tags>
+    <dependencies>
+      <dependency id="Newtonsoft.Json" version="12.0.3" />
+      <dependency id="SharpZipLib" version="1.2.0" />
+    </dependencies>
+  </metadata>
+</package>
