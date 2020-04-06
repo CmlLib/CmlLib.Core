@@ -106,18 +106,18 @@ namespace CmlLib
             return $"{mcVersion}-forge{mcVersion}-{forgeVersion}";
         }
 
-        public Process Launch(string mcversion, string forgeversion, MLaunchOption option)
+        public Process CreateProcess(string mcversion, string forgeversion, MLaunchOption option)
         {
-            return Launch(CheckForge(mcversion, forgeversion), option);
+            return CreateProcess(CheckForge(mcversion, forgeversion), option);
         }
 
-        public Process Launch(string versionname, MLaunchOption option)
+        public Process CreateProcess(string versionname, MLaunchOption option)
         {
             option.StartProfile = GetProfile(versionname);
-            return Launch(option);
+            return CreateProcess(option);
         }
 
-        public Process Launch(MLaunchOption option)
+        public Process CreateProcess(MLaunchOption option)
         {
             if (string.IsNullOrEmpty(option.JavaPath))
                 option.JavaPath = CheckJRE();

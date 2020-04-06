@@ -88,7 +88,7 @@ namespace CmlLibCoreSample
 
             // launch by user input
             Console.WriteLine("input version : ");
-            var process = launcher.Launch(Console.ReadLine(), launchOption);
+            var process = launcher.CreateProcess(Console.ReadLine(), launchOption);
 
             Console.WriteLine(process.StartInfo.Arguments);
             process.Start();
