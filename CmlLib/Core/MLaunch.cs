@@ -107,8 +107,8 @@ namespace CmlLib.Core
             {
                 { "auth_player_name", LaunchOption.Session.Username },
                 { "version_name", LaunchOption.StartProfile.Id },
-                { "game_directory", Minecraft.path },
-                { "assets_root", Minecraft.Assets },
+                { "game_directory", handleEmpty(Minecraft.path) },
+                { "assets_root", handleEmpty(Minecraft.Assets) },
                 { "assets_index_name", profile.AssetId },
                 { "auth_uuid", LaunchOption.Session.UUID },
                 { "auth_access_token", LaunchOption.Session.AccessToken },
