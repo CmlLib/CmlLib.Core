@@ -11,6 +11,8 @@ namespace CmlLib.Core
         public string LauncherName { get; set; } = "";
         public string ServerIp { get; set; } = "";
         public string CustomJavaParameter { get; set; } = "";
+        public string DockName { get; set; } = "";
+        public string DockIcon { get; set; } = "";
 
         public int ScreenWidth { get; set; } = 0;
         public int ScreenHeight { get; set; } = 0;
