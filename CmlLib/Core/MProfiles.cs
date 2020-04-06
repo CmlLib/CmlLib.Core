@@ -23,6 +23,9 @@ namespace CmlLib.Core
                 }
             }
 
+            if (startProfile == null)
+                throw new Exception("cannot found " + name);
+
             if (startProfile.IsInherted)
             {
                 baseProfile = FindProfile(mc, infos, startProfile.ParentProfileId);
@@ -129,7 +132,8 @@ namespace CmlLib.Core
                     if (item["rules"] != null)
                         allow = ruleChecker.CheckOSRequire((JArray)item["rules"]);
 
-                    var value = item["value"];
+                    var value = item["value"] ?? item["values"];
+
                     if (allow && value != null)
                     {
                         if (value is JArray)
