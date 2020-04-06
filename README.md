@@ -45,7 +45,7 @@ If you want to learn more features of this library, go to [wiki](https://github.
 ### **Install**
 
 Install Nuget Package 'CmlLib.Core'  
-or download dll files in [Releases](https://github.com/AlphaBs/CmlLib.Core/releases) and add reference to your project.
+~~or download dll files in [Releases](https://github.com/AlphaBs/CmlLib.Core/releases) and add reference to your project.~~
 
 write this on the top of your source code:
 
