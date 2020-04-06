@@ -51,7 +51,10 @@ namespace CmlLib.Core
                     json = wc.DownloadString(MojangServer.LauncherMeta);
 
                     var job = JObject.Parse(json)[MRule.OSName];
-                    javaUrl = job[MRule.Arch]["jre"]["url"].ToString();
+                    javaUrl = job[MRule.Arch]?["jre"]?["url"]?.ToString();
+
+                    if (string.IsNullOrEmpty(javaUrl))
+                        throw new Exception("unsupport os");
 
                     Directory.CreateDirectory(RuntimeDirectory);
                 }
