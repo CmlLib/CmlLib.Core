@@ -59,7 +59,7 @@ namespace CmlLibCoreSample
         {
             // initializing launcher
             var path = Minecraft.GetOSDefaultPath(); // mc directory
-            //var path = @"C:\test\testmc";
+            //var path = @"./mctestdir";
 
             var launcher = new CmlLib.Cml(path);
             launcher.ProgressChanged += Downloader_ChangeProgress;
@@ -81,10 +81,10 @@ namespace CmlLibCoreSample
             };
 
             // launch forge
-            // var process = launcher.Launch("1.12.2", "14.23.5.2768", launchOption);
+            // var process = launcher.CreateProcess("1.12.2", "14.23.5.2768", launchOption);
 
             // launch vanila
-            // var process = launcher.Launch("1.15.2", launchOption);
+            // var process = launcher.CreateProcess("1.15.2", launchOption);
 
             // launch by user input
             Console.WriteLine("input version : ");
