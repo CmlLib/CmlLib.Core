@@ -1,11 +1,12 @@
 ﻿# CmlLib.Core
 
-# This project is not completed!!! Use [CmlLib](https://github.com/AlphaBs/MinecraftLauncherLibrary)
-
 ## Minecraft Launcher Library
 
 This library is minecraft launcher library for .NET Core and .NET Framework  
 Support all version, with Forge
+
+## What is different between CmlLib.Core and [CmlLib](https://github.com/AlphaBs/MinecraftLauncherLibrary)?
+CmlLib.Core is developed using .NET Core and support crossplatform. but CmlLib doesn't support it and will be deprecated.
 
 ## Contacts
 
@@ -23,7 +24,7 @@ MIT License
 ## Dependency
 
 Newtonsoft.Json  
-SharpZipLib
+SharpZipLib  
 
 ## Functions
 
@@ -37,14 +38,14 @@ SharpZipLib
 
 ## How To Use
 
-If you want to learn more features of this library such as to download java runtime or launch with more detailed options, go to wiki
+If you want to learn more features of this library, go to [wiki](https://github.com/AlphaBs/CmlLib.Core/wiki)
 
 **[Sample Code](https://github.com/AlphaBs/CmlLib.Core/wiki/Sample-Code)**
 
 ### **Install**
 
 Install Nuget Package 'CmlLib.Core'  
-or download dll files in Release tab and add reference to your project.
+or download dll files in [Releases](https://github.com/AlphaBs/CmlLib.Core/releases) and add reference to your project.
 
 write this on the top of your source code:
 
