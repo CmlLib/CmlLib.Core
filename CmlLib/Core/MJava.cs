@@ -26,8 +26,13 @@ namespace CmlLib.Core
         {
             var binaryName = "java";
             if (MRule.OSName == "windows")
-                binaryName += ".exe";
+                binaryName = "javaw.exe";
 
+            return CheckJava(binaryName);
+        }
+
+        public string CheckJava(string binaryName)
+        {
             var javapath = Path.Combine(RuntimeDirectory, "bin", binaryName);
 
             if (!File.Exists(javapath))
@@ -68,7 +73,8 @@ namespace CmlLib.Core
                     throw new Exception("Failed Download");
                 }
 
-                IOUtil.Chmod(javapath, IOUtil.Chmod755);
+                if (MRule.OSName != "windows")
+                    IOUtil.Chmod(javapath, IOUtil.Chmod755);
 
                 DownloadCompleted?.Invoke(this, new EventArgs());
             }

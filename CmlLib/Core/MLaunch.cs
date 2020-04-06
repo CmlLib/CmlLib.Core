@@ -17,7 +17,7 @@ namespace CmlLib.Core
                 "-XX:G1ReservePercent=20 " +
                 "-XX:MaxGCPauseMillis=50 " +
                 "-XX:G1HeapRegionSize=16M";
-        public static string SupportLaunchVersion = "1.15.1";
+        public static string SupportLaunchVersion = "1.15.2";
 
         private static Regex argBracket = new Regex(@"\$\{(.*?)}");
 
