@@ -55,8 +55,6 @@ namespace CmlLib.Core
                 downloader.DownloadProgressChangedEvent += Downloader_DownloadProgressChangedEvent;
                 downloader.DownloadFile(javaUrl, Path.Combine(WorkingPath, "javatemp.lzma"));
 
-                DownloadCompleted?.Invoke(this, new EventArgs());
-
                 var lzma = Path.Combine(WorkingPath, "javatemp.lzma");
                 var zip = Path.Combine(WorkingPath, "javatemp.zip");
 
@@ -71,6 +69,8 @@ namespace CmlLib.Core
                 }
 
                 IOUtil.Chmod(javapath, IOUtil.Chmod755);
+
+                DownloadCompleted?.Invoke(this, new EventArgs());
             }
 
             return javapath;

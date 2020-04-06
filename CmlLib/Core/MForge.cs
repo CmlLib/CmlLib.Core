@@ -24,6 +24,14 @@ namespace CmlLib.Core
 
         public void InstallForge(string mcversion, string forgeversion)
         {
+            FileChanged?.Invoke(new DownloadFileChangedEventArgs()
+            {
+                FileKind = MFile.Library,
+                FileName = "installer",
+                ProgressedFileCount = 0,
+                TotalFileCount = 2
+            });
+
             var versionname = $"{mcversion}-forge{mcversion}-{forgeversion}";
             var manifest = Path.Combine(
                 Minecraft.Versions,
@@ -65,8 +73,8 @@ namespace CmlLib.Core
             {
                 FileKind = MFile.Library,
                 FileName = "universal",
-                ProgressedFileCount = 0,
-                TotalFileCount = 1
+                ProgressedFileCount = 1,
+                TotalFileCount = 2
             });
 
             var universalUrl = $"{MavenServer}{mcversion}-{forgeversion}/forge-{mcversion}-{forgeversion}-universal.jar";
@@ -91,8 +99,8 @@ namespace CmlLib.Core
             {
                 FileKind = MFile.Library,
                 FileName = "universal",
-                ProgressedFileCount = 1,
-                TotalFileCount = 1
+                ProgressedFileCount = 2,
+                TotalFileCount = 2
             });
         }
     }
