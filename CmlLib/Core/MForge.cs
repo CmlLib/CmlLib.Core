@@ -25,7 +25,7 @@ namespace CmlLib.Core
         public void InstallForge(string mcversion, string forgeversion)
         {
             var versionname = $"{mcversion}-forge{mcversion}-{forgeversion}";
-            var manifest = Path.Join(
+            var manifest = Path.Combine(
                 Minecraft.Versions,
                 versionname,
                 versionname + ".json"
@@ -71,7 +71,7 @@ namespace CmlLib.Core
 
             var universalUrl = $"{MavenServer}{mcversion}-{forgeversion}/forge-{mcversion}-{forgeversion}-universal.jar";
 
-            var dest = Path.Join(
+            var dest = Path.Combine(
                 Minecraft.Library,
                 "net",
                 "minecraftforge",

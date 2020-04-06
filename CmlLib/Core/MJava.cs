@@ -39,7 +39,7 @@ namespace CmlLib.Core
                 var javaUrl = "";
                 using (var wc = new WebClient())
                 {
-                    json = wc.DownloadString("http://launchermeta.mojang.com/mc/launcher.json");
+                    json = wc.DownloadString(MojangServer.LauncherMeta);
 
                     var job = JObject.Parse(json)[MRule.OSName];
                     javaUrl = job[MRule.Arch]["jre"]["url"].ToString();

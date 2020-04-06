@@ -82,7 +82,7 @@ namespace CmlLib.Core
 
             libArgs.Add(handleEmpty(Path.Combine(Minecraft.Versions, profile.Jar, profile.Jar + ".jar")));
 
-            var libs = string.Join(Path.PathSeparator, libArgs);
+            var libs = string.Join(Path.PathSeparator.ToString(), libArgs);
 
             var jvmdict = new Dictionary<string, string>()
             {

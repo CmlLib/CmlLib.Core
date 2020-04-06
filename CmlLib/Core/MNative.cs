@@ -52,7 +52,7 @@ namespace CmlLib.Core
         {
             try
             {
-                var path = Path.Join(LaunchOption.StartProfile.Minecraft.Versions, LaunchOption.StartProfile.Id);
+                var path = Path.Combine(LaunchOption.StartProfile.Minecraft.Versions, LaunchOption.StartProfile.Id);
                 DirectoryInfo di = new DirectoryInfo(path);
                 foreach (var item in di.GetDirectories())
                 {
