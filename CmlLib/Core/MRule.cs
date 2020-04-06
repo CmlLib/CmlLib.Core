@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Runtime.InteropServices;
 
 namespace CmlLib.Core
 {
@@ -20,6 +21,14 @@ namespace CmlLib.Core
 
         private static string getOSName()
         {
+#if NETCOREAPP
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                return "osx";
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                return "windows";
+            else
+                return "linux";
+#elif NETFRAMEWORK
             var osType = Environment.OSVersion.Platform;
 
             if (osType == PlatformID.MacOSX)
@@ -28,11 +37,12 @@ namespace CmlLib.Core
                 return "linux";
             else
                 return "windows";
+#endif
         }
 
         public bool CheckOSRequire(JArray arr)
         {
-            var osName = getOSName();
+            var require = true;
 
             foreach (JObject job in arr)
             {
@@ -47,31 +57,31 @@ namespace CmlLib.Core
 
                     // os (containCurrentOS)
                     else if (item.Key == "os")
-                    {
-                        foreach (var os in (JObject)item.Value)
-                        {
-                            if (os.Key == "name" && os.Value.ToString() == osName)
-                            {
-                                containCurrentOS = true;
-                                break;
-                            }
-                        }
-                        containCurrentOS = false;
-                    }
+                        containCurrentOS = checkOSContains((JObject)item.Value);
 
                     else if (item.Key == "features") // etc
                         return false;
                 }
 
                 if (!action && containCurrentOS)
-                    return false;
+                    require = false;
                 else if (action && containCurrentOS)
-                    return true;
+                    require = true;
                 else if (action && !containCurrentOS)
-                    return false;
+                    require = false;
             }
 
-            return true;
+            return require;
+        }
+
+        static bool checkOSContains(JObject job)
+        {
+            foreach (var os in job)
+            {
+                if (os.Key == "name" && os.Value.ToString() == OSName)
+                    return true;
+            }
+            return false;
         }
     }
 }
