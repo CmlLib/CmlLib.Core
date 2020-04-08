@@ -28,6 +28,9 @@ namespace CmlLib.Core
 
             if (startProfile.IsInherted)
             {
+                if (startProfile.ParentProfileId == startProfile.Id) // prevent StackOverFlowException
+                    throw new IOException("Invalid Profile : inheritFrom property is equal to id property.");
+
                 baseProfile = FindProfile(mc, infos, startProfile.ParentProfileId);
                 inhert(baseProfile, startProfile);
             }
