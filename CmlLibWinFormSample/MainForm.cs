@@ -135,30 +135,51 @@ namespace CmlLibWinFormSample
             groupBox1.Enabled = false;
             groupBox2.Enabled = false;
 
-            var versionname = Cb_Version.Text;
-            var launchOption = new MLaunchOption()
+            try
             {
-                JavaPath = Txt_Java.Text,
-                MaximumRamMb = int.Parse(Txt_Ram.Text),
-                Session = this.Session,
+                var versionname = Cb_Version.Text;
+                var launchOption = new MLaunchOption()
+                {
+                    JavaPath = Txt_Java.Text,
+                    MaximumRamMb = int.Parse(Txt_Ram.Text),
+                    Session = this.Session,
 
-                LauncherName = Txt_LauncherName.Text,
-                ServerIp = Txt_ServerIp.Text,
-                CustomJavaParameter = Txt_JavaArgs.Text
-            };
+                    VersionType = Txt_VersionType.Text,
+                    GameLauncherName = Txt_GLauncherName.Text,
+                    GameLauncherVersion = Txt_GLauncherVersion.Text,
 
-            if (Txt_ScWd.Text != "" && Txt_ScHt.Text != "")
-            {
-                launchOption.ScreenHeight = int.Parse(Txt_ScHt.Text);
-                launchOption.ScreenWidth = int.Parse(Txt_ScWd.Text);
+                    ServerIp = Txt_ServerIp.Text,
+
+                    DockName = Txt_DockName.Text,
+                    DockIcon = Txt_DockIcon.Text
+                };
+
+                if (!string.IsNullOrEmpty(Txt_ServerPort.Text))
+                    launchOption.ServerPort = int.Parse(Txt_ServerPort.Text);
+
+                if (!string.IsNullOrEmpty(Txt_ScWd.Text) && !string.IsNullOrEmpty(Txt_ScHt.Text))
+                {
+                    launchOption.ScreenHeight = int.Parse(Txt_ScHt.Text);
+                    launchOption.ScreenWidth = int.Parse(Txt_ScWd.Text);
+                }
+
+                if (!string.IsNullOrEmpty(Txt_JavaArgs.Text))
+                    launchOption.JVMArguments = Txt_JavaArgs.Text.Split(' ');
+
+                var th = new Thread(() =>
+                {
+                    var process = Launcher.CreateProcess(versionname, launchOption);
+                    StartProcess(process);
+                });
+                th.Start();
             }
-
-            var th = new Thread(() =>
+            catch (Exception ex)
             {
-                var process = Launcher.CreateProcess(versionname, launchOption);
-                StartProcess(process);
-
-                Invoke(new Action(() => 
+                MessageBox.Show(ex.ToString());
+            }
+            finally
+            {
+                var fWork = new Action(() =>
                 {
                     if (logForm != null)
                         logForm.Close();
@@ -168,9 +189,13 @@ namespace CmlLibWinFormSample
 
                     groupBox1.Enabled = true;
                     groupBox2.Enabled = true;
-                }));
-            });
-            th.Start();
+                });
+
+                if (this.InvokeRequired)
+                    this.Invoke(fWork);
+                else
+                    fWork.Invoke();
+            }
         }
 
         private void Launcher_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -237,6 +262,18 @@ namespace CmlLibWinFormSample
             try
             {
                 Process.Start("https://github.com/AlphaBs/CmlLib.Core");
+            }
+            catch
+            {
+
+            }
+        }
+
+        private void btnWiki_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Process.Start("https://github.com/AlphaBs/CmlLib.Core/wiki/MLaunchOption");
             }
             catch
             {
