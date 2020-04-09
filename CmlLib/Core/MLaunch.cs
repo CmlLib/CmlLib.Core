@@ -7,19 +7,21 @@ using System.Text.RegularExpressions;
 
 namespace CmlLib.Core
 {
-
     public class MLaunch
     {
-        public static string DefaultJavaParameter =
-                "-XX:+UnlockExperimentalVMOptions " +
-                "-XX:+UseG1GC " +
-                "-XX:G1NewSizePercent=20 " +
-                "-XX:G1ReservePercent=20 " +
-                "-XX:MaxGCPauseMillis=50 " +
-                "-XX:G1HeapRegionSize=16M";
-        public static string SupportLaunchVersion = "1.15.2";
-
         private static Regex argBracket = new Regex(@"\$\{(.*?)}");
+        private const int DefaultServerPort = 25565;
+
+        public const string SupportVersion = "1.15.2";
+        public readonly static string[] DefaultJavaParameter = new string[]
+            {
+                "-XX:+UnlockExperimentalVMOptions ",
+                "-XX:+UseG1GC ",
+                "-XX:G1NewSizePercent=20 ",
+                "-XX:G1ReservePercent=20 ",
+                "-XX:MaxGCPauseMillis=50 ",
+                "-XX:G1HeapRegionSize=16M"
+            };
 
         public MLaunch(MLaunchOption option)
         {
@@ -48,7 +50,7 @@ namespace CmlLib.Core
             native.CleanNatives();
             native.CreateNatives();
 
-            string arg = CreateArg();
+            string arg = string.Join(" ", CreateArg());
             Process mc = new Process();
             mc.StartInfo.FileName = LaunchOption.JavaPath;
             mc.StartInfo.Arguments = arg;
@@ -57,26 +59,26 @@ namespace CmlLib.Core
             return mc;
         }
 
-        public string CreateArg()
+        public string[] CreateArg()
         {
             var profile = LaunchOption.StartProfile;
 
             var args = new List<string>();
 
-            // common jvm args
-            if (LaunchOption.CustomJavaParameter == "")
-                args.Add(DefaultJavaParameter);
+            // Common JVM Arguments
+            if (LaunchOption.JVMArguments != null)
+                args.AddRange(LaunchOption.JVMArguments);
             else
-                args.Add(LaunchOption.CustomJavaParameter);
+                args.AddRange(DefaultJavaParameter);
 
-            args.Add(" -Xmx" + LaunchOption.MaximumRamMb + "m");
+            args.Add("-Xmx" + LaunchOption.MaximumRamMb + "m");
 
             if (!string.IsNullOrEmpty(LaunchOption.DockName))
                 args.Add("-Xdock:name=" + handleEmpty(LaunchOption.DockName));
             if (!string.IsNullOrEmpty(LaunchOption.DockIcon))
                 args.Add("-Xdock:icon=" + handleEmpty(LaunchOption.DockIcon));
 
-            // specific jvm args
+            // Version-specific JVM Arguments
             var libArgs = new List<string>(profile.Libraries.Length);
 
             foreach (var item in profile.Libraries)
@@ -92,8 +94,8 @@ namespace CmlLib.Core
             var jvmdict = new Dictionary<string, string>()
             {
                 { "natives_directory", handleEmpty(profile.NativePath) },
-                { "launcher_name", "minecraft-launcher" },
-                { "launcher_version", "2" },
+                { "launcher_name", useNotNull(LaunchOption.GameLauncherName, "minecraft-launcher") },
+                { "launcher_version", useNotNull(LaunchOption.GameLauncherVersion, "2") },
                 { "classpath", libs }
             };
 
@@ -107,7 +109,7 @@ namespace CmlLib.Core
 
             args.Add(profile.MainClass);
 
-            // game args
+            // Game Arguments
             var gameDict = new Dictionary<string, string>()
             {
                 { "auth_player_name", LaunchOption.Session.Username },
@@ -119,23 +121,22 @@ namespace CmlLib.Core
                 { "auth_access_token", LaunchOption.Session.AccessToken },
                 { "user_properties", "{}" },
                 { "user_type", "Mojang" },
-                { "game_assets", Minecraft.AssetLegacy },
-                { "auth_session", LaunchOption.Session.AccessToken }
+                { "game_assets", handleEmpty(Minecraft.AssetLegacy) },
+                { "auth_session", LaunchOption.Session.AccessToken },
+                { "version_type", useNotNull(LaunchOption.VersionType, profile.TypeStr) }
             };
-
-            if (LaunchOption.LauncherName == "")
-                gameDict.Add("version_type", profile.TypeStr);
-            else
-                gameDict.Add("version_type", LaunchOption.LauncherName);
 
             if (profile.GameArguments != null)
                 args.AddRange(argumentInsert(profile.GameArguments, gameDict));
             else
                 args.AddRange(argumentInsert(profile.MinecraftArguments.Split(' '), gameDict));
 
-            // options
-            if (LaunchOption.ServerIp != "")
+            // Options
+            if (!string.IsNullOrEmpty(LaunchOption.ServerIp))
                 args.Add("--server " + LaunchOption.ServerIp);
+
+            if (LaunchOption.ServerPort != DefaultServerPort)
+                args.Add("--port " + LaunchOption.ServerPort);
 
             if (LaunchOption.ScreenWidth > 0 && LaunchOption.ScreenHeight > 0)
             {
@@ -143,7 +144,7 @@ namespace CmlLib.Core
                 args.Add("--height " + LaunchOption.ScreenHeight);
             }
 
-            return string.Join(" ", args);
+            return args.ToArray();
         }
 
         string[] argumentInsert(string[] arg, Dictionary<string, string> dicts)
@@ -178,11 +179,16 @@ namespace CmlLib.Core
             return sb.ToString();
         }
 
-        bool isn(string v)
+        string useNotNull(string input1, string input2)
         {
-            return (v == null || v == "");
+            if (string.IsNullOrEmpty(input1))
+                return handleEmpty(input2);
+            else
+                return handleEmpty(input1);
         }
 
+        // handle empty string in --key=value style argument
+        // --key=va lue => --key="va lue"
         string handleEArg(string input)
         {
             if (input.Contains(" ") && input.Contains("="))
