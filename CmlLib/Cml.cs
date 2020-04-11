@@ -67,7 +67,7 @@ namespace CmlLib
             fire(MFile.Runtime, "java", 1, 0);
 
             var mjava = new MJava(Minecraft.Runtime);
-            mjava.DownloadProgressChanged += (sender, e) => fire(e.ProgressPercentage);
+            mjava.ProgressChanged += (sender, e) => fire(e.ProgressPercentage);
             mjava.DownloadCompleted += (sender, e) =>
             {
                 fire(MFile.Runtime, "java", 1, 1);

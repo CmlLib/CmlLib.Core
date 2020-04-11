@@ -11,7 +11,7 @@ namespace CmlLib.Core
     {
         public static string DefaultRuntimeDirectory = Path.Combine(Minecraft.GetOSDefaultPath(), "runtime");
 
-        public event ProgressChangedEventHandler DownloadProgressChanged;
+        public event ProgressChangedEventHandler ProgressChanged;
         public event EventHandler DownloadCompleted;
         public string RuntimeDirectory { get; private set; }
 
@@ -62,12 +62,17 @@ namespace CmlLib.Core
                 var downloader = new WebDownload();
                 downloader.DownloadProgressChangedEvent += Downloader_DownloadProgressChangedEvent;
                 downloader.DownloadFile(javaUrl, Path.Combine(WorkingPath, "javatemp.lzma"));
+                DownloadCompleted?.Invoke(this, new EventArgs());
 
                 var lzma = Path.Combine(WorkingPath, "javatemp.lzma");
                 var zip = Path.Combine(WorkingPath, "javatemp.zip");
 
-                SevenZipWrapper.DecompressFileLZMA(lzma, zip);
+                var szip = new SevenZipWrapper();
+                szip.ProgressChange += Szip_ProgressChange;
+                szip.DecompressFileLZMA(lzma, zip);
+
                 var z = new SharpZip(zip);
+                z.ProgressEvent += Z_ProgressEvent;
                 z.Unzip(RuntimeDirectory);
 
                 if (!File.Exists(javapath))
@@ -78,16 +83,24 @@ namespace CmlLib.Core
 
                 if (MRule.OSName != "windows")
                     IOUtil.Chmod(javapath, IOUtil.Chmod755);
-
-                DownloadCompleted?.Invoke(this, new EventArgs());
             }
 
             return javapath;
         }
 
+        private void Z_ProgressEvent(object sender, int e)
+        {
+            ProgressChanged?.Invoke(this, new ProgressChangedEventArgs(e, null));
+        }
+
+        private void Szip_ProgressChange(object sender, ProgressChangedEventArgs e)
+        {
+            ProgressChanged?.Invoke(this, e);
+        }
+
         private void Downloader_DownloadProgressChangedEvent(object sender, System.ComponentModel.ProgressChangedEventArgs e)
         {
-            DownloadProgressChanged?.Invoke(this, e);
+            ProgressChanged?.Invoke(this, e);
         }
     }
 }

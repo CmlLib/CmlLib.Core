@@ -8,7 +8,7 @@ namespace SevenZip.Compression.LZ
 		uint _pos;
 		uint _windowSize = 0;
 		uint _streamPos;
-		System.IO.Stream _stream;
+		public System.IO.Stream _stream;
 
 		public uint TrainSize = 0;
 

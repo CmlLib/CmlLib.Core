@@ -9,7 +9,9 @@ namespace CmlLib.Utils
 {
     class SevenZipWrapper
     {
-        public static void CompressFileLZMA(string inFile, string outFile)
+        public event System.ComponentModel.ProgressChangedEventHandler ProgressChange;
+
+        public void CompressFileLZMA(string inFile, string outFile)
         {
             SevenZip.Compression.LZMA.Encoder coder = new SevenZip.Compression.LZMA.Encoder();
             FileStream input = new FileStream(inFile, FileMode.Open);
@@ -27,7 +29,7 @@ namespace CmlLib.Utils
             output.Close();
         }
 
-        public static void DecompressFileLZMA(string inFile, string outFile)
+        public void DecompressFileLZMA(string inFile, string outFile)
         {
             SevenZip.Compression.LZMA.Decoder coder = new SevenZip.Compression.LZMA.Decoder();
             FileStream input = new FileStream(inFile, FileMode.Open);
@@ -43,9 +45,25 @@ namespace CmlLib.Utils
             long fileLength = BitConverter.ToInt64(fileLengthBytes, 0);
 
             coder.SetDecoderProperties(properties);
-            coder.Code(input, output, input.Length, fileLength, null);
+            coder.Code(input, output, input.Length, fileLength, new SevenZipProgress(ProgressChange));
             output.Flush();
             output.Close();
+        }
+
+        class SevenZipProgress : SevenZip.ICodeProgress
+        {
+            System.ComponentModel.ProgressChangedEventHandler handler;
+
+            public SevenZipProgress(System.ComponentModel.ProgressChangedEventHandler h)
+            {
+                handler = h;
+            }
+
+            public void SetProgress(long current, long total)
+            {
+                var progress = (int)(100 * current / total);
+                handler?.Invoke(null, new System.ComponentModel.ProgressChangedEventArgs(progress, null));
+            }
         }
     }
 }

@@ -31,7 +31,7 @@ namespace SevenZip
 		/// <param name="outSize">
 		/// output size. -1 if unknown.
 		/// </param>
-		void SetProgress(Int64 inSize, Int64 outSize);
+		void SetProgress(Int64 current, Int64 total);
 	};
 
 	public interface ICoder
