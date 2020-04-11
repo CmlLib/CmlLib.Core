@@ -9,11 +9,16 @@ using System.Diagnostics;
 
 namespace CmlLib
 {
-    public class Cml
+    public class CMLauncher
     {
-        public Cml(string path)
+        public CMLauncher(string path)
         {
             this.Minecraft = new Minecraft(path);
+        }
+
+        public CMLauncher(Minecraft mc)
+        {
+            this.Minecraft = mc;
         }
 
         public event DownloadFileChangedHandler FileChanged;
