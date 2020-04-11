@@ -31,6 +31,16 @@
             this.label5 = new System.Windows.Forms.Label();
             this.Btn_loginOption = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.Txt_DockIcon = new System.Windows.Forms.TextBox();
+            this.label17 = new System.Windows.Forms.Label();
+            this.Txt_DockName = new System.Windows.Forms.TextBox();
+            this.label18 = new System.Windows.Forms.Label();
+            this.Txt_GLauncherVersion = new System.Windows.Forms.TextBox();
+            this.label16 = new System.Windows.Forms.Label();
+            this.Txt_GLauncherName = new System.Windows.Forms.TextBox();
+            this.label15 = new System.Windows.Forms.Label();
+            this.Txt_ServerPort = new System.Windows.Forms.TextBox();
+            this.label14 = new System.Windows.Forms.Label();
             this.Txt_JavaArgs = new System.Windows.Forms.TextBox();
             this.Txt_ScHt = new System.Windows.Forms.TextBox();
             this.Txt_ScWd = new System.Windows.Forms.TextBox();
@@ -45,6 +55,9 @@
             this.Pb_File = new System.Windows.Forms.ProgressBar();
             this.Lv_Status = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.label19 = new System.Windows.Forms.Label();
+            this.Txt_ForgeVersion = new System.Windows.Forms.TextBox();
+            this.Cb_Forge = new System.Windows.Forms.CheckBox();
             this.label13 = new System.Windows.Forms.Label();
             this.Txt_Java = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
@@ -63,16 +76,6 @@
             this.label1 = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
             this.btnGithub = new System.Windows.Forms.Button();
-            this.Txt_ServerPort = new System.Windows.Forms.TextBox();
-            this.label14 = new System.Windows.Forms.Label();
-            this.Txt_GLauncherName = new System.Windows.Forms.TextBox();
-            this.label15 = new System.Windows.Forms.Label();
-            this.Txt_GLauncherVersion = new System.Windows.Forms.TextBox();
-            this.label16 = new System.Windows.Forms.Label();
-            this.Txt_DockIcon = new System.Windows.Forms.TextBox();
-            this.label17 = new System.Windows.Forms.Label();
-            this.Txt_DockName = new System.Windows.Forms.TextBox();
-            this.label18 = new System.Windows.Forms.Label();
             this.btnWiki = new System.Windows.Forms.Button();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -126,6 +129,86 @@
             this.groupBox2.TabIndex = 20;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Options (Empty textbox means using default option)";
+            // 
+            // Txt_DockIcon
+            // 
+            this.Txt_DockIcon.Location = new System.Drawing.Point(133, 266);
+            this.Txt_DockIcon.Name = "Txt_DockIcon";
+            this.Txt_DockIcon.Size = new System.Drawing.Size(224, 21);
+            this.Txt_DockIcon.TabIndex = 17;
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Location = new System.Drawing.Point(57, 269);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(69, 12);
+            this.label17.TabIndex = 16;
+            this.label17.Text = "DockIcon : ";
+            // 
+            // Txt_DockName
+            // 
+            this.Txt_DockName.Location = new System.Drawing.Point(133, 239);
+            this.Txt_DockName.Name = "Txt_DockName";
+            this.Txt_DockName.Size = new System.Drawing.Size(224, 21);
+            this.Txt_DockName.TabIndex = 15;
+            // 
+            // label18
+            // 
+            this.label18.AutoSize = true;
+            this.label18.Location = new System.Drawing.Point(47, 242);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(79, 12);
+            this.label18.TabIndex = 14;
+            this.label18.Text = "DockName : ";
+            // 
+            // Txt_GLauncherVersion
+            // 
+            this.Txt_GLauncherVersion.Location = new System.Drawing.Point(133, 212);
+            this.Txt_GLauncherVersion.Name = "Txt_GLauncherVersion";
+            this.Txt_GLauncherVersion.Size = new System.Drawing.Size(224, 21);
+            this.Txt_GLauncherVersion.TabIndex = 13;
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(6, 215);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(122, 12);
+            this.label16.TabIndex = 12;
+            this.label16.Text = "GLauncherVersion : ";
+            // 
+            // Txt_GLauncherName
+            // 
+            this.Txt_GLauncherName.Location = new System.Drawing.Point(133, 185);
+            this.Txt_GLauncherName.Name = "Txt_GLauncherName";
+            this.Txt_GLauncherName.Size = new System.Drawing.Size(224, 21);
+            this.Txt_GLauncherName.TabIndex = 11;
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(14, 188);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(113, 12);
+            this.label15.TabIndex = 10;
+            this.label15.Text = "GLauncherName : ";
+            // 
+            // Txt_ServerPort
+            // 
+            this.Txt_ServerPort.Location = new System.Drawing.Point(133, 49);
+            this.Txt_ServerPort.Name = "Txt_ServerPort";
+            this.Txt_ServerPort.Size = new System.Drawing.Size(224, 21);
+            this.Txt_ServerPort.TabIndex = 9;
+            // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Location = new System.Drawing.Point(48, 52);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(79, 12);
+            this.label14.TabIndex = 8;
+            this.label14.Text = "Server Port : ";
             // 
             // Txt_JavaArgs
             // 
@@ -232,6 +315,9 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.label19);
+            this.groupBox1.Controls.Add(this.Txt_ForgeVersion);
+            this.groupBox1.Controls.Add(this.Cb_Forge);
             this.groupBox1.Controls.Add(this.label13);
             this.groupBox1.Controls.Add(this.Txt_Java);
             this.groupBox1.Controls.Add(this.label6);
@@ -250,15 +336,42 @@
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Location = new System.Drawing.Point(14, 70);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(385, 183);
+            this.groupBox1.Size = new System.Drawing.Size(385, 203);
             this.groupBox1.TabIndex = 16;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "CmlLib Sample Launcher";
             // 
+            // label19
+            // 
+            this.label19.AutoSize = true;
+            this.label19.Location = new System.Drawing.Point(293, 140);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(60, 12);
+            this.label19.TabIndex = 17;
+            this.label19.Text = "ex) 28.2.0";
+            // 
+            // Txt_ForgeVersion
+            // 
+            this.Txt_ForgeVersion.Location = new System.Drawing.Point(128, 135);
+            this.Txt_ForgeVersion.Name = "Txt_ForgeVersion";
+            this.Txt_ForgeVersion.Size = new System.Drawing.Size(164, 21);
+            this.Txt_ForgeVersion.TabIndex = 16;
+            // 
+            // Cb_Forge
+            // 
+            this.Cb_Forge.AutoSize = true;
+            this.Cb_Forge.Location = new System.Drawing.Point(11, 137);
+            this.Cb_Forge.Name = "Cb_Forge";
+            this.Cb_Forge.Size = new System.Drawing.Size(115, 16);
+            this.Cb_Forge.TabIndex = 15;
+            this.Cb_Forge.Text = "Forge Version : ";
+            this.Cb_Forge.UseVisualStyleBackColor = true;
+            this.Cb_Forge.CheckedChanged += new System.EventHandler(this.Cb_Forge_CheckedChanged);
+            // 
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(43, 162);
+            this.label13.Location = new System.Drawing.Point(44, 184);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(293, 12);
             this.label13.TabIndex = 14;
@@ -266,7 +379,7 @@
             // 
             // Txt_Java
             // 
-            this.Txt_Java.Location = new System.Drawing.Point(92, 135);
+            this.Txt_Java.Location = new System.Drawing.Point(93, 160);
             this.Txt_Java.Name = "Txt_Java";
             this.Txt_Java.Size = new System.Drawing.Size(184, 21);
             this.Txt_Java.TabIndex = 13;
@@ -274,7 +387,7 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(43, 138);
+            this.label6.Location = new System.Drawing.Point(44, 163);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(43, 12);
             this.label6.TabIndex = 12;
@@ -368,7 +481,7 @@
             // 
             // Btn_Launch
             // 
-            this.Btn_Launch.Location = new System.Drawing.Point(283, 133);
+            this.Btn_Launch.Location = new System.Drawing.Point(283, 160);
             this.Btn_Launch.Name = "Btn_Launch";
             this.Btn_Launch.Size = new System.Drawing.Size(75, 23);
             this.Btn_Launch.TabIndex = 2;
@@ -396,7 +509,7 @@
             // label12
             // 
             this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(68, 266);
+            this.label12.Location = new System.Drawing.Point(23, 285);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(204, 12);
             this.label12.TabIndex = 23;
@@ -404,7 +517,7 @@
             // 
             // btnGithub
             // 
-            this.btnGithub.Location = new System.Drawing.Point(278, 259);
+            this.btnGithub.Location = new System.Drawing.Point(233, 279);
             this.btnGithub.Name = "btnGithub";
             this.btnGithub.Size = new System.Drawing.Size(75, 23);
             this.btnGithub.TabIndex = 24;
@@ -412,93 +525,13 @@
             this.btnGithub.UseVisualStyleBackColor = true;
             this.btnGithub.Click += new System.EventHandler(this.btnGithub_Click);
             // 
-            // Txt_ServerPort
-            // 
-            this.Txt_ServerPort.Location = new System.Drawing.Point(133, 49);
-            this.Txt_ServerPort.Name = "Txt_ServerPort";
-            this.Txt_ServerPort.Size = new System.Drawing.Size(224, 21);
-            this.Txt_ServerPort.TabIndex = 9;
-            // 
-            // label14
-            // 
-            this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(48, 52);
-            this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(79, 12);
-            this.label14.TabIndex = 8;
-            this.label14.Text = "Server Port : ";
-            // 
-            // Txt_GLauncherName
-            // 
-            this.Txt_GLauncherName.Location = new System.Drawing.Point(133, 185);
-            this.Txt_GLauncherName.Name = "Txt_GLauncherName";
-            this.Txt_GLauncherName.Size = new System.Drawing.Size(224, 21);
-            this.Txt_GLauncherName.TabIndex = 11;
-            // 
-            // label15
-            // 
-            this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(14, 188);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(113, 12);
-            this.label15.TabIndex = 10;
-            this.label15.Text = "GLauncherName : ";
-            // 
-            // Txt_GLauncherVersion
-            // 
-            this.Txt_GLauncherVersion.Location = new System.Drawing.Point(133, 212);
-            this.Txt_GLauncherVersion.Name = "Txt_GLauncherVersion";
-            this.Txt_GLauncherVersion.Size = new System.Drawing.Size(224, 21);
-            this.Txt_GLauncherVersion.TabIndex = 13;
-            // 
-            // label16
-            // 
-            this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(6, 215);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(122, 12);
-            this.label16.TabIndex = 12;
-            this.label16.Text = "GLauncherVersion : ";
-            // 
-            // Txt_DockIcon
-            // 
-            this.Txt_DockIcon.Location = new System.Drawing.Point(133, 266);
-            this.Txt_DockIcon.Name = "Txt_DockIcon";
-            this.Txt_DockIcon.Size = new System.Drawing.Size(224, 21);
-            this.Txt_DockIcon.TabIndex = 17;
-            // 
-            // label17
-            // 
-            this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(57, 269);
-            this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(69, 12);
-            this.label17.TabIndex = 16;
-            this.label17.Text = "DockIcon : ";
-            // 
-            // Txt_DockName
-            // 
-            this.Txt_DockName.Location = new System.Drawing.Point(133, 239);
-            this.Txt_DockName.Name = "Txt_DockName";
-            this.Txt_DockName.Size = new System.Drawing.Size(224, 21);
-            this.Txt_DockName.TabIndex = 15;
-            // 
-            // label18
-            // 
-            this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(47, 242);
-            this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(79, 12);
-            this.label18.TabIndex = 14;
-            this.label18.Text = "DockName : ";
-            // 
             // btnWiki
             // 
-            this.btnWiki.Location = new System.Drawing.Point(70, 286);
+            this.btnWiki.Location = new System.Drawing.Point(314, 279);
             this.btnWiki.Name = "btnWiki";
-            this.btnWiki.Size = new System.Drawing.Size(283, 23);
+            this.btnWiki.Size = new System.Drawing.Size(75, 23);
             this.btnWiki.TabIndex = 25;
-            this.btnWiki.Text = "Show description of each option";
+            this.btnWiki.Text = "Wiki";
             this.btnWiki.UseVisualStyleBackColor = true;
             this.btnWiki.Click += new System.EventHandler(this.btnWiki_Click);
             // 
@@ -519,6 +552,7 @@
             this.Controls.Add(this.groupBox1);
             this.Name = "MainForm";
             this.Text = "MainForm";
+            this.Load += new System.EventHandler(this.MainForm_Load);
             this.Shown += new System.EventHandler(this.MainForm_Shown);
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
@@ -577,5 +611,8 @@
         private System.Windows.Forms.TextBox Txt_DockName;
         private System.Windows.Forms.Label label18;
         private System.Windows.Forms.Button btnWiki;
+        private System.Windows.Forms.Label label19;
+        private System.Windows.Forms.TextBox Txt_ForgeVersion;
+        private System.Windows.Forms.CheckBox Cb_Forge;
     }
 }

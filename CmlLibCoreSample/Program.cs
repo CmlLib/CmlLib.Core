@@ -61,7 +61,7 @@ namespace CmlLibCoreSample
             var path = Minecraft.GetOSDefaultPath(); // mc directory
             //var path = @"./mctestdir";
 
-            var launcher = new CmlLib.Cml(path);
+            var launcher = new CmlLib.CMLauncher(path);
             launcher.ProgressChanged += Downloader_ChangeProgress;
             launcher.FileChanged += Downloader_ChangeFile;
 

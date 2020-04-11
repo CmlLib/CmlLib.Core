@@ -23,7 +23,7 @@ namespace CmlLibWinFormSample
             InitializeComponent();
         }
 
-        Cml Launcher;
+        CMLauncher Launcher;
         MSession Session;
 
         GameLog logForm;
@@ -63,9 +63,22 @@ namespace CmlLibWinFormSample
             InitializeLauncher();
         }
 
+        private void Cb_Forge_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!Cb_Forge.Checked)
+            {
+                Txt_ForgeVersion.Clear();
+                Txt_ForgeVersion.Enabled = false;
+            }
+            else
+                Txt_ForgeVersion.Enabled = true;
+        }
+
         private void InitializeLauncher()
         {
-            Launcher = new Cml(Txt_Path.Text);
+            Launcher = new CMLauncher(Txt_Path.Text);
+            //Launcher.Minecraft.SetAssetsPath(Minecraft.GetOSDefaultPath() + "/assets");
+
             Launcher.FileChanged += Launcher_FileChanged;
             Launcher.ProgressChanged += Launcher_ProgressChanged;
             var versions = Launcher.UpdateProfileInfos();
@@ -137,7 +150,12 @@ namespace CmlLibWinFormSample
 
             try
             {
-                var versionname = Cb_Version.Text;
+                var version = Cb_Version.Text;
+                var forge = "";
+
+                if (Cb_Forge.Checked)
+                    forge = Txt_ForgeVersion.Text;
+
                 var launchOption = new MLaunchOption()
                 {
                     JavaPath = Txt_Java.Text,
@@ -168,8 +186,14 @@ namespace CmlLibWinFormSample
 
                 var th = new Thread(() =>
                 {
-                    var process = Launcher.CreateProcess(versionname, launchOption);
-                    StartProcess(process);
+                    Process mc;
+
+                    if (string.IsNullOrEmpty(forge))
+                        mc = Launcher.CreateProcess(version, launchOption); // vanilla
+                    else
+                        mc = Launcher.CreateProcess(version, forge, launchOption); // forge
+
+                    StartProcess(mc);
                 });
                 th.Start();
             }
@@ -279,6 +303,11 @@ namespace CmlLibWinFormSample
             {
 
             }
+        }
+
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }
