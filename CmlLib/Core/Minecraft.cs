@@ -54,9 +54,13 @@ namespace CmlLib.Core
             Resource = c(path + "/resources");
 
             Runtime = c(path + "/runtime");
+            SetAssetsPath(assetsPath + "/assets");
+        }
 
-            Index = c(assetsPath + "/assets/indexes");
-            Assets = c(assetsPath + "/assets");
+        public void SetAssetsPath(string p)
+        {
+            Assets = c(p);
+            Index = c(Assets + "/indexes");
             AssetObject = c(Assets + "/objects");
             AssetLegacy = c(Assets + "/virtual/legacy");
         }
