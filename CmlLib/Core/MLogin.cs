@@ -232,10 +232,9 @@ namespace CmlLib.Core
                     result._RawResponse = response;
                     JObject job = JObject.Parse(response);
 
-                    result.AccessToken = job["accessToken"].ToString();
-                    result.AccessToken = job["accessToken"].ToString();
-                    result.UUID = job["selectedProfile"]["id"].ToString();
-                    result.Username = job["selectedProfile"]["name"].ToString();
+                    result.AccessToken = job["accessToken"]?.ToString();
+                    result.UUID = job["selectedProfile"]?["id"]?.ToString();
+                    result.Username = job["selectedProfile"]?["name"]?.ToString();
                     result.ClientToken = session.ClientToken;
 
                     WriteLogin(result);
