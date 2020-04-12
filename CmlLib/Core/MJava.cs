@@ -39,12 +39,6 @@ namespace CmlLib.Core
             {
                 string json = "";
 
-                var WorkingPath = Path.Combine(Path.GetTempPath(), "temp_download_runtime");
-
-                if (Directory.Exists(WorkingPath))
-                    IOUtil.DeleteDirectory(WorkingPath);
-                Directory.CreateDirectory(WorkingPath);
-
                 var javaUrl = "";
                 using (var wc = new WebClient())
                 {
@@ -59,27 +53,23 @@ namespace CmlLib.Core
                     Directory.CreateDirectory(RuntimeDirectory);
                 }
 
-                var downloader = new WebDownload();
-                downloader.DownloadProgressChangedEvent += Downloader_DownloadProgressChangedEvent;
-                downloader.DownloadFile(javaUrl, Path.Combine(WorkingPath, "javatemp.lzma"));
+                var lzmapath = Path.Combine(Path.GetTempPath(), "jre.lzma");
+                var zippath = Path.Combine(Path.GetTempPath(), "jre.zip");
+
+                var webdownloader = new WebDownload();
+                webdownloader.DownloadProgressChangedEvent += Downloader_DownloadProgressChangedEvent;
+                webdownloader.DownloadFile(javaUrl, lzmapath);
+
                 DownloadCompleted?.Invoke(this, new EventArgs());
 
-                var lzma = Path.Combine(WorkingPath, "javatemp.lzma");
-                var zip = Path.Combine(WorkingPath, "javatemp.zip");
+                SevenZipWrapper.DecompressFileLZMA(lzmapath, zippath);
 
-                var szip = new SevenZipWrapper();
-                szip.ProgressChange += Szip_ProgressChange;
-                szip.DecompressFileLZMA(lzma, zip);
-
-                var z = new SharpZip(zip);
+                var z = new SharpZip(zippath);
                 z.ProgressEvent += Z_ProgressEvent;
                 z.Unzip(RuntimeDirectory);
 
                 if (!File.Exists(javapath))
-                {
-                    IOUtil.DeleteDirectory(WorkingPath);
                     throw new Exception("Failed Download");
-                }
 
                 if (MRule.OSName != "windows")
                     IOUtil.Chmod(javapath, IOUtil.Chmod755);
