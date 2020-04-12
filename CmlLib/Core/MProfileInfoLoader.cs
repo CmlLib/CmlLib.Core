@@ -14,7 +14,7 @@ namespace CmlLib.Core
         public static MProfileInfo[] GetProfiles(Minecraft mc)
         {
             var list = new HashSet<MProfileInfo>(GetProfilesFromLocal(mc));
-            foreach (var item in GetProfilesFromWeb()) //다음 웹 프로파일을 불러옴
+            foreach (var item in GetProfilesFromWeb())
             {
                 bool isexist = false;
                 foreach (var local in list)

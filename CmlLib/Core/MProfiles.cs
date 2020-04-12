@@ -24,7 +24,7 @@ namespace CmlLib.Core
             }
 
             if (startProfile == null)
-                throw new Exception(name + "not found");
+                throw new Exception(name + " not found");
 
             if (startProfile.IsInherted)
             {
