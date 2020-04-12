@@ -48,7 +48,7 @@ namespace CmlLib.Core
                     javaUrl = job[MRule.Arch]?["jre"]?["url"]?.ToString();
 
                     if (string.IsNullOrEmpty(javaUrl))
-                        throw new Exception("unsupport os");
+                        throw new PlatformNotSupportedException("Downloading JRE on current OS is not supported. Set JavaPath manually.");
 
                     Directory.CreateDirectory(RuntimeDirectory);
                 }
