@@ -9,7 +9,7 @@ namespace CmlLib.Core
 {
     public class MProfile
     {
-        public static MProfile FindProfile(Minecraft mc, MProfileInfo[] infos, string name)
+        public static MProfile FindProfile(Minecraft mc, MProfileMetadata[] infos, string name)
         {
             MProfile startProfile = null;
             MProfile baseProfile = null;
@@ -38,7 +38,7 @@ namespace CmlLib.Core
             return startProfile;
         }
 
-        public static MProfile Parse(Minecraft mc, MProfileInfo info)
+        public static MProfile Parse(Minecraft mc, MProfileMetadata info)
         {
             string json;
             if (info.IsWeb)

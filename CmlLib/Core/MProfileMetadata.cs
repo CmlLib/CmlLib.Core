@@ -3,8 +3,7 @@ using Newtonsoft.Json;
 
 namespace CmlLib.Core
 {
-
-    public partial class MProfileInfo
+    public class MProfileMetadata
     {
         /// <summary>
         /// true : Mojang Server Profile, False : Local profile
@@ -27,7 +26,7 @@ namespace CmlLib.Core
 
         public override bool Equals(object obj)
         {
-            var info = obj as MProfileInfo;
+            var info = obj as MProfileMetadata;
 
             if (info != null)
                 return info.Name.Equals(this.Name);

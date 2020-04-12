@@ -6,27 +6,17 @@ using System.Net;
 
 namespace CmlLib.Core
 {
-    public partial class MProfileInfo
+    public class MProfileLoader
     {
         /// <summary>
         /// Get All MProfileInfo from mojang server and local
         /// </summary>
-        public static MProfileInfo[] GetProfiles(Minecraft mc)
+        public static MProfileMetadata[] GetProfileMetadatas(Minecraft mc)
         {
-            var list = new HashSet<MProfileInfo>(GetProfilesFromLocal(mc));
-            foreach (var item in GetProfilesFromWeb())
+            var list = new List<MProfileMetadata>(GetProfileMetadatasFromLocal(mc));
+            foreach (var item in GetProfileMetadatasFromWeb())
             {
-                bool isexist = false;
-                foreach (var local in list)
-                {
-                    if (local.Name == item.Name)
-                    {
-                        isexist = true;
-                        break;
-                    }
-                }
-
-                if (!isexist)
+                if (!list.Contains(item))
                     list.Add(item);
             }
             return list.ToArray();
@@ -35,18 +25,18 @@ namespace CmlLib.Core
         /// <summary>
         /// Get All MProfileInfo from local
         /// </summary>
-        public static MProfileInfo[] GetProfilesFromLocal(Minecraft mc)
+        public static MProfileMetadata[] GetProfileMetadatasFromLocal(Minecraft mc)
         {
             var dirs = new DirectoryInfo(mc.Versions).GetDirectories();
-            var arr = new List<MProfileInfo>(dirs.Length);
+            var arr = new List<MProfileMetadata>(dirs.Length);
 
             for (int i = 0; i < dirs.Length; i++)
             {
                 var dir = dirs[i];
-                var filepath = System.IO.Path.Combine(dir.FullName, dir.Name + ".json");
+                var filepath = Path.Combine(dir.FullName, dir.Name + ".json");
                 if (File.Exists(filepath))
                 {
-                    var info = new MProfileInfo();
+                    var info = new MProfileMetadata();
                     info.IsWeb = false;
                     info.Name = dir.Name;
                     info.Path = filepath;
@@ -60,7 +50,7 @@ namespace CmlLib.Core
         /// <summary>
         /// Get All MProfileInfo from mojang server
         /// </summary>
-        public static MProfileInfo[] GetProfilesFromWeb()
+        public static MProfileMetadata[] GetProfileMetadatasFromWeb()
         {
             JArray jarr;
             using (WebClient wc = new WebClient())
@@ -69,10 +59,10 @@ namespace CmlLib.Core
                 jarr = JArray.Parse(jobj["versions"].ToString());
             }
 
-            var arr = new MProfileInfo[jarr.Count];
+            var arr = new MProfileMetadata[jarr.Count];
             for (int i = 0; i < jarr.Count; i++)
             {
-                var obj = jarr[i].ToObject<MProfileInfo>();
+                var obj = jarr[i].ToObject<MProfileMetadata>();
                 obj.IsWeb = true;
                 arr[i] = obj;
             }

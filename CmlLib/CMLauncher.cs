@@ -25,7 +25,7 @@ namespace CmlLib
         public event ProgressChangedEventHandler ProgressChanged;
 
         public Minecraft Minecraft { get; private set; }
-        public MProfileInfo[] ProfileInfos { get; private set; }
+        public MProfileMetadata[] ProfileInfos { get; private set; }
 
         private void fire(MFile kind, string name, int total, int progressed)
         {
@@ -48,9 +48,9 @@ namespace CmlLib
             ProgressChanged?.Invoke(this, new ProgressChangedEventArgs(progress, null));
         }
 
-        public MProfileInfo[] UpdateProfileInfos()
+        public MProfileMetadata[] UpdateProfileInfos()
         {
-            ProfileInfos = MProfileInfo.GetProfiles(Minecraft);
+            ProfileInfos = MProfileLoader.GetProfileMetadatas(Minecraft);
             return ProfileInfos;
         }
 
