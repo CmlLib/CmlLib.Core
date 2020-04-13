@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
     <id>CmlLib.Core</id>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
     <title>Minecraft Launcher Library</title>
     <authors>ksi123456ab</authors>
     <owners>ksi123456ab</owners>
@@ -16,6 +16,7 @@
     <dependencies>
       <dependency id="Newtonsoft.Json" version="12.0.3" />
       <dependency id="SharpZipLib" version="1.2.0" />
+      <dependency id="LZMA-SDK" version="19.0.0" />
     </dependencies>
   </metadata>
 </package>
