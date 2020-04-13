@@ -45,7 +45,7 @@ If you want to learn more features of this library, go to [wiki](https://github.
 ### **Install**
 
 Install Nuget Package 'CmlLib.Core'  
-~~or download dll files in [Releases](https://github.com/AlphaBs/CmlLib.Core/releases) and add reference to your project.~~
+or download dll files in [Releases](https://github.com/AlphaBs/CmlLib.Core/releases) and add reference to your project.
 
 write this on the top of your source code:
 
@@ -78,7 +78,7 @@ write this on the top of your source code:
      //var path = new Minecraft("your minecraft directory);
      var path = Minecraft.GetOSDefaultPath(); // mc directory
 
-     var launcher = new CmlLib.Cml(path);
+     var launcher = new CmlLib.CMLauncher(path);
      launcher.ProgressChanged += (s, e) =>
      {
           Console.WriteLine("{0}%", e.ProgressPercentage);
@@ -111,3 +111,7 @@ write this on the top of your source code:
      var process = launcher.Launch("1.15.2", launchOption);
 
      process.Start();
+
+
+**More**
+Go to [wiki](https://github.com/AlphaBs/CmlLib.Core/wiki/MLaunchOption)
