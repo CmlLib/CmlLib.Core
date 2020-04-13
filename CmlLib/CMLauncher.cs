@@ -25,7 +25,7 @@ namespace CmlLib
         public event ProgressChangedEventHandler ProgressChanged;
 
         public Minecraft Minecraft { get; private set; }
-        public MProfileMetadata[] ProfileInfos { get; private set; }
+        public MProfileMetadata[] Profiles { get; private set; }
 
         private void fire(MFile kind, string name, int total, int progressed)
         {
@@ -48,10 +48,10 @@ namespace CmlLib
             ProgressChanged?.Invoke(this, new ProgressChangedEventArgs(progress, null));
         }
 
-        public MProfileMetadata[] UpdateProfileInfos()
+        public MProfileMetadata[] UpdateProfiles()
         {
-            ProfileInfos = MProfileLoader.GetProfileMetadatas(Minecraft);
-            return ProfileInfos;
+            Profiles = MProfileLoader.GetProfileMetadatas(Minecraft);
+            return Profiles;
         }
 
         public MProfile GetProfile(string mcVersion, string forgeVersion)
@@ -61,10 +61,10 @@ namespace CmlLib
 
         public MProfile GetProfile(string versionname)
         {
-            if (ProfileInfos == null || ProfileInfos.Length == 0)
-                UpdateProfileInfos();
+            if (Profiles == null || Profiles.Length == 0)
+                UpdateProfiles();
 
-            return MProfile.FindProfile(Minecraft, ProfileInfos, versionname);
+            return MProfile.FindProfile(Minecraft, Profiles, versionname);
         }
 
         public string CheckJRE()
@@ -82,17 +82,17 @@ namespace CmlLib
 
         public string CheckForge(string mcversion, string forgeversion)
         {
-            if (ProfileInfos == null || ProfileInfos.Length == 0)
-                UpdateProfileInfos();
+            if (Profiles == null || Profiles.Length == 0)
+                UpdateProfiles();
 
             var versionname = GetVersionNameByForge(mcversion, forgeversion);
-            if (!ProfileInfos.Any(x => x.Name == versionname))
+            if (!Profiles.Any(x => x.Name == versionname))
             {
                 var mforge = new MForge(Minecraft);
                 mforge.FileChanged += (e) => fire(e);
                 mforge.InstallForge(mcversion, forgeversion);
 
-                UpdateProfileInfos();
+                UpdateProfiles();
             }
 
             return versionname;
