@@ -81,7 +81,7 @@ namespace CmlLibWinFormSample
 
             Launcher.FileChanged += Launcher_FileChanged;
             Launcher.ProgressChanged += Launcher_ProgressChanged;
-            var versions = Launcher.UpdateProfileInfos();
+            var versions = Launcher.UpdateProfiles();
 
             Invoke(new Action(() => 
             {

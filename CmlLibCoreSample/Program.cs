@@ -68,7 +68,6 @@ namespace CmlLibCoreSample
             Console.WriteLine($"Initialized in {launcher.Minecraft.path}");
 
             launcher.UpdateProfileInfos();
-
             foreach (var item in launcher.ProfileInfos)
             {
                 Console.WriteLine(item.Name);
