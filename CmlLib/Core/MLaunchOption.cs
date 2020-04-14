@@ -26,7 +26,7 @@ namespace CmlLib.Core
 
         internal void CheckValid()
         {
-            var exMsg = ""; // error message
+            string exMsg = null; // error message
 
             if (MaximumRamMb < 1)
                 exMsg = "MaximumRamMb is too small.";
@@ -35,7 +35,10 @@ namespace CmlLib.Core
                 exMsg = "StartProfile is null";
 
             if (Session == null)
-                exMsg = "Session is null";
+                Session = MSession.GetOfflineSession("tester123");
+
+            if (!Session.CheckIsValid())
+                exMsg = "Invalid Session";
 
             if (ServerPort < 0 || ServerPort > 65535)
                 exMsg = "Invalid ServerPort";
@@ -43,7 +46,7 @@ namespace CmlLib.Core
             if (ScreenWidth < 0 || ScreenHeight < 0)
                 exMsg = "Screen Size must be greater than or equal to zero.";
 
-            if (exMsg != "") // if launch option is invaild, throw exception
+            if (exMsg != null) // if launch option is invalid, throw exception
                 throw new ArgumentException(exMsg);
         }
     }
