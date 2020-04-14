@@ -15,11 +15,11 @@ namespace CmlLib.Core
         public const string SupportVersion = "1.15.2";
         public readonly static string[] DefaultJavaParameter = new string[]
             {
-                "-XX:+UnlockExperimentalVMOptions ",
-                "-XX:+UseG1GC ",
-                "-XX:G1NewSizePercent=20 ",
-                "-XX:G1ReservePercent=20 ",
-                "-XX:MaxGCPauseMillis=50 ",
+                "-XX:+UnlockExperimentalVMOptions",
+                "-XX:+UseG1GC",
+                "-XX:G1NewSizePercent=20",
+                "-XX:G1ReservePercent=20",
+                "-XX:MaxGCPauseMillis=50",
                 "-XX:G1HeapRegionSize=16M"
             };
 
@@ -133,10 +133,12 @@ namespace CmlLib.Core
 
             // Options
             if (!string.IsNullOrEmpty(LaunchOption.ServerIp))
+            {
                 args.Add("--server " + LaunchOption.ServerIp);
 
-            if (LaunchOption.ServerPort != DefaultServerPort)
-                args.Add("--port " + LaunchOption.ServerPort);
+                if (LaunchOption.ServerPort != DefaultServerPort)
+                    args.Add("--port " + LaunchOption.ServerPort);
+            }
 
             if (LaunchOption.ScreenWidth > 0 && LaunchOption.ScreenHeight > 0)
             {
