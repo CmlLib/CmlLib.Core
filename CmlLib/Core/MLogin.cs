@@ -1,8 +1,9 @@
-﻿using System;
-using System.Text;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Net;
+using System;
 using System.IO;
+using System.Net;
+using System.Text;
 
 namespace CmlLib.Core
 {
@@ -10,15 +11,41 @@ namespace CmlLib.Core
 
     public class MSession
     {
-        public string Username { get; internal set; }
-        public string AccessToken { get; internal set; }
-        public string UUID { get; internal set; }
-        public string ClientToken { get; internal set; }
+        public MSession()
+        {
 
+        }
+
+        public MSession(string username, string accesstoken, string uuid)
+        {
+            this.Username = username;
+            this.AccessToken = accesstoken;
+            this.UUID = uuid;
+        }
+
+        [JsonProperty]
+        public string Username { get; internal set; } = "";
+        [JsonProperty]
+        public string AccessToken { get; internal set; } = "";
+        [JsonProperty]
+        public string UUID { get; internal set; } = "";
+        [JsonProperty]
+        public string ClientToken { get; internal set; } = "";
+
+        [JsonIgnore]
         public MLoginResult Result { get; internal set; }
+        [JsonIgnore]
         public string Message { get; internal set; }
-
+        [JsonIgnore]
         public string _RawResponse { get; internal set; }
+
+        public bool CheckIsValid()
+        {
+            return Result == MLoginResult.Success
+                && !string.IsNullOrEmpty(Username)
+                && !string.IsNullOrEmpty(AccessToken)
+                && !string.IsNullOrEmpty(UUID);
+        }
 
         public static MSession GetOfflineSession(string username)
         {
@@ -31,20 +58,16 @@ namespace CmlLib.Core
             login.ClientToken = "";
             return login;
         }
-
-        internal static MSession createEmpty()
-        {
-            var session = new MSession();
-            session.Username = "";
-            session.AccessToken = "";
-            session.UUID = "";
-            session.ClientToken = "";
-            return session;
-        }
     }
 
     public class MLogin
     {
+        class ErrorMessage
+        {
+            public string Message { get; set; }
+            public MLoginResult Result { get; set; }
+        }
+
         public static readonly string DefaultLoginSessionFile = Path.Combine(Minecraft.GetOSDefaultPath(), "logintoken.json");
 
         public MLogin() : this(DefaultLoginSessionFile) { }
@@ -57,60 +80,55 @@ namespace CmlLib.Core
         public string TokenFile;
         public bool SaveSession = true;
 
-        private void WriteLogin(MSession result)
-        {
-            WriteLogin(result.Username, result.AccessToken, result.UUID, result.ClientToken);
-        }
-
-        // Save Login Session
-        private void WriteLogin(string us, string se, string id, string ct)
+        private void WriteLogin(MSession session)
         {
             if (!SaveSession) return;
-
-            JObject jobj = new JObject(); // create session json
-            jobj.Add("username", us);
-            jobj.Add("session", se);
-            jobj.Add("uuid", id);
-            jobj.Add("clientToken", ct);
-
             Directory.CreateDirectory(Path.GetDirectoryName(TokenFile));
 
-            File.WriteAllText(TokenFile,jobj.ToString() , Encoding.UTF8);
+            if (string.IsNullOrEmpty(session.ClientToken))
+                session.ClientToken = CreateNewClientToken();
+
+            var json = JsonConvert.SerializeObject(session);
+            File.WriteAllText(TokenFile, json, Encoding.UTF8);
+        }
+
+        private string CreateNewClientToken()
+        {
+            return Guid.NewGuid().ToString().Replace("-", ""); // create new clienttoken
+        }
+
+        private MSession CreateNewSession()
+        {
+            var ClientToken = CreateNewClientToken();
+
+            var session = new MSession();
+            session.ClientToken = ClientToken;
+
+            WriteLogin(session);
+            return session;
         }
 
         public MSession GetLocalToken()
         {
-            MSession session;
-
-            if (!File.Exists(TokenFile)) // no session data
-            {
-                var ClientToken = Guid.NewGuid().ToString().Replace("-", ""); // create new clienttoken
-
-                session = MSession.createEmpty();
-                session.ClientToken = ClientToken;
-
-                WriteLogin(session);
-            }
-            else // exists session data
+            if (File.Exists(TokenFile))
             {
                 var filedata = File.ReadAllText(TokenFile, Encoding.UTF8);
                 try
                 {
-                    var job = JObject.Parse(filedata);
-                    session = new MSession();
-                    session.AccessToken = job["session"]?.ToString();
-                    session.UUID = job["uuid"]?.ToString();
-                    session.Username = job["username"]?.ToString();
-                    session.ClientToken = job["clientToken"]?.ToString();
+                    var session = JsonConvert.DeserializeObject<MSession>(filedata, new JsonSerializerSettings()
+                    {
+                        NullValueHandling = NullValueHandling.Ignore
+                    });
+
+                    return session;
                 }
-                catch (Newtonsoft.Json.JsonReaderException) // if JSON file isn't vaild
+                catch (JsonReaderException) // if JSON file isn't valid
                 {
-                    DeleteTokenFile();
-                    session = GetLocalToken();
+                    return CreateNewSession();
                 }
             }
-
-            return session;
+            else
+                return CreateNewSession();
         }
 
         private HttpWebResponse mojangRequest(string endpoint, string postdata)
@@ -126,6 +144,55 @@ namespace CmlLib.Core
 
             var res = http.GetResponseNoException();
             return res;
+        }
+
+        private MSession errorHandle(string json)
+        {
+            try
+            {
+                var result = new MSession();
+                var job = JObject.Parse(json);
+
+                var error = job["error"]?.ToString(); // error type
+                result.Message = job["message"]?.ToString() ?? ""; // detail error message
+                result._RawResponse = json;
+
+                switch (error)
+                {
+                    case "Method Not Allowed":
+                    case "Not Found":
+                    case "Unsupported Media Type":
+                        result.Result = MLoginResult.BadRequest;
+                        break;
+                    case "IllegalArgumentException":
+                    case "ForbiddenOperationException":
+                        result.Result = MLoginResult.WrongAccount;
+                        break;
+                    default:
+                        result.Result = MLoginResult.UnknownError;
+                        break;
+                }
+
+                return result;
+            }
+            catch (JsonReaderException)
+            {
+                return new MSession()
+                {
+                    Result = MLoginResult.UnknownError,
+                    Message = json,
+                    _RawResponse = json
+                };
+            }
+            catch (Exception ex)
+            {
+                return new MSession()
+                {
+                    Result = MLoginResult.UnknownError,
+                    Message = ex.Message,
+                    _RawResponse = json
+                };
+            }
         }
 
         public MSession Authenticate(string id, string pw)
@@ -153,7 +220,7 @@ namespace CmlLib.Core
             using (var res = new StreamReader(resHeader.GetResponseStream()))
             {
                 var Response = res.ReadToEnd();
-                
+
                 result.ClientToken = ClientToken;
 
                 if (resHeader.StatusCode == HttpStatusCode.OK) // ResultCode == 200
@@ -167,29 +234,7 @@ namespace CmlLib.Core
                     result.Result = MLoginResult.Success;
                 }
                 else // fail to login
-                {
-                    var json = JObject.Parse(Response); 
-
-                    var error = json["error"]?.ToString(); // error type
-                    result._RawResponse = Response;
-                    result.Message = json["message"]?.ToString() ?? ""; // detail error message
-
-                    switch (error)
-                    {
-                        case "Method Not Allowed":
-                        case "Not Found":
-                        case "Unsupported Media Type":
-                            result.Result = MLoginResult.BadRequest;
-                            break;
-                        case "IllegalArgumentException":
-                        case "ForbiddenOperationException":
-                            result.Result = MLoginResult.WrongAccount;
-                            break;
-                        default:
-                            result.Result = MLoginResult.UnknownError;
-                            break;
-                    }
-                }
+                    return errorHandle(Response);
 
                 return result;
             }
@@ -229,19 +274,24 @@ namespace CmlLib.Core
                 using (var res = new StreamReader(resHeader.GetResponseStream()))
                 {
                     var response = res.ReadToEnd();
-                    result._RawResponse = response;
-                    JObject job = JObject.Parse(response);
 
-                    result.AccessToken = job["accessToken"]?.ToString();
-                    result.UUID = job["selectedProfile"]?["id"]?.ToString();
-                    result.Username = job["selectedProfile"]?["name"]?.ToString();
-                    result.ClientToken = session.ClientToken;
+                    if ((int)resHeader.StatusCode / 100 == 2)
+                    {
+                        JObject job = JObject.Parse(response);
 
-                    WriteLogin(result);
-                    result.Result = MLoginResult.Success;
+                        result.AccessToken = job["accessToken"].ToString();
+                        result.UUID = job["selectedProfile"]["id"].ToString();
+                        result.Username = job["selectedProfile"]["name"].ToString();
+                        result.ClientToken = session.ClientToken;
+
+                        WriteLogin(result);
+                        result.Result = MLoginResult.Success;
+                    }
+                    else
+                        return errorHandle(response);
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 result.Result = MLoginResult.UnknownError;
             }
@@ -277,8 +327,9 @@ namespace CmlLib.Core
                         result.Result = MLoginResult.NeedLogin;
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                throw ex;
                 result.Result = MLoginResult.UnknownError;
             }
 
