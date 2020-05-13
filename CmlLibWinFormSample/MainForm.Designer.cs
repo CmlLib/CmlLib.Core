@@ -77,6 +77,7 @@
             this.label12 = new System.Windows.Forms.Label();
             this.btnGithub = new System.Windows.Forms.Button();
             this.btnWiki = new System.Windows.Forms.Button();
+            this.btnChangelog = new System.Windows.Forms.Button();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
@@ -535,11 +536,22 @@
             this.btnWiki.UseVisualStyleBackColor = true;
             this.btnWiki.Click += new System.EventHandler(this.btnWiki_Click);
             // 
+            // btnChangelog
+            // 
+            this.btnChangelog.Location = new System.Drawing.Point(287, 37);
+            this.btnChangelog.Name = "btnChangelog";
+            this.btnChangelog.Size = new System.Drawing.Size(90, 23);
+            this.btnChangelog.TabIndex = 26;
+            this.btnChangelog.Text = "Changelog";
+            this.btnChangelog.UseVisualStyleBackColor = true;
+            this.btnChangelog.Click += new System.EventHandler(this.btnChangelog_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(810, 386);
+            this.Controls.Add(this.btnChangelog);
             this.Controls.Add(this.btnWiki);
             this.Controls.Add(this.btnGithub);
             this.Controls.Add(this.label12);
@@ -614,5 +626,6 @@
         private System.Windows.Forms.Label label19;
         private System.Windows.Forms.TextBox Txt_ForgeVersion;
         private System.Windows.Forms.CheckBox Cb_Forge;
+        private System.Windows.Forms.Button btnChangelog;
     }
 }

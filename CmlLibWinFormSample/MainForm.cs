@@ -309,5 +309,11 @@ namespace CmlLibWinFormSample
         {
 
         }
+
+        private void btnChangelog_Click(object sender, EventArgs e)
+        {
+            var f = new ChangeLog();
+            f.Show();
+        }
     }
 }
