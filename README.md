@@ -5,7 +5,7 @@
 This library is minecraft launcher library for .NET Core and .NET Framework  
 Support all version, with Forge
 
-[한국어 README](https://github.com/AlphaBs/CmlLib.Core/edit/master/docs/README-kr.md)  
+[한국어 README](https://github.com/AlphaBs/CmlLib.Core/blob/master/docs/README-kr.md)  
 한국어 문서는 업데이트가 느립니다.
 
 ## What is different between CmlLib.Core and [CmlLib](https://github.com/AlphaBs/MinecraftLauncherLibrary)?
