@@ -23,13 +23,13 @@ namespace CmlLib.Core
             this.UUID = uuid;
         }
 
-        [JsonProperty]
+        [JsonProperty("username")]
         public string Username { get; internal set; } = "";
-        [JsonProperty]
+        [JsonProperty("session")]
         public string AccessToken { get; internal set; } = "";
-        [JsonProperty]
+        [JsonProperty("uuid")]
         public string UUID { get; internal set; } = "";
-        [JsonProperty]
+        [JsonProperty("clientToken")]
         public string ClientToken { get; internal set; } = "";
 
         [JsonIgnore]
