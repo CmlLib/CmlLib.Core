@@ -353,7 +353,7 @@ namespace CmlLib.Core
             };
 
             var res = mojangRequest("invalidate", job.ToString());
-            return res.StatusCode == HttpStatusCode.OK; // 200
+            return res.StatusCode == HttpStatusCode.NoContent; // 204
         }
 
         public bool Signout(string id, string pw)
