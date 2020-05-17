@@ -78,6 +78,7 @@
             this.btnGithub = new System.Windows.Forms.Button();
             this.btnWiki = new System.Windows.Forms.Button();
             this.btnChangelog = new System.Windows.Forms.Button();
+            this.cbFast = new System.Windows.Forms.CheckBox();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
@@ -104,6 +105,7 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.cbFast);
             this.groupBox2.Controls.Add(this.Txt_DockIcon);
             this.groupBox2.Controls.Add(this.label17);
             this.groupBox2.Controls.Add(this.Txt_DockName);
@@ -126,7 +128,7 @@
             this.groupBox2.Controls.Add(this.label7);
             this.groupBox2.Location = new System.Drawing.Point(405, 12);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(385, 297);
+            this.groupBox2.Size = new System.Drawing.Size(385, 306);
             this.groupBox2.TabIndex = 20;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Options (Empty textbox means using default option)";
@@ -546,6 +548,18 @@
             this.btnChangelog.UseVisualStyleBackColor = true;
             this.btnChangelog.Click += new System.EventHandler(this.btnChangelog_Click);
             // 
+            // cbFast
+            // 
+            this.cbFast.AutoSize = true;
+            this.cbFast.Checked = true;
+            this.cbFast.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cbFast.Location = new System.Drawing.Point(23, 287);
+            this.cbFast.Name = "cbFast";
+            this.cbFast.Size = new System.Drawing.Size(104, 16);
+            this.cbFast.TabIndex = 27;
+            this.cbFast.Text = "FastDownload";
+            this.cbFast.UseVisualStyleBackColor = true;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
@@ -627,5 +641,6 @@
         private System.Windows.Forms.TextBox Txt_ForgeVersion;
         private System.Windows.Forms.CheckBox Cb_Forge;
         private System.Windows.Forms.Button btnChangelog;
+        private System.Windows.Forms.CheckBox cbFast;
     }
 }

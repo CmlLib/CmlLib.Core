@@ -148,6 +148,12 @@ namespace CmlLibWinFormSample
             groupBox1.Enabled = false;
             groupBox2.Enabled = false;
 
+            if (cbFast.Checked)
+            {
+                Launcher.Minecraft.SetAssetsPath(Path.Combine(Minecraft.GetOSDefaultPath(), "assets"));
+                Launcher.Minecraft.Runtime = Path.Combine(Minecraft.GetOSDefaultPath(), "runtime");
+            }
+
             try
             {
                 var version = Cb_Version.Text;
@@ -186,14 +192,21 @@ namespace CmlLibWinFormSample
 
                 var th = new Thread(() =>
                 {
-                    Process mc;
+                    try
+                    {
+                        Process mc;
 
-                    if (string.IsNullOrEmpty(forge))
-                        mc = Launcher.CreateProcess(version, launchOption); // vanilla
-                    else
-                        mc = Launcher.CreateProcess(version, forge, launchOption); // forge
+                        if (string.IsNullOrEmpty(forge))
+                            mc = Launcher.CreateProcess(version, launchOption); // vanilla
+                        else
+                            mc = Launcher.CreateProcess(version, forge, launchOption); // forge
 
-                    StartProcess(mc);
+                        StartProcess(mc);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.ToString());
+                    }
                 });
                 th.Start();
             }
