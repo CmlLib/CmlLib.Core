@@ -5,6 +5,9 @@
 This library is minecraft launcher library for .NET Core and .NET Framework  
 Support all version, with Forge
 
+[한국어 README](https://github.com/AlphaBs/CmlLib.Core/blob/master/docs/README-kr.md)  
+한국어 문서는 업데이트가 느립니다.
+
 ## What is different between CmlLib.Core and [CmlLib](https://github.com/AlphaBs/MinecraftLauncherLibrary)?
 CmlLib.Core is developed using .NET Core and support crossplatform. but CmlLib doesn't support it and will be deprecated.
 
@@ -23,8 +26,9 @@ MIT License
 
 ## Dependency
 
-Newtonsoft.Json  
-SharpZipLib  
+Newtonsoft.Json 12.0.3  
+SharpZipLib 1.2.0  
+LZMA-SDK 19.0.0  
 
 ## Functions
 
