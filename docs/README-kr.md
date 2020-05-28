@@ -16,7 +16,9 @@ Discord : ksi123456ab#3719
 
 ## License
 
-MIT License
+MIT License  
+자세한 설명 : [LICENSE](https://github.com/AlphaBs/CmlLib.Core/blob/master/LICENSE)
+
 
 ## Crossplatform
 
