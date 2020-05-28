@@ -18,7 +18,8 @@ Discord : ksi123456ab#3719
 
 ## License
 
-MIT License
+MIT License  
+[LICENSE](https://github.com/AlphaBs/CmlLib.Core/blob/master/LICENSE)
 
 ## Crossplatform
 
