@@ -88,6 +88,8 @@ namespace CmlLibCoreSample
             launcher.UpdateProfiles(); // Get all installed profiles and load all profiles from mojang server
             foreach (var item in launcher.Profiles) // Display all profiles 
             {
+                // You can filter snapshots and old versions to add if statement : 
+                // if (item.MType == MProfileType.Custom || item.MType == MProfileType.Release)
                 Console.WriteLine(item.Type + " " + item.Name);
             }
 
@@ -109,7 +111,7 @@ namespace CmlLibCoreSample
             // var process = launcher.CreateProcess("1.15.2", launchOption);
 
             // launch by user input
-            Console.WriteLine("input version : ");
+            Console.WriteLine("input version (example: 1.12.2) : ");
             var process = launcher.CreateProcess(Console.ReadLine(), launchOption);
 
             Console.WriteLine(process.StartInfo.Arguments);

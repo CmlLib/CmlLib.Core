@@ -40,6 +40,8 @@ namespace CmlLib.Core
                     info.IsWeb = false;
                     info.Name = dir.Name;
                     info.Path = filepath;
+                    info.Type = "local";
+                    info.MType = MProfileType.Custom;
                     arr.Add(info);
                 }
             }
@@ -64,6 +66,7 @@ namespace CmlLib.Core
             {
                 var obj = jarr[i].ToObject<MProfileMetadata>();
                 obj.IsWeb = true;
+                obj.MType = MProfileTypeConverter.FromString(obj.Type);
                 arr[i] = obj;
             }
             return arr;
