@@ -40,7 +40,7 @@ namespace CmlLib
 
         private void fire(DownloadFileChangedEventArgs e)
         {
-            FileChanged.Invoke(e);
+            FileChanged?.Invoke(e);
         }
 
         private void fire(int progress)
