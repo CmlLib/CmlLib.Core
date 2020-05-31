@@ -109,7 +109,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CmlLib\CmlLib.csproj">
-      <Project>{42da3664-158e-4130-b7b2-4a7e86cc94b5}</Project>
+      <Project>{af1c09f9-c4bd-420a-85b9-9eb454f55fcd}</Project>
       <Name>CmlLib</Name>
     </ProjectReference>
   </ItemGroup>
