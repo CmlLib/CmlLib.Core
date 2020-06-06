@@ -26,13 +26,13 @@ namespace CmlLib.Core
             if (startProfile == null)
                 throw new Exception(name + " not found");
 
-            if (startProfile.IsInherted)
+            if (startProfile.IsInherited)
             {
                 if (startProfile.ParentProfileId == startProfile.Id) // prevent StackOverFlowException
                     throw new IOException("Invalid Profile : inheritFrom property is equal to id property.");
 
                 baseProfile = FindProfile(mc, infos, startProfile.ParentProfileId);
-                inhert(baseProfile, startProfile);
+                inherit(baseProfile, startProfile);
             }
 
             return startProfile;
@@ -104,7 +104,7 @@ namespace CmlLib.Core
 
             if (job["inheritsFrom"] != null)
             {
-                profile.IsInherted = true;
+                profile.IsInherited = true;
                 profile.ParentProfileId = job["inheritsFrom"].ToString();
             }
             else
@@ -157,9 +157,9 @@ namespace CmlLib.Core
             return strList.ToArray();
         }
 
-        static MProfile inhert(MProfile parentProfile, MProfile childProfile)
+        static MProfile inherit(MProfile parentProfile, MProfile childProfile)
         {
-            // Inhert list
+            // Inherit list
             // Overload : AssetId, AssetUrl, AssetHash, ClientDownloadUrl, ClientHash, MainClass, MinecraftArguments
             // Combine : Libraries, GameArguments, JvmArguments
 
@@ -231,7 +231,7 @@ namespace CmlLib.Core
         public Minecraft Minecraft { get; private set; }
         public bool IsWeb { get; private set; }
 
-        public bool IsInherted { get; private set; } = false;
+        public bool IsInherited { get; private set; } = false;
         public string ParentProfileId { get; private set; } = "";
 
         public string Id { get; private set; } = "";
