@@ -24,6 +24,7 @@ namespace CmlLib.Core
             var buffer = new byte[bufferSize];
             var length = 0;
 
+            var fireEvent = filesize > DefaultBufferSize;
             var processedBytes = 0;
 
             while ((length = webStream.Read(buffer, 0, bufferSize)) > 0) // read to end and write file
@@ -31,8 +32,11 @@ namespace CmlLib.Core
                 fileStream.Write(buffer, 0, length);
 
                 // raise event
-                processedBytes += length;
-                ProgressChanged(processedBytes, filesize);
+                if (fireEvent)
+                {
+                    processedBytes += length;
+                    ProgressChanged(processedBytes, filesize);
+                }
             }
 
             buffer = null;
