@@ -2,6 +2,8 @@
 
 namespace CmlLib.Core
 {
+    public delegate void DownloadFileChangedHandler(DownloadFileChangedEventArgs e);
+
     public enum MFile { Runtime, Library, Resource, Minecraft };
 
     public class DownloadFileChangedEventArgs : EventArgs
