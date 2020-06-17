@@ -10,7 +10,7 @@ namespace CmlLib.Core
 {
     public class MDownloader
     {
-        public class DownloadFile
+        public class DownloadFile : IEquatable<DownloadFile>
         {
             public DownloadFile(MFile type, string name, string path, string url)
             {
@@ -24,6 +24,19 @@ namespace CmlLib.Core
             public string Name { get; private set; }
             public string Path { get; private set; }
             public string Url { get; private set; }
+
+            bool IEquatable<DownloadFile>.Equals(DownloadFile other)
+            {
+                if (other == null)
+                    return false;
+
+                return this.Path == other.Path;
+            }
+
+            public override int GetHashCode()
+            {
+                return this.Path.GetHashCode();
+            }
         }
 
         public event DownloadFileChangedHandler ChangeFile;
@@ -62,12 +75,13 @@ namespace CmlLib.Core
         /// </summary>
         public void DownloadLibraries()
         {
+            fireDownloadFileChangedEvent(MFile.Library, "", 0, 0);
+
             var files = from lib in profile.Libraries
                         where CheckDownloadRequireLibrary(lib)
                         select new DownloadFile(MFile.Library, lib.Name, lib.Path, lib.Url);
 
-
-            DownloadFiles(files.ToArray());
+            DownloadFiles(files.Distinct().ToArray());
         }
 
         private bool CheckDownloadRequireLibrary(MLibrary lib)
@@ -104,6 +118,8 @@ namespace CmlLib.Core
             var indexpath = Path.Combine(Minecraft.Index, profile.AssetId + ".json");
             if (!File.Exists(indexpath)) return;
 
+            fireDownloadFileChangedEvent(MFile.Resource, profile.AssetId, 0, 0);
+
             var json = File.ReadAllText(indexpath);
             var index = JObject.Parse(json);
 
@@ -124,7 +140,7 @@ namespace CmlLib.Core
                 var hashPath = Path.Combine(Minecraft.AssetObject, hashName);
                 var hashUrl = MojangServer.ResourceDownload + hashName;
 
-                if (!File.Exists(hashPath))
+                if (!CheckFileValidation(hashPath, hash))
                     downloadRequiredFiles.Add(new DownloadFile(MFile.Resource, "", hashPath, hashUrl));
 
                 if (isVirtual)
@@ -140,7 +156,7 @@ namespace CmlLib.Core
                 }
             }
 
-            DownloadFiles(downloadRequiredFiles.ToArray());
+            DownloadFiles(downloadRequiredFiles.Distinct().ToArray());
 
             foreach (var item in copyRequiredFiles)
             {
@@ -170,6 +186,8 @@ namespace CmlLib.Core
 
             string id = profile.Jar;
             var path = Path.Combine(Minecraft.Versions, id, id + ".jar");
+
+            fireDownloadFileChangedEvent(MFile.Minecraft, id, 1, 0);
 
             if (!CheckFileValidation(path, profile.ClientHash))
             {
@@ -237,18 +255,18 @@ namespace CmlLib.Core
             var webdownload = new WebDownload();
             webdownload.DownloadProgressChangedEvent += fireDownloadProgressChangedEvent;
 
-            var lenght = files.Length;
-            if (lenght == 0)
+            var length = files.Length;
+            if (length == 0)
                 return;
 
-            fireDownloadFileChangedEvent(files[0].Type, files[0].Name, lenght, 0);
+            fireDownloadFileChangedEvent(files[0].Type, files[0].Name, length, 0);
 
-            for (int i = 0; i < lenght; i++)
+            for (int i = 0; i < length; i++)
             {
                 var downloadFile = files[i];
                 Directory.CreateDirectory(Path.GetDirectoryName(downloadFile.Path));
                 webdownload.DownloadFile(downloadFile.Url, downloadFile.Path);
-                fireDownloadFileChangedEvent(downloadFile.Type, downloadFile.Name, lenght, i + 1);
+                fireDownloadFileChangedEvent(downloadFile.Type, downloadFile.Name, length, i + 1);
             }
         }
     }
