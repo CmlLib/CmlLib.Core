@@ -59,6 +59,11 @@ write this on the top of your source code:
 
 ### **Sample**
 
+**[Sample Code](https://github.com/AlphaBs/CmlLib.Core/wiki/Sample-Code)**
+
+Write this :      
+`using CmlLib.Core`
+
 **Login**
 
      var login = new MLogin();
@@ -93,7 +98,8 @@ write this on the top of your source code:
           Console.WriteLine("[{0}] {1} - {2}/{3}", e.FileKind.ToString(), e.FileName, e.ProgressedFileCount, e.TotalFileCount);
      };
 
-     foreach (var item in launcher.ProfileInfos)
+     launcher.UpdateProfiles()
+     foreach (var item in launcher.Profiles)
      {
          Console.WriteLine(item.Name);
      }
@@ -109,11 +115,8 @@ write this on the top of your source code:
          //ServerIp = "mc.hypixel.net"
      };
 
-     // launch forge
-     //var process = launcher.Launch("1.12.2", "14.23.5.2768", launchOption);
-
      // launch vanila
-     var process = launcher.Launch("1.15.2", launchOption);
+     var process = launcher.CreateProcess("1.15.2", launchOption);
 
      process.Start();
 
