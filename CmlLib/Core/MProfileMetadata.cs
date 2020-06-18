@@ -5,10 +5,12 @@ namespace CmlLib.Core
 {
     public class MProfileMetadata
     {
-        /// <summary>
-        /// true : Mojang Server Profile, False : Local profile
-        /// </summary>
+
+        // Will be replaced by IsLocalProfile
+        [Obsolete("Use IsLocalProfile")]
         public bool IsWeb = true;
+
+        public bool IsLocalProfile { get => !IsWeb; }
 
         [JsonProperty("id")]
         public string Name { get; set; }
