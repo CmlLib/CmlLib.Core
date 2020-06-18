@@ -141,7 +141,7 @@ namespace CmlLib.Core
                 var hashUrl = MojangServer.ResourceDownload + hashName;
 
                 if (!CheckFileValidation(hashPath, hash))
-                    downloadRequiredFiles.Add(new DownloadFile(MFile.Resource, "", hashPath, hashUrl));
+                    downloadRequiredFiles.Add(new DownloadFile(MFile.Resource, item.Key, hashPath, hashUrl));
 
                 if (isVirtual)
                 {
@@ -199,6 +199,12 @@ namespace CmlLib.Core
         private bool CheckFileValidation(string path, string hash)
         {
             return File.Exists(path) && CheckSHA1(path, hash);
+        }
+
+        private bool CheckFileValidation(string path, string hash, long size)
+        {
+            var file = new FileInfo(path);
+            return file.Exists && file.Length == size && CheckSHA1(path, hash);
         }
 
         private bool CheckSHA1(string path, string compareHash)
