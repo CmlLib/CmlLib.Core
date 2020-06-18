@@ -1,5 +1,6 @@
 ﻿using CmlLib.Core;
 using System;
+using System.IO;
 
 namespace CmlLibCoreSample
 {
@@ -23,41 +24,41 @@ namespace CmlLibCoreSample
 
             // Launch
             p.Start(session);
+            //p.StartWithAdvancedOptions(session);
         }
 
         MSession PremiumLogin()
         {
-            MSession session;
             var login = new MLogin();
 
             // TryAutoLogin() read login cache file and check validation.
             // if cached session is invalid, it refresh session automatically.
             // but refreshing session doesn't always succeed, so you have to handle this.
             Console.WriteLine("Try Auto login");
-            session = login.TryAutoLogin();
+            var response = login.TryAutoLogin();
 
-            if (session.Result != MLoginResult.Success) // cached session is invalid and failed to refresh token
+            if (!response.IsSuccess) // cached session is invalid and failed to refresh token
             {
-                Console.WriteLine("Auto login failed : {0}", session.Result.ToString());
+                Console.WriteLine("Auto login failed : {0}", response.Result.ToString());
 
                 Console.WriteLine("Input mojang email : ");
                 var email = Console.ReadLine();
                 Console.WriteLine("Input mojang password : ");
                 var pw = Console.ReadLine();
 
-                session = login.Authenticate(email, pw);
+                response = login.Authenticate(email, pw);
 
-                if (session.Result != MLoginResult.Success)
+                if (!response.IsSuccess)
                 {
                     // session.Message contains detailed error message. it can be null or empty string.
-                    Console.WriteLine("failed to login. {0} : {1}", session.Result.ToString(), session.Message);
+                    Console.WriteLine("failed to login. {0} : {1}", response.Result, response.ErrorMessage);
                     Console.ReadLine();
                     Environment.Exit(0);
                     return null;
                 }
             }
 
-            return session;
+            return response.Session;
         }
 
         MSession OfflineLogin()
@@ -102,13 +103,19 @@ namespace CmlLibCoreSample
                 // https://github.com/AlphaBs/CmlLib.Core/wiki/MLaunchOption
             };
 
-            // launcher.CreateProcess method downloads profile and create Process instance.
+            // (A) checks forge installation and install forge if it was not installed.
+            // (B) just launch any versions without install forge.
+            // Both methods automatically download essential files (ex: vanilla libraries) and create game process.
 
-            // launch forge
+            // (A) download forge and launch
             // var process = launcher.CreateProcess("1.12.2", "14.23.5.2768", launchOption);
 
-            // launch vanila
+            // (B) launch any version
             // var process = launcher.CreateProcess("1.15.2", launchOption);
+
+            // If you have already installed forge, you can launch it directly like this.
+            // var process = launcher.CreateProcess("1.12.2-forge1.12.2-14.23.5.2838", launchOption);
+
 
             // launch by user input
             Console.WriteLine("input version (example: 1.12.2) : ");
@@ -122,6 +129,114 @@ namespace CmlLibCoreSample
 
             return;
         }
+
+        #region Advance Launch
+
+        void StartWithAdvancedOptions(MSession session)
+        {
+            // game directory
+            var defaultPath = Minecraft.GetOSDefaultPath();
+            var path = Path.Combine(Environment.CurrentDirectory, "game dir");
+
+            // create minecraft instance
+            var minecraft = new Minecraft(path);
+            minecraft.SetAssetsPath(Path.Combine(defaultPath, "assets")); // this speed up asset downloads
+
+            // get all profile metadatas
+            var profileMetadatas = MProfileLoader.GetProfileMetadatas(minecraft);
+            foreach (var item in profileMetadatas)
+            {
+                Console.WriteLine("Name : {0}", item.Name);
+                Console.WriteLine("Type : {0}", item.Type);
+                Console.WriteLine("Path : {0}", item.Path);
+                Console.WriteLine("IsLocalProfile : {0}", item.IsLocalProfile);
+                Console.WriteLine("============================================");
+            }
+
+            Console.WriteLine("Input Profile Name (ex: 1.15.2) : ");
+            var profileName = Console.ReadLine();
+
+            // get profile
+            var profile = MProfile.FindProfile(minecraft, profileMetadatas, profileName);
+            if (profile == null)
+            {
+                Console.WriteLine("{0} is not exist", profileName);
+                return;
+            }
+
+            Console.WriteLine("\n\nProfile Information : ");
+            Console.WriteLine("Id : {0}", profile.Id);
+            Console.WriteLine("Type : {0}", profile.TypeStr);
+            Console.WriteLine("IsWebProfile : {0}", profile.IsWeb);
+            Console.WriteLine("ReleaseTime : {0}", profile.ReleaseTime);
+            Console.WriteLine("AssetId : {0}", profile.AssetId);
+            Console.WriteLine("JAR : {0}", profile.Jar);
+            Console.WriteLine("Libraries : {0}", profile.Libraries.Length);
+
+            if (profile.IsInherited)
+                Console.WriteLine("Inherited Profile from {0}", profile.ParentProfileId);
+
+            // Download mode
+            Console.WriteLine("\nSelect download mode : ");
+            Console.WriteLine("(1) Sequence Download");
+            Console.WriteLine("(2) Parallel Download");
+            var downloadModeInput = Console.ReadLine();
+
+            MDownloader downloader;
+            if (downloadModeInput == "1")
+                downloader = new MDownloader(profile); // Sequence Download
+            else if (downloadModeInput == "2")
+                downloader = new MParallelDownloader(profile); // Parallel Download (note: Parallel Download is not stable yet)
+            else
+            {
+                Console.WriteLine("Input 1 or 2");
+                Console.ReadLine();
+                return;
+            }
+
+            downloader.ChangeFile += Downloader_ChangeFile;
+            downloader.ChangeProgress += Downloader_ChangeProgress;
+
+            // Start download
+            downloader.DownloadAll();
+
+            Console.WriteLine("Download Completed.\n");
+
+            // Set java
+            Console.WriteLine("Input java path (empty input will download java) : ");
+            var javaInput = Console.ReadLine();
+
+            if (javaInput == "")
+            {
+                var java = new MJava();
+                java.ProgressChanged += Downloader_ChangeProgress;
+                javaInput = java.CheckJava();
+            }
+
+            // LaunchOption
+            var option = new MLaunchOption()
+            {
+                JavaPath = javaInput,
+                Session = session,
+                StartProfile = profile,
+
+                MaximumRamMb = 4096,
+                ScreenWidth = 1600,
+                ScreenHeight = 900,
+            };
+
+            // Launch
+            var launch = new MLaunch(option);
+            var process = launch.GetProcess();
+
+            Console.WriteLine(process.StartInfo.Arguments);
+            process.Start();
+            Console.WriteLine("Started");
+            Console.ReadLine();
+
+        }
+
+        #endregion
 
         // Event Handling
 
@@ -148,18 +263,8 @@ namespace CmlLibCoreSample
             // More information about DownloadFileChangedEventArgs
             // https://github.com/AlphaBs/CmlLib.Core/wiki/Handling-Events#downloadfilechangedeventargs
 
-            if (e.FileKind == MFile.Resource)
-            {
-                Console.WriteLine("[Resource] {0} - {1} / {2}", e.FileName, e.ProgressedFileCount, e.TotalFileCount);
-
-                if (e.ProgressedFileCount < e.TotalFileCount)
-                    Console.SetCursorPosition(0, Console.CursorTop - 1);
-            }
-            else
-            {
-                Console.WriteLine("[{0}] {1} - {2}/{3}", e.FileKind.ToString(), e.FileName, e.ProgressedFileCount, e.TotalFileCount);
-                nextline = Console.CursorTop;
-            }
+            Console.WriteLine("[{0}] {1} - {2}/{3}", e.FileKind.ToString(), e.FileName, e.ProgressedFileCount, e.TotalFileCount);
+            nextline = Console.CursorTop;
         }
 
         #endregion
