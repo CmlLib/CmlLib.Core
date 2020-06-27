@@ -66,12 +66,15 @@ namespace CmlLib.Core
             profile.Id = job["id"]?.ToString();
 
             var assetindex = (JObject)job["assetIndex"];
+            var assets = job["assets"];
             if (assetindex != null)
             {
                 profile.AssetId = n(assetindex["id"]?.ToString());
                 profile.AssetUrl = n(assetindex["url"]?.ToString());
                 profile.AssetHash = n(assetindex["sha1"]?.ToString());
             }
+            else if (assets != null)
+                profile.AssetId = assets.ToString();
 
             var client = job["downloads"]?["client"];
             if (client != null)
