@@ -39,6 +39,20 @@ namespace CmlLib.Core
             }
         }
 
+        public class MDownloadFileException : Exception
+        {
+            public MDownloadFileException(DownloadFile exFile)
+                : this(null, null, exFile) { }
+
+            public MDownloadFileException(string message, Exception innerException, DownloadFile exFile)
+                : base(message, innerException)
+            {
+                this.ExceptionFile = exFile;
+            }
+
+            public DownloadFile ExceptionFile { get; private set; }
+        }
+
         public event DownloadFileChangedHandler ChangeFile;
         public event ProgressChangedEventHandler ChangeProgress;
 
@@ -269,10 +283,17 @@ namespace CmlLib.Core
 
             for (int i = 0; i < length; i++)
             {
-                var downloadFile = files[i];
-                Directory.CreateDirectory(Path.GetDirectoryName(downloadFile.Path));
-                webdownload.DownloadFile(downloadFile.Url, downloadFile.Path);
-                fireDownloadFileChangedEvent(downloadFile.Type, downloadFile.Name, length, i + 1);
+                try
+                {
+                    var downloadFile = files[i];
+                    Directory.CreateDirectory(Path.GetDirectoryName(downloadFile.Path));
+                    webdownload.DownloadFile(downloadFile.Url, downloadFile.Path);
+                    fireDownloadFileChangedEvent(downloadFile.Type, downloadFile.Name, length, i + 1);
+                }
+                catch (WebException ex)
+                {
+                    throw new MDownloadFileException(ex.Message, ex, files[i]);
+                }
             }
         }
     }

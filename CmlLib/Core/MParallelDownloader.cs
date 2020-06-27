@@ -26,13 +26,19 @@ namespace CmlLib.Core
 
         public override void DownloadFiles(DownloadFile[] files)
         {
-            TryDownloadFiles(files, 3);
+            TryDownloadFiles(files, 3, null);
         }
 
-        private void TryDownloadFiles(DownloadFile[] files, int retry)
+        private void TryDownloadFiles(DownloadFile[] files, int retry, Exception failEx)
         {
             if (retry == 0)
-                return;
+            {
+                if (failEx == null)
+                    failEx = new WebException("Cannot download files");
+
+                failEx.Data["files"] = files;
+                throw failEx;
+            }
 
             var length = files.Length;
             if (length == 0)
@@ -48,6 +54,7 @@ namespace CmlLib.Core
 
             var failedFiles = new List<DownloadFile>();
 
+            Exception lastEx = null;
             Parallel.ForEach(files, option, (DownloadFile file) =>
             {
                 try
@@ -67,10 +74,11 @@ namespace CmlLib.Core
                 catch (Exception ex)
                 {
                     failedFiles.Add(file);
+                    lastEx = ex;
                 }
             });
 
-            TryDownloadFiles(failedFiles.ToArray(), retry - 1);
+            TryDownloadFiles(failedFiles.ToArray(), retry - 1, lastEx);
         }
     }
 }
