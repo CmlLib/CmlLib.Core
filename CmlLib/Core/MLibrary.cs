@@ -56,17 +56,21 @@ namespace CmlLib.Core
                         var natives = item["natives"];
 
                         // NATIVE library
-                        if (classifiers != null)
+                        if (classifiers != null || natives != null)
                         {
                             var nativeId = "";
 
                             if (natives != null)
                                 nativeId = natives[MRule.OSName]?.ToString();
 
-                            if (nativeId != null && classifiers[nativeId] != null)
+                            if (nativeId != null)
                             {
                                 nativeId = nativeId.Replace("${arch}", MRule.Arch);
-                                var lObj = (JObject)classifiers[nativeId];
+                                JObject lObj = new JObject();
+
+                                if (classifiers != null)
+                                    lObj = (JObject)classifiers[nativeId];
+
                                 list.Add(createMLibrary(libraryPath, name, nativeId, lObj));
                             }
                         }
