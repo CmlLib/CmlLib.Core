@@ -31,6 +31,7 @@
             this.label5 = new System.Windows.Forms.Label();
             this.Btn_loginOption = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.cbFast = new System.Windows.Forms.CheckBox();
             this.Txt_DockIcon = new System.Windows.Forms.TextBox();
             this.label17 = new System.Windows.Forms.Label();
             this.Txt_DockName = new System.Windows.Forms.TextBox();
@@ -78,7 +79,6 @@
             this.btnGithub = new System.Windows.Forms.Button();
             this.btnWiki = new System.Windows.Forms.Button();
             this.btnChangelog = new System.Windows.Forms.Button();
-            this.cbFast = new System.Windows.Forms.CheckBox();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
@@ -132,6 +132,18 @@
             this.groupBox2.TabIndex = 20;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Options (Empty textbox means using default option)";
+            // 
+            // cbFast
+            // 
+            this.cbFast.AutoSize = true;
+            this.cbFast.Checked = true;
+            this.cbFast.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cbFast.Location = new System.Drawing.Point(23, 287);
+            this.cbFast.Name = "cbFast";
+            this.cbFast.Size = new System.Drawing.Size(104, 16);
+            this.cbFast.TabIndex = 27;
+            this.cbFast.Text = "FastDownload";
+            this.cbFast.UseVisualStyleBackColor = true;
             // 
             // Txt_DockIcon
             // 
@@ -355,7 +367,7 @@
             // 
             // Txt_ForgeVersion
             // 
-            this.Txt_ForgeVersion.Location = new System.Drawing.Point(128, 135);
+            this.Txt_ForgeVersion.Location = new System.Drawing.Point(113, 133);
             this.Txt_ForgeVersion.Name = "Txt_ForgeVersion";
             this.Txt_ForgeVersion.Size = new System.Drawing.Size(164, 21);
             this.Txt_ForgeVersion.TabIndex = 16;
@@ -365,9 +377,9 @@
             this.Cb_Forge.AutoSize = true;
             this.Cb_Forge.Location = new System.Drawing.Point(11, 137);
             this.Cb_Forge.Name = "Cb_Forge";
-            this.Cb_Forge.Size = new System.Drawing.Size(115, 16);
+            this.Cb_Forge.Size = new System.Drawing.Size(105, 16);
             this.Cb_Forge.TabIndex = 15;
-            this.Cb_Forge.Text = "Forge Version : ";
+            this.Cb_Forge.Text = "Install Forge : ";
             this.Cb_Forge.UseVisualStyleBackColor = true;
             this.Cb_Forge.CheckedChanged += new System.EventHandler(this.Cb_Forge_CheckedChanged);
             // 
@@ -547,18 +559,6 @@
             this.btnChangelog.Text = "Changelog";
             this.btnChangelog.UseVisualStyleBackColor = true;
             this.btnChangelog.Click += new System.EventHandler(this.btnChangelog_Click);
-            // 
-            // cbFast
-            // 
-            this.cbFast.AutoSize = true;
-            this.cbFast.Checked = true;
-            this.cbFast.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbFast.Location = new System.Drawing.Point(23, 287);
-            this.cbFast.Name = "cbFast";
-            this.cbFast.Size = new System.Drawing.Size(104, 16);
-            this.cbFast.TabIndex = 27;
-            this.cbFast.Text = "FastDownload";
-            this.cbFast.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 

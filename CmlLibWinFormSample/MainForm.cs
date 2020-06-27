@@ -41,17 +41,23 @@ namespace CmlLibWinFormSample
                 // Try auto login
 
                 var login = new MLogin();
-                MSession result = login.TryAutoLogin();
+                var result = login.TryAutoLogin();
 
                 if (result.Result != MLoginResult.Success)
+                {
+                    Console.WriteLine(result.Result);
+                    Console.WriteLine(result.ErrorMessage);
                     return;
+                }
 
                 MessageBox.Show("Auto Login Success!");
-                Session = result;
-                Invoke((MethodInvoker)delegate {
+
+                Session = result.Session;
+
+                Invoke(new Action(() => {
                     Btn_Login.Enabled = false;
                     Btn_Login.Text = "Auto Login\nSuccess";
-                });
+                }));
             }));
             th.Start();
         }
@@ -77,7 +83,6 @@ namespace CmlLibWinFormSample
         private void InitializeLauncher()
         {
             Launcher = new CMLauncher(Txt_Path.Text);
-            //Launcher.Minecraft.SetAssetsPath(Minecraft.GetOSDefaultPath() + "/assets");
 
             Launcher.FileChanged += Launcher_FileChanged;
             Launcher.ProgressChanged += Launcher_ProgressChanged;
@@ -120,12 +125,12 @@ namespace CmlLibWinFormSample
                     var result = login.Authenticate(Txt_Email.Text, Txt_Pw.Text);
                     if (result.Result == MLoginResult.Success)
                     {
-                        MessageBox.Show("Login Success : " + result.Username); // Success Login
-                        Session = result;
+                        MessageBox.Show("Login Success : " + result.Session.Username); // Success Login
+                        Session = result.Session;
                     }
                     else
                     {
-                        MessageBox.Show(result.Result.ToString() + "\n" + result.Message); // Failed to login. Show error message
+                        MessageBox.Show(result.Result.ToString() + "\n" + result.ErrorMessage); // Failed to login. Show error message
                         Invoke((MethodInvoker)delegate { Btn_Login.Enabled = true; });
                     }
                 }));
@@ -203,6 +208,15 @@ namespace CmlLibWinFormSample
 
                         StartProcess(mc);
                     }
+                    catch (MDownloader.MDownloadFileException mex)
+                    {
+                        MessageBox.Show(
+                            $"FileName : {mex.ExceptionFile.Name}\n" +
+                            $"FilePath : {mex.ExceptionFile.Path}\n" +
+                            $"FileUrl : {mex.ExceptionFile.Url}\n" +
+                            $"FileType : {mex.ExceptionFile.Type}\n\n" +
+                            mex.ToString());
+                    }
                     catch (Exception ex)
                     {
                         MessageBox.Show(ex.ToString());
@@ -249,13 +263,14 @@ namespace CmlLibWinFormSample
             {
                 Pb_File.Maximum = e.TotalFileCount;
                 Pb_File.Value = e.ProgressedFileCount;
-                Lv_Status.Text = e.FileKind.ToString() + " : " + e.FileName;
+                Lv_Status.Text = $"{e.FileKind.ToString()} : {e.FileName} ({e.ProgressedFileCount}/{e.TotalFileCount})";
             }));
         }
 
         private void StartProcess(Process process)
         {
             File.WriteAllText("launcher.txt", process.StartInfo.Arguments);
+            output(process.StartInfo.Arguments);
 
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.RedirectStandardError = true;

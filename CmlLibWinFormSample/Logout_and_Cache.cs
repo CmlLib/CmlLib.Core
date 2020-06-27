@@ -22,7 +22,7 @@ namespace CmlLibWinFormSample
 
         private void Form3_Load(object sender, EventArgs e)
         {
-            var session = login.GetLocalToken();
+            var session = login.ReadSessionCache();
             lvAT.Text = session.AccessToken;
             lvUsername.Text = session.Username;
             lvUUID.Text = session.UUID;
