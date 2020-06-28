@@ -33,11 +33,14 @@ namespace CmlLib.Core
         {
             if (retry == 0)
             {
-                if (failEx == null)
-                    failEx = new WebException("Cannot download files");
-
-                failEx.Data["files"] = files;
-                throw failEx;
+                if (IgnoreInvalidFiles)
+                    return;
+                else
+                {
+                    if (failEx == null)
+                        failEx = new MDownloadFileException(failEx.Message, failEx, files[0]);
+                    throw failEx;
+                }
             }
 
             var length = files.Length;

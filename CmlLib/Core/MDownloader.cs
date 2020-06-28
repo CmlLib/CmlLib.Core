@@ -13,6 +13,7 @@ namespace CmlLib.Core
         public event DownloadFileChangedHandler ChangeFile;
         public event ProgressChangedEventHandler ChangeProgress;
 
+        public bool IgnoreInvalidFiles { get; set; } = true;
         public bool CheckHash { get; set; } = true;
 
         protected MProfile profile;
@@ -249,7 +250,8 @@ namespace CmlLib.Core
                 }
                 catch (WebException ex)
                 {
-                    throw new MDownloadFileException(ex.Message, ex, files[i]);
+                    if (!IgnoreInvalidFiles)
+                        throw new MDownloadFileException(ex.Message, ex, files[i]);
                 }
             }
         }
