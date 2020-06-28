@@ -167,8 +167,12 @@ namespace CmlLib.Core
 
         public MLoginResponse Authenticate(string id, string pw)
         {
-            string clientToken = ReadSessionCache().ClientToken;
+            var clientToken = ReadSessionCache().ClientToken;
+            return Authenticate(id, pw, clientToken);
+        }
 
+        public MLoginResponse Authenticate(string id, string pw, string clientToken)
+        {
             var req = new JObject
             {
                 { "username", id },
@@ -197,11 +201,17 @@ namespace CmlLib.Core
 
         public MLoginResponse TryAutoLogin()
         {
+            var session = ReadSessionCache();
+            return TryAutoLogin(session);
+        }
+
+        public MLoginResponse TryAutoLogin(MSession session)
+        {
             try
             {
-                var result = Validate();
+                var result = Validate(session);
                 if (result.Result != MLoginResult.Success)
-                    result = Refresh();
+                    result = Refresh(session);
                 return result;
             }
             catch (Exception ex)
@@ -213,7 +223,11 @@ namespace CmlLib.Core
         public MLoginResponse Refresh()
         {
             var session = ReadSessionCache();
+            return Refresh(session);
+        }
 
+        public MLoginResponse Refresh(MSession session)
+        {
             var req = new JObject
                 {
                     { "accessToken", session.AccessToken },
@@ -241,7 +255,11 @@ namespace CmlLib.Core
         public MLoginResponse Validate()
         {
             var session = ReadSessionCache();
+            return Validate(session);
+        }
 
+        public MLoginResponse Validate(MSession session)
+        {
             JObject req = new JObject
                 {
                     { "accessToken", session.AccessToken },
@@ -267,7 +285,11 @@ namespace CmlLib.Core
         public bool Invalidate()
         {
             var session = ReadSessionCache();
+            return Invalidate(session);
+        }
 
+        public bool Invalidate(MSession session)
+        {
             var job = new JObject
             {
                 { "accessToken", session.AccessToken },
