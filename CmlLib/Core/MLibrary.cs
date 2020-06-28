@@ -54,25 +54,20 @@ namespace CmlLib.Core
                         var artifact = item["artifact"] ?? item["downloads"]?["artifact"];
                         var classifiers = item["classifies"] ?? item["downloads"]?["classifiers"];
                         var natives = item["natives"];
+                        var nativeId = "";
 
                         // NATIVE library
-                        if (classifiers != null || natives != null)
+                        if (natives != null)
                         {
-                            var nativeId = "";
+                            nativeId = natives[MRule.OSName]?.ToString()?.Replace("${arch}", MRule.Arch);
 
-                            if (natives != null)
-                                nativeId = natives[MRule.OSName]?.ToString();
-
-                            if (nativeId != null)
+                            if (classifiers != null && nativeId != null)
                             {
-                                nativeId = nativeId.Replace("${arch}", MRule.Arch);
-                                JObject lObj = new JObject();
-
-                                if (classifiers != null)
-                                    lObj = (JObject)classifiers[nativeId];
-
+                                JObject lObj = (JObject)classifiers[nativeId];
                                 list.Add(createMLibrary(libraryPath, name, nativeId, lObj));
                             }
+                            else
+                                list.Add(createMLibrary(libraryPath, name, nativeId, new JObject()));
                         }
 
                         // COMMON library
@@ -83,7 +78,7 @@ namespace CmlLib.Core
                         }
                         
                         // library
-                        if (classifiers == null && artifact == null)
+                        if (artifact == null && natives == null)
                         {
                             var obj = createMLibrary(libraryPath, name, "", item);
                             list.Add(obj);
@@ -120,7 +115,7 @@ namespace CmlLib.Core
             private static MLibrary createMLibrary(string libraryPath, string name, string nativeId, JObject job)
             {
                 var path = job["path"]?.ToString();
-                if (path == null || path == "")
+                if (string.IsNullOrEmpty(path))
                     path = NameToPath(name, nativeId);
 
                 var url = job["url"]?.ToString();
