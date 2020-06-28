@@ -49,7 +49,7 @@ namespace CmlLib.Core
 
             var option = new ParallelOptions()
             {
-                MaxDegreeOfParallelism = 10
+                MaxDegreeOfParallelism = MaxThread
             };
 
             var failedFiles = new List<DownloadFile>();
