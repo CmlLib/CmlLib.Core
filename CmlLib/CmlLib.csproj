@@ -24,4 +24,8 @@ see github to learn how to use</Description>
     <PackageReference Include="SharpZipLib" Version="1.2.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="LauncherProfile\" />
+  </ItemGroup>
+
 </Project>

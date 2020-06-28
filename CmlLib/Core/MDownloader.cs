@@ -10,49 +10,6 @@ namespace CmlLib.Core
 {
     public class MDownloader
     {
-        public class DownloadFile : IEquatable<DownloadFile>
-        {
-            public DownloadFile(MFile type, string name, string path, string url)
-            {
-                this.Type = type;
-                this.Name = name;
-                this.Path = path;
-                this.Url = url;
-            }
-
-            public MFile Type { get; private set; }
-            public string Name { get; private set; }
-            public string Path { get; private set; }
-            public string Url { get; private set; }
-
-            bool IEquatable<DownloadFile>.Equals(DownloadFile other)
-            {
-                if (other == null)
-                    return false;
-
-                return this.Path == other.Path;
-            }
-
-            public override int GetHashCode()
-            {
-                return this.Path.GetHashCode();
-            }
-        }
-
-        public class MDownloadFileException : Exception
-        {
-            public MDownloadFileException(DownloadFile exFile)
-                : this(null, null, exFile) { }
-
-            public MDownloadFileException(string message, Exception innerException, DownloadFile exFile)
-                : base(message, innerException)
-            {
-                this.ExceptionFile = exFile;
-            }
-
-            public DownloadFile ExceptionFile { get; private set; }
-        }
-
         public event DownloadFileChangedHandler ChangeFile;
         public event ProgressChangedEventHandler ChangeProgress;
 
