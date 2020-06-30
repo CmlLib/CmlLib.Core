@@ -5,39 +5,10 @@ using System.IO;
 using System.Linq;
 using System.Net;
 
-namespace CmlLib.Core
+namespace CmlLib.Core.Version
 {
     public class MProfile
     {
-        public static MProfile FindProfile(Minecraft mc, MProfileMetadata[] infos, string name)
-        {
-            MProfile startProfile = null;
-            MProfile baseProfile = null;
-
-            foreach (var item in infos)
-            {
-                if (item.Name == name)
-                {
-                    startProfile = Parse(mc, item);
-                    break;
-                }
-            }
-
-            if (startProfile == null)
-                throw new Exception(name + " not found");
-
-            if (startProfile.IsInherited)
-            {
-                if (startProfile.ParentProfileId == startProfile.Id) // prevent StackOverFlowException
-                    throw new IOException("Invalid Profile : inheritFrom property is equal to id property.");
-
-                baseProfile = FindProfile(mc, infos, startProfile.ParentProfileId);
-                startProfile.InheritFrom(baseProfile);
-            }
-
-            return startProfile;
-        }
-
         public static MProfile Parse(Minecraft mc, MProfileMetadata info)
         {
             string json;
@@ -168,65 +139,65 @@ namespace CmlLib.Core
 
             // Overloads
 
-            if (nc(this.AssetId))
-                this.AssetId = parentProfile.AssetId;
+            if (nc(AssetId))
+                AssetId = parentProfile.AssetId;
 
-            if (nc(this.AssetUrl))
-                this.AssetUrl = parentProfile.AssetUrl;
+            if (nc(AssetUrl))
+                AssetUrl = parentProfile.AssetUrl;
 
-            if (nc(this.AssetHash))
-                this.AssetHash = parentProfile.AssetHash;
+            if (nc(AssetHash))
+                AssetHash = parentProfile.AssetHash;
 
-            if (nc(this.ClientDownloadUrl))
-                this.ClientDownloadUrl = parentProfile.ClientDownloadUrl;
+            if (nc(ClientDownloadUrl))
+                ClientDownloadUrl = parentProfile.ClientDownloadUrl;
 
-            if (nc(this.ClientHash))
-                this.ClientHash = parentProfile.ClientHash;
+            if (nc(ClientHash))
+                ClientHash = parentProfile.ClientHash;
 
-            if (nc(this.MainClass))
-                this.MainClass = parentProfile.MainClass;
+            if (nc(MainClass))
+                MainClass = parentProfile.MainClass;
 
-            if (nc(this.MinecraftArguments))
-                this.MinecraftArguments = parentProfile.MinecraftArguments;
+            if (nc(MinecraftArguments))
+                MinecraftArguments = parentProfile.MinecraftArguments;
 
-            this.Jar = parentProfile.Jar;
+            Jar = parentProfile.Jar;
 
             // Combine
 
             if (parentProfile.Libraries != null)
             {
-                if (this.Libraries != null)
-                    this.Libraries = this.Libraries.Concat(parentProfile.Libraries).ToArray();
+                if (Libraries != null)
+                    Libraries = Libraries.Concat(parentProfile.Libraries).ToArray();
                 else
-                    this.Libraries = parentProfile.Libraries;
+                    Libraries = parentProfile.Libraries;
             }
 
             if (parentProfile.GameArguments != null)
             {
-                if (this.GameArguments != null)
-                    this.GameArguments = this.GameArguments.Concat(parentProfile.GameArguments).ToArray();
+                if (GameArguments != null)
+                    GameArguments = GameArguments.Concat(parentProfile.GameArguments).ToArray();
                 else
-                    this.GameArguments = parentProfile.GameArguments;
+                    GameArguments = parentProfile.GameArguments;
             }
 
 
             if (parentProfile.JvmArguments != null)
             {
-                if (this.JvmArguments != null)
-                    this.JvmArguments = this.JvmArguments.Concat(parentProfile.JvmArguments).ToArray();
+                if (JvmArguments != null)
+                    JvmArguments = JvmArguments.Concat(parentProfile.JvmArguments).ToArray();
                 else
-                    this.JvmArguments = parentProfile.JvmArguments;
+                    JvmArguments = parentProfile.JvmArguments;
             }
         }
 
         static string n(string t) // handle null string
         {
-            return (t == null) ? "" : t;
+            return t == null ? "" : t;
         }
 
         static bool nc(string t) // check null string
         {
-            return (t == null) || (t == "");
+            return t == null || t == "";
         }
 
         public Minecraft Minecraft { get; private set; }

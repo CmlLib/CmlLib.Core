@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace CmlLib.Core
+namespace CmlLib.Core.Version
 {
     public class MLibrary
     {
@@ -43,7 +43,7 @@ namespace CmlLib.Core
                             if (!isRequire)
                                 continue;
                         }
-                        
+
                         // forge clientreq
                         var req = item["clientreq"]?.ToString();
                         if (req != null && req.ToLower() != "true")
@@ -75,7 +75,7 @@ namespace CmlLib.Core
                             var obj = createMLibrary(libraryPath, name, "", (JObject)artifact);
                             list.Add(obj);
                         }
-                        
+
                         // library
                         if (artifact == null && natives == null)
                         {
@@ -127,7 +127,7 @@ namespace CmlLib.Core
 
                 var library = new MLibrary();
                 library.Hash = hash?.ToString() ?? "";
-                library.IsNative = (nativeId != "");
+                library.IsNative = nativeId != "";
                 library.Name = name;
                 library.Path = System.IO.Path.Combine(libraryPath, path);
                 library.Url = url;

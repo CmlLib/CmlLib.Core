@@ -1,4 +1,4 @@
-﻿namespace CmlLib.Core
+﻿namespace CmlLib.Core.Version
 {
     public static class MProfileTypeConverter
     {

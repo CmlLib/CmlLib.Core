@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Diagnostics;
 using CmlLib.Core.Downloader;
+using CmlLib.Core.Version;
 
 namespace CmlLib
 {
@@ -26,7 +27,7 @@ namespace CmlLib
         public event ProgressChangedEventHandler ProgressChanged;
 
         public Minecraft Minecraft { get; private set; }
-        public MProfileMetadata[] Profiles { get; private set; }
+        public MProfileMetadataCollection Profiles { get; private set; }
 
         private void fire(MFile kind, string name, int total, int progressed)
         {
@@ -49,7 +50,7 @@ namespace CmlLib
             ProgressChanged?.Invoke(this, new ProgressChangedEventArgs(progress, null));
         }
 
-        public MProfileMetadata[] UpdateProfiles()
+        public MProfileMetadataCollection UpdateProfiles()
         {
             Profiles = MProfileLoader.GetProfileMetadatas(Minecraft);
             return Profiles;
@@ -62,10 +63,10 @@ namespace CmlLib
 
         public MProfile GetProfile(string versionname)
         {
-            if (Profiles == null || Profiles.Length == 0)
+            if (Profiles == null)
                 UpdateProfiles();
 
-            return MProfile.FindProfile(Minecraft, Profiles, versionname);
+            return Profiles.GetProfile(versionname);
         }
 
         public string CheckJRE()
@@ -83,7 +84,7 @@ namespace CmlLib
 
         public string CheckForge(string mcversion, string forgeversion)
         {
-            if (Profiles == null || Profiles.Length == 0)
+            if (Profiles == null)
                 UpdateProfiles();
 
             var versionname = GetVersionNameByForge(mcversion, forgeversion);

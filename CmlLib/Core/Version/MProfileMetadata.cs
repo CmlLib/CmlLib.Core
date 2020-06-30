@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 
-namespace CmlLib.Core
+namespace CmlLib.Core.Version
 {
     public class MProfileMetadata
     {
@@ -31,7 +31,7 @@ namespace CmlLib.Core
             var info = obj as MProfileMetadata;
 
             if (info != null)
-                return info.Name.Equals(this.Name);
+                return info.Name.Equals(Name);
             else if (obj is string)
                 return info.Name.Equals(obj.ToString());
             else
@@ -40,12 +40,12 @@ namespace CmlLib.Core
 
         public override string ToString()
         {
-            return this.Type + " " + this.Name;
+            return Type + " " + Name;
         }
 
         public override int GetHashCode()
         {
-            return this.Name.GetHashCode();
+            return Name.GetHashCode();
         }
     }
 }

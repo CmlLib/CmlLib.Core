@@ -3,28 +3,43 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 
-namespace CmlLib.Core
+namespace CmlLib.Core.Version
 {
     public class MProfileLoader
     {
         /// <summary>
         /// Get All MProfileInfo from mojang server and local
         /// </summary>
-        public static MProfileMetadata[] GetProfileMetadatas(Minecraft mc)
+        public static MProfileMetadataCollection GetProfileMetadatas(Minecraft mc)
         {
-            var list = new List<MProfileMetadata>(GetProfileMetadatasFromLocal(mc));
-            foreach (var item in GetProfileMetadatasFromWeb())
+            var list = getFromLocal(mc);
+            foreach (var item in getFromWeb())
             {
                 if (!list.Contains(item))
                     list.Add(item);
             }
-            return list.ToArray();
+            return new MProfileMetadataCollection(mc, list.ToArray());
         }
 
         /// <summary>
         /// Get All MProfileInfo from local
         /// </summary>
-        public static MProfileMetadata[] GetProfileMetadatasFromLocal(Minecraft mc)
+        public static MProfileMetadataCollection GetProfileMetadatasFromLocal(Minecraft mc)
+        {
+            var list = getFromLocal(mc).ToArray();
+            return new MProfileMetadataCollection(mc, list);
+        }
+
+        /// <summary>
+        /// Get All MProfileInfo from mojang server
+        /// </summary>
+        public static MProfileMetadataCollection GetProfileMetadatasFromWeb(Minecraft mc)
+        {
+            var list = getFromWeb().ToArray();
+            return new MProfileMetadataCollection(mc, list);
+        }
+
+        private static List<MProfileMetadata> getFromLocal(Minecraft mc)
         {
             var dirs = new DirectoryInfo(mc.Versions).GetDirectories();
             var arr = new List<MProfileMetadata>(dirs.Length);
@@ -45,13 +60,10 @@ namespace CmlLib.Core
                 }
             }
 
-            return arr.ToArray();
+            return arr;
         }
 
-        /// <summary>
-        /// Get All MProfileInfo from mojang server
-        /// </summary>
-        public static MProfileMetadata[] GetProfileMetadatasFromWeb()
+        private static List<MProfileMetadata> getFromWeb()
         {
             JArray jarr;
             using (WebClient wc = new WebClient())
@@ -60,13 +72,13 @@ namespace CmlLib.Core
                 jarr = JArray.Parse(jobj["versions"].ToString());
             }
 
-            var arr = new MProfileMetadata[jarr.Count];
+            var arr = new List<MProfileMetadata>(jarr.Count);
             for (int i = 0; i < jarr.Count; i++)
             {
                 var obj = jarr[i].ToObject<MProfileMetadata>();
                 obj.IsWeb = true;
                 obj.MType = MProfileTypeConverter.FromString(obj.Type);
-                arr[i] = obj;
+                arr.Add(obj);
             }
             return arr;
         }
