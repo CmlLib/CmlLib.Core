@@ -20,6 +20,7 @@ namespace CmlLib.Core
 
         public int ScreenWidth { get; set; } = 0;
         public int ScreenHeight { get; set; } = 0;
+        public bool FullScreen { get; set; } = false;
 
         public string VersionType { get; set; }
         public string GameLauncherName { get; set; }

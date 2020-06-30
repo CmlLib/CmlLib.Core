@@ -145,6 +145,9 @@ namespace CmlLib.Core
                 args.Add("--height " + LaunchOption.ScreenHeight);
             }
 
+            if (LaunchOption.FullScreen)
+                args.Add("--fullscreen");
+
             return args.ToArray();
         }
 
@@ -180,6 +183,7 @@ namespace CmlLib.Core
             return sb.ToString();
         }
 
+        // if input1 is null, return input2
         string useNotNull(string input1, string input2)
         {
             if (string.IsNullOrEmpty(input1))
