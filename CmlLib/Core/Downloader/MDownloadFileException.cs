@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace CmlLib.Core
+namespace CmlLib.Core.Downloader
 {
     public class MDownloadFileException : Exception
     {
@@ -12,7 +10,7 @@ namespace CmlLib.Core
         public MDownloadFileException(string message, Exception innerException, DownloadFile exFile)
             : base(message, innerException)
         {
-            this.ExceptionFile = exFile;
+            ExceptionFile = exFile;
         }
 
         public DownloadFile ExceptionFile { get; private set; }

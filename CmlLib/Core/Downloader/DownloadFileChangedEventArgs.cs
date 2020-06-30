@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CmlLib.Core
+namespace CmlLib.Core.Downloader
 {
     public delegate void DownloadFileChangedHandler(DownloadFileChangedEventArgs e);
 

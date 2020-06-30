@@ -1,11 +1,11 @@
-﻿using System;
+﻿using CmlLib.Utils;
+using Newtonsoft.Json.Linq;
+using System;
+using System.ComponentModel;
 using System.IO;
 using System.Net;
-using Newtonsoft.Json.Linq;
-using System.ComponentModel;
-using CmlLib.Utils;
 
-namespace CmlLib.Core
+namespace CmlLib.Core.Downloader
 {
     public class MJava
     {
@@ -88,7 +88,7 @@ namespace CmlLib.Core
             ProgressChanged?.Invoke(this, e);
         }
 
-        private void Downloader_DownloadProgressChangedEvent(object sender, System.ComponentModel.ProgressChangedEventArgs e)
+        private void Downloader_DownloadProgressChangedEvent(object sender, ProgressChangedEventArgs e)
         {
             ProgressChanged?.Invoke(this, e);
         }

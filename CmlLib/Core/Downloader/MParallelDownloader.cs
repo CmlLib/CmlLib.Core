@@ -4,7 +4,7 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace CmlLib.Core
+namespace CmlLib.Core.Downloader
 {
     public class MParallelDownloader : MDownloader
     {
@@ -15,7 +15,7 @@ namespace CmlLib.Core
 
         public MParallelDownloader(MProfile mProfile, int maxThread, bool setConnectionLimit) : base(mProfile)
         {
-            this.MaxThread = maxThread;
+            MaxThread = maxThread;
 
             if (setConnectionLimit)
                 ServicePointManager.DefaultConnectionLimit = maxThread;
@@ -58,7 +58,7 @@ namespace CmlLib.Core
             var failedFiles = new List<DownloadFile>();
 
             Exception lastEx = null;
-            Parallel.ForEach(files, option, (DownloadFile file) =>
+            Parallel.ForEach(files, option, (file) =>
             {
                 try
                 {

@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Net;
 
-namespace CmlLib.Core
+namespace CmlLib.Utils
 {
     class WebDownload
     {
@@ -46,7 +46,7 @@ namespace CmlLib.Core
 
         void ProgressChanged(long value, long max)
         {
-            var percentage = ((float)value / max) * 100;
+            var percentage = (float)value / max * 100;
 
             var e = new ProgressChangedEventArgs((int)percentage, null);
             DownloadProgressChangedEvent?.Invoke(this, e);

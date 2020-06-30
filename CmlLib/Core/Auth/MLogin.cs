@@ -5,7 +5,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 
-namespace CmlLib.Core
+namespace CmlLib.Core.Auth
 {
     public enum MLoginResult { Success, BadRequest, WrongAccount, NeedLogin, UnknownError, NoProfile }
 
@@ -15,10 +15,10 @@ namespace CmlLib.Core
         {
             public MLoginResponse(MLoginResult result, MSession session, string errormsg, string rawresponse)
             {
-                this.Result = result;
-                this.Session = session;
-                this.ErrorMessage = errormsg;
-                this.RawResponse = rawresponse;
+                Result = result;
+                Session = session;
+                ErrorMessage = errormsg;
+                RawResponse = rawresponse;
             }
 
             public MLoginResult Result { get; private set; }
@@ -26,7 +26,7 @@ namespace CmlLib.Core
             public string ErrorMessage { get; private set; }
             public string RawResponse { get; private set; }
 
-            public bool IsSuccess => (Result == MLoginResult.Success);
+            public bool IsSuccess => Result == MLoginResult.Success;
         }
 
         public static readonly string DefaultLoginSessionFile = Path.Combine(Minecraft.GetOSDefaultPath(), "logintoken.json");
@@ -35,7 +35,7 @@ namespace CmlLib.Core
 
         public MLogin(string sessionCacheFilePath)
         {
-            this.SessionCacheFilePath = sessionCacheFilePath;
+            SessionCacheFilePath = sessionCacheFilePath;
         }
 
         public string SessionCacheFilePath { get; private set; }
@@ -244,7 +244,7 @@ namespace CmlLib.Core
             using (var res = new StreamReader(resHeader.GetResponseStream()))
             {
                 var rawResponse = res.ReadToEnd();
-                
+
                 if ((int)resHeader.StatusCode / 100 == 2)
                     return parseSession(rawResponse, session.ClientToken);
                 else

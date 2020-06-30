@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using CmlLib.Utils;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -6,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 
-namespace CmlLib.Core
+namespace CmlLib.Core.Downloader
 {
     public class MDownloader
     {
@@ -21,8 +22,8 @@ namespace CmlLib.Core
 
         public MDownloader(MProfile _profile)
         {
-            this.profile = _profile;
-            this.Minecraft = _profile.Minecraft;
+            profile = _profile;
+            Minecraft = _profile.Minecraft;
         }
 
         /// <summary>

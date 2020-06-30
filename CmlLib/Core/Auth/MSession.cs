@@ -1,9 +1,6 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace CmlLib.Core
+namespace CmlLib.Core.Auth
 {
     public class MSession
     {
@@ -14,9 +11,9 @@ namespace CmlLib.Core
 
         public MSession(string username, string accesstoken, string uuid)
         {
-            this.Username = username;
-            this.AccessToken = accesstoken;
-            this.UUID = uuid;
+            Username = username;
+            AccessToken = accesstoken;
+            UUID = uuid;
         }
 
         [JsonProperty("username")]

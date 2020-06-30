@@ -1,13 +1,12 @@
-﻿using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Text;
-using System.Net;
-using Newtonsoft.Json.Linq;
+﻿using CmlLib.Utils;
 using ICSharpCode.SharpZipLib.Zip;
-using CmlLib.Utils;
+using Newtonsoft.Json.Linq;
+using System;
+using System.IO;
+using System.Net;
+using System.Text;
 
-namespace CmlLib.Core
+namespace CmlLib.Core.Downloader
 {
     public class MForge
     {
@@ -17,7 +16,7 @@ namespace CmlLib.Core
 
         public MForge(Minecraft mc)
         {
-            this.Minecraft = mc;
+            Minecraft = mc;
         }
 
         public event DownloadFileChangedHandler FileChanged;

@@ -4,8 +4,9 @@ using System.Text;
 using System.Linq;
 using System.IO;
 using Newtonsoft.Json.Linq;
+using CmlLib.Core.Auth;
 
-namespace CmlLib.Core
+namespace CmlLib.Core.LauncherProfile
 {
     public class MLauncherProfile
     {

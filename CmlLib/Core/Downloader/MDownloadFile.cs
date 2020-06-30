@@ -1,17 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace CmlLib.Core
+namespace CmlLib.Core.Downloader
 {
     public class DownloadFile : IEquatable<DownloadFile>
     {
         public DownloadFile(MFile type, string name, string path, string url)
         {
-            this.Type = type;
-            this.Name = name;
-            this.Path = path;
-            this.Url = url;
+            Type = type;
+            Name = name;
+            Path = path;
+            Url = url;
         }
 
         public MFile Type { get; private set; }
@@ -24,12 +22,12 @@ namespace CmlLib.Core
             if (other == null)
                 return false;
 
-            return this.Path == other.Path;
+            return Path == other.Path;
         }
 
         public override int GetHashCode()
         {
-            return this.Path.GetHashCode();
+            return Path.GetHashCode();
         }
     }
 }

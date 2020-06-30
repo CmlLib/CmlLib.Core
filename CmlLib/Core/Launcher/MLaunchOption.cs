@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CmlLib.Core.Auth;
+using System;
 
 namespace CmlLib.Core
 {

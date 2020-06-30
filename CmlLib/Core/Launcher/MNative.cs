@@ -1,6 +1,6 @@
-﻿using System;
+﻿using CmlLib.Utils;
+using System;
 using System.IO;
-using CmlLib.Utils;
 
 namespace CmlLib.Core
 {
