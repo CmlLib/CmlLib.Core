@@ -32,7 +32,7 @@ namespace CmlLib.Core
                     throw new IOException("Invalid Profile : inheritFrom property is equal to id property.");
 
                 baseProfile = FindProfile(mc, infos, startProfile.ParentProfileId);
-                inherit(baseProfile, startProfile);
+                startProfile.InheritFrom(baseProfile);
             }
 
             return startProfile;
@@ -160,7 +160,7 @@ namespace CmlLib.Core
             return strList.ToArray();
         }
 
-        static MProfile inherit(MProfile parentProfile, MProfile childProfile)
+        public void InheritFrom(MProfile parentProfile)
         {
             // Inherit list
             // Overload : AssetId, AssetUrl, AssetHash, ClientDownloadUrl, ClientHash, MainClass, MinecraftArguments
@@ -168,57 +168,55 @@ namespace CmlLib.Core
 
             // Overloads
 
-            if (nc(childProfile.AssetId))
-                childProfile.AssetId = parentProfile.AssetId;
+            if (nc(this.AssetId))
+                this.AssetId = parentProfile.AssetId;
 
-            if (nc(childProfile.AssetUrl))
-                childProfile.AssetUrl = parentProfile.AssetUrl;
+            if (nc(this.AssetUrl))
+                this.AssetUrl = parentProfile.AssetUrl;
 
-            if (nc(childProfile.AssetHash))
-                childProfile.AssetHash = parentProfile.AssetHash;
+            if (nc(this.AssetHash))
+                this.AssetHash = parentProfile.AssetHash;
 
-            if (nc(childProfile.ClientDownloadUrl))
-                childProfile.ClientDownloadUrl = parentProfile.ClientDownloadUrl;
+            if (nc(this.ClientDownloadUrl))
+                this.ClientDownloadUrl = parentProfile.ClientDownloadUrl;
 
-            if (nc(childProfile.ClientHash))
-                childProfile.ClientHash = parentProfile.ClientHash;
+            if (nc(this.ClientHash))
+                this.ClientHash = parentProfile.ClientHash;
 
-            if (nc(childProfile.MainClass))
-                childProfile.MainClass = parentProfile.MainClass;
+            if (nc(this.MainClass))
+                this.MainClass = parentProfile.MainClass;
 
-            if (nc(childProfile.MinecraftArguments))
-                childProfile.MinecraftArguments = parentProfile.MinecraftArguments;
+            if (nc(this.MinecraftArguments))
+                this.MinecraftArguments = parentProfile.MinecraftArguments;
 
-            childProfile.Jar = parentProfile.Jar;
+            this.Jar = parentProfile.Jar;
 
             // Combine
 
             if (parentProfile.Libraries != null)
             {
-                if (childProfile.Libraries != null)
-                    childProfile.Libraries = childProfile.Libraries.Concat(parentProfile.Libraries).ToArray();
+                if (this.Libraries != null)
+                    this.Libraries = this.Libraries.Concat(parentProfile.Libraries).ToArray();
                 else
-                    childProfile.Libraries = parentProfile.Libraries;
+                    this.Libraries = parentProfile.Libraries;
             }
 
             if (parentProfile.GameArguments != null)
             {
-                if (childProfile.GameArguments != null)
-                    childProfile.GameArguments = childProfile.GameArguments.Concat(parentProfile.GameArguments).ToArray();
+                if (this.GameArguments != null)
+                    this.GameArguments = this.GameArguments.Concat(parentProfile.GameArguments).ToArray();
                 else
-                    childProfile.GameArguments = parentProfile.GameArguments;
+                    this.GameArguments = parentProfile.GameArguments;
             }
 
 
             if (parentProfile.JvmArguments != null)
             {
-                if (childProfile.JvmArguments != null)
-                    childProfile.JvmArguments = childProfile.JvmArguments.Concat(parentProfile.JvmArguments).ToArray();
+                if (this.JvmArguments != null)
+                    this.JvmArguments = this.JvmArguments.Concat(parentProfile.JvmArguments).ToArray();
                 else
-                    childProfile.JvmArguments = parentProfile.JvmArguments;
+                    this.JvmArguments = parentProfile.JvmArguments;
             }
-
-            return childProfile;
         }
 
         static string n(string t) // handle null string
