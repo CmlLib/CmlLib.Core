@@ -31,19 +31,6 @@ namespace CmlLib.Utils
             }
         }
 
-        public static void CopyStreamToFile(Stream stream, string path, int bufferSize)
-        {
-            using (var fs = File.Create(path))
-            {
-                int length = 0;
-                byte[] buffer = new byte[bufferSize];
-                while ((length = stream.Read(buffer, 0, bufferSize)) > 0)
-                {
-                    fs.Write(buffer, 0, length);
-                }
-            }
-        }
-
         [DllImport("libc", SetLastError = true)]
         private static extern int chmod(string pathname, int mode);
 
