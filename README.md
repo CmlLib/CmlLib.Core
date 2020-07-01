@@ -62,7 +62,8 @@ write this on the top of your source code:
 **[Sample Code](https://github.com/AlphaBs/CmlLib.Core/wiki/Sample-Code)**
 
 Write this :      
-`using CmlLib.Core`
+`using CmlLib.Core;`
+`using CmlLib;`
 
 **Login**
 
@@ -76,7 +77,7 @@ Write this :
          session = login.Authenticate(email, pw);
 
          if (session.Result != MLoginResult.Success)
-              throw new Exception(session.Result.ToString()) // failed to login
+              throw new Exception(session.Result.ToString()); // failed to login
      }
 
 **Offline Login**
@@ -85,10 +86,12 @@ Write this :
 
 **Launch**
 
-     //var path = new Minecraft("your minecraft directory);
-     var path = Minecraft.GetOSDefaultPath(); // mc directory
+     //var path = "your minecraft directory";
+     var path = Minecraft.GetOSDefaultPath(); // get default minecraft path
 
-     var launcher = new CmlLib.CMLauncher(path);
+     var game = new Minecraft(path);
+
+     var launcher = new CmlLib.CMLauncher(game);
      launcher.ProgressChanged += (s, e) =>
      {
           Console.WriteLine("{0}%", e.ProgressPercentage);
@@ -98,7 +101,7 @@ Write this :
           Console.WriteLine("[{0}] {1} - {2}/{3}", e.FileKind.ToString(), e.FileName, e.ProgressedFileCount, e.TotalFileCount);
      };
 
-     launcher.UpdateProfiles()
+     launcher.UpdateProfiles();
      foreach (var item in launcher.Profiles)
      {
          Console.WriteLine(item.Name);
