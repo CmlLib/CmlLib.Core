@@ -9,7 +9,7 @@ using System.Diagnostics;
 using CmlLib.Core.Downloader;
 using CmlLib.Core.Version;
 
-namespace CmlLib
+namespace CmlLib.Core
 {
     public class CMLauncher
     {
