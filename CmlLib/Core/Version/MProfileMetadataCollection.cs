@@ -10,7 +10,7 @@ namespace CmlLib.Core.Version
     {
         public MProfileMetadataCollection(Minecraft game, MProfileMetadata[] datas)
         {
-            if (mc == null)
+            if (game == null)
                 throw new ArgumentNullException(nameof(mc));
 
             if (datas == null)
