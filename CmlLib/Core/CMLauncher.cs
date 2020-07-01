@@ -56,6 +56,14 @@ namespace CmlLib.Core
             return Profiles;
         }
 
+        public MProfileMetadataCollection GetProfiles()
+        {
+            if (Profiles == null)
+                Profiles = UpdateProfiles();
+
+            return Profiles;
+        }
+
         public MProfile GetProfile(string mcVersion, string forgeVersion)
         {
             return GetProfile(GetVersionNameByForge(mcVersion, forgeVersion));
