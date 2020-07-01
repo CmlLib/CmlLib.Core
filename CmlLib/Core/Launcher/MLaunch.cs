@@ -26,7 +26,7 @@ namespace CmlLib.Core
         {
             option.CheckValid();
             LaunchOption = option;
-            this.Minecraft = option.StartProfile.Minecraft;
+            this.Minecraft = option.StartVersion.Minecraft;
         }
 
         Minecraft Minecraft;
@@ -60,7 +60,7 @@ namespace CmlLib.Core
 
         public string[] CreateArg()
         {
-            var profile = LaunchOption.StartProfile;
+            var version = LaunchOption.StartVersion;
 
             var args = new List<string>();
 
@@ -78,57 +78,57 @@ namespace CmlLib.Core
                 args.Add("-Xdock:icon=" + handleEmpty(LaunchOption.DockIcon));
 
             // Version-specific JVM Arguments
-            var libArgs = new List<string>(profile.Libraries.Length);
+            var libArgs = new List<string>(version.Libraries.Length);
 
-            foreach (var item in profile.Libraries)
+            foreach (var item in version.Libraries)
             {
                 if (!item.IsNative)
                     libArgs.Add(handleEmpty(Path.GetFullPath(item.Path)));
             }
 
-            libArgs.Add(handleEmpty(Path.Combine(Minecraft.Versions, profile.Jar, profile.Jar + ".jar")));
+            libArgs.Add(handleEmpty(Path.Combine(Minecraft.Versions, version.Jar, version.Jar + ".jar")));
 
             var libs = string.Join(Path.PathSeparator.ToString(), libArgs);
 
             var jvmdict = new Dictionary<string, string>()
             {
-                { "natives_directory", handleEmpty(profile.NativePath) },
+                { "natives_directory", handleEmpty(version.NativePath) },
                 { "launcher_name", useNotNull(LaunchOption.GameLauncherName, "minecraft-launcher") },
                 { "launcher_version", useNotNull(LaunchOption.GameLauncherVersion, "2") },
                 { "classpath", libs }
             };
 
-            if (profile.JvmArguments != null)
-                args.AddRange(argumentInsert(profile.JvmArguments, jvmdict));
+            if (version.JvmArguments != null)
+                args.AddRange(argumentInsert(version.JvmArguments, jvmdict));
             else
             {
-                args.Add("-Djava.library.path=" + handleEmpty(LaunchOption.StartProfile.NativePath));
+                args.Add("-Djava.library.path=" + handleEmpty(LaunchOption.StartVersion.NativePath));
                 args.Add("-cp " + libs);
             }
 
-            args.Add(profile.MainClass);
+            args.Add(version.MainClass);
 
             // Game Arguments
             var gameDict = new Dictionary<string, string>()
             {
                 { "auth_player_name", LaunchOption.Session.Username },
-                { "version_name", LaunchOption.StartProfile.Id },
+                { "version_name", LaunchOption.StartVersion.Id },
                 { "game_directory", handleEmpty(Minecraft.path) },
                 { "assets_root", handleEmpty(Minecraft.Assets) },
-                { "assets_index_name", profile.AssetId },
+                { "assets_index_name", version.AssetId },
                 { "auth_uuid", LaunchOption.Session.UUID },
                 { "auth_access_token", LaunchOption.Session.AccessToken },
                 { "user_properties", "{}" },
                 { "user_type", "Mojang" },
                 { "game_assets", handleEmpty(Minecraft.AssetLegacy) },
                 { "auth_session", LaunchOption.Session.AccessToken },
-                { "version_type", useNotNull(LaunchOption.VersionType, profile.TypeStr) }
+                { "version_type", useNotNull(LaunchOption.VersionType, version.TypeStr) }
             };
 
-            if (profile.GameArguments != null)
-                args.AddRange(argumentInsert(profile.GameArguments, gameDict));
+            if (version.GameArguments != null)
+                args.AddRange(argumentInsert(version.GameArguments, gameDict));
             else
-                args.AddRange(argumentInsert(profile.MinecraftArguments.Split(' '), gameDict));
+                args.AddRange(argumentInsert(version.MinecraftArguments.Split(' '), gameDict));
 
             // Options
             if (!string.IsNullOrEmpty(LaunchOption.ServerIp))

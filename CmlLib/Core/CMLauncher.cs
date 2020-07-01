@@ -27,7 +27,7 @@ namespace CmlLib.Core
         public event ProgressChangedEventHandler ProgressChanged;
 
         public Minecraft Minecraft { get; private set; }
-        public MProfileMetadataCollection Profiles { get; private set; }
+        public MVersionCollection Versions { get; private set; }
 
         private void fire(MFile kind, string name, int total, int progressed)
         {
@@ -50,31 +50,31 @@ namespace CmlLib.Core
             ProgressChanged?.Invoke(this, new ProgressChangedEventArgs(progress, null));
         }
 
-        public MProfileMetadataCollection UpdateProfiles()
+        public MVersionCollection UpdateVersions()
         {
-            Profiles = MProfileLoader.GetProfileMetadatas(Minecraft);
-            return Profiles;
+            Versions = MVersionLoader.GetVersionMetadatas(Minecraft);
+            return Versions;
         }
 
-        public MProfileMetadataCollection GetProfiles()
+        public MVersionCollection GetVersions()
         {
-            if (Profiles == null)
-                Profiles = UpdateProfiles();
+            if (Versions == null)
+                Versions = UpdateVersions();
 
-            return Profiles;
+            return Versions;
         }
 
-        public MProfile GetProfile(string mcVersion, string forgeVersion)
+        public MVersion GetVersion(string mcVersion, string forgeVersion)
         {
-            return GetProfile(GetVersionNameByForge(mcVersion, forgeVersion));
+            return GetVersion(GetVersionNameByForge(mcVersion, forgeVersion));
         }
 
-        public MProfile GetProfile(string versionname)
+        public MVersion GetVersion(string versionname)
         {
-            if (Profiles == null)
-                UpdateProfiles();
+            if (Versions == null)
+                UpdateVersions();
 
-            return Profiles.GetProfile(versionname);
+            return Versions.GetVersion(versionname);
         }
 
         public string CheckJRE()
@@ -92,25 +92,25 @@ namespace CmlLib.Core
 
         public string CheckForge(string mcversion, string forgeversion)
         {
-            if (Profiles == null)
-                UpdateProfiles();
+            if (Versions == null)
+                UpdateVersions();
 
             var versionname = GetVersionNameByForge(mcversion, forgeversion);
-            if (!Profiles.Any(x => x.Name == versionname))
+            if (!Versions.Any(x => x.Name == versionname))
             {
                 var mforge = new MForge(Minecraft);
                 mforge.FileChanged += (e) => fire(e);
                 mforge.InstallForge(mcversion, forgeversion);
 
-                UpdateProfiles();
+                UpdateVersions();
             }
 
             return versionname;
         }
 
-        public void CheckGameFiles(MProfile profile, bool downloadAsset = true)
+        public void CheckGameFiles(MVersion version, bool downloadAsset = true)
         {
-            var downloader = new MDownloader(profile);
+            var downloader = new MDownloader(version);
             downloader.ChangeFile += (e) => fire(e);
             downloader.ChangeProgress += (sender, e) => fire(e.ProgressPercentage);
             downloader.DownloadAll(downloadAsset);
@@ -128,7 +128,7 @@ namespace CmlLib.Core
 
         public Process CreateProcess(string versionname, MLaunchOption option)
         {
-            option.StartProfile = GetProfile(versionname);
+            option.StartVersion = GetVersion(versionname);
             return CreateProcess(option);
         }
 
@@ -137,7 +137,7 @@ namespace CmlLib.Core
             if (string.IsNullOrEmpty(option.JavaPath))
                 option.JavaPath = CheckJRE();
 
-            CheckGameFiles(option.StartProfile);
+            CheckGameFiles(option.StartVersion);
 
             var launch = new MLaunch(option);
             return launch.GetProcess();

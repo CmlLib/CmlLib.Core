@@ -16,24 +16,24 @@ namespace CmlLib.Core
 
         public void CreateNatives()
         {
-            var path = ExtractNatives(LaunchOption.StartProfile);
-            LaunchOption.StartProfile.NativePath = path;
+            var path = ExtractNatives(LaunchOption.StartVersion);
+            LaunchOption.StartVersion.NativePath = path;
         }
 
-        private string ExtractNatives(MProfile profile)
+        private string ExtractNatives(MVersion version)
         {
             var ran = new Random();
             int random = ran.Next(10000, 99999);
-            string path = Path.Combine(profile.Minecraft.Versions, profile.Id, "natives-" + random.ToString());
-            ExtractNatives(profile, path);
+            string path = Path.Combine(version.Minecraft.Versions, version.Id, "natives-" + random.ToString());
+            ExtractNatives(version, path);
             return path;
         }
 
-        private void ExtractNatives(MProfile profile, string path)
+        private void ExtractNatives(MVersion version, string path)
         {
             Directory.CreateDirectory(path);
 
-            foreach (var item in profile.Libraries)
+            foreach (var item in version.Libraries)
             {
                 try
                 {
@@ -46,14 +46,14 @@ namespace CmlLib.Core
                 catch { }
             }
 
-            profile.NativePath = path;
+            version.NativePath = path;
         }
 
         public void CleanNatives()
         {
             try
             {
-                var path = Path.Combine(LaunchOption.StartProfile.Minecraft.Versions, LaunchOption.StartProfile.Id);
+                var path = Path.Combine(LaunchOption.StartVersion.Minecraft.Versions, LaunchOption.StartVersion.Id);
                 DirectoryInfo di = new DirectoryInfo(path);
                 foreach (var item in di.GetDirectories())
                 {

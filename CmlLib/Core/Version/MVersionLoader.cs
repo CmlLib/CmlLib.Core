@@ -5,12 +5,12 @@ using System.Net;
 
 namespace CmlLib.Core.Version
 {
-    public class MProfileLoader
+    public class MVersionLoader
     {
         /// <summary>
-        /// Get All MProfileInfo from mojang server and local
+        /// Get All MVersionInfo from mojang server and local
         /// </summary>
-        public static MProfileMetadataCollection GetProfileMetadatas(Minecraft mc)
+        public static MVersionCollection GetVersionMetadatas(Minecraft mc)
         {
             var list = getFromLocal(mc);
             foreach (var item in getFromWeb())
@@ -18,31 +18,31 @@ namespace CmlLib.Core.Version
                 if (!list.Contains(item))
                     list.Add(item);
             }
-            return new MProfileMetadataCollection(mc, list.ToArray());
+            return new MVersionCollection(mc, list.ToArray());
         }
 
         /// <summary>
-        /// Get All MProfileInfo from local
+        /// Get All MVersionInfo from local
         /// </summary>
-        public static MProfileMetadataCollection GetProfileMetadatasFromLocal(Minecraft mc)
+        public static MVersionCollection GetVersionMetadatasFromLocal(Minecraft mc)
         {
             var list = getFromLocal(mc).ToArray();
-            return new MProfileMetadataCollection(mc, list);
+            return new MVersionCollection(mc, list);
         }
 
         /// <summary>
-        /// Get All MProfileInfo from mojang server
+        /// Get All MVersionInfo from mojang server
         /// </summary>
-        public static MProfileMetadataCollection GetProfileMetadatasFromWeb(Minecraft mc)
+        public static MVersionCollection GetVersionMetadatasFromWeb(Minecraft mc)
         {
             var list = getFromWeb().ToArray();
-            return new MProfileMetadataCollection(mc, list);
+            return new MVersionCollection(mc, list);
         }
 
-        private static List<MProfileMetadata> getFromLocal(Minecraft mc)
+        private static List<MVersionMetadata> getFromLocal(Minecraft mc)
         {
             var dirs = new DirectoryInfo(mc.Versions).GetDirectories();
-            var arr = new List<MProfileMetadata>(dirs.Length);
+            var arr = new List<MVersionMetadata>(dirs.Length);
 
             for (int i = 0; i < dirs.Length; i++)
             {
@@ -50,12 +50,12 @@ namespace CmlLib.Core.Version
                 var filepath = Path.Combine(dir.FullName, dir.Name + ".json");
                 if (File.Exists(filepath))
                 {
-                    var info = new MProfileMetadata();
+                    var info = new MVersionMetadata();
                     info.IsWeb = false;
                     info.Name = dir.Name;
                     info.Path = filepath;
                     info.Type = "local";
-                    info.MType = MProfileType.Custom;
+                    info.MType = MVersionType.Custom;
                     arr.Add(info);
                 }
             }
@@ -63,21 +63,21 @@ namespace CmlLib.Core.Version
             return arr;
         }
 
-        private static List<MProfileMetadata> getFromWeb()
+        private static List<MVersionMetadata> getFromWeb()
         {
             JArray jarr;
             using (WebClient wc = new WebClient())
             {
-                var jobj = JObject.Parse(wc.DownloadString(MojangServer.Profile));
+                var jobj = JObject.Parse(wc.DownloadString(MojangServer.Version));
                 jarr = JArray.Parse(jobj["versions"].ToString());
             }
 
-            var arr = new List<MProfileMetadata>(jarr.Count);
+            var arr = new List<MVersionMetadata>(jarr.Count);
             for (int i = 0; i < jarr.Count; i++)
             {
-                var obj = jarr[i].ToObject<MProfileMetadata>();
+                var obj = jarr[i].ToObject<MVersionMetadata>();
                 obj.IsWeb = true;
-                obj.MType = MProfileTypeConverter.FromString(obj.Type);
+                obj.MType = MVersionTypeConverter.FromString(obj.Type);
                 arr.Add(obj);
             }
             return arr;

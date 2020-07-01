@@ -7,9 +7,9 @@ using System.Net;
 
 namespace CmlLib.Core.Version
 {
-    public class MProfile
+    public class MVersion
     {
-        public static MProfile Parse(Minecraft mc, MProfileMetadata info)
+        public static MVersion Parse(Minecraft mc, MVersionMetadata info)
         {
             string json;
             if (info.IsWeb)
@@ -24,75 +24,75 @@ namespace CmlLib.Core.Version
                 return ParseFromFile(mc, info.Path);
         }
 
-        public static MProfile ParseFromFile(Minecraft mc, string path)
+        public static MVersion ParseFromFile(Minecraft mc, string path)
         {
             var json = File.ReadAllText(path);
             return ParseFromJson(mc, json, false);
         }
 
-        private static MProfile ParseFromJson(Minecraft mc, string json, bool writeProfile = true)
+        private static MVersion ParseFromJson(Minecraft mc, string json, bool writeVersion = true)
         {
-            var profile = new MProfile();
+            var version = new MVersion();
             var job = JObject.Parse(json);
-            profile.Id = job["id"]?.ToString();
+            version.Id = job["id"]?.ToString();
 
             var assetindex = (JObject)job["assetIndex"];
             var assets = job["assets"];
             if (assetindex != null)
             {
-                profile.AssetId = n(assetindex["id"]?.ToString());
-                profile.AssetUrl = n(assetindex["url"]?.ToString());
-                profile.AssetHash = n(assetindex["sha1"]?.ToString());
+                version.AssetId = n(assetindex["id"]?.ToString());
+                version.AssetUrl = n(assetindex["url"]?.ToString());
+                version.AssetHash = n(assetindex["sha1"]?.ToString());
             }
             else if (assets != null)
-                profile.AssetId = assets.ToString();
+                version.AssetId = assets.ToString();
 
             var client = job["downloads"]?["client"];
             if (client != null)
             {
-                profile.ClientDownloadUrl = client["url"]?.ToString();
-                profile.ClientHash = client["sha1"]?.ToString();
+                version.ClientDownloadUrl = client["url"]?.ToString();
+                version.ClientHash = client["sha1"]?.ToString();
             }
 
-            profile.Libraries = MLibrary.Parser.ParseJson(mc.Library, (JArray)job["libraries"]);
-            profile.MainClass = n(job["mainClass"]?.ToString());
+            version.Libraries = MLibrary.Parser.ParseJson(mc.Library, (JArray)job["libraries"]);
+            version.MainClass = n(job["mainClass"]?.ToString());
 
             var ma = job["minecraftArguments"]?.ToString();
             if (ma != null)
-                profile.MinecraftArguments = ma;
+                version.MinecraftArguments = ma;
 
             var ag = job["arguments"];
             if (ag != null)
             {
                 if (ag["game"] != null)
-                    profile.GameArguments = argParse((JArray)ag["game"]);
+                    version.GameArguments = argParse((JArray)ag["game"]);
                 if (ag["jvm"] != null)
-                    profile.JvmArguments = argParse((JArray)ag["jvm"]);
+                    version.JvmArguments = argParse((JArray)ag["jvm"]);
             }
 
-            profile.ReleaseTime = job["releaseTime"]?.ToString();
+            version.ReleaseTime = job["releaseTime"]?.ToString();
 
             var ype = job["type"]?.ToString();
-            profile.TypeStr = ype;
-            profile.Type = MProfileTypeConverter.FromString(ype);
+            version.TypeStr = ype;
+            version.Type = MVersionTypeConverter.FromString(ype);
 
             if (job["inheritsFrom"] != null)
             {
-                profile.IsInherited = true;
-                profile.ParentProfileId = job["inheritsFrom"].ToString();
+                version.IsInherited = true;
+                version.ParentVersionId = job["inheritsFrom"].ToString();
             }
             else
-                profile.Jar = profile.Id;
+                version.Jar = version.Id;
 
-            if (writeProfile)
+            if (writeVersion)
             {
-                var path = Path.Combine(mc.Versions, profile.Id);
+                var path = Path.Combine(mc.Versions, version.Id);
                 Directory.CreateDirectory(path);
-                File.WriteAllText(Path.Combine(path, profile.Id + ".json"), json);
+                File.WriteAllText(Path.Combine(path, version.Id + ".json"), json);
             }
 
-            profile.Minecraft = mc;
-            return profile;
+            version.Minecraft = mc;
+            return version;
         }
 
         static string[] argParse(JArray arr)
@@ -131,7 +131,7 @@ namespace CmlLib.Core.Version
             return strList.ToArray();
         }
 
-        public void InheritFrom(MProfile parentProfile)
+        public void InheritFrom(MVersion parentVersion)
         {
             // Inherit list
             // Overload : AssetId, AssetUrl, AssetHash, ClientDownloadUrl, ClientHash, MainClass, MinecraftArguments
@@ -140,53 +140,53 @@ namespace CmlLib.Core.Version
             // Overloads
 
             if (nc(AssetId))
-                AssetId = parentProfile.AssetId;
+                AssetId = parentVersion.AssetId;
 
             if (nc(AssetUrl))
-                AssetUrl = parentProfile.AssetUrl;
+                AssetUrl = parentVersion.AssetUrl;
 
             if (nc(AssetHash))
-                AssetHash = parentProfile.AssetHash;
+                AssetHash = parentVersion.AssetHash;
 
             if (nc(ClientDownloadUrl))
-                ClientDownloadUrl = parentProfile.ClientDownloadUrl;
+                ClientDownloadUrl = parentVersion.ClientDownloadUrl;
 
             if (nc(ClientHash))
-                ClientHash = parentProfile.ClientHash;
+                ClientHash = parentVersion.ClientHash;
 
             if (nc(MainClass))
-                MainClass = parentProfile.MainClass;
+                MainClass = parentVersion.MainClass;
 
             if (nc(MinecraftArguments))
-                MinecraftArguments = parentProfile.MinecraftArguments;
+                MinecraftArguments = parentVersion.MinecraftArguments;
 
-            Jar = parentProfile.Jar;
+            Jar = parentVersion.Jar;
 
             // Combine
 
-            if (parentProfile.Libraries != null)
+            if (parentVersion.Libraries != null)
             {
                 if (Libraries != null)
-                    Libraries = Libraries.Concat(parentProfile.Libraries).ToArray();
+                    Libraries = Libraries.Concat(parentVersion.Libraries).ToArray();
                 else
-                    Libraries = parentProfile.Libraries;
+                    Libraries = parentVersion.Libraries;
             }
 
-            if (parentProfile.GameArguments != null)
+            if (parentVersion.GameArguments != null)
             {
                 if (GameArguments != null)
-                    GameArguments = GameArguments.Concat(parentProfile.GameArguments).ToArray();
+                    GameArguments = GameArguments.Concat(parentVersion.GameArguments).ToArray();
                 else
-                    GameArguments = parentProfile.GameArguments;
+                    GameArguments = parentVersion.GameArguments;
             }
 
 
-            if (parentProfile.JvmArguments != null)
+            if (parentVersion.JvmArguments != null)
             {
                 if (JvmArguments != null)
-                    JvmArguments = JvmArguments.Concat(parentProfile.JvmArguments).ToArray();
+                    JvmArguments = JvmArguments.Concat(parentVersion.JvmArguments).ToArray();
                 else
-                    JvmArguments = parentProfile.JvmArguments;
+                    JvmArguments = parentVersion.JvmArguments;
             }
         }
 
@@ -204,7 +204,7 @@ namespace CmlLib.Core.Version
         public bool IsWeb { get; private set; }
 
         public bool IsInherited { get; private set; } = false;
-        public string ParentProfileId { get; private set; } = "";
+        public string ParentVersionId { get; private set; } = "";
 
         public string Id { get; private set; } = "";
 
@@ -221,7 +221,7 @@ namespace CmlLib.Core.Version
         public string[] GameArguments { get; private set; }
         public string[] JvmArguments { get; private set; }
         public string ReleaseTime { get; private set; } = "";
-        public MProfileType Type { get; private set; } = MProfileType.Custom;
+        public MVersionType Type { get; private set; } = MVersionType.Custom;
 
         public string TypeStr { get; private set; } = "";
 

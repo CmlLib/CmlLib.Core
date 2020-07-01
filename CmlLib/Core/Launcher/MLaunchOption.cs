@@ -6,7 +6,7 @@ namespace CmlLib.Core
 {
     public class MLaunchOption
     {
-        public MProfile StartProfile { get; set; }
+        public MVersion StartVersion { get; set; }
         public MSession Session { get; set; }
 
         public string JavaPath { get; set; } = "";
@@ -34,8 +34,8 @@ namespace CmlLib.Core
             if (MaximumRamMb < 1)
                 exMsg = "MaximumRamMb is too small.";
 
-            if (StartProfile == null)
-                exMsg = "StartProfile is null";
+            if (StartVersion == null)
+                exMsg = "StartVersion is null";
 
             if (Session == null)
                 Session = MSession.GetOfflineSession("tester123");

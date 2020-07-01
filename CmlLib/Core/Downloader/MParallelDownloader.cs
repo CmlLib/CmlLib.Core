@@ -9,12 +9,12 @@ namespace CmlLib.Core.Downloader
 {
     public class MParallelDownloader : MDownloader
     {
-        public MParallelDownloader(MProfile mProfile) : this(mProfile, 10, true)
+        public MParallelDownloader(MVersion mVersion) : this(mVersion, 10, true)
         {
 
         }
 
-        public MParallelDownloader(MProfile mProfile, int maxThread, bool setConnectionLimit) : base(mProfile)
+        public MParallelDownloader(MVersion mVersion, int maxThread, bool setConnectionLimit) : base(mVersion)
         {
             MaxThread = maxThread;
 

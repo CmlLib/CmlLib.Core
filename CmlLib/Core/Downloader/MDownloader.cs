@@ -18,13 +18,13 @@ namespace CmlLib.Core.Downloader
         public bool IgnoreInvalidFiles { get; set; } = true;
         public bool CheckHash { get; set; } = true;
 
-        protected MProfile profile;
+        protected MVersion version;
         protected Minecraft Minecraft;
 
-        public MDownloader(MProfile _profile)
+        public MDownloader(MVersion _version)
         {
-            profile = _profile;
-            Minecraft = _profile.Minecraft;
+            version = _version;
+            Minecraft = _version.Minecraft;
         }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace CmlLib.Core.Downloader
         {
             fireDownloadFileChangedEvent(MFile.Library, "", 0, 0);
 
-            var files = from lib in profile.Libraries
+            var files = from lib in version.Libraries
                         where CheckDownloadRequireLibrary(lib)
                         select new DownloadFile(MFile.Library, lib.Name, lib.Path, lib.Url);
 
@@ -71,15 +71,15 @@ namespace CmlLib.Core.Downloader
         /// </summary>
         public void DownloadIndex()
         {
-            string path = Path.Combine(Minecraft.Index, profile.AssetId + ".json");
+            string path = Path.Combine(Minecraft.Index, version.AssetId + ".json");
 
-            if (profile.AssetUrl != "" && !CheckFileValidation(path, profile.AssetHash))
+            if (version.AssetUrl != "" && !CheckFileValidation(path, version.AssetHash))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
 
                 using (var wc = new WebClient())
                 {
-                    wc.DownloadFile(profile.AssetUrl, path);
+                    wc.DownloadFile(version.AssetUrl, path);
                 }
             }
         }
@@ -89,10 +89,10 @@ namespace CmlLib.Core.Downloader
         /// </summary>
         public void DownloadResource()
         {
-            var indexpath = Path.Combine(Minecraft.Index, profile.AssetId + ".json");
+            var indexpath = Path.Combine(Minecraft.Index, version.AssetId + ".json");
             if (!File.Exists(indexpath)) return;
 
-            fireDownloadFileChangedEvent(MFile.Resource, profile.AssetId, 0, 0);
+            fireDownloadFileChangedEvent(MFile.Resource, version.AssetId, 0, 0);
 
             var json = File.ReadAllText(indexpath);
             var index = JObject.Parse(json);
@@ -156,16 +156,16 @@ namespace CmlLib.Core.Downloader
         /// </summary>
         public void DownloadMinecraft()
         {
-            if (string.IsNullOrEmpty(profile.ClientDownloadUrl)) return;
+            if (string.IsNullOrEmpty(version.ClientDownloadUrl)) return;
 
-            string id = profile.Jar;
+            string id = version.Jar;
             var path = Path.Combine(Minecraft.Versions, id, id + ".jar");
 
             fireDownloadFileChangedEvent(MFile.Minecraft, id, 1, 0);
 
-            if (!CheckFileValidation(path, profile.ClientHash))
+            if (!CheckFileValidation(path, version.ClientHash))
             {
-                var file = new DownloadFile(MFile.Minecraft, id, path, profile.ClientDownloadUrl);
+                var file = new DownloadFile(MFile.Minecraft, id, path, version.ClientDownloadUrl);
                 DownloadFiles(new DownloadFile[] { file });
             }
         }
