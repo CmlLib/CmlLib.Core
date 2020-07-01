@@ -1,4 +1,7 @@
 ﻿using CmlLib.Core;
+using CmlLib.Core.Auth;
+using CmlLib.Core.Downloader;
+using CmlLib.Core.Version;
 using System;
 using System.IO;
 
@@ -157,7 +160,7 @@ namespace CmlLibCoreSample
             var profileName = Console.ReadLine();
 
             // get profile
-            var profile = MProfile.FindProfile(minecraft, profileMetadatas, profileName);
+            var profile = profileMetadatas.GetProfile(profileName);
             if (profile == null)
             {
                 Console.WriteLine("{0} is not exist", profileName);

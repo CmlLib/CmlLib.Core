@@ -13,6 +13,8 @@ using System.IO;
 using CmlLib;
 using CmlLib.Core;
 using System.Diagnostics;
+using CmlLib.Core.Downloader;
+using CmlLib.Core.Auth;
 
 namespace CmlLibWinFormSample
 {
@@ -208,7 +210,7 @@ namespace CmlLibWinFormSample
 
                         StartProcess(mc);
                     }
-                    catch (MDownloader.MDownloadFileException mex)
+                    catch (MDownloadFileException mex)
                     {
                         MessageBox.Show(
                             $"FileName : {mex.ExceptionFile.Name}\n" +
