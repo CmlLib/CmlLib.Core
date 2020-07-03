@@ -221,7 +221,5 @@ namespace CmlLib.Core.Version
         public MVersionType Type { get; private set; } = MVersionType.Custom;
 
         public string TypeStr { get; private set; } = "";
-
-        public string NativePath { get; set; } = "";
     }
 }

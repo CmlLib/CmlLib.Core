@@ -45,10 +45,6 @@ namespace CmlLib.Core
         /// </summary>
         public Process GetProcess()
         {
-            var native = new MNative(Minecraft, LaunchOption.StartVersion);
-            native.CleanNatives();
-            native.ExtractNatives();
-
             string arg = string.Join(" ", CreateArg());
             Process mc = new Process();
             mc.StartInfo.FileName = LaunchOption.JavaPath;
@@ -93,9 +89,13 @@ namespace CmlLib.Core
 
             var libs = string.Join(Path.PathSeparator.ToString(), libArgs);
 
+            var native = new MNative(Minecraft, LaunchOption.StartVersion);
+            native.CleanNatives();
+            var nativePath = native.ExtractNatives();
+
             var jvmdict = new Dictionary<string, string>()
             {
-                { "natives_directory", handleEmpty(version.NativePath) },
+                { "natives_directory", handleEmpty(nativePath) },
                 { "launcher_name", useNotNull(LaunchOption.GameLauncherName, "minecraft-launcher") },
                 { "launcher_version", useNotNull(LaunchOption.GameLauncherVersion, "2") },
                 { "classpath", libs }
@@ -105,7 +105,7 @@ namespace CmlLib.Core
                 args.AddRange(argumentInsert(version.JvmArguments, jvmdict));
             else
             {
-                args.Add("-Djava.library.path=" + handleEmpty(LaunchOption.StartVersion.NativePath));
+                args.Add("-Djava.library.path=" + handleEmpty(nativePath));
                 args.Add("-cp " + libs);
             }
 
