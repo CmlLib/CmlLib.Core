@@ -210,13 +210,7 @@ namespace CmlLib.Core.Downloader
 
         protected void fireDownloadFileChangedEvent(MFile file, string name, int totalFiles, int progressedFiles)
         {
-            var e = new DownloadFileChangedEventArgs()
-            {
-                FileKind = file,
-                FileName = name,
-                TotalFileCount = totalFiles,
-                ProgressedFileCount = progressedFiles
-            };
+            var e = new DownloadFileChangedEventArgs(file, name, totalFiles, progressedFiles);
             fireDownloadFileChangedEvent(e);
         }
 

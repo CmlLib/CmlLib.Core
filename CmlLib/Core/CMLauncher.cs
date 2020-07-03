@@ -31,13 +31,7 @@ namespace CmlLib.Core
 
         private void fire(MFile kind, string name, int total, int progressed)
         {
-            FileChanged?.Invoke(new DownloadFileChangedEventArgs()
-            {
-                FileKind = kind,
-                FileName = name,
-                TotalFileCount = total,
-                ProgressedFileCount = progressed
-            });
+            FileChanged?.Invoke(new DownloadFileChangedEventArgs(kind, name, total, progressed));
         }
 
         private void fire(DownloadFileChangedEventArgs e)

@@ -23,13 +23,7 @@ namespace CmlLib.Core.Downloader
 
         public void InstallForge(string mcversion, string forgeversion)
         {
-            FileChanged?.Invoke(new DownloadFileChangedEventArgs()
-            {
-                FileKind = MFile.Library,
-                FileName = "installer",
-                ProgressedFileCount = 0,
-                TotalFileCount = 2
-            });
+            FileChanged?.Invoke(new DownloadFileChangedEventArgs(MFile.Library, "installer", 0, 2));
 
             var versionname = $"{mcversion}-forge{mcversion}-{forgeversion}";
             var manifest = Path.Combine(
@@ -68,13 +62,7 @@ namespace CmlLib.Core.Downloader
 
             var libraries = JObject.Parse(jsondata.ToString())["versionInfo"];
 
-            FileChanged?.Invoke(new DownloadFileChangedEventArgs()
-            {
-                FileKind = MFile.Library,
-                FileName = "universal",
-                ProgressedFileCount = 1,
-                TotalFileCount = 2
-            });
+            FileChanged?.Invoke(new DownloadFileChangedEventArgs(MFile.Library, "universal", 1, 2));
 
             var universalUrl = $"{MavenServer}{mcversion}-{forgeversion}/forge-{mcversion}-{forgeversion}-universal.jar";
 
@@ -94,13 +82,7 @@ namespace CmlLib.Core.Downloader
             Directory.CreateDirectory(Path.GetDirectoryName(manifest));
             File.WriteAllText(manifest, libraries.ToString());
 
-            FileChanged?.Invoke(new DownloadFileChangedEventArgs()
-            {
-                FileKind = MFile.Library,
-                FileName = "universal",
-                ProgressedFileCount = 2,
-                TotalFileCount = 2
-            });
+            FileChanged?.Invoke(new DownloadFileChangedEventArgs(MFile.Library, "universal", 2, 2));
         }
     }
 }
