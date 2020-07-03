@@ -29,7 +29,7 @@ namespace CmlLib.Core
             this.Minecraft = option.StartVersion.Minecraft;
         }
 
-        Minecraft Minecraft;
+        MinecraftPath Minecraft;
         public MLaunchOption LaunchOption { get; private set; }
 
         /// <summary>

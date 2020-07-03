@@ -19,7 +19,7 @@ namespace CmlLib.Core.Downloader
         public bool CheckHash { get; set; } = true;
 
         protected MVersion version;
-        protected Minecraft Minecraft;
+        protected MinecraftPath Minecraft;
 
         public MDownloader(MVersion _version)
         {

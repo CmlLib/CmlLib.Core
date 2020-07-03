@@ -14,7 +14,7 @@ namespace CmlLib.Core.LauncherProfile
 
         public static MLauncherProfile LoadFromDefaultPath()
         {
-            return LoadFromFile(Path.Combine(Minecraft.GetOSDefaultPath(), "launcher_profiles.json"));
+            return LoadFromFile(Path.Combine(MinecraftPath.GetOSDefaultPath(), "launcher_profiles.json"));
         }
 
         public static MLauncherProfile LoadFromFile(string profilePath)

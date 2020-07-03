@@ -15,10 +15,10 @@ namespace CmlLib.Core
     {
         public CMLauncher(string path)
         {
-            this.Minecraft = new Minecraft(path);
+            this.Minecraft = new MinecraftPath(path);
         }
 
-        public CMLauncher(Minecraft mc)
+        public CMLauncher(MinecraftPath mc)
         {
             this.Minecraft = mc;
         }
@@ -26,7 +26,7 @@ namespace CmlLib.Core
         public event DownloadFileChangedHandler FileChanged;
         public event ProgressChangedEventHandler ProgressChanged;
 
-        public Minecraft Minecraft { get; private set; }
+        public MinecraftPath Minecraft { get; private set; }
         public MVersionCollection Versions { get; private set; }
 
         private void fire(MFile kind, string name, int total, int progressed)

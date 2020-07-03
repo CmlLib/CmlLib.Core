@@ -12,9 +12,9 @@ namespace CmlLib.Core.Downloader
     {
         const string MavenServer = "https://files.minecraftforge.net/maven/net/minecraftforge/forge/";
 
-        Minecraft Minecraft;
+        MinecraftPath Minecraft;
 
-        public MForge(Minecraft mc)
+        public MForge(MinecraftPath mc)
         {
             Minecraft = mc;
         }

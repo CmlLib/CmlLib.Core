@@ -10,7 +10,7 @@ namespace CmlLib.Core.Version
         /// <summary>
         /// Get All MVersionInfo from mojang server and local
         /// </summary>
-        public static MVersionCollection GetVersionMetadatas(Minecraft mc)
+        public static MVersionCollection GetVersionMetadatas(MinecraftPath mc)
         {
             var list = getFromLocal(mc);
             foreach (var item in getFromWeb())
@@ -24,7 +24,7 @@ namespace CmlLib.Core.Version
         /// <summary>
         /// Get All MVersionInfo from local
         /// </summary>
-        public static MVersionCollection GetVersionMetadatasFromLocal(Minecraft mc)
+        public static MVersionCollection GetVersionMetadatasFromLocal(MinecraftPath mc)
         {
             var list = getFromLocal(mc).ToArray();
             return new MVersionCollection(mc, list);
@@ -33,13 +33,13 @@ namespace CmlLib.Core.Version
         /// <summary>
         /// Get All MVersionInfo from mojang server
         /// </summary>
-        public static MVersionCollection GetVersionMetadatasFromWeb(Minecraft mc)
+        public static MVersionCollection GetVersionMetadatasFromWeb(MinecraftPath mc)
         {
             var list = getFromWeb().ToArray();
             return new MVersionCollection(mc, list);
         }
 
-        private static List<MVersionMetadata> getFromLocal(Minecraft mc)
+        private static List<MVersionMetadata> getFromLocal(MinecraftPath mc)
         {
             var dirs = new DirectoryInfo(mc.Versions).GetDirectories();
             var arr = new List<MVersionMetadata>(dirs.Length);

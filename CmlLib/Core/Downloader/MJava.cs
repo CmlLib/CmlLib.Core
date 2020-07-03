@@ -9,7 +9,7 @@ namespace CmlLib.Core.Downloader
 {
     public class MJava
     {
-        public static string DefaultRuntimeDirectory = Path.Combine(Minecraft.GetOSDefaultPath(), "runtime");
+        public static string DefaultRuntimeDirectory = Path.Combine(MinecraftPath.GetOSDefaultPath(), "runtime");
 
         public event ProgressChangedEventHandler ProgressChanged;
         public event EventHandler DownloadCompleted;

@@ -3,7 +3,7 @@ using System.IO;
 
 namespace CmlLib.Core
 {
-    public class Minecraft
+    public class MinecraftPath
     {
         public readonly static string
     MacDefaultPath = Environment.GetEnvironmentVariable("HOME") + "/Library/Application Support/minecraft",
@@ -35,14 +35,20 @@ namespace CmlLib.Core
         public string AssetLegacy { get; set; }
         public string Runtime { get; set; }
 
-        public Minecraft(string p)
+        public MinecraftPath()
         {
-            Initialize(p, p);
+            var basePath = GetOSDefaultPath();
+            Initialize(basePath, basePath);
         }
 
-        public Minecraft(string p, string assetPath)
+        public MinecraftPath(string basePath)
         {
-            Initialize(p, assetPath);
+            Initialize(basePath, basePath);
+        }
+
+        public MinecraftPath(string basePath, string basePathForAssets)
+        {
+            Initialize(basePath, basePathForAssets);
         }
 
         private void Initialize(string p, string assetsPath)

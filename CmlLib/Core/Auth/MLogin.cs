@@ -11,7 +11,7 @@ namespace CmlLib.Core.Auth
 
     public class MLogin
     {
-        public static readonly string DefaultLoginSessionFile = Path.Combine(Minecraft.GetOSDefaultPath(), "logintoken.json");
+        public static readonly string DefaultLoginSessionFile = Path.Combine(MinecraftPath.GetOSDefaultPath(), "logintoken.json");
 
         public MLogin() : this(DefaultLoginSessionFile) { }
 

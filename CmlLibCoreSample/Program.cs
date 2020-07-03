@@ -38,6 +38,7 @@ namespace CmlLibCoreSample
             // if cached session is invalid, it refresh session automatically.
             // but refreshing session doesn't always succeed, so you have to handle this.
             Console.WriteLine("Try Auto login");
+            Console.WriteLine(login.SessionCacheFilePath);
             var response = login.TryAutoLogin();
 
             if (!response.IsSuccess) // cached session is invalid and failed to refresh token
@@ -80,17 +81,18 @@ namespace CmlLibCoreSample
 
             // You can set this path to what you want like this :
             // var path = Environment.GetEnvironmentVariable("APPDATA") + "\\.mylauncher";
-            var path = Minecraft.GetOSDefaultPath();
+            var path = MinecraftPath.GetOSDefaultPath();
+            var game = new MinecraftPath();
 
             // Create CMLauncher instance
-            var launcher = new CmlLib.CMLauncher(path);
+            var launcher = new CMLauncher(game);
             launcher.ProgressChanged += Downloader_ChangeProgress;
             launcher.FileChanged += Downloader_ChangeFile;
 
             Console.WriteLine($"Initialized in {launcher.Minecraft.path}");
 
-            launcher.UpdateProfiles(); // Get all installed profiles and load all profiles from mojang server
-            foreach (var item in launcher.Profiles) // Display all profiles 
+            var versions = launcher.GetVersions(); // Get all installed profiles and load all profiles from mojang server
+            foreach (var item in versions) // Display all profiles 
             {
                 // You can filter snapshots and old versions to add if statement : 
                 // if (item.MType == MProfileType.Custom || item.MType == MProfileType.Release)
@@ -119,7 +121,6 @@ namespace CmlLibCoreSample
             // If you have already installed forge, you can launch it directly like this.
             // var process = launcher.CreateProcess("1.12.2-forge1.12.2-14.23.5.2838", launchOption);
 
-
             // launch by user input
             Console.WriteLine("input version (example: 1.12.2) : ");
             var process = launcher.CreateProcess(Console.ReadLine(), launchOption);
@@ -138,46 +139,46 @@ namespace CmlLibCoreSample
         void StartWithAdvancedOptions(MSession session)
         {
             // game directory
-            var defaultPath = Minecraft.GetOSDefaultPath();
+            var defaultPath = MinecraftPath.GetOSDefaultPath();
             var path = Path.Combine(Environment.CurrentDirectory, "game dir");
 
-            // create minecraft instance
-            var minecraft = new Minecraft(path);
+            // create minecraft path instance
+            var minecraft = new MinecraftPath(path);
             minecraft.SetAssetsPath(Path.Combine(defaultPath, "assets")); // this speed up asset downloads
 
             // get all profile metadatas
-            var profileMetadatas = MProfileLoader.GetProfileMetadatas(minecraft);
-            foreach (var item in profileMetadatas)
+            var versionMetadatas = MVersionLoader.GetVersionMetadatas(minecraft);
+            foreach (var item in versionMetadatas)
             {
                 Console.WriteLine("Name : {0}", item.Name);
                 Console.WriteLine("Type : {0}", item.Type);
                 Console.WriteLine("Path : {0}", item.Path);
-                Console.WriteLine("IsLocalProfile : {0}", item.IsLocalProfile);
+                Console.WriteLine("IsLocalProfile : {0}", item.IsLocalVersion);
                 Console.WriteLine("============================================");
             }
 
-            Console.WriteLine("Input Profile Name (ex: 1.15.2) : ");
-            var profileName = Console.ReadLine();
+            Console.WriteLine("Input Version Name (ex: 1.15.2) : ");
+            var versionName = Console.ReadLine();
 
             // get profile
-            var profile = profileMetadatas.GetProfile(profileName);
-            if (profile == null)
+            var version = versionMetadatas.GetVersion(versionName);
+            if (version == null)
             {
-                Console.WriteLine("{0} is not exist", profileName);
+                Console.WriteLine("{0} is not exist", versionName);
                 return;
             }
 
             Console.WriteLine("\n\nProfile Information : ");
-            Console.WriteLine("Id : {0}", profile.Id);
-            Console.WriteLine("Type : {0}", profile.TypeStr);
-            Console.WriteLine("IsWebProfile : {0}", profile.IsWeb);
-            Console.WriteLine("ReleaseTime : {0}", profile.ReleaseTime);
-            Console.WriteLine("AssetId : {0}", profile.AssetId);
-            Console.WriteLine("JAR : {0}", profile.Jar);
-            Console.WriteLine("Libraries : {0}", profile.Libraries.Length);
+            Console.WriteLine("Id : {0}", version.Id);
+            Console.WriteLine("Type : {0}", version.TypeStr);
+            Console.WriteLine("IsWebProfile : {0}", version.IsWeb);
+            Console.WriteLine("ReleaseTime : {0}", version.ReleaseTime);
+            Console.WriteLine("AssetId : {0}", version.AssetId);
+            Console.WriteLine("JAR : {0}", version.Jar);
+            Console.WriteLine("Libraries : {0}", version.Libraries.Length);
 
-            if (profile.IsInherited)
-                Console.WriteLine("Inherited Profile from {0}", profile.ParentProfileId);
+            if (version.IsInherited)
+                Console.WriteLine("Inherited Profile from {0}", version.ParentVersionId);
 
             // Download mode
             Console.WriteLine("\nSelect download mode : ");
@@ -187,9 +188,9 @@ namespace CmlLibCoreSample
 
             MDownloader downloader;
             if (downloadModeInput == "1")
-                downloader = new MDownloader(profile); // Sequence Download
+                downloader = new MDownloader(version); // Sequence Download
             else if (downloadModeInput == "2")
-                downloader = new MParallelDownloader(profile); // Parallel Download (note: Parallel Download is not stable yet)
+                downloader = new MParallelDownloader(version); // Parallel Download (note: Parallel Download is not stable yet)
             else
             {
                 Console.WriteLine("Input 1 or 2");
@@ -221,7 +222,7 @@ namespace CmlLibCoreSample
             {
                 JavaPath = javaInput,
                 Session = session,
-                StartProfile = profile,
+                StartVersion = version,
 
                 MaximumRamMb = 4096,
                 ScreenWidth = 1600,

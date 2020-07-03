@@ -9,7 +9,7 @@ namespace CmlLib.Core.Version
 {
     public class MVersion
     {
-        public static MVersion Parse(Minecraft mc, MVersionMetadata info)
+        public static MVersion Parse(MinecraftPath mc, MVersionMetadata info)
         {
             string json;
             if (info.IsWeb)
@@ -24,13 +24,13 @@ namespace CmlLib.Core.Version
                 return ParseFromFile(mc, info.Path);
         }
 
-        public static MVersion ParseFromFile(Minecraft mc, string path)
+        public static MVersion ParseFromFile(MinecraftPath mc, string path)
         {
             var json = File.ReadAllText(path);
             return ParseFromJson(mc, json, false);
         }
 
-        private static MVersion ParseFromJson(Minecraft mc, string json, bool writeVersion = true)
+        private static MVersion ParseFromJson(MinecraftPath mc, string json, bool writeVersion = true)
         {
             var version = new MVersion();
             var job = JObject.Parse(json);
@@ -200,7 +200,7 @@ namespace CmlLib.Core.Version
             return t == null || t == "";
         }
 
-        public Minecraft Minecraft { get; private set; }
+        public MinecraftPath Minecraft { get; private set; }
         public bool IsWeb { get; private set; }
 
         public bool IsInherited { get; private set; } = false;
