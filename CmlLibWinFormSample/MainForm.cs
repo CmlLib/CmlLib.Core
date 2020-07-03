@@ -34,7 +34,7 @@ namespace CmlLibWinFormSample
         private void MainForm_Shown(object sender, EventArgs e)
         {
             // Initialize launcher
-            Txt_Path.Text = Minecraft.GetOSDefaultPath();
+            Txt_Path.Text = MinecraftPath.GetOSDefaultPath();
 
             var th = new Thread(new ThreadStart(delegate
             {
@@ -88,7 +88,7 @@ namespace CmlLibWinFormSample
 
             Launcher.FileChanged += Launcher_FileChanged;
             Launcher.ProgressChanged += Launcher_ProgressChanged;
-            var versions = Launcher.UpdateProfiles();
+            var versions = Launcher.GetAllVersions();
 
             Invoke(new Action(() => 
             {
@@ -157,8 +157,8 @@ namespace CmlLibWinFormSample
 
             if (cbFast.Checked)
             {
-                Launcher.Minecraft.SetAssetsPath(Path.Combine(Minecraft.GetOSDefaultPath(), "assets"));
-                Launcher.Minecraft.Runtime = Path.Combine(Minecraft.GetOSDefaultPath(), "runtime");
+                Launcher.Minecraft.SetAssetsPath(Path.Combine(MinecraftPath.GetOSDefaultPath(), "assets"));
+                Launcher.Minecraft.Runtime = Path.Combine(MinecraftPath.GetOSDefaultPath(), "runtime");
             }
 
             try

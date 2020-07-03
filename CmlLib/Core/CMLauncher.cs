@@ -50,7 +50,7 @@ namespace CmlLib.Core
             return Versions;
         }
 
-        public MVersionCollection GetVersions()
+        public MVersionCollection GetAllVersions()
         {
             if (Versions == null)
                 Versions = UpdateVersions();

@@ -91,7 +91,7 @@ namespace CmlLibCoreSample
 
             Console.WriteLine($"Initialized in {launcher.Minecraft.path}");
 
-            var versions = launcher.GetVersions(); // Get all installed profiles and load all profiles from mojang server
+            var versions = launcher.GetAllVersions(); // Get all installed profiles and load all profiles from mojang server
             foreach (var item in versions) // Display all profiles 
             {
                 // You can filter snapshots and old versions to add if statement : 
@@ -188,9 +188,9 @@ namespace CmlLibCoreSample
 
             MDownloader downloader;
             if (downloadModeInput == "1")
-                downloader = new MDownloader(version); // Sequence Download
+                downloader = new MDownloader(minecraft, version); // Sequence Download
             else if (downloadModeInput == "2")
-                downloader = new MParallelDownloader(version); // Parallel Download (note: Parallel Download is not stable yet)
+                downloader = new MParallelDownloader(minecraft, version); // Parallel Download (note: Parallel Download is not stable yet)
             else
             {
                 Console.WriteLine("Input 1 or 2");
@@ -223,6 +223,7 @@ namespace CmlLibCoreSample
                 JavaPath = javaInput,
                 Session = session,
                 StartVersion = version,
+                Path = minecraft,
 
                 MaximumRamMb = 4096,
                 ScreenWidth = 1600,
@@ -238,6 +239,30 @@ namespace CmlLibCoreSample
             Console.WriteLine("Started");
             Console.ReadLine();
 
+        }
+
+        void QuickStart()
+        {
+            //var path = new MinecraftPath("game_directory_path");
+            var path = new MinecraftPath();
+
+            var launcher = new CMLauncher(path);
+            launcher.FileChanged += (e) =>
+            {
+                Console.WriteLine("[{0}] {1} - {2}/{3}", e.FileKind.ToString(), e.FileName, e.ProgressedFileCount, e.TotalFileCount);
+            };
+            launcher.ProgressChanged += (s, e) =>
+            {
+                Console.WriteLine("{0}%", e.ProgressPercentage);
+            };
+
+            var process = launcher.CreateProcess("1.15.2", new MLaunchOption()
+            {
+                Session = MSession.GetOfflineSession("hi"),
+                JavaPath = "java.exe",
+                MaximumRamMb = 1024
+            });
+            process.Start();
         }
 
         #endregion
