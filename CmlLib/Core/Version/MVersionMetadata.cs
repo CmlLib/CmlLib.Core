@@ -5,12 +5,7 @@ namespace CmlLib.Core.Version
 {
     public class MVersionMetadata
     {
-
-        // Will be replaced by IsLocalVersion
-        [Obsolete("Use IsLocalVersion")]
-        public bool IsWeb = true;
-
-        public bool IsLocalVersion { get => !IsWeb; }
+        public bool IsLocalVersion { get; set; }
 
         [JsonProperty("id")]
         public string Name { get; set; }

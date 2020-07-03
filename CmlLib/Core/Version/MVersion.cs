@@ -12,7 +12,7 @@ namespace CmlLib.Core.Version
         public static MVersion Parse(MinecraftPath mc, MVersionMetadata info)
         {
             string json;
-            if (info.IsWeb)
+            if (!info.IsLocalVersion)
             {
                 using (var wc = new WebClient())
                 {

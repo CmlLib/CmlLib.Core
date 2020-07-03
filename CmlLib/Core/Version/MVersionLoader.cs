@@ -51,7 +51,7 @@ namespace CmlLib.Core.Version
                 if (File.Exists(filepath))
                 {
                     var info = new MVersionMetadata();
-                    info.IsWeb = false;
+                    info.IsLocalVersion = true;
                     info.Name = dir.Name;
                     info.Path = filepath;
                     info.Type = "local";
@@ -76,7 +76,7 @@ namespace CmlLib.Core.Version
             for (int i = 0; i < jarr.Count; i++)
             {
                 var obj = jarr[i].ToObject<MVersionMetadata>();
-                obj.IsWeb = true;
+                obj.IsLocalVersion = false;
                 obj.MType = MVersionTypeConverter.FromString(obj.Type);
                 arr.Add(obj);
             }
