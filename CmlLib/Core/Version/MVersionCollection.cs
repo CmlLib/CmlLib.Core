@@ -8,19 +8,14 @@ namespace CmlLib.Core.Version
 {
     public class MVersionCollection : IEnumerable<MVersionMetadata>
     {
-        public MVersionCollection(MinecraftPath game, MVersionMetadata[] datas)
+        public MVersionCollection(MVersionMetadata[] datas)
         {
-            if (game == null)
-                throw new ArgumentNullException(nameof(game));
-
             if (datas == null)
                 throw new ArgumentNullException(nameof(datas));
 
-            mc = game;
             versions = datas;
         }
 
-        MinecraftPath mc;
         MVersionMetadata[] versions;
 
         public MVersionMetadata this[int index]
@@ -52,7 +47,7 @@ namespace CmlLib.Core.Version
             if (versionMetadata == null)
                 throw new ArgumentNullException(nameof(versionMetadata));
 
-            var startVersion = MVersion.Parse(mc, versionMetadata);
+            var startVersion = MVersion.Parse(versionMetadata);
 
             if (startVersion.IsInherited)
             {

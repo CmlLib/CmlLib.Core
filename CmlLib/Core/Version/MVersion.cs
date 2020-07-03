@@ -9,7 +9,7 @@ namespace CmlLib.Core.Version
 {
     public class MVersion
     {
-        public static MVersion Parse(MinecraftPath mc, MVersionMetadata info)
+        public static MVersion Parse(MVersionMetadata info)
         {
             string json;
             if (!info.IsLocalVersion)
@@ -17,20 +17,20 @@ namespace CmlLib.Core.Version
                 using (var wc = new WebClient())
                 {
                     json = wc.DownloadString(info.Path);
-                    return ParseFromJson(mc, json, true);
+                    return ParseFromJson(json);
                 }
             }
             else
-                return ParseFromFile(mc, info.Path);
+                return ParseFromFile(info.Path);
         }
 
-        public static MVersion ParseFromFile(MinecraftPath mc, string path)
+        public static MVersion ParseFromFile(string path)
         {
             var json = File.ReadAllText(path);
-            return ParseFromJson(mc, json, false);
+            return ParseFromJson(json);
         }
 
-        private static MVersion ParseFromJson(MinecraftPath mc, string json, bool writeVersion = true)
+        private static MVersion ParseFromJson(string json)
         {
             var version = new MVersion();
             var job = JObject.Parse(json);
@@ -54,7 +54,7 @@ namespace CmlLib.Core.Version
                 version.ClientHash = client["sha1"]?.ToString();
             }
 
-            version.Libraries = MLibrary.Parser.ParseJson(mc.Library, (JArray)job["libraries"]);
+            version.Libraries = MLibrary.Parser.ParseJson((JArray)job["libraries"]);
             version.MainClass = n(job["mainClass"]?.ToString());
 
             var ma = job["minecraftArguments"]?.ToString();
@@ -84,14 +84,12 @@ namespace CmlLib.Core.Version
             else
                 version.Jar = version.Id;
 
-            if (writeVersion)
-            {
-                var path = Path.Combine(mc.Versions, version.Id);
-                Directory.CreateDirectory(path);
-                File.WriteAllText(Path.Combine(path, version.Id + ".json"), json);
-            }
-
-            version.Minecraft = mc;
+            //if (writeVersion)
+            //{
+            //    var path = Path.Combine(mc.Versions, version.Id);
+            //    Directory.CreateDirectory(path);
+            //    File.WriteAllText(Path.Combine(path, version.Id + ".json"), json);
+            //}
             return version;
         }
 
@@ -200,7 +198,6 @@ namespace CmlLib.Core.Version
             return t == null || t == "";
         }
 
-        public MinecraftPath Minecraft { get; private set; }
         public bool IsWeb { get; private set; }
 
         public bool IsInherited { get; private set; } = false;

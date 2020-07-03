@@ -24,7 +24,7 @@ namespace CmlLib.Core.Version
         {
             public static bool CheckOSRules = true;
 
-            public static MLibrary[] ParseJson(string libraryPath, JArray json)
+            public static MLibrary[] ParseJson(JArray json)
             {
                 var ruleChecker = new MRule();
                 var list = new List<MLibrary>(json.Count);
@@ -63,23 +63,23 @@ namespace CmlLib.Core.Version
                             if (classifiers != null && nativeId != null)
                             {
                                 JObject lObj = (JObject)classifiers[nativeId];
-                                list.Add(createMLibrary(libraryPath, name, nativeId, lObj));
+                                list.Add(createMLibrary(name, nativeId, lObj));
                             }
                             else
-                                list.Add(createMLibrary(libraryPath, name, nativeId, new JObject()));
+                                list.Add(createMLibrary(name, nativeId, new JObject()));
                         }
 
                         // COMMON library
                         if (artifact != null)
                         {
-                            var obj = createMLibrary(libraryPath, name, "", (JObject)artifact);
+                            var obj = createMLibrary(name, "", (JObject)artifact);
                             list.Add(obj);
                         }
 
                         // library
                         if (artifact == null && natives == null)
                         {
-                            var obj = createMLibrary(libraryPath, name, "", item);
+                            var obj = createMLibrary(name, "", item);
                             list.Add(obj);
                         }
                     }
@@ -111,7 +111,7 @@ namespace CmlLib.Core.Version
                 }
             }
 
-            private static MLibrary createMLibrary(string libraryPath, string name, string nativeId, JObject job)
+            private static MLibrary createMLibrary(string name, string nativeId, JObject job)
             {
                 var path = job["path"]?.ToString();
                 if (string.IsNullOrEmpty(path))
@@ -129,7 +129,7 @@ namespace CmlLib.Core.Version
                 library.Hash = hash?.ToString() ?? "";
                 library.IsNative = nativeId != "";
                 library.Name = name;
-                library.Path = System.IO.Path.Combine(libraryPath, path);
+                library.Path = path;
                 library.Url = url;
 
                 return library;

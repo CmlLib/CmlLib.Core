@@ -26,7 +26,7 @@ namespace CmlLib.Core
         {
             option.CheckValid();
             LaunchOption = option;
-            this.Minecraft = option.StartVersion.Minecraft;
+            this.Minecraft = option.Path;
         }
 
         MinecraftPath Minecraft;
@@ -45,9 +45,9 @@ namespace CmlLib.Core
         /// </summary>
         public Process GetProcess()
         {
-            var native = new MNative(LaunchOption);
+            var native = new MNative(Minecraft, LaunchOption.StartVersion);
             native.CleanNatives();
-            native.CreateNatives();
+            native.ExtractNatives();
 
             string arg = string.Join(" ", CreateArg());
             Process mc = new Process();
@@ -83,7 +83,10 @@ namespace CmlLib.Core
             foreach (var item in version.Libraries)
             {
                 if (!item.IsNative)
-                    libArgs.Add(handleEmpty(Path.GetFullPath(item.Path)));
+                {
+                    var libPath = Path.GetFullPath(Path.Combine(Minecraft.Library, item.Path));
+                    libArgs.Add(handleEmpty(libPath));
+                }
             }
 
             libArgs.Add(handleEmpty(Path.Combine(Minecraft.Versions, version.Jar, version.Jar + ".jar")));

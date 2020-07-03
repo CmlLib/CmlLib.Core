@@ -104,7 +104,7 @@ namespace CmlLib.Core
 
         public void CheckGameFiles(MVersion version, bool downloadAsset = true)
         {
-            var downloader = new MDownloader(version);
+            var downloader = new MDownloader(Minecraft, version);
             downloader.ChangeFile += (e) => fire(e);
             downloader.ChangeProgress += (sender, e) => fire(e.ProgressPercentage);
             downloader.DownloadAll(downloadAsset);
@@ -123,6 +123,7 @@ namespace CmlLib.Core
         public Process CreateProcess(string versionname, MLaunchOption option)
         {
             option.StartVersion = GetVersion(versionname);
+            option.Path = Minecraft;
             return CreateProcess(option);
         }
 

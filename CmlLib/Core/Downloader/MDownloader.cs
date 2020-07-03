@@ -21,10 +21,10 @@ namespace CmlLib.Core.Downloader
         protected MVersion version;
         protected MinecraftPath Minecraft;
 
-        public MDownloader(MVersion _version)
+        public MDownloader(MinecraftPath downloadPath, MVersion _version)
         {
             version = _version;
-            Minecraft = _version.Minecraft;
+            Minecraft = downloadPath;
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace CmlLib.Core.Downloader
 
             var files = from lib in version.Libraries
                         where CheckDownloadRequireLibrary(lib)
-                        select new DownloadFile(MFile.Library, lib.Name, lib.Path, lib.Url);
+                        select new DownloadFile(MFile.Library, lib.Name, Path.Combine(Minecraft.Library, lib.Path), lib.Url);
 
             DownloadFiles(files.Distinct().ToArray());
         }
@@ -63,7 +63,7 @@ namespace CmlLib.Core.Downloader
             return lib.IsRequire
                 && lib.Path != ""
                 && lib.Url != ""
-                && !CheckFileValidation(lib.Path, lib.Hash);
+                && !CheckFileValidation(Path.Combine(Minecraft.Library, lib.Path), lib.Hash);
         }
 
         /// <summary>

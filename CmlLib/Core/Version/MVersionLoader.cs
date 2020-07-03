@@ -18,7 +18,7 @@ namespace CmlLib.Core.Version
                 if (!list.Contains(item))
                     list.Add(item);
             }
-            return new MVersionCollection(mc, list.ToArray());
+            return new MVersionCollection(list.ToArray());
         }
 
         /// <summary>
@@ -27,7 +27,7 @@ namespace CmlLib.Core.Version
         public static MVersionCollection GetVersionMetadatasFromLocal(MinecraftPath mc)
         {
             var list = getFromLocal(mc).ToArray();
-            return new MVersionCollection(mc, list);
+            return new MVersionCollection(list);
         }
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace CmlLib.Core.Version
         public static MVersionCollection GetVersionMetadatasFromWeb(MinecraftPath mc)
         {
             var list = getFromWeb().ToArray();
-            return new MVersionCollection(mc, list);
+            return new MVersionCollection(list);
         }
 
         private static List<MVersionMetadata> getFromLocal(MinecraftPath mc)

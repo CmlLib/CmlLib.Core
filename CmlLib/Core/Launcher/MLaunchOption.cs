@@ -6,6 +6,7 @@ namespace CmlLib.Core
 {
     public class MLaunchOption
     {
+        public MinecraftPath Path { get; set; }
         public MVersion StartVersion { get; set; }
         public MSession Session { get; set; }
 
@@ -30,6 +31,9 @@ namespace CmlLib.Core
         internal void CheckValid()
         {
             string exMsg = null; // error message
+
+            if (Path == null)
+                exMsg = nameof(Path) + " is null";
 
             if (MaximumRamMb < 1)
                 exMsg = "MaximumRamMb is too small.";

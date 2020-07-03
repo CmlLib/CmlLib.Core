@@ -9,12 +9,12 @@ namespace CmlLib.Core.Downloader
 {
     public class MParallelDownloader : MDownloader
     {
-        public MParallelDownloader(MVersion mVersion) : this(mVersion, 10, true)
+        public MParallelDownloader(MinecraftPath path, MVersion mVersion) : this(path, mVersion, 10, true)
         {
 
         }
 
-        public MParallelDownloader(MVersion mVersion, int maxThread, bool setConnectionLimit) : base(mVersion)
+        public MParallelDownloader(MinecraftPath path, MVersion mVersion, int maxThread, bool setConnectionLimit) : base(path, mVersion)
         {
             MaxThread = maxThread;
 

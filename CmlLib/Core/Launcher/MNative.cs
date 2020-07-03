@@ -7,29 +7,25 @@ namespace CmlLib.Core
 {
     public class MNative
     {
-        public MNative(MLaunchOption launchOption)
+        public MNative(MinecraftPath _path, MVersion _version)
         {
-            this.LaunchOption = launchOption;
+            version = _version;
+            gamePath = _path;
         }
 
-        public MLaunchOption LaunchOption { get; private set; }
+        MVersion version;
+        MinecraftPath gamePath;
 
-        public void CreateNatives()
-        {
-            var path = ExtractNatives(LaunchOption.StartVersion);
-            LaunchOption.StartVersion.NativePath = path;
-        }
-
-        private string ExtractNatives(MVersion version)
+        public string ExtractNatives()
         {
             var ran = new Random();
             int random = ran.Next(10000, 99999);
-            string path = Path.Combine(version.Minecraft.Versions, version.Id, "natives-" + random.ToString());
-            ExtractNatives(version, path);
+            string path = Path.Combine(gamePath.Versions, version.Id, "natives-" + random.ToString());
+            ExtractNatives(path);
             return path;
         }
 
-        private void ExtractNatives(MVersion version, string path)
+        private void ExtractNatives(string path)
         {
             Directory.CreateDirectory(path);
 
@@ -39,7 +35,7 @@ namespace CmlLib.Core
                 {
                     if (item.IsNative)
                     {
-                        var z = new SharpZip(item.Path);
+                        var z = new SharpZip(Path.Combine(gamePath.Library, item.Path));
                         z.Unzip(path);
                     }
                 }
@@ -53,7 +49,7 @@ namespace CmlLib.Core
         {
             try
             {
-                var path = Path.Combine(LaunchOption.StartVersion.Minecraft.Versions, LaunchOption.StartVersion.Id);
+                var path = Path.Combine(gamePath.Versions, version.Id);
                 DirectoryInfo di = new DirectoryInfo(path);
                 foreach (var item in di.GetDirectories())
                 {
