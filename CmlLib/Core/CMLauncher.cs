@@ -15,18 +15,18 @@ namespace CmlLib.Core
     {
         public CMLauncher(string path)
         {
-            this.Minecraft = new MinecraftPath(path);
+            this.MinecraftPath = new MinecraftPath(path);
         }
 
         public CMLauncher(MinecraftPath mc)
         {
-            this.Minecraft = mc;
+            this.MinecraftPath = mc;
         }
 
         public event DownloadFileChangedHandler FileChanged;
         public event ProgressChangedEventHandler ProgressChanged;
 
-        public MinecraftPath Minecraft { get; private set; }
+        public MinecraftPath MinecraftPath { get; private set; }
         public MVersionCollection Versions { get; private set; }
 
         private void fire(MFile kind, string name, int total, int progressed)
@@ -46,7 +46,7 @@ namespace CmlLib.Core
 
         public MVersionCollection UpdateVersions()
         {
-            Versions = MVersionLoader.GetVersionMetadatas(Minecraft);
+            Versions = MVersionLoader.GetVersionMetadatas(MinecraftPath);
             return Versions;
         }
 
@@ -75,7 +75,7 @@ namespace CmlLib.Core
         {
             fire(MFile.Runtime, "java", 1, 0);
 
-            var mjava = new MJava(Minecraft.Runtime);
+            var mjava = new MJava(MinecraftPath.Runtime);
             mjava.ProgressChanged += (sender, e) => fire(e.ProgressPercentage);
             mjava.DownloadCompleted += (sender, e) =>
             {
@@ -92,7 +92,7 @@ namespace CmlLib.Core
             var versionname = GetVersionNameByForge(mcversion, forgeversion);
             if (!Versions.Any(x => x.Name == versionname))
             {
-                var mforge = new MForge(Minecraft);
+                var mforge = new MForge(MinecraftPath);
                 mforge.FileChanged += (e) => fire(e);
                 mforge.InstallForge(mcversion, forgeversion);
 
@@ -104,7 +104,7 @@ namespace CmlLib.Core
 
         public void CheckGameFiles(MVersion version, bool downloadAsset = true)
         {
-            var downloader = new MDownloader(Minecraft, version);
+            var downloader = new MDownloader(MinecraftPath, version);
             downloader.ChangeFile += (e) => fire(e);
             downloader.ChangeProgress += (sender, e) => fire(e.ProgressPercentage);
             downloader.DownloadAll(downloadAsset);
@@ -123,7 +123,7 @@ namespace CmlLib.Core
         public Process CreateProcess(string versionname, MLaunchOption option)
         {
             option.StartVersion = GetVersion(versionname);
-            option.Path = Minecraft;
+            option.Path = MinecraftPath;
             return CreateProcess(option);
         }
 

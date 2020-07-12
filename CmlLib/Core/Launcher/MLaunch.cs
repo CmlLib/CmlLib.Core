@@ -26,10 +26,10 @@ namespace CmlLib.Core
         {
             option.CheckValid();
             LaunchOption = option;
-            this.Minecraft = option.Path;
+            this.MinecraftPath = option.Path;
         }
 
-        MinecraftPath Minecraft;
+        MinecraftPath MinecraftPath;
         public MLaunchOption LaunchOption { get; private set; }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace CmlLib.Core
             Process mc = new Process();
             mc.StartInfo.FileName = LaunchOption.JavaPath;
             mc.StartInfo.Arguments = arg;
-            mc.StartInfo.WorkingDirectory = Minecraft.path;
+            mc.StartInfo.WorkingDirectory = MinecraftPath.path;
 
             return mc;
         }
@@ -80,16 +80,16 @@ namespace CmlLib.Core
             {
                 if (item.IsRequire && !item.IsNative)
                 {
-                    var libPath = Path.GetFullPath(Path.Combine(Minecraft.Library, item.Path));
+                    var libPath = Path.GetFullPath(Path.Combine(MinecraftPath.Library, item.Path));
                     libArgs.Add(handleEmpty(libPath));
                 }
             }
 
-            libArgs.Add(handleEmpty(Path.Combine(Minecraft.Versions, version.Jar, version.Jar + ".jar")));
+            libArgs.Add(handleEmpty(Path.Combine(MinecraftPath.Versions, version.Jar, version.Jar + ".jar")));
 
             var libs = string.Join(Path.PathSeparator.ToString(), libArgs);
 
-            var native = new MNative(Minecraft, LaunchOption.StartVersion);
+            var native = new MNative(MinecraftPath, LaunchOption.StartVersion);
             native.CleanNatives();
             var nativePath = native.ExtractNatives();
 
@@ -116,14 +116,14 @@ namespace CmlLib.Core
             {
                 { "auth_player_name", LaunchOption.Session.Username },
                 { "version_name", LaunchOption.StartVersion.Id },
-                { "game_directory", handleEmpty(Minecraft.path) },
-                { "assets_root", handleEmpty(Minecraft.Assets) },
+                { "game_directory", handleEmpty(MinecraftPath.path) },
+                { "assets_root", handleEmpty(MinecraftPath.Assets) },
                 { "assets_index_name", version.AssetId },
                 { "auth_uuid", LaunchOption.Session.UUID },
                 { "auth_access_token", LaunchOption.Session.AccessToken },
                 { "user_properties", "{}" },
                 { "user_type", "Mojang" },
-                { "game_assets", handleEmpty(Minecraft.AssetLegacy) },
+                { "game_assets", handleEmpty(MinecraftPath.AssetLegacy) },
                 { "auth_session", LaunchOption.Session.AccessToken },
                 { "version_type", useNotNull(LaunchOption.VersionType, version.TypeStr) }
             };

@@ -24,10 +24,10 @@ namespace CmlLib.Core.Version
                 throw new ArgumentNullException(nameof(originalPath));
 
             versions = datas;
-            VersionPath = originalPath;
+            MinecraftPath = originalPath;
         }
 
-        public MinecraftPath VersionPath { get; private set; }
+        public MinecraftPath MinecraftPath { get; private set; }
         MVersionMetadata[] versions;
 
         public MVersionMetadata this[int index]
@@ -60,10 +60,10 @@ namespace CmlLib.Core.Version
                 throw new ArgumentNullException(nameof(versionMetadata));
 
             MVersion startVersion;
-            if (VersionPath == null)
+            if (MinecraftPath == null)
                 startVersion = MVersionParser.Parse(versionMetadata);
             else
-                startVersion = MVersionParser.ParseAndSave(versionMetadata, VersionPath);
+                startVersion = MVersionParser.ParseAndSave(versionMetadata, MinecraftPath);
 
             if (startVersion.IsInherited)
             {
