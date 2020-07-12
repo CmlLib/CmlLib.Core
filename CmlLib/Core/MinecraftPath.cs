@@ -25,7 +25,7 @@ namespace CmlLib.Core
             }
         }
 
-        public string path { get; set; }
+        public string BasePath { get; set; }
         public string Library { get; set; }
         public string Versions { get; set; }
         public string Resource { get; set; }
@@ -53,13 +53,13 @@ namespace CmlLib.Core
 
         private void Initialize(string p, string assetsPath)
         {
-            path = c(p);
+            BasePath = c(p);
 
-            Library = c(path + "/libraries");
-            Versions = c(path + "/versions");
-            Resource = c(path + "/resources");
+            Library = c(BasePath + "/libraries");
+            Versions = c(BasePath + "/versions");
+            Resource = c(BasePath + "/resources");
 
-            Runtime = c(path + "/runtime");
+            Runtime = c(BasePath + "/runtime");
             SetAssetsPath(assetsPath + "/assets");
         }
 
@@ -69,6 +69,11 @@ namespace CmlLib.Core
             Index = c(Assets + "/indexes");
             AssetObject = c(Assets + "/objects");
             AssetLegacy = c(Assets + "/virtual/legacy");
+        }
+
+        public override string ToString()
+        {
+            return BasePath;
         }
 
         static string c(string path)

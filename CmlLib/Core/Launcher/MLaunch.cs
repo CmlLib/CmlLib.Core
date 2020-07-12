@@ -49,7 +49,7 @@ namespace CmlLib.Core
             Process mc = new Process();
             mc.StartInfo.FileName = LaunchOption.JavaPath;
             mc.StartInfo.Arguments = arg;
-            mc.StartInfo.WorkingDirectory = MinecraftPath.path;
+            mc.StartInfo.WorkingDirectory = MinecraftPath.BasePath;
 
             return mc;
         }
@@ -116,7 +116,7 @@ namespace CmlLib.Core
             {
                 { "auth_player_name", LaunchOption.Session.Username },
                 { "version_name", LaunchOption.StartVersion.Id },
-                { "game_directory", handleEmpty(MinecraftPath.path) },
+                { "game_directory", handleEmpty(MinecraftPath.BasePath) },
                 { "assets_root", handleEmpty(MinecraftPath.Assets) },
                 { "assets_index_name", version.AssetId },
                 { "auth_uuid", LaunchOption.Session.UUID },
