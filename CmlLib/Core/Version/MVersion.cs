@@ -9,125 +9,26 @@ namespace CmlLib.Core.Version
 {
     public class MVersion
     {
-        public static MVersion Parse(MVersionMetadata info)
-        {
-            string json;
-            if (!info.IsLocalVersion)
-            {
-                using (var wc = new WebClient())
-                {
-                    json = wc.DownloadString(info.Path);
-                    return ParseFromJson(json);
-                }
-            }
-            else
-                return ParseFromFile(info.Path);
-        }
+        public bool IsInherited { get; set; } = false;
+        public string ParentVersionId { get; set; } = "";
 
-        public static MVersion ParseFromFile(string path)
-        {
-            var json = File.ReadAllText(path);
-            return ParseFromJson(json);
-        }
+        public string Id { get; set; } = "";
 
-        private static MVersion ParseFromJson(string json)
-        {
-            var version = new MVersion();
-            var job = JObject.Parse(json);
-            version.Id = job["id"]?.ToString();
+        public string AssetId { get; set; } = "";
+        public string AssetUrl { get; set; } = "";
+        public string AssetHash { get; set; } = "";
 
-            var assetindex = (JObject)job["assetIndex"];
-            var assets = job["assets"];
-            if (assetindex != null)
-            {
-                version.AssetId = n(assetindex["id"]?.ToString());
-                version.AssetUrl = n(assetindex["url"]?.ToString());
-                version.AssetHash = n(assetindex["sha1"]?.ToString());
-            }
-            else if (assets != null)
-                version.AssetId = assets.ToString();
-
-            var client = job["downloads"]?["client"];
-            if (client != null)
-            {
-                version.ClientDownloadUrl = client["url"]?.ToString();
-                version.ClientHash = client["sha1"]?.ToString();
-            }
-
-            version.Libraries = MLibrary.Parser.ParseJson((JArray)job["libraries"]);
-            version.MainClass = n(job["mainClass"]?.ToString());
-
-            var ma = job["minecraftArguments"]?.ToString();
-            if (ma != null)
-                version.MinecraftArguments = ma;
-
-            var ag = job["arguments"];
-            if (ag != null)
-            {
-                if (ag["game"] != null)
-                    version.GameArguments = argParse((JArray)ag["game"]);
-                if (ag["jvm"] != null)
-                    version.JvmArguments = argParse((JArray)ag["jvm"]);
-            }
-
-            version.ReleaseTime = job["releaseTime"]?.ToString();
-
-            var ype = job["type"]?.ToString();
-            version.TypeStr = ype;
-            version.Type = MVersionTypeConverter.FromString(ype);
-
-            if (job["inheritsFrom"] != null)
-            {
-                version.IsInherited = true;
-                version.ParentVersionId = job["inheritsFrom"].ToString();
-            }
-            else
-                version.Jar = version.Id;
-
-            //if (writeVersion)
-            //{
-            //    var path = Path.Combine(mc.Versions, version.Id);
-            //    Directory.CreateDirectory(path);
-            //    File.WriteAllText(Path.Combine(path, version.Id + ".json"), json);
-            //}
-            return version;
-        }
-
-        static string[] argParse(JArray arr)
-        {
-            var strList = new List<string>(arr.Count);
-            var ruleChecker = new MRule();
-
-            foreach (var item in arr)
-            {
-                if (item is JObject)
-                {
-                    bool allow = true;
-
-                    if (item["rules"] != null)
-                        allow = ruleChecker.CheckOSRequire((JArray)item["rules"]);
-
-                    var value = item["value"] ?? item["values"];
-
-                    if (allow && value != null)
-                    {
-                        if (value is JArray)
-                        {
-                            foreach (var str in value)
-                            {
-                                strList.Add(str.ToString());
-                            }
-                        }
-                        else
-                            strList.Add(value.ToString());
-                    }
-                }
-                else
-                    strList.Add(item.ToString());
-            }
-
-            return strList.ToArray();
-        }
+        public string Jar { get; set; } = "";
+        public string ClientDownloadUrl { get; set; } = "";
+        public string ClientHash { get; set; } = "";
+        public MLibrary[] Libraries { get; set; }
+        public string MainClass { get; set; } = "";
+        public string MinecraftArguments { get; set; } = "";
+        public string[] GameArguments { get; set; }
+        public string[] JvmArguments { get; set; }
+        public string ReleaseTime { get; set; } = "";
+        public MVersionType Type { get; set; } = MVersionType.Custom;
+        public string TypeStr { get; set; } = "";
 
         public void InheritFrom(MVersion parentVersion)
         {
@@ -188,38 +89,9 @@ namespace CmlLib.Core.Version
             }
         }
 
-        static string n(string t) // handle null string
-        {
-            return t == null ? "" : t;
-        }
-
         static bool nc(string t) // check null string
         {
             return t == null || t == "";
         }
-
-        public bool IsWeb { get; private set; }
-
-        public bool IsInherited { get; private set; } = false;
-        public string ParentVersionId { get; private set; } = "";
-
-        public string Id { get; private set; } = "";
-
-        public string AssetId { get; private set; } = "";
-        public string AssetUrl { get; private set; } = "";
-        public string AssetHash { get; private set; } = "";
-
-        public string Jar { get; private set; } = "";
-        public string ClientDownloadUrl { get; private set; } = "";
-        public string ClientHash { get; private set; } = "";
-        public MLibrary[] Libraries { get; private set; }
-        public string MainClass { get; private set; } = "";
-        public string MinecraftArguments { get; private set; } = "";
-        public string[] GameArguments { get; private set; }
-        public string[] JvmArguments { get; private set; }
-        public string ReleaseTime { get; private set; } = "";
-        public MVersionType Type { get; private set; } = MVersionType.Custom;
-
-        public string TypeStr { get; private set; } = "";
     }
 }

@@ -14,7 +14,7 @@ namespace Test
             System.Diagnostics.Debug.Write(lp);
 
             //var path = new Minecraft("your minecraft directory);
-            var path = Minecraft.GetOSDefaultPath(); // mc directory
+            var path = MinecraftPath.GetOSDefaultPath(); // mc directory
 
             var launcher = new CmlLib.CMLauncher(path);
             launcher.ProgressChanged += (s, e) =>

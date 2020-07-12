@@ -25,7 +25,7 @@ namespace CmlLib.Core
             {
                 try
                 {
-                    if (item.IsNative)
+                    if (item.IsRequire && item.IsNative)
                     {
                         var z = new SharpZip(Path.Combine(gamePath.Library, item.Path));
                         z.Unzip(path);

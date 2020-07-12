@@ -44,7 +44,7 @@ namespace CmlLib.Core
 #endif
         }
 
-        public bool CheckOSRequire(JArray arr)
+        public static bool CheckOSRequire(JArray arr)
         {
             var require = true;
 

@@ -78,7 +78,7 @@ namespace CmlLib.Core
 
             foreach (var item in version.Libraries)
             {
-                if (!item.IsNative)
+                if (item.IsRequire && !item.IsNative)
                 {
                     var libPath = Path.GetFullPath(Path.Combine(Minecraft.Library, item.Path));
                     libArgs.Add(handleEmpty(libPath));
