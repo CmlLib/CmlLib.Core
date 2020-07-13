@@ -35,7 +35,7 @@ namespace CmlLib.Core.Version
 
                     var jsonpath = Path.Combine(savePath.Versions, info.Name);
                     Directory.CreateDirectory(jsonpath);
-                    File.WriteAllText(Path.Combine(jsonpath, info.Name + ".json"), jsonpath);
+                    File.WriteAllText(Path.Combine(jsonpath, info.Name + ".json"), json);
 
                     return ParseFromJson(json);
                 }
