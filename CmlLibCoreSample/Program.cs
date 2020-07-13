@@ -76,20 +76,20 @@ namespace CmlLibCoreSample
             // Initializing Launcher
 
             // Set minecraft home directory
-            // Minecraft.GetOSDefaultPath() return default minecraft path of current OS.
-            // https://github.com/AlphaBs/CmlLib.Core/blob/master/CmlLib/Core/Minecraft.cs
+            // MinecraftPath.GetOSDefaultPath() return default minecraft BasePath of current OS.
+            // https://github.com/AlphaBs/CmlLib.Core/blob/master/CmlLib/Core/MinecraftPath.cs
 
             // You can set this path to what you want like this :
             // var path = Environment.GetEnvironmentVariable("APPDATA") + "\\.mylauncher";
             var path = MinecraftPath.GetOSDefaultPath();
-            var game = new MinecraftPath();
+            var game = new MinecraftPath(path);
 
             // Create CMLauncher instance
             var launcher = new CMLauncher(game);
             launcher.ProgressChanged += Downloader_ChangeProgress;
             launcher.FileChanged += Downloader_ChangeFile;
 
-            Console.WriteLine($"Initialized in {launcher.Minecraft.path}");
+            Console.WriteLine($"Initialized in {launcher.MinecraftPath.BasePath}");
 
             var versions = launcher.GetAllVersions(); // Get all installed profiles and load all profiles from mojang server
             foreach (var item in versions) // Display all profiles 
@@ -171,7 +171,6 @@ namespace CmlLibCoreSample
             Console.WriteLine("\n\nProfile Information : ");
             Console.WriteLine("Id : {0}", version.Id);
             Console.WriteLine("Type : {0}", version.TypeStr);
-            Console.WriteLine("IsWebProfile : {0}", version.IsWeb);
             Console.WriteLine("ReleaseTime : {0}", version.ReleaseTime);
             Console.WriteLine("AssetId : {0}", version.AssetId);
             Console.WriteLine("JAR : {0}", version.Jar);
@@ -240,6 +239,12 @@ namespace CmlLibCoreSample
             Console.ReadLine();
 
         }
+
+        #endregion
+
+        #region QuickStart
+
+        // this code is from QuickStart document in CmlLib.Core wiki
 
         void QuickStart()
         {

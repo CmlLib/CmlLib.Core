@@ -157,8 +157,8 @@ namespace CmlLibWinFormSample
 
             if (cbFast.Checked)
             {
-                Launcher.Minecraft.SetAssetsPath(Path.Combine(MinecraftPath.GetOSDefaultPath(), "assets"));
-                Launcher.Minecraft.Runtime = Path.Combine(MinecraftPath.GetOSDefaultPath(), "runtime");
+                Launcher.MinecraftPath.SetAssetsPath(Path.Combine(MinecraftPath.GetOSDefaultPath(), "assets"));
+                Launcher.MinecraftPath.Runtime = Path.Combine(MinecraftPath.GetOSDefaultPath(), "runtime");
             }
 
             try
