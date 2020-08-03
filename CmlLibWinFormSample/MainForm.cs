@@ -298,11 +298,7 @@ namespace CmlLibWinFormSample
 
         void output(string msg)
         {
-            Invoke(new Action(() =>
-            {
-                if (logForm != null && !logForm.IsDisposed)
-                    logForm.AddLog(msg);
-            }));
+            GameLog.AddLog(msg);
         }
 
         private void Btn_loginOption_Click(object sender, EventArgs e)

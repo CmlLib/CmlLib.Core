@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Collections.Concurrent;
 
 namespace CmlLibWinFormSample
 {
@@ -22,10 +23,21 @@ namespace CmlLibWinFormSample
 
         }
 
-        public void AddLog(string msg)
+        static ConcurrentQueue<string> logQueue = new ConcurrentQueue<string>();
+
+        public static void AddLog(string msg)
         {
-            richTextBox1.AppendText(msg + "\n");
-            richTextBox1.ScrollToCaret();
+            logQueue.Enqueue(msg);
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            string msg;
+            while (logQueue.TryDequeue(out msg))
+            {
+                richTextBox1.AppendText(msg + "\n");
+                richTextBox1.ScrollToCaret();
+            }
         }
     }
 }

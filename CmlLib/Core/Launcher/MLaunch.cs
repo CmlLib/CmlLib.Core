@@ -11,7 +11,7 @@ namespace CmlLib.Core
         private static Regex argBracket = new Regex(@"\$\{(.*?)}");
         private const int DefaultServerPort = 25565;
 
-        public const string SupportVersion = "1.15.2";
+        public const string SupportVersion = "1.16.1";
         public readonly static string[] DefaultJavaParameter = new string[]
             {
                 "-XX:+UnlockExperimentalVMOptions",
@@ -154,6 +154,8 @@ namespace CmlLib.Core
             return args.ToArray();
         }
 
+        // replace ${key} to value
+        // ex) "--accessToken ${access_token}" to "--accessToken " + dicts["access_token"]
         string[] argumentInsert(string[] arg, Dictionary<string, string> dicts)
         {
             var args = new List<string>(arg.Length);
