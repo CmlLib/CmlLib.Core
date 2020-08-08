@@ -13,12 +13,13 @@ namespace CmlLib.Core.Version
         public static MVersionCollection GetVersionMetadatas(MinecraftPath mc)
         {
             var list = getFromLocal(mc);
-            foreach (var item in getFromWeb())
+            var web = GetVersionMetadatasFromWeb();
+            foreach (var item in web)
             {
                 if (!list.Contains(item))
                     list.Add(item);
             }
-            return new MVersionCollection(list.ToArray(), mc);
+            return new MVersionCollection(list.ToArray(), mc, web.LatestReleaseVersion, web.LatestSnapshotVersion);
         }
 
         /// <summary>
@@ -28,15 +29,6 @@ namespace CmlLib.Core.Version
         {
             var list = getFromLocal(mc).ToArray();
             return new MVersionCollection(list, mc);
-        }
-
-        /// <summary>
-        /// Get All MVersionInfo from mojang server
-        /// </summary>
-        public static MVersionCollection GetVersionMetadatasFromWeb()
-        {
-            var list = getFromWeb().ToArray();
-            return new MVersionCollection(list);
         }
 
         private static List<MVersionMetadata> getFromLocal(MinecraftPath mc)
@@ -63,14 +55,33 @@ namespace CmlLib.Core.Version
             return arr;
         }
 
-        private static List<MVersionMetadata> getFromWeb()
+        /// <summary>
+        /// Get All MVersionInfo from mojang server
+        /// </summary>
+        public static MVersionCollection GetVersionMetadatasFromWeb()
         {
+            string latestReleaseId = null;
+            string latestSnapshotId = null;
+
+            MVersionMetadata latestRelease = null;
+            MVersionMetadata latestSnapshot = null;
+
             JArray jarr;
             using (WebClient wc = new WebClient())
             {
                 var jobj = JObject.Parse(wc.DownloadString(MojangServer.Version));
                 jarr = JArray.Parse(jobj["versions"].ToString());
+
+                var latest = jobj["latest"];
+                if (latest != null)
+                {
+                    latestReleaseId = latest["release"]?.ToString();
+                    latestSnapshotId = latest["snapshot"]?.ToString();
+                }
             }
+
+            var checkLatestRelease = !string.IsNullOrEmpty(latestReleaseId);
+            var checkLatestSnapshot = !string.IsNullOrEmpty(latestSnapshotId);
 
             var arr = new List<MVersionMetadata>(jarr.Count);
             for (int i = 0; i < jarr.Count; i++)
@@ -79,8 +90,14 @@ namespace CmlLib.Core.Version
                 obj.IsLocalVersion = false;
                 obj.MType = MVersionTypeConverter.FromString(obj.Type);
                 arr.Add(obj);
+
+                if (checkLatestRelease && obj.Name == latestReleaseId)
+                    latestRelease = obj;
+                if (checkLatestSnapshot && obj.Name == latestSnapshotId)
+                    latestSnapshot = obj;
             }
-            return arr;
+
+            return new MVersionCollection(arr.ToArray(), null, latestRelease, latestSnapshot);
         }
     }
 }

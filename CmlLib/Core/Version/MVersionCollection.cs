@@ -9,24 +9,34 @@ namespace CmlLib.Core.Version
     public class MVersionCollection : IEnumerable<MVersionMetadata>
     {
         public MVersionCollection(MVersionMetadata[] datas)
-        {
-            if (datas == null)
-                throw new ArgumentNullException(nameof(datas));
+            : this(datas, null, null, null)
+        { 
 
-            versions = datas;
         }
 
         public MVersionCollection(MVersionMetadata[] datas, MinecraftPath originalPath)
+            : this(datas, originalPath, null, null)
+        {
+        
+        }
+
+        public MVersionCollection(
+            MVersionMetadata[] datas, 
+            MinecraftPath originalPath, 
+            MVersionMetadata latestRelease, 
+            MVersionMetadata latestSnapshot)
         {
             if (datas == null)
                 throw new ArgumentNullException(nameof(datas));
-            if (originalPath == null)
-                throw new ArgumentNullException(nameof(originalPath));
 
             versions = datas;
             MinecraftPath = originalPath;
+            LatestReleaseVersion = latestRelease;
+            LatestSnapshotVersion = latestSnapshot;
         }
 
+        public MVersionMetadata LatestReleaseVersion { get; private set; }
+        public MVersionMetadata LatestSnapshotVersion { get; private set; }
         public MinecraftPath MinecraftPath { get; private set; }
         MVersionMetadata[] versions;
 
