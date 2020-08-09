@@ -61,28 +61,30 @@ Nuget Package `CmlLib.Core` 를 설치하세요.
 **로그인**
 
      var login = new MLogin();
-     var session = login.TryAutoLogin(); // 'session' 변수는 실행할 때 LaunchOption 에서 사용됩니다.
+     var session = login.TryAutoLogin(); // 'session' 변수는 아래 실행 코드의 LaunchOption 에서 사용됩니다.
 
-     if (session.Result != MLoginResult.Success) // 자동 로그인 실패시
+     if (session.Result != MLoginResult.Success) // failed to auto login
      {
          var email = Console.ReadLine();
          var pw = Console.ReadLine();
          session = login.Authenticate(email, pw);
 
          if (session.Result != MLoginResult.Success)
-              throw new Exception(session.Result.ToString()) // 로그인 실패
+              throw new Exception(session.Result.ToString()); // failed to login
      }
 
 **복돌 로그인**
 
-     var session = MSession.GetOfflineSession("USERNAME"); // 'session' 변수는 실행할 때 LaunchOption 에서 사용됩니다.
+     var session = MSession.GetOfflineSession("USERNAME"); // 'session' 변수는 아래 실행 코드의 LaunchOption 에서 사용됩니다.
 
 **실행**
 
-     //var path = new Minecraft("게임 폴더 경로");
-     var path = Minecraft.GetOSDefaultPath(); // 기본 게임 폴더
+     //var path = "your minecraft directory";
+     var path = Minecraft.GetOSDefaultPath(); // 기본 게임 폴더 경로 가져오기
 
-     var launcher = new CmlLib.CMLauncher(path);
+     var game = new Minecraft(path);
+
+     var launcher = new CmlLib.CMLauncher(game);
      launcher.ProgressChanged += (s, e) =>
      {
           Console.WriteLine("{0}%", e.ProgressPercentage);
@@ -92,7 +94,8 @@ Nuget Package `CmlLib.Core` 를 설치하세요.
           Console.WriteLine("[{0}] {1} - {2}/{3}", e.FileKind.ToString(), e.FileName, e.ProgressedFileCount, e.TotalFileCount);
      };
 
-     foreach (var item in launcher.ProfileInfos)
+     launcher.UpdateProfiles();
+     foreach (var item in launcher.Profiles)
      {
          Console.WriteLine(item.Name);
      }
@@ -108,11 +111,8 @@ Nuget Package `CmlLib.Core` 를 설치하세요.
          //ServerIp = "mc.hypixel.net"
      };
 
-     // 포지 실행
-     //var process = launcher.Launch("1.12.2", "14.23.5.2768", launchOption);
-
-     // 바닐라 실행
-     var process = launcher.Launch("1.15.2", launchOption);
+     // launch vanila
+     var process = launcher.CreateProcess("1.15.2", launchOption);
 
      process.Start();
 
