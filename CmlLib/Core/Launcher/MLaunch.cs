@@ -68,6 +68,9 @@ namespace CmlLib.Core
 
             args.Add("-Xmx" + LaunchOption.MaximumRamMb + "m");
 
+            if (LaunchOption.MinimumRamMb > 0)
+                args.Add("-Xms" + LaunchOption.MinimumRamMb + "m");
+
             if (!string.IsNullOrEmpty(LaunchOption.DockName))
                 args.Add("-Xdock:name=" + handleEmpty(LaunchOption.DockName));
             if (!string.IsNullOrEmpty(LaunchOption.DockIcon))

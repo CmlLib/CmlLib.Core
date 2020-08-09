@@ -12,6 +12,7 @@ namespace CmlLib.Core
 
         public string JavaPath { get; set; } = "";
         public int MaximumRamMb { get; set; } = 1024;
+        public int MinimumRamMb { get; set; }
         public string[] JVMArguments { get; set; }
 
         public string DockName { get; set; }
