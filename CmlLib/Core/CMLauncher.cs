@@ -102,9 +102,21 @@ namespace CmlLib.Core
             return versionname;
         }
 
-        public void CheckGameFiles(MVersion version, bool downloadAsset = true)
-        {
+        public void CheckGameFiles(MVersion version, bool downloadAsset = true, bool checkFileHash = true)
+        { 
             var downloader = new MDownloader(MinecraftPath, version);
+            downloadGameFiles(downloader, downloadAsset, checkFileHash);
+        }
+
+        public void CheckGameFilesParallel(MVersion version, bool downloadAsset = true, bool checkFileHash = true)
+        {
+            var downloader = new MParallelDownloader(MinecraftPath, version);
+            downloadGameFiles(downloader, downloadAsset, checkFileHash);
+        }
+
+        private void downloadGameFiles(MDownloader downloader, bool downloadAsset, bool checkFileHash)
+        {
+            downloader.CheckHash = checkFileHash;
             downloader.ChangeFile += (e) => fire(e);
             downloader.ChangeProgress += (sender, e) => fire(e.ProgressPercentage);
             downloader.DownloadAll(downloadAsset);
