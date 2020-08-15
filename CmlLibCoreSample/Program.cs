@@ -156,6 +156,9 @@ namespace CmlLibCoreSample
                 Console.WriteLine("IsLocalProfile : {0}", item.IsLocalVersion);
                 Console.WriteLine("============================================");
             }
+            Console.WriteLine("");
+            Console.WriteLine("LatestRelease : {0}", versionMetadatas.LatestReleaseVersion?.Name);
+            Console.WriteLine("LatestSnapshot : {0}", versionMetadatas.LatestSnapshotVersion?.Name);
 
             Console.WriteLine("Input Version Name (ex: 1.15.2) : ");
             var versionName = Console.ReadLine();
