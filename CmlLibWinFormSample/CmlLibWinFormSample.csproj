@@ -103,6 +103,9 @@
     <EmbeddedResource Include="GameLog.resx">
       <DependentUpon>GameLog.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="GameOptions.resx">
+      <DependentUpon>GameOptions.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="JavaForm.resx">
       <DependentUpon>JavaForm.cs</DependentUpon>
     </EmbeddedResource>

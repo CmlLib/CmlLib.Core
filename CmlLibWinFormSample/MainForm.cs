@@ -352,7 +352,8 @@ namespace CmlLibWinFormSample
         private void btnOptions_Click(object sender, EventArgs e)
         {
             // options.txt
-            var f = new GameOptions();
+            var path = System.IO.Path.Combine(MinecraftPath.BasePath, "options.txt");
+            var f = new GameOptions(path);
             f.Show();
         }
 
