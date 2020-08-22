@@ -1,4 +1,4 @@
-﻿using CmlLib.Core.Version;
+using CmlLib.Core.Version;
 using CmlLib.Utils;
 using Newtonsoft.Json.Linq;
 using System;
@@ -18,12 +18,17 @@ namespace CmlLib.Core.Downloader
         public bool IgnoreInvalidFiles { get; set; } = true;
         public bool CheckHash { get; set; } = true;
 
-        protected MVersion version;
+        public MVersion DownloadVersion { get; set; }
         protected MinecraftPath MinecraftPath;
+
+        public MDownloader(MinecraftPath downloadPath)
+        {
+            MinecraftPath = downloadPath;
+        }
 
         public MDownloader(MinecraftPath downloadPath, MVersion _version)
         {
-            version = _version;
+            DownloadVersion = _version;
             MinecraftPath = downloadPath;
         }
 
@@ -33,6 +38,9 @@ namespace CmlLib.Core.Downloader
         /// <param name="resource"></param>
         public void DownloadAll(bool resource = true)
         {
+            if (DownloadVersion == null)
+                throw new NullReferenceException("DownloadVersion was null");
+
             DownloadLibraries();
 
             if (resource)
@@ -44,14 +52,19 @@ namespace CmlLib.Core.Downloader
             DownloadMinecraft();
         }
 
-        /// <summary>
-        /// Download all required library files
-        /// </summary>
         public void DownloadLibraries()
+        {
+            if (DownloadVersion == null)
+                throw new NullReferenceException("DownloadVersion was null");
+
+            DownloadLibraries(DownloadVersion.Libraries);
+        }
+
+        public void DownloadLibraries(MLibrary[] libraries)
         {
             fireDownloadFileChangedEvent(MFile.Library, "", 0, 0);
 
-            var files = from lib in version.Libraries
+            var files = from lib in libraries
                         where CheckDownloadRequireLibrary(lib)
                         select new DownloadFile(MFile.Library, lib.Name, Path.Combine(MinecraftPath.Library, lib.Path), lib.Url);
 
@@ -61,8 +74,8 @@ namespace CmlLib.Core.Downloader
         private bool CheckDownloadRequireLibrary(MLibrary lib)
         {
             return lib.IsRequire
-                && lib.Path != ""
-                && lib.Url != ""
+                && !string.IsNullOrEmpty(lib.Path)
+                && !string.IsNullOrEmpty(lib.Url)
                 && !CheckFileValidation(Path.Combine(MinecraftPath.Library, lib.Path), lib.Hash);
         }
 
@@ -71,15 +84,15 @@ namespace CmlLib.Core.Downloader
         /// </summary>
         public void DownloadIndex()
         {
-            string path = Path.Combine(MinecraftPath.Index, version.AssetId + ".json");
+            string path = Path.Combine(MinecraftPath.Index, DownloadVersion.AssetId + ".json");
 
-            if (version.AssetUrl != "" && !CheckFileValidation(path, version.AssetHash))
+            if (DownloadVersion.AssetUrl != "" && !CheckFileValidation(path, DownloadVersion.AssetHash))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
 
                 using (var wc = new WebClient())
                 {
-                    wc.DownloadFile(version.AssetUrl, path);
+                    wc.DownloadFile(DownloadVersion.AssetUrl, path);
                 }
             }
         }
@@ -89,13 +102,18 @@ namespace CmlLib.Core.Downloader
         /// </summary>
         public void DownloadResource()
         {
-            var indexpath = Path.Combine(MinecraftPath.Index, version.AssetId + ".json");
+            var indexpath = Path.Combine(MinecraftPath.Index, DownloadVersion.AssetId + ".json");
             if (!File.Exists(indexpath)) return;
-
-            fireDownloadFileChangedEvent(MFile.Resource, version.AssetId, 0, 0);
 
             var json = File.ReadAllText(indexpath);
             var index = JObject.Parse(json);
+
+            DownloadResource(index);
+        }
+
+        public void DownloadResource(JObject index)
+        {
+            fireDownloadFileChangedEvent(MFile.Resource, DownloadVersion.AssetId, 0, 0);
 
             var isVirtual = checkJsonTrue(index["virtual"]); // check virtual
             var mapResource = checkJsonTrue(index["map_to_resources"]); // check map_to_resources
@@ -156,16 +174,16 @@ namespace CmlLib.Core.Downloader
         /// </summary>
         public void DownloadMinecraft()
         {
-            if (string.IsNullOrEmpty(version.ClientDownloadUrl)) return;
+            if (string.IsNullOrEmpty(DownloadVersion.ClientDownloadUrl)) return;
 
-            string id = version.Jar;
+            string id = DownloadVersion.Jar;
             var path = Path.Combine(MinecraftPath.Versions, id, id + ".jar");
 
             fireDownloadFileChangedEvent(MFile.Minecraft, id, 1, 0);
 
-            if (!CheckFileValidation(path, version.ClientHash))
+            if (!CheckFileValidation(path, DownloadVersion.ClientHash))
             {
-                var file = new DownloadFile(MFile.Minecraft, id, path, version.ClientDownloadUrl);
+                var file = new DownloadFile(MFile.Minecraft, id, path, DownloadVersion.ClientDownloadUrl);
                 DownloadFiles(new DownloadFile[] { file });
             }
         }
