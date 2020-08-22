@@ -1,4 +1,4 @@
-using CmlLib.Core.Version;
+﻿using CmlLib.Core.Version;
 using CmlLib.Utils;
 using Newtonsoft.Json.Linq;
 using System;
@@ -199,31 +199,12 @@ namespace CmlLib.Core.Downloader
             return file.Exists && file.Length == size && CheckSHA1(path, hash);
         }
 
-        private bool CheckSHA1(string path, string compareHash)
+        private bool CheckSHA1(string path, string hash)
         {
-            try
-            {
-                if (!CheckHash)
-                    return true;
-
-                if (compareHash == null || compareHash == "")
-                    return true;
-
-                var fileHash = "";
-
-                using (var file = File.OpenRead(path))
-                using (var hasher = new System.Security.Cryptography.SHA1CryptoServiceProvider())
-                {
-                    var binaryHash = hasher.ComputeHash(file);
-                    fileHash = BitConverter.ToString(binaryHash).Replace("-", "").ToLower();
-                }
-
-                return fileHash == compareHash;
-            }
-            catch
-            {
-                return false;
-            }
+            if (!CheckHash)
+                return true;
+            else
+                return IOUtil.CheckSHA1(path, hash);
         }
 
         protected void fireDownloadFileChangedEvent(MFile file, string name, int totalFiles, int progressedFiles)
