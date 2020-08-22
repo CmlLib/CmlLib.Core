@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace CmlLib.Core.Version
@@ -70,17 +71,18 @@ namespace CmlLib.Core.Version
             }
         }
 
-        private static string NameToPath(string name, string native)
+        public static string NameToPath(string name, string native)
         {
             try
             {
                 string[] tmp = name.Split(':');
+
                 string front = tmp[0].Replace('.', '/');
                 string back = name.Substring(name.IndexOf(':') + 1);
 
                 string libpath = front + "/" + back.Replace(':', '/') + "/" + back.Replace(':', '-');
 
-                if (native != "")
+                if (!string.IsNullOrEmpty(native))
                     libpath += "-" + native + ".jar";
                 else
                     libpath += ".jar";
@@ -101,6 +103,8 @@ namespace CmlLib.Core.Version
             var url = job["url"]?.ToString();
             if (url == null)
                 url = MojangServer.Library + path;
+            else if (url == "")
+                url = null;
             else if (url.Split('/').Last() == "")
                 url += path;
 
@@ -115,6 +119,63 @@ namespace CmlLib.Core.Version
             library.IsRequire = require;
 
             return library;
+        }
+    }
+
+    public class PackageName
+    {
+        public static PackageName Parse(string name)
+        {
+            var spliter = name.Split(':');
+            if (spliter.Length < 3)
+                throw new Exception();
+
+            var pn = new PackageName();
+            pn.names = spliter;
+
+            return pn;
+        }
+
+        private PackageName()
+        {
+
+        }
+
+        private string[] names;
+
+        public string Package { get => names[0]; }
+        public string Name { get => names[1]; }
+        public string Version { get => names[2]; }
+
+        public string GetPath()
+        {
+            return GetPath("");
+        }
+
+        public string GetPath(string nativeId, string extension="jar")
+        {
+            // de.oceanlabs.mcp : mcp_config : 1.16.2-20200812.004259 : mappings
+            // de\oceanlabs\mcp \ mcp_config \ 1.16.2-20200812.004259 \ mcp_config-1.16.2-20200812.004259.zip
+
+            // [de.oceanlabs.mcp:mcp_config:1.16.2-20200812.004259@zip]
+            // \libraries\de\oceanlabs\mcp\mcp_config\1.16.2-20200812.004259\mcp_config-1.16.2-20200812.004259.zip
+
+            // [net.minecraft:client:1.16.2-20200812.004259:slim]
+            // /libraries\net\minecraft\client\1.16.2-20200812.004259\client-1.16.2-20200812.004259-slim.jar
+
+            var filename = string.Join("-", names, 1, names.Length - 1);
+
+            if (!string.IsNullOrEmpty(nativeId))
+                filename += "-" + nativeId;
+            filename += "." + extension;
+
+            var dir = Package.Replace(".", "/");
+            return Path.Combine(dir, Name, Version, filename);
+        }
+
+        public string GetClassPath()
+        {
+            return Package + "." + Name;
         }
     }
 }
