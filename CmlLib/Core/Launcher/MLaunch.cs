@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using CmlLib.Utils;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -8,7 +10,7 @@ namespace CmlLib.Core
 {
     public class MLaunch
     {
-        private static Regex argBracket = new Regex(@"\$\{(.*?)}");
+        
         private const int DefaultServerPort = 25565;
 
         public const string SupportVersion = "1.16.1";
@@ -79,18 +81,14 @@ namespace CmlLib.Core
             // Version-specific JVM Arguments
             var libArgs = new List<string>(version.Libraries.Length);
 
-            foreach (var item in version.Libraries)
-            {
-                if (item.IsRequire && !item.IsNative)
-                {
-                    var libPath = Path.GetFullPath(Path.Combine(MinecraftPath.Library, item.Path));
-                    libArgs.Add(handleEmpty(libPath));
-                }
-            }
+            var mclibs = version.Libraries
+                .Where(lib => lib.IsRequire && !lib.IsNative)
+                .Select(lib => Path.GetFullPath(Path.Combine(MinecraftPath.Library, lib.Path)));
+            libArgs.AddRange(mclibs);
 
-            libArgs.Add(handleEmpty(Path.Combine(MinecraftPath.Versions, version.Jar, version.Jar + ".jar")));
+            libArgs.Add(Path.Combine(MinecraftPath.Versions, version.Jar, version.Jar + ".jar"));
 
-            var libs = string.Join(Path.PathSeparator.ToString(), libArgs);
+            var libs = IOUtil.CombinePath(libArgs.ToArray());
 
             var native = new MNative(MinecraftPath, LaunchOption.StartVersion);
             native.CleanNatives();
@@ -105,7 +103,7 @@ namespace CmlLib.Core
             };
 
             if (version.JvmArguments != null)
-                args.AddRange(argumentInsert(version.JvmArguments, jvmdict));
+                args.AddRange(Mapper.MapInterpolation(version.JvmArguments, jvmdict));
             else
             {
                 args.Add("-Djava.library.path=" + handleEmpty(nativePath));
@@ -132,9 +130,9 @@ namespace CmlLib.Core
             };
 
             if (version.GameArguments != null)
-                args.AddRange(argumentInsert(version.GameArguments, gameDict));
+                args.AddRange(Mapper.MapInterpolation(version.GameArguments, gameDict));
             else
-                args.AddRange(argumentInsert(version.MinecraftArguments.Split(' '), gameDict));
+                args.AddRange(Mapper.MapInterpolation(version.MinecraftArguments.Split(' '), gameDict));
 
             // Options
             if (!string.IsNullOrEmpty(LaunchOption.ServerIp))
@@ -157,40 +155,6 @@ namespace CmlLib.Core
             return args.ToArray();
         }
 
-        // replace ${key} to value
-        // ex) "--accessToken ${access_token}" to "--accessToken " + dicts["access_token"]
-        string[] argumentInsert(string[] arg, Dictionary<string, string> dicts)
-        {
-            var args = new List<string>(arg.Length);
-            foreach (string item in arg)
-            {
-                var m = argBracket.Match(item);
-
-                if (m.Success)
-                {
-                    var argKey = m.Groups[1].Value; // ${argKey}
-                    var argValue = "";
-
-                    if (dicts.TryGetValue(argKey, out argValue))
-                        args.Add(replaceByPos(item, argValue, m.Index, m.Length)); // replace ${argKey} to dicts value
-                    else
-                        args.Add(item);
-                }
-                else
-                    args.Add(handleEArg(item));
-            }
-
-            return args.ToArray();
-        }
-
-        string replaceByPos(string input, string replace, int startIndex, int length)
-        {
-            var sb = new StringBuilder(input);
-            sb.Remove(startIndex, length);
-            sb.Insert(startIndex, replace);
-            return sb.ToString();
-        }
-
         // if input1 is null, return input2
         string useNotNull(string input1, string input2)
         {
@@ -198,19 +162,6 @@ namespace CmlLib.Core
                 return handleEmpty(input2);
             else
                 return handleEmpty(input1);
-        }
-
-        // handle empty string in --key=value style argument
-        // --key=va lue => --key="va lue"
-        string handleEArg(string input)
-        {
-            if (input.Contains(" ") && input.Contains("="))
-            {
-                var s = input.Split('=');
-                return s[0] + "=\"" + s[1] + "\"";
-            }
-            else
-                return input;
         }
 
         string handleEmpty(string input)
