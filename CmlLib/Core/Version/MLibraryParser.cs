@@ -71,34 +71,11 @@ namespace CmlLib.Core.Version
             }
         }
 
-        public static string NameToPath(string name, string native)
-        {
-            try
-            {
-                string[] tmp = name.Split(':');
-
-                string front = tmp[0].Replace('.', '/');
-                string back = name.Substring(name.IndexOf(':') + 1);
-
-                string libpath = front + "/" + back.Replace(':', '/') + "/" + back.Replace(':', '-');
-
-                if (!string.IsNullOrEmpty(native))
-                    libpath += "-" + native + ".jar";
-                else
-                    libpath += ".jar";
-                return libpath;
-            }
-            catch
-            {
-                return "";
-            }
-        }
-
         private static MLibrary createMLibrary(string name, string nativeId, bool require, JObject job)
         {
             var path = job["path"]?.ToString();
             if (string.IsNullOrEmpty(path))
-                path = NameToPath(name, nativeId);
+                path = PackageName.Parse(name).GetPath(nativeId);
 
             var url = job["url"]?.ToString();
             if (url == null)
@@ -119,63 +96,6 @@ namespace CmlLib.Core.Version
             library.IsRequire = require;
 
             return library;
-        }
-    }
-
-    public class PackageName
-    {
-        public static PackageName Parse(string name)
-        {
-            var spliter = name.Split(':');
-            if (spliter.Length < 3)
-                throw new Exception();
-
-            var pn = new PackageName();
-            pn.names = spliter;
-
-            return pn;
-        }
-
-        private PackageName()
-        {
-
-        }
-
-        private string[] names;
-
-        public string Package { get => names[0]; }
-        public string Name { get => names[1]; }
-        public string Version { get => names[2]; }
-
-        public string GetPath()
-        {
-            return GetPath("");
-        }
-
-        public string GetPath(string nativeId, string extension="jar")
-        {
-            // de.oceanlabs.mcp : mcp_config : 1.16.2-20200812.004259 : mappings
-            // de\oceanlabs\mcp \ mcp_config \ 1.16.2-20200812.004259 \ mcp_config-1.16.2-20200812.004259.zip
-
-            // [de.oceanlabs.mcp:mcp_config:1.16.2-20200812.004259@zip]
-            // \libraries\de\oceanlabs\mcp\mcp_config\1.16.2-20200812.004259\mcp_config-1.16.2-20200812.004259.zip
-
-            // [net.minecraft:client:1.16.2-20200812.004259:slim]
-            // /libraries\net\minecraft\client\1.16.2-20200812.004259\client-1.16.2-20200812.004259-slim.jar
-
-            var filename = string.Join("-", names, 1, names.Length - 1);
-
-            if (!string.IsNullOrEmpty(nativeId))
-                filename += "-" + nativeId;
-            filename += "." + extension;
-
-            var dir = Package.Replace(".", "/");
-            return Path.Combine(dir, Name, Version, filename);
-        }
-
-        public string GetClassPath()
-        {
-            return Package + "." + Name;
         }
     }
 }
