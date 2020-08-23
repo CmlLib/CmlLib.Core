@@ -58,11 +58,6 @@ namespace CmlLib.Core
             return Versions;
         }
 
-        public MVersion GetVersion(string mcVersion, string forgeVersion)
-        {
-            return GetVersion(GetVersionNameByForge(mcVersion, forgeVersion));
-        }
-
         public MVersion GetVersion(string versionname)
         {
             if (Versions == null)
@@ -89,17 +84,37 @@ namespace CmlLib.Core
             if (Versions == null)
                 UpdateVersions();
 
-            var versionname = GetVersionNameByForge(mcversion, forgeversion);
-            if (!Versions.Any(x => x.Name == versionname))
+            var forgeNameOld = MForge.GetOldForgeName(mcversion, forgeversion);
+            var forgeName = MForge.GetForgeName(mcversion, forgeversion);
+
+            var exist = false;
+            var name = "";
+            foreach (var item in Versions)
+            {
+                if (item.Name == forgeName)
+                {
+                    exist = true;
+                    name = forgeName;
+                    break;
+                }
+                else if (item.Name == forgeNameOld)
+                {
+                    exist = true;
+                    name = forgeNameOld;
+                    break;
+                }
+            }
+
+            if (!exist)
             {
                 var mforge = new MForge(MinecraftPath);
                 mforge.FileChanged += (e) => fire(e);
-                mforge.InstallForge(mcversion, forgeversion);
+                name = mforge.InstallForge(mcversion, forgeversion);
 
                 UpdateVersions();
             }
 
-            return versionname;
+            return name;
         }
 
         public void CheckGameFiles(MVersion version, bool downloadAsset = true, bool checkFileHash = true)
@@ -120,11 +135,6 @@ namespace CmlLib.Core
             downloader.ChangeFile += (e) => fire(e);
             downloader.ChangeProgress += (sender, e) => fire(e.ProgressPercentage);
             downloader.DownloadAll(downloadAsset);
-        }
-
-        public string GetVersionNameByForge(string mcVersion, string forgeVersion)
-        {
-            return $"{mcVersion}-forge{mcVersion}-{forgeVersion}";
         }
 
         public Process CreateProcess(string mcversion, string forgeversion, MLaunchOption option)
