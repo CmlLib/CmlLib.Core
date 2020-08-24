@@ -130,10 +130,12 @@ namespace CmlLib.Core.Downloader
                 var hash = job["hash"]?.ToString();
                 var hashName = hash.Substring(0, 2) + "/" + hash;
                 var hashPath = Path.Combine(MinecraftPath.AssetObject, hashName);
-                var hashUrl = MojangServer.ResourceDownload + hashName;
 
                 if (!CheckFileValidation(hashPath, hash))
+                {
+                    var hashUrl = MojangServer.ResourceDownload + hashName;
                     downloadRequiredFiles.Add(new DownloadFile(MFile.Resource, item.Key, hashPath, hashUrl));
+                }
 
                 if (isVirtual)
                 {
