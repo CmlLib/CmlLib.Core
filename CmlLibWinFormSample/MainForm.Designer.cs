@@ -84,6 +84,7 @@
             this.btnSetLastVersion = new System.Windows.Forms.Button();
             this.btnMojangServer = new System.Windows.Forms.Button();
             this.btnOptions = new System.Windows.Forms.Button();
+            this.btnRefreshVersion = new System.Windows.Forms.Button();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -577,6 +578,7 @@
             // 
             // groupBox4
             // 
+            this.groupBox4.Controls.Add(this.btnRefreshVersion);
             this.groupBox4.Controls.Add(this.btnForgeInstall);
             this.groupBox4.Controls.Add(this.btnSetLastVersion);
             this.groupBox4.Controls.Add(this.cbVersion);
@@ -601,11 +603,11 @@
             // 
             // btnSetLastVersion
             // 
-            this.btnSetLastVersion.Location = new System.Drawing.Point(283, 19);
+            this.btnSetLastVersion.Location = new System.Drawing.Point(283, 25);
             this.btnSetLastVersion.Name = "btnSetLastVersion";
-            this.btnSetLastVersion.Size = new System.Drawing.Size(75, 35);
+            this.btnSetLastVersion.Size = new System.Drawing.Size(75, 23);
             this.btnSetLastVersion.TabIndex = 2;
-            this.btnSetLastVersion.Text = "Last Version";
+            this.btnSetLastVersion.Text = "Lastest\r\n";
             this.btnSetLastVersion.UseVisualStyleBackColor = true;
             this.btnSetLastVersion.Click += new System.EventHandler(this.btnSetLastVersion_Click);
             // 
@@ -628,6 +630,16 @@
             this.btnOptions.Text = "options.txt";
             this.btnOptions.UseVisualStyleBackColor = true;
             this.btnOptions.Click += new System.EventHandler(this.btnOptions_Click);
+            // 
+            // btnRefreshVersion
+            // 
+            this.btnRefreshVersion.Location = new System.Drawing.Point(283, 52);
+            this.btnRefreshVersion.Name = "btnRefreshVersion";
+            this.btnRefreshVersion.Size = new System.Drawing.Size(75, 23);
+            this.btnRefreshVersion.TabIndex = 4;
+            this.btnRefreshVersion.Text = "Refresh";
+            this.btnRefreshVersion.UseVisualStyleBackColor = true;
+            this.btnRefreshVersion.Click += new System.EventHandler(this.btnRefreshVersion_Click);
             // 
             // MainForm
             // 
@@ -721,5 +733,6 @@
         private System.Windows.Forms.Button btnMojangServer;
         private System.Windows.Forms.Button btnOptions;
         private System.Windows.Forms.Button btnForgeInstall;
+        private System.Windows.Forms.Button btnRefreshVersion;
     }
 }

@@ -52,6 +52,12 @@
     <Compile Include="ChangeLog.Designer.cs">
       <DependentUpon>ChangeLog.cs</DependentUpon>
     </Compile>
+    <Compile Include="ForgeInstall.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ForgeInstall.Designer.cs">
+      <DependentUpon>ForgeInstall.cs</DependentUpon>
+    </Compile>
     <Compile Include="GameLog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -99,6 +105,9 @@
     <Compile Include="Util.cs" />
     <EmbeddedResource Include="ChangeLog.resx">
       <DependentUpon>ChangeLog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ForgeInstall.resx">
+      <DependentUpon>ForgeInstall.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GameLog.resx">
       <DependentUpon>GameLog.cs</DependentUpon>

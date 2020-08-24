@@ -40,18 +40,30 @@ namespace CmlLibWinFormSample
             txtPath.Text = path.BasePath;
             MinecraftPath = path;
 
+            refreshVersions(null);
+        }
+
+        private void refreshVersions(string showVersion)
+        {
+            cbVersion.Items.Clear();
+
             var th = new Thread(new ThreadStart(delegate
             {
                 Versions = MVersionLoader.GetVersionMetadatas(MinecraftPath);
                 Invoke(new Action(() =>
                 {
-                    cbVersion.Items.Clear();
+                    bool showVersionExist = false;
                     foreach (var item in Versions)
                     {
+                        if (showVersion != null && item.Name == showVersion)
+                            showVersionExist = true;
                         cbVersion.Items.Add(item.Name);
                     }
 
-                    btnSetLastVersion_Click(null, null);
+                    if (showVersion == null || !showVersionExist)
+                        btnSetLastVersion_Click(null, null);
+                    else
+                        cbVersion.Text = showVersion;
                 }));
             }));
             th.Start();
@@ -81,6 +93,11 @@ namespace CmlLibWinFormSample
                 lbJavaPath.Text = MinecraftPath.Runtime;
         }
 
+        private void btnRefreshVersion_Click(object sender, EventArgs e)
+        {
+            refreshVersions(null);
+        }
+
         private void btnLogin_Click(object sender, EventArgs e)
         {
             var form = new LoginForm(Session);
@@ -108,6 +125,31 @@ namespace CmlLibWinFormSample
             cbVersion.Text = Versions.LatestReleaseVersion?.Name;
         }
 
+        private void btnForgeInstall_Click(object sender, EventArgs e)
+        {
+            new Thread(() => 
+            {
+                var forgeJava = "";
+
+                if (useMJava)
+                {
+                    var java = new MJava();
+                    java.ProgressChanged += Launcher_ProgressChanged;
+                    forgeJava = java.CheckJava();
+                }
+                else
+                    forgeJava = javaPath;
+
+                Invoke(new Action(() => 
+                {
+                    var forgeForm = new ForgeInstall(MinecraftPath, forgeJava);
+                    forgeForm.ShowDialog();
+                    Console.WriteLine("hi");
+                    refreshVersions(forgeForm.LastInstalledVersion);
+                }));
+            }).Start();
+        }
+
         private void btnAutoRamSet_Click(object sender, EventArgs e)
         {
             var computerMemory = Util.GetMemoryMb();
@@ -127,6 +169,14 @@ namespace CmlLibWinFormSample
 
             TxtXmx.Text = max.ToString();
             txtXms.Text = min.ToString();
+        }
+
+        private void setUIEnabled(bool value)
+        {
+            groupBox1.Enabled = value;
+            groupBox2.Enabled = value;
+            groupBox3.Enabled = value;
+            groupBox4.Enabled = value;
         }
 
         private MLaunchOption createLaunchOption()
@@ -194,10 +244,7 @@ namespace CmlLibWinFormSample
             }
 
             // disable ui
-            groupBox1.Enabled = false;
-            groupBox2.Enabled = false;
-            groupBox3.Enabled = false;
-            groupBox4.Enabled = false;
+            setUIEnabled(false);
 
             // create LaunchOption
             var launchOption = createLaunchOption();
@@ -273,10 +320,7 @@ namespace CmlLibWinFormSample
                         logForm.Show();
 
                         // enable ui
-                        groupBox1.Enabled = true;
-                        groupBox2.Enabled = true;
-                        groupBox3.Enabled = true;
-                        groupBox4.Enabled = true;
+                        setUIEnabled(true);
                     }));
                 }
             });
@@ -384,11 +428,6 @@ namespace CmlLibWinFormSample
         private void MainForm_Load(object sender, EventArgs e)
         {
 
-        }
-
-        private void btnForgeInstall_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("not implemented");
         }
     }
 }
