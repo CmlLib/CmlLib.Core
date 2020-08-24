@@ -6,11 +6,13 @@ namespace CmlLib.Core
 {
     public class MLaunchOption
     {
-        public MProfile StartProfile { get; set; }
+        public MinecraftPath Path { get; set; }
+        public MVersion StartVersion { get; set; }
         public MSession Session { get; set; }
 
         public string JavaPath { get; set; } = "";
         public int MaximumRamMb { get; set; } = 1024;
+        public int MinimumRamMb { get; set; }
         public string[] JVMArguments { get; set; }
 
         public string DockName { get; set; }
@@ -31,11 +33,14 @@ namespace CmlLib.Core
         {
             string exMsg = null; // error message
 
+            if (Path == null)
+                exMsg = nameof(Path) + " is null";
+
             if (MaximumRamMb < 1)
                 exMsg = "MaximumRamMb is too small.";
 
-            if (StartProfile == null)
-                exMsg = "StartProfile is null";
+            if (StartVersion == null)
+                exMsg = "StartVersion is null";
 
             if (Session == null)
                 Session = MSession.GetOfflineSession("tester123");

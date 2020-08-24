@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.1;net462</TargetFrameworks>
-    <Version>2.0.2</Version>
+    <Version>3.0.0-alpha3</Version>
     <Description>Minecraft Launcher Library for .NET Core and .NET Framework
 Support All versions, forge, optifine
 see github to learn how to use</Description>

@@ -52,17 +52,41 @@
     <Compile Include="ChangeLog.Designer.cs">
       <DependentUpon>ChangeLog.cs</DependentUpon>
     </Compile>
+    <Compile Include="ForgeInstall.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ForgeInstall.Designer.cs">
+      <DependentUpon>ForgeInstall.cs</DependentUpon>
+    </Compile>
     <Compile Include="GameLog.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="GameLog.Designer.cs">
       <DependentUpon>GameLog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Logout_and_Cache.cs">
+    <Compile Include="GameOptions.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Logout_and_Cache.designer.cs">
-      <DependentUpon>Logout_and_Cache.cs</DependentUpon>
+    <Compile Include="GameOptions.Designer.cs">
+      <DependentUpon>GameOptions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="JavaForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="JavaForm.Designer.cs">
+      <DependentUpon>JavaForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PathForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PathForm.Designer.cs">
+      <DependentUpon>PathForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="LoginForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LoginForm.Designer.cs">
+      <DependentUpon>LoginForm.cs</DependentUpon>
     </Compile>
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
@@ -70,16 +94,38 @@
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="MojangServerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MojangServerForm.Designer.cs">
+      <DependentUpon>MojangServerForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Util.cs" />
     <EmbeddedResource Include="ChangeLog.resx">
       <DependentUpon>ChangeLog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ForgeInstall.resx">
+      <DependentUpon>ForgeInstall.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GameLog.resx">
       <DependentUpon>GameLog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Logout_and_Cache.resx">
-      <DependentUpon>Logout_and_Cache.cs</DependentUpon>
+    <EmbeddedResource Include="GameOptions.resx">
+      <DependentUpon>GameOptions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="JavaForm.resx">
+      <DependentUpon>JavaForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MojangServerForm.resx">
+      <DependentUpon>MojangServerForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PathForm.resx">
+      <DependentUpon>PathForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LoginForm.resx">
+      <DependentUpon>LoginForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>

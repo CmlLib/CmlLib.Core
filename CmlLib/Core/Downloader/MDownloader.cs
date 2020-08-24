@@ -18,13 +18,18 @@ namespace CmlLib.Core.Downloader
         public bool IgnoreInvalidFiles { get; set; } = true;
         public bool CheckHash { get; set; } = true;
 
-        protected MProfile profile;
-        protected Minecraft Minecraft;
+        public MVersion DownloadVersion { get; set; }
+        protected MinecraftPath MinecraftPath;
 
-        public MDownloader(MProfile _profile)
+        public MDownloader(MinecraftPath downloadPath)
         {
-            profile = _profile;
-            Minecraft = _profile.Minecraft;
+            MinecraftPath = downloadPath;
+        }
+
+        public MDownloader(MinecraftPath downloadPath, MVersion _version)
+        {
+            DownloadVersion = _version;
+            MinecraftPath = downloadPath;
         }
 
         /// <summary>
@@ -33,6 +38,9 @@ namespace CmlLib.Core.Downloader
         /// <param name="resource"></param>
         public void DownloadAll(bool resource = true)
         {
+            if (DownloadVersion == null)
+                throw new NullReferenceException("DownloadVersion was null");
+
             DownloadLibraries();
 
             if (resource)
@@ -44,16 +52,21 @@ namespace CmlLib.Core.Downloader
             DownloadMinecraft();
         }
 
-        /// <summary>
-        /// Download all required library files
-        /// </summary>
         public void DownloadLibraries()
+        {
+            if (DownloadVersion == null)
+                throw new NullReferenceException("DownloadVersion was null");
+
+            DownloadLibraries(DownloadVersion.Libraries);
+        }
+
+        public void DownloadLibraries(MLibrary[] libraries)
         {
             fireDownloadFileChangedEvent(MFile.Library, "", 0, 0);
 
-            var files = from lib in profile.Libraries
+            var files = from lib in libraries
                         where CheckDownloadRequireLibrary(lib)
-                        select new DownloadFile(MFile.Library, lib.Name, lib.Path, lib.Url);
+                        select new DownloadFile(MFile.Library, lib.Name, Path.Combine(MinecraftPath.Library, lib.Path), lib.Url);
 
             DownloadFiles(files.Distinct().ToArray());
         }
@@ -61,9 +74,9 @@ namespace CmlLib.Core.Downloader
         private bool CheckDownloadRequireLibrary(MLibrary lib)
         {
             return lib.IsRequire
-                && lib.Path != ""
-                && lib.Url != ""
-                && !CheckFileValidation(lib.Path, lib.Hash);
+                && !string.IsNullOrEmpty(lib.Path)
+                && !string.IsNullOrEmpty(lib.Url)
+                && !CheckFileValidation(Path.Combine(MinecraftPath.Library, lib.Path), lib.Hash);
         }
 
         /// <summary>
@@ -71,15 +84,15 @@ namespace CmlLib.Core.Downloader
         /// </summary>
         public void DownloadIndex()
         {
-            string path = Path.Combine(Minecraft.Index, profile.AssetId + ".json");
+            string path = Path.Combine(MinecraftPath.Index, DownloadVersion.AssetId + ".json");
 
-            if (profile.AssetUrl != "" && !CheckFileValidation(path, profile.AssetHash))
+            if (DownloadVersion.AssetUrl != "" && !CheckFileValidation(path, DownloadVersion.AssetHash))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
 
                 using (var wc = new WebClient())
                 {
-                    wc.DownloadFile(profile.AssetUrl, path);
+                    wc.DownloadFile(DownloadVersion.AssetUrl, path);
                 }
             }
         }
@@ -89,13 +102,18 @@ namespace CmlLib.Core.Downloader
         /// </summary>
         public void DownloadResource()
         {
-            var indexpath = Path.Combine(Minecraft.Index, profile.AssetId + ".json");
+            var indexpath = Path.Combine(MinecraftPath.Index, DownloadVersion.AssetId + ".json");
             if (!File.Exists(indexpath)) return;
-
-            fireDownloadFileChangedEvent(MFile.Resource, profile.AssetId, 0, 0);
 
             var json = File.ReadAllText(indexpath);
             var index = JObject.Parse(json);
+
+            DownloadResource(index);
+        }
+
+        public void DownloadResource(JObject index)
+        {
+            fireDownloadFileChangedEvent(MFile.Resource, DownloadVersion.AssetId, 0, 0);
 
             var isVirtual = checkJsonTrue(index["virtual"]); // check virtual
             var mapResource = checkJsonTrue(index["map_to_resources"]); // check map_to_resources
@@ -104,6 +122,8 @@ namespace CmlLib.Core.Downloader
             var downloadRequiredFiles = new List<DownloadFile>();
             var copyRequiredFiles = new List<Tuple<string, string>>();
 
+            int total = list.Count;
+            int progressed = 0;
             foreach (var item in list)
             {
                 JToken job = item.Value;
@@ -111,27 +131,34 @@ namespace CmlLib.Core.Downloader
                 // download hash resource
                 var hash = job["hash"]?.ToString();
                 var hashName = hash.Substring(0, 2) + "/" + hash;
-                var hashPath = Path.Combine(Minecraft.AssetObject, hashName);
-                var hashUrl = MojangServer.ResourceDownload + hashName;
+                var hashPath = Path.Combine(MinecraftPath.AssetObject, hashName);
 
                 if (!CheckFileValidation(hashPath, hash))
+                {
+                    var hashUrl = MojangServer.ResourceDownload + hashName;
                     downloadRequiredFiles.Add(new DownloadFile(MFile.Resource, item.Key, hashPath, hashUrl));
+                }
 
                 if (isVirtual)
                 {
-                    var resPath = Path.Combine(Minecraft.AssetLegacy, item.Key);
+                    var resPath = Path.Combine(MinecraftPath.AssetLegacy, item.Key);
                     copyRequiredFiles.Add(new Tuple<string, string>(hashPath, resPath));
                 }
 
                 if (mapResource)
                 {
-                    var resPath = Path.Combine(Minecraft.Resource, item.Key);
+                    var resPath = Path.Combine(MinecraftPath.Resource, item.Key);
                     copyRequiredFiles.Add(new Tuple<string, string>(hashPath, resPath));
                 }
+
+                progressed++;
+                fireDownloadFileChangedEvent(MFile.Resource, "", total, progressed);
             }
 
             DownloadFiles(downloadRequiredFiles.Distinct().ToArray());
 
+            total = copyRequiredFiles.Count;
+            progressed = 0;
             foreach (var item in copyRequiredFiles)
             {
                 if (!File.Exists(item.Item2))
@@ -139,6 +166,9 @@ namespace CmlLib.Core.Downloader
                     Directory.CreateDirectory(Path.GetDirectoryName(item.Item2));
                     File.Copy(item.Item1, item.Item2, true);
                 }
+
+                progressed++;
+                fireDownloadFileChangedEvent(MFile.Resource, "", total, progressed);
             }
         }
 
@@ -156,16 +186,16 @@ namespace CmlLib.Core.Downloader
         /// </summary>
         public void DownloadMinecraft()
         {
-            if (string.IsNullOrEmpty(profile.ClientDownloadUrl)) return;
+            if (string.IsNullOrEmpty(DownloadVersion.ClientDownloadUrl)) return;
 
-            string id = profile.Jar;
-            var path = Path.Combine(Minecraft.Versions, id, id + ".jar");
+            string id = DownloadVersion.Jar;
+            var path = Path.Combine(MinecraftPath.Versions, id, id + ".jar");
 
             fireDownloadFileChangedEvent(MFile.Minecraft, id, 1, 0);
 
-            if (!CheckFileValidation(path, profile.ClientHash))
+            if (!CheckFileValidation(path, DownloadVersion.ClientHash))
             {
-                var file = new DownloadFile(MFile.Minecraft, id, path, profile.ClientDownloadUrl);
+                var file = new DownloadFile(MFile.Minecraft, id, path, DownloadVersion.ClientDownloadUrl);
                 DownloadFiles(new DownloadFile[] { file });
             }
         }
@@ -181,42 +211,17 @@ namespace CmlLib.Core.Downloader
             return file.Exists && file.Length == size && CheckSHA1(path, hash);
         }
 
-        private bool CheckSHA1(string path, string compareHash)
+        private bool CheckSHA1(string path, string hash)
         {
-            try
-            {
-                if (!CheckHash)
-                    return true;
-
-                if (compareHash == null || compareHash == "")
-                    return true;
-
-                var fileHash = "";
-
-                using (var file = File.OpenRead(path))
-                using (var hasher = new System.Security.Cryptography.SHA1CryptoServiceProvider())
-                {
-                    var binaryHash = hasher.ComputeHash(file);
-                    fileHash = BitConverter.ToString(binaryHash).Replace("-", "").ToLower();
-                }
-
-                return fileHash == compareHash;
-            }
-            catch
-            {
-                return false;
-            }
+            if (!CheckHash)
+                return true;
+            else
+                return IOUtil.CheckSHA1(path, hash);
         }
 
         protected void fireDownloadFileChangedEvent(MFile file, string name, int totalFiles, int progressedFiles)
         {
-            var e = new DownloadFileChangedEventArgs()
-            {
-                FileKind = file,
-                FileName = name,
-                TotalFileCount = totalFiles,
-                ProgressedFileCount = progressedFiles
-            };
+            var e = new DownloadFileChangedEventArgs(file, name, totalFiles, progressedFiles);
             fireDownloadFileChangedEvent(e);
         }
 

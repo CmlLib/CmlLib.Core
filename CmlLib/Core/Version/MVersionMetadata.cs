@@ -3,14 +3,9 @@ using System;
 
 namespace CmlLib.Core.Version
 {
-    public class MProfileMetadata
+    public class MVersionMetadata
     {
-
-        // Will be replaced by IsLocalProfile
-        [Obsolete("Use IsLocalProfile")]
-        public bool IsWeb = true;
-
-        public bool IsLocalProfile { get => !IsWeb; }
+        public bool IsLocalVersion { get; set; }
 
         [JsonProperty("id")]
         public string Name { get; set; }
@@ -18,7 +13,7 @@ namespace CmlLib.Core.Version
         [JsonProperty("type")]
         public string Type { get; set; }
 
-        public MProfileType MType { get; set; }
+        public MVersionType MType { get; set; }
 
         [JsonProperty("releaseTime")]
         public string ReleaseTime { get; set; }
@@ -28,7 +23,7 @@ namespace CmlLib.Core.Version
 
         public override bool Equals(object obj)
         {
-            var info = obj as MProfileMetadata;
+            var info = obj as MVersionMetadata;
 
             if (info != null)
                 return info.Name.Equals(Name);

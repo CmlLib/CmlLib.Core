@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using CmlLib.Utils;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -8,10 +10,10 @@ namespace CmlLib.Core
 {
     public class MLaunch
     {
-        private static Regex argBracket = new Regex(@"\$\{(.*?)}");
+        
         private const int DefaultServerPort = 25565;
 
-        public const string SupportVersion = "1.15.2";
+        public const string SupportVersion = "1.16.1";
         public readonly static string[] DefaultJavaParameter = new string[]
             {
                 "-XX:+UnlockExperimentalVMOptions",
@@ -26,10 +28,10 @@ namespace CmlLib.Core
         {
             option.CheckValid();
             LaunchOption = option;
-            this.Minecraft = option.StartProfile.Minecraft;
+            this.MinecraftPath = option.Path;
         }
 
-        Minecraft Minecraft;
+        MinecraftPath MinecraftPath;
         public MLaunchOption LaunchOption { get; private set; }
 
         /// <summary>
@@ -45,22 +47,18 @@ namespace CmlLib.Core
         /// </summary>
         public Process GetProcess()
         {
-            var native = new MNative(LaunchOption);
-            native.CleanNatives();
-            native.CreateNatives();
-
             string arg = string.Join(" ", CreateArg());
             Process mc = new Process();
             mc.StartInfo.FileName = LaunchOption.JavaPath;
             mc.StartInfo.Arguments = arg;
-            mc.StartInfo.WorkingDirectory = Minecraft.path;
+            mc.StartInfo.WorkingDirectory = MinecraftPath.BasePath;
 
             return mc;
         }
 
         public string[] CreateArg()
         {
-            var profile = LaunchOption.StartProfile;
+            var version = LaunchOption.StartVersion;
 
             var args = new List<string>();
 
@@ -72,68 +70,74 @@ namespace CmlLib.Core
 
             args.Add("-Xmx" + LaunchOption.MaximumRamMb + "m");
 
+            if (LaunchOption.MinimumRamMb > 0)
+                args.Add("-Xms" + LaunchOption.MinimumRamMb + "m");
+
             if (!string.IsNullOrEmpty(LaunchOption.DockName))
                 args.Add("-Xdock:name=" + handleEmpty(LaunchOption.DockName));
             if (!string.IsNullOrEmpty(LaunchOption.DockIcon))
                 args.Add("-Xdock:icon=" + handleEmpty(LaunchOption.DockIcon));
 
             // Version-specific JVM Arguments
-            var libArgs = new List<string>(profile.Libraries.Length);
+            var libArgs = new List<string>(version.Libraries.Length);
 
-            foreach (var item in profile.Libraries)
-            {
-                if (!item.IsNative)
-                    libArgs.Add(handleEmpty(Path.GetFullPath(item.Path)));
-            }
+            var mclibs = version.Libraries
+                .Where(lib => lib.IsRequire && !lib.IsNative)
+                .Select(lib => Path.GetFullPath(Path.Combine(MinecraftPath.Library, lib.Path)));
+            libArgs.AddRange(mclibs);
 
-            libArgs.Add(handleEmpty(Path.Combine(Minecraft.Versions, profile.Jar, profile.Jar + ".jar")));
+            libArgs.Add(Path.Combine(MinecraftPath.Versions, version.Jar, version.Jar + ".jar"));
 
-            var libs = string.Join(Path.PathSeparator.ToString(), libArgs);
+            var libs = IOUtil.CombinePath(libArgs.ToArray());
+
+            var native = new MNative(MinecraftPath, LaunchOption.StartVersion);
+            native.CleanNatives();
+            var nativePath = native.ExtractNatives();
 
             var jvmdict = new Dictionary<string, string>()
             {
-                { "natives_directory", handleEmpty(profile.NativePath) },
+                { "natives_directory", nativePath },
                 { "launcher_name", useNotNull(LaunchOption.GameLauncherName, "minecraft-launcher") },
                 { "launcher_version", useNotNull(LaunchOption.GameLauncherVersion, "2") },
                 { "classpath", libs }
             };
 
-            if (profile.JvmArguments != null)
-                args.AddRange(argumentInsert(profile.JvmArguments, jvmdict));
+            if (version.JvmArguments != null)
+                args.AddRange(Mapper.MapInterpolation(version.JvmArguments, jvmdict));
             else
             {
-                args.Add("-Djava.library.path=" + handleEmpty(LaunchOption.StartProfile.NativePath));
+                args.Add("-Djava.library.path=" + handleEmpty(nativePath));
                 args.Add("-cp " + libs);
             }
 
-            args.Add(profile.MainClass);
+            args.Add(version.MainClass);
 
             // Game Arguments
             var gameDict = new Dictionary<string, string>()
             {
                 { "auth_player_name", LaunchOption.Session.Username },
-                { "version_name", LaunchOption.StartProfile.Id },
-                { "game_directory", handleEmpty(Minecraft.path) },
-                { "assets_root", handleEmpty(Minecraft.Assets) },
-                { "assets_index_name", profile.AssetId },
+                { "version_name", LaunchOption.StartVersion.Id },
+                { "game_directory", MinecraftPath.BasePath },
+                { "assets_root", MinecraftPath.Assets },
+                { "assets_index_name", version.AssetId },
                 { "auth_uuid", LaunchOption.Session.UUID },
                 { "auth_access_token", LaunchOption.Session.AccessToken },
                 { "user_properties", "{}" },
                 { "user_type", "Mojang" },
-                { "game_assets", handleEmpty(Minecraft.AssetLegacy) },
+                { "game_assets", MinecraftPath.AssetLegacy },
                 { "auth_session", LaunchOption.Session.AccessToken },
-                { "version_type", useNotNull(LaunchOption.VersionType, profile.TypeStr) }
+                { "version_type", useNotNull(LaunchOption.VersionType, version.TypeStr) }
             };
 
-            if (profile.GameArguments != null)
-                args.AddRange(argumentInsert(profile.GameArguments, gameDict));
+            if (version.GameArguments != null)
+                args.AddRange(Mapper.MapInterpolation(version.GameArguments, gameDict));
             else
-                args.AddRange(argumentInsert(profile.MinecraftArguments.Split(' '), gameDict));
+                args.AddRange(Mapper.MapInterpolation(version.MinecraftArguments.Split(' '), gameDict));
 
             // Options
             if (!string.IsNullOrEmpty(LaunchOption.ServerIp))
             {
-                args.Add("--server " + LaunchOption.ServerIp);
+                args.Add("--server " + handleEmpty(LaunchOption.ServerIp));
 
                 if (LaunchOption.ServerPort != DefaultServerPort)
                     args.Add("--port " + LaunchOption.ServerPort);
@@ -151,58 +155,13 @@ namespace CmlLib.Core
             return args.ToArray();
         }
 
-        string[] argumentInsert(string[] arg, Dictionary<string, string> dicts)
-        {
-            var args = new List<string>(arg.Length);
-            foreach (string item in arg)
-            {
-                var m = argBracket.Match(item);
-
-                if (m.Success)
-                {
-                    var argKey = m.Groups[1].Value; // ${argKey}
-                    var argValue = "";
-
-                    if (dicts.TryGetValue(argKey, out argValue))
-                        args.Add(replaceByPos(item, argValue, m.Index, m.Length)); // replace ${argKey} to dicts value
-                    else
-                        args.Add(item);
-                }
-                else
-                    args.Add(handleEArg(item));
-            }
-
-            return args.ToArray();
-        }
-
-        string replaceByPos(string input, string replace, int startIndex, int length)
-        {
-            var sb = new StringBuilder(input);
-            sb.Remove(startIndex, length);
-            sb.Insert(startIndex, replace);
-            return sb.ToString();
-        }
-
         // if input1 is null, return input2
         string useNotNull(string input1, string input2)
         {
             if (string.IsNullOrEmpty(input1))
-                return handleEmpty(input2);
+                return input2;
             else
-                return handleEmpty(input1);
-        }
-
-        // handle empty string in --key=value style argument
-        // --key=va lue => --key="va lue"
-        string handleEArg(string input)
-        {
-            if (input.Contains(" ") && input.Contains("="))
-            {
-                var s = input.Split('=');
-                return s[0] + "=\"" + s[1] + "\"";
-            }
-            else
-                return input;
+                return input1;
         }
 
         string handleEmpty(string input)

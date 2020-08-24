@@ -9,7 +9,7 @@ namespace CmlLib.Core.Downloader
 {
     public class MJava
     {
-        public static string DefaultRuntimeDirectory = Path.Combine(Minecraft.GetOSDefaultPath(), "runtime");
+        public static string DefaultRuntimeDirectory = Path.Combine(MinecraftPath.GetOSDefaultPath(), "runtime");
 
         public event ProgressChangedEventHandler ProgressChanged;
         public event EventHandler DownloadCompleted;
@@ -25,7 +25,7 @@ namespace CmlLib.Core.Downloader
         public string CheckJava()
         {
             var binaryName = "java";
-            if (MRule.OSName == "windows")
+            if (MRule.OSName == MRule.Windows)
                 binaryName = "javaw.exe";
 
             return CheckJava(binaryName);
@@ -71,7 +71,7 @@ namespace CmlLib.Core.Downloader
                 if (!File.Exists(javapath))
                     throw new Exception("Failed Download");
 
-                if (MRule.OSName != "windows")
+                if (MRule.OSName != MRule.Windows)
                     IOUtil.Chmod(javapath, IOUtil.Chmod755);
             }
 

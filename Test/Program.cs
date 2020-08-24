@@ -1,4 +1,7 @@
 ﻿using CmlLib.Core;
+using CmlLib.Core.Auth;
+using CmlLib.Core.LauncherProfile;
+using CmlLib.Core.Version;
 using System;
 
 namespace Test
@@ -7,8 +10,11 @@ namespace Test
     {
         static void Main(string[] args)
         {
+            var lp = MLauncherProfile.LoadFromDefaultPath();
+            System.Diagnostics.Debug.Write(lp);
+
             //var path = new Minecraft("your minecraft directory);
-            var path = Minecraft.GetOSDefaultPath(); // mc directory
+            var path = MinecraftPath.GetOSDefaultPath(); // mc directory
 
             var launcher = new CmlLib.CMLauncher(path);
             launcher.ProgressChanged += (s, e) =>

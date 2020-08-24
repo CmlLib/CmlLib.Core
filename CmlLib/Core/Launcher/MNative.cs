@@ -7,58 +7,45 @@ namespace CmlLib.Core
 {
     public class MNative
     {
-        public MNative(MLaunchOption launchOption)
+        public MNative(MinecraftPath _path, MVersion _version)
         {
-            this.LaunchOption = launchOption;
+            version = _version;
+            gamePath = _path;
         }
 
-        public MLaunchOption LaunchOption { get; private set; }
+        MVersion version;
+        MinecraftPath gamePath;
 
-        public void CreateNatives()
+        public string ExtractNatives()
         {
-            var path = ExtractNatives(LaunchOption.StartProfile);
-            LaunchOption.StartProfile.NativePath = path;
-        }
-
-        private string ExtractNatives(MProfile profile)
-        {
-            var ran = new Random();
-            int random = ran.Next(10000, 99999);
-            string path = Path.Combine(profile.Minecraft.Versions, profile.Id, "natives-" + random.ToString());
-            ExtractNatives(profile, path);
-            return path;
-        }
-
-        private void ExtractNatives(MProfile profile, string path)
-        {
+            var path = Path.Combine(gamePath.Versions, version.Id, "natives");
             Directory.CreateDirectory(path);
 
-            foreach (var item in profile.Libraries)
+            foreach (var item in version.Libraries)
             {
                 try
                 {
-                    if (item.IsNative)
+                    if (item.IsRequire && item.IsNative)
                     {
-                        var z = new SharpZip(item.Path);
+                        var z = new SharpZip(Path.Combine(gamePath.Library, item.Path));
                         z.Unzip(path);
                     }
                 }
                 catch { }
             }
 
-            profile.NativePath = path;
+            return path;
         }
 
         public void CleanNatives()
         {
             try
             {
-                var path = Path.Combine(LaunchOption.StartProfile.Minecraft.Versions, LaunchOption.StartProfile.Id);
+                var path = Path.Combine(gamePath.Versions, version.Id, "natives");
                 DirectoryInfo di = new DirectoryInfo(path);
-                foreach (var item in di.GetDirectories())
+                foreach (var item in di.GetFiles())
                 {
-                    if (item.Name.Contains("natives"))
-                        IOUtil.DeleteDirectory(item.FullName);
+                    item.Delete();
                 }
             }
             catch { }

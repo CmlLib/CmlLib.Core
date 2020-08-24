@@ -1,52 +1,52 @@
 ﻿namespace CmlLib.Core.Version
 {
-    public static class MProfileTypeConverter
+    public static class MVersionTypeConverter
     {
-        public static MProfileType FromString(string str)
+        public static MVersionType FromString(string str)
         {
-            MProfileType e;
+            MVersionType e;
 
             switch (str)
             {
                 case "release":
-                    e = MProfileType.Release;
+                    e = MVersionType.Release;
                     break;
                 case "snapshot":
-                    e = MProfileType.Snapshot;
+                    e = MVersionType.Snapshot;
                     break;
                 case "old_alpha":
-                    e = MProfileType.OldAlpha;
+                    e = MVersionType.OldAlpha;
                     break;
                 case "old_beta":
-                    e = MProfileType.OldBeta;
+                    e = MVersionType.OldBeta;
                     break;
                 default:
-                    e = MProfileType.Custom;
+                    e = MVersionType.Custom;
                     break;
             }
 
             return e;
         }
 
-        public static string ToString(MProfileType type)
+        public static string ToString(MVersionType type)
         {
             var c = "";
 
             switch (type)
             {
-                case MProfileType.OldAlpha:
+                case MVersionType.OldAlpha:
                     c = "old_alpha";
                     break;
-                case MProfileType.OldBeta:
+                case MVersionType.OldBeta:
                     c = "old_beta";
                     break;
-                case MProfileType.Snapshot:
+                case MVersionType.Snapshot:
                     c = "snapshot";
                     break;
-                case MProfileType.Release:
+                case MVersionType.Release:
                     c = "release";
                     break;
-                case MProfileType.Custom:
+                case MVersionType.Custom:
                 default:
                     c = "unknown";
                     break;
@@ -60,16 +60,16 @@
             return CheckOld(FromString(vn));
         }
 
-        public static bool CheckOld(MProfileType t)
+        public static bool CheckOld(MVersionType t)
         {
-            if (t == MProfileType.OldAlpha || t == MProfileType.OldBeta)
+            if (t == MVersionType.OldAlpha || t == MVersionType.OldBeta)
                 return true;
             else
                 return false;
         }
     }
 
-    public enum MProfileType
+    public enum MVersionType
     {
         OldAlpha,
         OldBeta,
