@@ -122,6 +122,8 @@ namespace CmlLib.Core.Downloader
             var downloadRequiredFiles = new List<DownloadFile>();
             var copyRequiredFiles = new List<Tuple<string, string>>();
 
+            int total = list.Count;
+            int progressed = 0;
             foreach (var item in list)
             {
                 JToken job = item.Value;
@@ -148,10 +150,15 @@ namespace CmlLib.Core.Downloader
                     var resPath = Path.Combine(MinecraftPath.Resource, item.Key);
                     copyRequiredFiles.Add(new Tuple<string, string>(hashPath, resPath));
                 }
+
+                progressed++;
+                fireDownloadFileChangedEvent(MFile.Resource, "", total, progressed);
             }
 
             DownloadFiles(downloadRequiredFiles.Distinct().ToArray());
 
+            total = copyRequiredFiles.Count;
+            progressed = 0;
             foreach (var item in copyRequiredFiles)
             {
                 if (!File.Exists(item.Item2))
@@ -159,6 +166,9 @@ namespace CmlLib.Core.Downloader
                     Directory.CreateDirectory(Path.GetDirectoryName(item.Item2));
                     File.Copy(item.Item1, item.Item2, true);
                 }
+
+                progressed++;
+                fireDownloadFileChangedEvent(MFile.Resource, "", total, progressed);
             }
         }
 
