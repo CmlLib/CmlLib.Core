@@ -75,12 +75,17 @@ namespace CmlLibWinFormSample
             this.Session = session;
         }
 
-        private void MainForm_Shown(object sender, EventArgs e)
+        private void MainForm_Load(object sender, EventArgs e)
         {
             // Initialize launcher
 
             var defaultPath = new MinecraftPath(MinecraftPath.GetOSDefaultPath());
             InitializeLauncher(defaultPath);
+        }
+
+        private void MainForm_Shown(object sender, EventArgs e)
+        {
+
         }
 
         private void btnChangePath_Click(object sender, EventArgs e)
@@ -127,6 +132,7 @@ namespace CmlLibWinFormSample
 
         private void btnForgeInstall_Click(object sender, EventArgs e)
         {
+            setUIEnabled(false);
             new Thread(() => 
             {
                 var forgeJava = "";
@@ -144,7 +150,7 @@ namespace CmlLibWinFormSample
                 {
                     var forgeForm = new ForgeInstall(MinecraftPath, forgeJava);
                     forgeForm.ShowDialog();
-                    Console.WriteLine("hi");
+                    setUIEnabled(true);
                     refreshVersions(forgeForm.LastInstalledVersion);
                 }));
             }).Start();
@@ -423,11 +429,6 @@ namespace CmlLibWinFormSample
             {
 
             }
-        }
-
-        private void MainForm_Load(object sender, EventArgs e)
-        {
-
         }
     }
 }
