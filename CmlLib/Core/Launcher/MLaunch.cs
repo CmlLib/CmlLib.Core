@@ -96,7 +96,7 @@ namespace CmlLib.Core
 
             var jvmdict = new Dictionary<string, string>()
             {
-                { "natives_directory", handleEmpty(nativePath) },
+                { "natives_directory", nativePath },
                 { "launcher_name", useNotNull(LaunchOption.GameLauncherName, "minecraft-launcher") },
                 { "launcher_version", useNotNull(LaunchOption.GameLauncherVersion, "2") },
                 { "classpath", libs }
@@ -117,14 +117,14 @@ namespace CmlLib.Core
             {
                 { "auth_player_name", LaunchOption.Session.Username },
                 { "version_name", LaunchOption.StartVersion.Id },
-                { "game_directory", handleEmpty(MinecraftPath.BasePath) },
-                { "assets_root", handleEmpty(MinecraftPath.Assets) },
+                { "game_directory", MinecraftPath.BasePath },
+                { "assets_root", MinecraftPath.Assets },
                 { "assets_index_name", version.AssetId },
                 { "auth_uuid", LaunchOption.Session.UUID },
                 { "auth_access_token", LaunchOption.Session.AccessToken },
                 { "user_properties", "{}" },
                 { "user_type", "Mojang" },
-                { "game_assets", handleEmpty(MinecraftPath.AssetLegacy) },
+                { "game_assets", MinecraftPath.AssetLegacy },
                 { "auth_session", LaunchOption.Session.AccessToken },
                 { "version_type", useNotNull(LaunchOption.VersionType, version.TypeStr) }
             };
@@ -137,7 +137,7 @@ namespace CmlLib.Core
             // Options
             if (!string.IsNullOrEmpty(LaunchOption.ServerIp))
             {
-                args.Add("--server " + LaunchOption.ServerIp);
+                args.Add("--server " + handleEmpty(LaunchOption.ServerIp));
 
                 if (LaunchOption.ServerPort != DefaultServerPort)
                     args.Add("--port " + LaunchOption.ServerPort);
@@ -159,9 +159,9 @@ namespace CmlLib.Core
         string useNotNull(string input1, string input2)
         {
             if (string.IsNullOrEmpty(input1))
-                return handleEmpty(input2);
+                return input2;
             else
-                return handleEmpty(input1);
+                return input1;
         }
 
         string handleEmpty(string input)

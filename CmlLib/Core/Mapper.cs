@@ -115,17 +115,30 @@ namespace CmlLib.Core
             return sb.ToString();
         }
 
-        // handle empty string in --key=value style argument
-        // --key=va lue => --key="va lue"
+        // key=value 1 => key="value 1"
+        // key="va  l" => key="va  l"
+        // va lue => "va lue"
+        // "va lue" => "va lue"
         static string handleEArg(string input)
         {
-            if (input.Contains(" ") && input.Contains("="))
+            if (input.Contains("="))
             {
                 var s = input.Split('=');
-                return s[0] + "=\"" + s[1] + "\"";
+
+                if (s[1].Contains(" ") && !checkEmptyHandled(s[1]))
+                    return s[0] + "=\"" + s[1] + "\"";
+                else
+                    return input;
             }
+            else if (input.Contains(" ") && !checkEmptyHandled(input))
+                return "\"" + input + "\"";
             else
                 return input;
+        }
+
+        static bool checkEmptyHandled(string str)
+        {
+            return str.StartsWith("\"") || str.EndsWith("\"");
         }
     }
 }
