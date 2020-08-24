@@ -19,8 +19,8 @@ namespace CmlLibCoreSample
 
             // There are two login methods, one is using mojang email and password, and the other is using only username
             // Choose one which you want.
-            session = p.PremiumLogin(); // Login by mojang email and password
-            //session = p.OfflineLogin(); // Login by username
+            //session = p.PremiumLogin(); // Login by mojang email and password
+            session = p.OfflineLogin(); // Login by username
 
             // log login session information
             Console.WriteLine("Success to login : {0} / {1} / {2}", session.Username, session.UUID, session.AccessToken);
@@ -126,9 +126,16 @@ namespace CmlLibCoreSample
             var process = launcher.CreateProcess(Console.ReadLine(), launchOption);
 
             Console.WriteLine(process.StartInfo.Arguments);
-            process.Start();
 
-            Console.WriteLine("Started");
+            // Below codes are print game logs in Console.
+            var processUtil = new CmlLib.Utils.ProcessUtil(process);
+            processUtil.OutputReceived += (s, e) => Console.WriteLine(e);
+            processUtil.StartWithEvents();
+            process.WaitForExit();
+
+            // or just start it without print logs
+            // process.Start();
+
             Console.ReadLine();
 
             return;
@@ -313,7 +320,9 @@ namespace CmlLibCoreSample
             // More information about DownloadFileChangedEventArgs
             // https://github.com/AlphaBs/CmlLib.Core/wiki/Handling-Events#downloadfilechangedeventargs
 
-            Console.WriteLine("[{0}] {1} - {2}/{3}", e.FileKind.ToString(), e.FileName, e.ProgressedFileCount, e.TotalFileCount);
+            Console.WriteLine("[{0}] {1} - {2}/{3}           ", e.FileKind.ToString(), e.FileName, e.ProgressedFileCount, e.TotalFileCount);
+            if (e.FileKind == MFile.Resource && string.IsNullOrEmpty(e.FileName))
+                Console.SetCursorPosition(0, Console.CursorTop - 1);
             nextline = Console.CursorTop;
         }
 
