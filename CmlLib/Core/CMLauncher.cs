@@ -79,7 +79,7 @@ namespace CmlLib.Core
             return mjava.CheckJava();
         }
 
-        public string CheckForge(string mcversion, string forgeversion)
+        public string CheckForge(string mcversion, string forgeversion, string java)
         {
             if (Versions == null)
                 UpdateVersions();
@@ -107,7 +107,7 @@ namespace CmlLib.Core
 
             if (!exist)
             {
-                var mforge = new MForge(MinecraftPath);
+                var mforge = new MForge(MinecraftPath, java);
                 mforge.FileChanged += (e) => fire(e);
                 name = mforge.InstallForge(mcversion, forgeversion);
 
@@ -139,7 +139,10 @@ namespace CmlLib.Core
 
         public Process CreateProcess(string mcversion, string forgeversion, MLaunchOption option)
         {
-            return CreateProcess(CheckForge(mcversion, forgeversion), option);
+            if (string.IsNullOrEmpty(option.JavaPath))
+                option.JavaPath = CheckJRE();
+
+            return CreateProcess(CheckForge(mcversion, forgeversion, option.JavaPath), option);
         }
 
         public Process CreateProcess(string versionname, MLaunchOption option)
