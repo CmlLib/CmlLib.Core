@@ -20,6 +20,8 @@ namespace CmlLib.Utils
 
         public void StartWithEvents()
         {
+            Process.StartInfo.CreateNoWindow = true;
+            Process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             Process.StartInfo.UseShellExecute = false;
             Process.StartInfo.RedirectStandardError = true;
             Process.StartInfo.RedirectStandardOutput = true;
