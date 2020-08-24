@@ -95,6 +95,9 @@ Official Documentation : [wiki](https://github.com/AlphaBs/CmlLib.Core/wiki)
 
      // launch vanila
      var process = launcher.CreateProcess("1.15.2", launchOption);
+     
+     // launch forge
+     // var process = launcher.CreateProcess("1.16.2", "33.0.5", launchOption);
 
      process.Start();
 
