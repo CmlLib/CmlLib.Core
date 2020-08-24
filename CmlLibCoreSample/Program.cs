@@ -109,13 +109,13 @@ namespace CmlLibCoreSample
             };
 
             // (A) checks forge installation and install forge if it was not installed.
-            // (B) just launch any versions without install forge.
+            // (B) just launch any versions without installing forge, but it can still launch forge already installed.
             // Both methods automatically download essential files (ex: vanilla libraries) and create game process.
 
             // (A) download forge and launch
             // var process = launcher.CreateProcess("1.12.2", "14.23.5.2768", launchOption);
 
-            // (B) launch any version
+            // (B) launch vanilla version
             // var process = launcher.CreateProcess("1.15.2", launchOption);
 
             // If you have already installed forge, you can launch it directly like this.
@@ -146,14 +146,15 @@ namespace CmlLibCoreSample
             var minecraft = new MinecraftPath(path);
             minecraft.SetAssetsPath(Path.Combine(defaultPath, "assets")); // this speed up asset downloads
 
-            // get all profile metadatas
+            // get all version metadatas
+            // you can also use MVersionLoader.GetVersionMetadatasFromLocal and GetVersionMetadatasFromWeb
             var versionMetadatas = MVersionLoader.GetVersionMetadatas(minecraft);
             foreach (var item in versionMetadatas)
             {
                 Console.WriteLine("Name : {0}", item.Name);
                 Console.WriteLine("Type : {0}", item.Type);
                 Console.WriteLine("Path : {0}", item.Path);
-                Console.WriteLine("IsLocalProfile : {0}", item.IsLocalVersion);
+                Console.WriteLine("IsLocalVersion : {0}", item.IsLocalVersion);
                 Console.WriteLine("============================================");
             }
             Console.WriteLine("");
@@ -163,7 +164,7 @@ namespace CmlLibCoreSample
             Console.WriteLine("Input Version Name (ex: 1.15.2) : ");
             var versionName = Console.ReadLine();
 
-            // get profile
+            // get MVersion from MVersionMetadata
             var version = versionMetadatas.GetVersion(versionName);
             if (version == null)
             {
@@ -171,7 +172,7 @@ namespace CmlLibCoreSample
                 return;
             }
 
-            Console.WriteLine("\n\nProfile Information : ");
+            Console.WriteLine("\n\nVersion Information : ");
             Console.WriteLine("Id : {0}", version.Id);
             Console.WriteLine("Type : {0}", version.TypeStr);
             Console.WriteLine("ReleaseTime : {0}", version.ReleaseTime);
@@ -247,12 +248,12 @@ namespace CmlLibCoreSample
 
         #region QuickStart
 
-        // this code is from QuickStart document in CmlLib.Core wiki
+        // this code is from README.md
 
         void QuickStart()
         {
             //var path = new MinecraftPath("game_directory_path");
-            var path = new MinecraftPath();
+            var path = new MinecraftPath(); // use default directory
 
             var launcher = new CMLauncher(path);
             launcher.FileChanged += (e) =>
@@ -264,12 +265,24 @@ namespace CmlLibCoreSample
                 Console.WriteLine("{0}%", e.ProgressPercentage);
             };
 
-            var process = launcher.CreateProcess("1.15.2", new MLaunchOption()
+            foreach (var item in launcher.GetAllVersions())
             {
-                Session = MSession.GetOfflineSession("hi"),
-                JavaPath = "java.exe",
-                MaximumRamMb = 1024
-            });
+                Console.WriteLine(item.Name);
+            }
+
+            var launchOption = new MLaunchOption
+            {
+                MaximumRamMb = 1024,
+                Session = MSession.GetOfflineSession("hello"), // Login Session. ex) Session = MSession.GetOfflineSession("hello")
+
+                //ScreenWidth = 1600,
+                //ScreenHeigth = 900,
+                //ServerIp = "mc.hypixel.net"
+            };
+
+            // launch vanila
+            var process = launcher.CreateProcess("1.15.2", launchOption);
+
             process.Start();
         }
 
