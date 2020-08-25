@@ -250,7 +250,6 @@ namespace CmlLibCoreSample
             process.Start();
             Console.WriteLine("Started");
             Console.ReadLine();
-
         }
 
         #endregion

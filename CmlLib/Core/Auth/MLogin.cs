@@ -160,7 +160,6 @@ namespace CmlLib.Core.Auth
                 { "username", id },
                 { "password", pw },
                 { "clientToken", clientToken },
-
                 { "agent", new JObject
                     {
                         { "name", "Minecraft" },
