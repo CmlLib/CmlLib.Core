@@ -40,6 +40,8 @@ namespace CmlLibWinFormSample
             txtPath.Text = path.BasePath;
             MinecraftPath = path;
 
+            if (useMJava)
+                lbJavaPath.Text = path.Runtime;
             refreshVersions(null);
         }
 
@@ -93,9 +95,6 @@ namespace CmlLibWinFormSample
             var form = new PathForm(MinecraftPath);
             form.ShowDialog();
             InitializeLauncher(form.MinecraftPath);
-
-            if (useMJava)
-                lbJavaPath.Text = MinecraftPath.Runtime;
         }
 
         private void btnRefreshVersion_Click(object sender, EventArgs e)
