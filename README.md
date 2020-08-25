@@ -2,11 +2,15 @@
 
 ## Minecraft Launcher Library
 
+[![CodeFactor](https://www.codefactor.io/repository/github/alphabs/cmllib.core/badge)](https://www.codefactor.io/repository/github/alphabs/cmllib.core)
+
 This library is minecraft launcher library for .NET Core and .NET Framework  
 Support all version, with Forge
 
 [한국어 README](https://github.com/AlphaBs/CmlLib.Core/blob/master/docs/README-kr.md)  
 한국어 문서는 업데이트가 느립니다.
+
+**[3.0.0 Pre-Release README](https://github.com/AlphaBs/CmlLib.Core/blob/master/docs/README-3.0.0.md)**
 
 ## What is different between CmlLib.Core and [CmlLib](https://github.com/AlphaBs/MinecraftLauncherLibrary)?
 CmlLib.Core is developed using .NET Core and support crossplatform. but CmlLib doesn't support it and will be deprecated.
