@@ -58,7 +58,6 @@
             this.Controls.Add(this.richTextBox1);
             this.Name = "GameLog";
             this.Text = "GameLog";
-            this.Load += new System.EventHandler(this.GameLog_Load);
             this.ResumeLayout(false);
 
         }

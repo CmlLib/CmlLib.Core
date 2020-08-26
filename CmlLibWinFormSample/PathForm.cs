@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using CmlLib.Core;
+using System;
+using System.IO;
 using System.Windows.Forms;
-using CmlLib.Core;
 
 namespace CmlLibWinFormSample
 {
@@ -42,7 +36,10 @@ namespace CmlLibWinFormSample
 
         private void btnApply_Click(object sender, EventArgs e)
         {
-            apply(new MinecraftPath(txtPath.Text));
+            var mc = new MinecraftPath(txtPath.Text);
+            mc.Runtime = MinecraftPath.Runtime;
+            mc.SetAssetsPath(Path.Combine(MinecraftPath.GetOSDefaultPath(), "assets"));
+            apply(mc);
         }
 
         void apply(MinecraftPath path)
@@ -75,7 +72,7 @@ namespace CmlLibWinFormSample
 
         private void btnUseDefaultAssets_Click(object sender, EventArgs e)
         {
-            txtAssets.Text = System.IO.Path.Combine(MinecraftPath.GetOSDefaultPath(), "assets");
+            txtAssets.Text = Path.Combine(MinecraftPath.GetOSDefaultPath(), "assets");
         }
 
         private void cbEditMore_CheckedChanged(object sender, EventArgs e)

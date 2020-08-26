@@ -1,13 +1,7 @@
-﻿using System;
+﻿using CmlLib.Utils;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using CmlLib.Utils;
 
 namespace CmlLibWinFormSample
 {
@@ -91,7 +85,7 @@ namespace CmlLibWinFormSample
         private void btnOk_Click(object sender, EventArgs e)
         {
             if (txtKey.Enabled)
-                listView1.Items.Add(new ListViewItem(new string[] { txtKey.Text, txtValue.Text } ));
+                listView1.Items.Add(new ListViewItem(new string[] { txtKey.Text, txtValue.Text }));
             else
                 listView1.Items.Find(oKey, false)[0].SubItems[1].Text = txtValue.Text;
             pKeyValue.Visible = false;

@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using CmlLib.Core.Mojang;
+using System;
 using System.Threading;
-using CmlLib.Core.Mojang;
+using System.Windows.Forms;
 
 namespace CmlLibWinFormSample
 {
@@ -26,7 +19,7 @@ namespace CmlLibWinFormSample
                 var status = MojangServerStatus.GetStatus();
                 var properties = status.GetType().GetProperties();
 
-                Invoke(new Action(() => 
+                Invoke(new Action(() =>
                 {
                     foreach (var item in properties)
                     {

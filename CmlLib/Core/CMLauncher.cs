@@ -25,6 +25,7 @@ namespace CmlLib.Core
 
         public event DownloadFileChangedHandler FileChanged;
         public event ProgressChangedEventHandler ProgressChanged;
+        public event EventHandler<string> LogOutput;
 
         public MinecraftPath MinecraftPath { get; private set; }
         public MVersionCollection Versions { get; private set; }
@@ -109,6 +110,7 @@ namespace CmlLib.Core
             {
                 var mforge = new MForge(MinecraftPath, java);
                 mforge.FileChanged += (e) => fire(e);
+                mforge.InstallerOutput += (s, e) => LogOutput?.Invoke(this, e);
                 name = mforge.InstallForge(mcversion, forgeversion);
 
                 UpdateVersions();
@@ -142,22 +144,28 @@ namespace CmlLib.Core
             if (string.IsNullOrEmpty(option.JavaPath))
                 option.JavaPath = CheckJRE();
 
-            return CreateProcess(CheckForge(mcversion, forgeversion, option.JavaPath), option);
+            CheckGameFiles(GetVersion(mcversion), false);
+
+            var versionName = CheckForge(mcversion, forgeversion, option.JavaPath);
+            UpdateVersions();
+
+            return CreateProcess(versionName, option);
         }
 
         public Process CreateProcess(string versionname, MLaunchOption option)
         {
             option.StartVersion = GetVersion(versionname);
-            option.Path = MinecraftPath;
+            CheckGameFiles(option.StartVersion);
             return CreateProcess(option);
         }
 
         public Process CreateProcess(MLaunchOption option)
         {
+            if (option.Path == null)
+                option.Path = MinecraftPath;
+
             if (string.IsNullOrEmpty(option.JavaPath))
                 option.JavaPath = CheckJRE();
-
-            CheckGameFiles(option.StartVersion);
 
             var launch = new MLaunch(option);
             return launch.GetProcess();

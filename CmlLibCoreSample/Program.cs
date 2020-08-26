@@ -88,6 +88,7 @@ namespace CmlLibCoreSample
             var launcher = new CMLauncher(game);
             launcher.ProgressChanged += Downloader_ChangeProgress;
             launcher.FileChanged += Downloader_ChangeFile;
+            launcher.LogOutput += (s, e) => Console.WriteLine(e);
 
             Console.WriteLine($"Initialized in {launcher.MinecraftPath.BasePath}");
 
@@ -113,7 +114,7 @@ namespace CmlLibCoreSample
             // Both methods automatically download essential files (ex: vanilla libraries) and create game process.
 
             // (A) download forge and launch
-            // var process = launcher.CreateProcess("1.12.2", "14.23.5.2768", launchOption);
+            var process = launcher.CreateProcess("1.7.10", "10.13.4.1614", launchOption);
 
             // (B) launch vanilla version
             // var process = launcher.CreateProcess("1.15.2", launchOption);
@@ -122,9 +123,10 @@ namespace CmlLibCoreSample
             // var process = launcher.CreateProcess("1.12.2-forge1.12.2-14.23.5.2838", launchOption);
 
             // launch by user input
-            Console.WriteLine("input version (example: 1.12.2) : ");
-            var process = launcher.CreateProcess(Console.ReadLine(), launchOption);
+            //Console.WriteLine("input version (example: 1.12.2) : ");
+            //var process = launcher.CreateProcess(Console.ReadLine(), launchOption);
 
+            //var process = launcher.CreateProcess("1.16.2", "33.0.5", launchOption);
             Console.WriteLine(process.StartInfo.Arguments);
 
             // Below codes are print game logs in Console.
@@ -248,7 +250,6 @@ namespace CmlLibCoreSample
             process.Start();
             Console.WriteLine("Started");
             Console.ReadLine();
-
         }
 
         #endregion

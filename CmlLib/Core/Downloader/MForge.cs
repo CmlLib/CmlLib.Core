@@ -40,6 +40,9 @@ namespace CmlLib.Core.Downloader
         public string InstallForge(string mcversion, string forgeversion)
         {
             var minecraftJar = Path.Combine(Minecraft.Versions, mcversion, mcversion + ".jar");
+            if (!File.Exists(minecraftJar))
+                throw new IOException($"Install {mcversion} first");
+
             var installerPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
             var installerStream = getInstallerStream(mcversion, forgeversion); // download installer

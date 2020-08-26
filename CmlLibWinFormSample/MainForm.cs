@@ -1,21 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.IO;
-
-using CmlLib;
-using CmlLib.Core;
-using System.Diagnostics;
-using CmlLib.Core.Downloader;
+﻿using CmlLib.Core;
 using CmlLib.Core.Auth;
+using CmlLib.Core.Downloader;
 using CmlLib.Core.Version;
+using System;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Threading;
+using System.Windows.Forms;
 
 namespace CmlLibWinFormSample
 {
@@ -40,6 +32,8 @@ namespace CmlLibWinFormSample
             txtPath.Text = path.BasePath;
             MinecraftPath = path;
 
+            if (useMJava)
+                lbJavaPath.Text = path.Runtime;
             refreshVersions(null);
         }
 
@@ -83,19 +77,11 @@ namespace CmlLibWinFormSample
             InitializeLauncher(defaultPath);
         }
 
-        private void MainForm_Shown(object sender, EventArgs e)
-        {
-
-        }
-
         private void btnChangePath_Click(object sender, EventArgs e)
         {
             var form = new PathForm(MinecraftPath);
             form.ShowDialog();
             InitializeLauncher(form.MinecraftPath);
-
-            if (useMJava)
-                lbJavaPath.Text = MinecraftPath.Runtime;
         }
 
         private void btnRefreshVersion_Click(object sender, EventArgs e)
@@ -133,7 +119,7 @@ namespace CmlLibWinFormSample
         private void btnForgeInstall_Click(object sender, EventArgs e)
         {
             setUIEnabled(false);
-            new Thread(() => 
+            new Thread(() =>
             {
                 var forgeJava = "";
 
@@ -146,7 +132,7 @@ namespace CmlLibWinFormSample
                 else
                     forgeJava = javaPath;
 
-                Invoke(new Action(() => 
+                Invoke(new Action(() =>
                 {
                     var forgeForm = new ForgeInstall(MinecraftPath, forgeJava);
                     forgeForm.ShowDialog();
@@ -409,25 +395,23 @@ namespace CmlLibWinFormSample
 
         private void btnGithub_Click(object sender, EventArgs e)
         {
-            try
-            {
-                Process.Start("https://github.com/AlphaBs/CmlLib.Core");
-            }
-            catch
-            {
-
-            }
+            start("https://github.com/AlphaBs/CmlLib.Core");
         }
 
         private void btnWiki_Click(object sender, EventArgs e)
         {
+            start("https://github.com/AlphaBs/CmlLib.Core/wiki/MLaunchOption");
+        }
+
+        private void start(string url)
+        {
             try
             {
-                Process.Start("https://github.com/AlphaBs/CmlLib.Core/wiki/MLaunchOption");
+                Process.Start(url);
             }
-            catch
+            catch (Exception ex)
             {
-
+                MessageBox.Show(ex.ToString());
             }
         }
     }
