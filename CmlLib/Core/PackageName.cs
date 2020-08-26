@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace CmlLib.Core
 {
@@ -22,18 +20,15 @@ namespace CmlLib.Core
             return pn;
         }
 
-        private PackageName()
-        {
-
-        }
+        private PackageName() { }
 
         private string[] names;
 
-        public string this[int index] { get => names[index]; }
+        public string this[int index] => names[index];
 
-        public string Package { get => names[0]; }
-        public string Name { get => names[1]; }
-        public string Version { get => names[2]; }
+        public string Package => names[0];
+        public string Name => names[1];
+        public string Version => names[2];
 
         public string GetPath()
         {

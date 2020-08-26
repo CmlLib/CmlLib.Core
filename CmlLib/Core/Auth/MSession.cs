@@ -4,10 +4,7 @@ namespace CmlLib.Core.Auth
 {
     public class MSession
     {
-        public MSession()
-        {
-
-        }
+        public MSession() { }
 
         public MSession(string username, string accesstoken, string uuid)
         {

@@ -10,7 +10,6 @@ namespace CmlLib.Core
 {
     public class MLaunch
     {
-        
         private const int DefaultServerPort = 25565;
 
         public const string SupportVersion = "1.16.1";

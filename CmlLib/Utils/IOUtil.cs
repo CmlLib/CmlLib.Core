@@ -26,9 +26,9 @@ namespace CmlLib.Utils
 
                 Directory.Delete(target_dir, true);
             }
-            catch
+            catch (Exception ex)
             {
-
+                System.Diagnostics.Debug.WriteLine(ex);
             }
         }
 

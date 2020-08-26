@@ -63,6 +63,5 @@ namespace CmlLib.Core.LauncherProfile
         public string LauncherVersion { get; private set; }
         public string ClientToken { get; private set; }
         public MSession[] Sessions { get; private set; }
-
     }
 }
