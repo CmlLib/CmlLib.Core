@@ -267,72 +267,71 @@ namespace CmlLib.Core.Downloader
             {
                 var item = processors[i];
 
-                var name = item["jar"]?.ToString();
-                if (name == null)
-                    continue;
-
                 var outputs = item["outputs"] as JObject;
-                if (outputs != null)
-                {
-                    var valid = true;
-                    foreach (var outitem in outputs)
-                    {
-                        var key = Mapper.Interpolation(outitem.Key, mapData);
-                        var value = Mapper.Interpolation(outitem.Value.ToString(), mapData);
+                if (outputs == null || !checkProcessorOutputs(outputs, mapData))
+                    startProcessor(item, mapData);
 
-                        if (!File.Exists(key) || !IOUtil.CheckSHA1(key, value))
-                        {
-                            valid = false;
-                            break;
-                        }
-                    }
-
-                    if (valid) // skip processing if already done
-                    {
-                        fireEvent(MFile.Library, "processors", processors.Count, i + 1);
-                        continue;
-                    }
-                }
-
-                // jar
-                var jar = PackageName.Parse(name);
-                var jarpath = Path.Combine(Minecraft.Library, jar.GetPath());
-
-                var jarfile = new JarFile(jarpath);
-                var jarManifest = jarfile.GetManifest();
-
-                // mainclass
-                string mainclass = null;
-                var hasMainclass = jarManifest?.TryGetValue("Main-Class", out mainclass) ?? false;
-                if (!hasMainclass || string.IsNullOrEmpty(mainclass))
-                    continue;
-
-                // classpath
-                var classpathObj = item["classpath"];
-                var classpath = new List<string>();
-                if (classpathObj != null)
-                {
-                    foreach (var libname in classpathObj)
-                    {
-                        var lib = Path.Combine(Minecraft.Library,
-                            PackageName.Parse(libname?.ToString()).GetPath());
-                        classpath.Add(lib);
-                    }
-                }
-                classpath.Add(jarpath);
-
-                // arg
-                var argsArr = item["args"] as JArray;
-                string[] args = null;
-                if (argsArr != null)
-                {
-                    var arrStrs = argsArr.Select(x => x.ToString()).ToArray();
-                    args = Mapper.Map(arrStrs, mapData, Minecraft.Library);
-                }
-
-                startJava(classpath.ToArray(), mainclass, args);
                 fireEvent(MFile.Library, "processors", processors.Count, i + 1);
             }
+        }
+
+        private bool checkProcessorOutputs(JObject outputs, Dictionary<string, string> mapData)
+        {
+            foreach (var outitem in outputs)
+            {
+                var key = Mapper.Interpolation(outitem.Key, mapData);
+                var value = Mapper.Interpolation(outitem.Value.ToString(), mapData);
+
+                if (!File.Exists(key) || !IOUtil.CheckSHA1(key, value))
+                    return false;
+            }
+
+            return true;
+        }
+
+        private void startProcessor(JToken processor, Dictionary<string, string> mapData)
+        {
+            var name = processor["jar"]?.ToString();
+            if (name == null)
+                return;
+
+            // jar
+            var jar = PackageName.Parse(name);
+            var jarpath = Path.Combine(Minecraft.Library, jar.GetPath());
+
+            var jarfile = new JarFile(jarpath);
+            var jarManifest = jarfile.GetManifest();
+
+            // mainclass
+            string mainclass = null;
+            var hasMainclass = jarManifest?.TryGetValue("Main-Class", out mainclass) ?? false;
+            if (!hasMainclass || string.IsNullOrEmpty(mainclass))
+                return;
+
+            // classpath
+            var classpathObj = processor["classpath"];
+            var classpath = new List<string>();
+            if (classpathObj != null)
+            {
+                foreach (var libname in classpathObj)
+                {
+                    var lib = Path.Combine(Minecraft.Library,
+                        PackageName.Parse(libname?.ToString()).GetPath());
+                    classpath.Add(lib);
+                }
+            }
+            classpath.Add(jarpath);
+
+            // arg
+            var argsArr = processor["args"] as JArray;
+            string[] args = null;
+            if (argsArr != null)
+            {
+                var arrStrs = argsArr.Select(x => x.ToString()).ToArray();
+                args = Mapper.Map(arrStrs, mapData, Minecraft.Library);
+            }
+
+            startJava(classpath.ToArray(), mainclass, args);
         }
 
         private void startJava(string[] classpath, string mainclass, string[] args)
