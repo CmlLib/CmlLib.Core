@@ -34,6 +34,7 @@ or download dll files in [Releases](https://github.com/AlphaBs/CmlLib.Core/relea
 write this on the top of your source code:
 
      using CmlLib.Core;
+     using CmlLib.Core.Auth;
 
 ## How To Use
 
