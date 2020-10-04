@@ -32,10 +32,10 @@ Install Nuget Package 'CmlLib.Core'
 or download dll files in [Releases](https://github.com/AlphaBs/CmlLib.Core/releases) and add reference to your project.
 
 write this on the top of your source code:
-
-     using CmlLib.Core;
-     using CmlLib.Core.Auth;
-
+```csharp
+using CmlLib.Core;
+using CmlLib.Core.Auth;
+```
 ## How To Use
 
 Official Documentation : [wiki](https://github.com/AlphaBs/CmlLib.Core/wiki)
@@ -43,71 +43,71 @@ Official Documentation : [wiki](https://github.com/AlphaBs/CmlLib.Core/wiki)
 **[Sample Code](https://github.com/AlphaBs/CmlLib.Core/wiki/Sample-Code)**
 
 **Login**
+```csharp
+var login = new MLogin();
+var response = login.TryAutoLogin();
 
-     var login = new MLogin();
-     var response = login.TryAutoLogin();
+if (!response.IsSuccess) // failed to auto login
+{
+    var email = Console.ReadLine();
+    var pw = Console.ReadLine();
+    response = login.Authenticate(email, pw);
 
-     if (!response.IsSuccess) // failed to auto login
-     {
-         var email = Console.ReadLine();
-         var pw = Console.ReadLine();
-         response = login.Authenticate(email, pw);
+    if (!response.IsSuccess)
+         throw new Exception(session.Result.ToString()) // failed to login
+}
 
-         if (!response.IsSuccess)
-              throw new Exception(session.Result.ToString()) // failed to login
-     }
-
-     // This session variable is the result of login.
-     // and used in MLaunchOption, in the Launch part below
-     var session = response.Session;
-
+// This session variable is the result of login.
+// and used in MLaunchOption, in the Launch part below
+var session = response.Session;
+```
 **Offline Login**
-
-     // This session variable is the result of login.
-     // and used in MLaunchOption, in the Launch part below
-     var session = MSession.GetOfflineSession("USERNAME");
-
+```csharp
+// This session variable is the result of login.
+// and used in MLaunchOption, in the Launch part below
+var session = MSession.GetOfflineSession("USERNAME");
+```
 **Launch**
+```csharp
+//var path = new MinecraftPath("game_directory_path");
+var path = new MinecraftPath(); // use default directory
 
-     //var path = new MinecraftPath("game_directory_path");
-     var path = new MinecraftPath(); // use default directory
+var launcher = new CMLauncher(path);
+launcher.FileChanged += (e) =>
+{
+    Console.WriteLine("[{0}] {1} - {2}/{3}", e.FileKind.ToString(), e.FileName, e.ProgressedFileCount, e.TotalFileCount);
+};
+launcher.ProgressChanged += (s, e) =>
+{
+    Console.WriteLine("{0}%", e.ProgressPercentage);
+};
 
-     var launcher = new CMLauncher(path);
-     launcher.FileChanged += (e) =>
-     {
-         Console.WriteLine("[{0}] {1} - {2}/{3}", e.FileKind.ToString(), e.FileName, e.ProgressedFileCount, e.TotalFileCount);
-     };
-     launcher.ProgressChanged += (s, e) =>
-     {
-         Console.WriteLine("{0}%", e.ProgressPercentage);
-     };
+foreach (var item in launcher.GetAllVersions())
+{
+    Console.WriteLine(item.Name);
+}
 
-     foreach (var item in launcher.GetAllVersions())
-     {
-         Console.WriteLine(item.Name);
-     }
+var launchOption = new MLaunchOption
+{
+    MaximumRamMb = 1024,
+    Session = session, // Login Session. ex) Session = MSession.GetOfflineSession("hello")
 
-     var launchOption = new MLaunchOption
-     {
-         MaximumRamMb = 1024,
-         Session = session, // Login Session. ex) Session = MSession.GetOfflineSession("hello")
+    //ScreenWidth = 1600,
+    //ScreenHeigth = 900,
+    //ServerIp = "mc.hypixel.net"
+};
 
-         //ScreenWidth = 1600,
-         //ScreenHeigth = 900,
-         //ServerIp = "mc.hypixel.net"
-     };
+// launch vanila
+var process = launcher.CreateProcess("1.15.2", launchOption);
 
-     // launch vanila
-     var process = launcher.CreateProcess("1.15.2", launchOption);
+// launch forge (already installed)
+// var process = launcher.CreateProcess("1.16.2-forge-33.0.5", launchOption);
 
-     // launch forge (already installed)
-     // var process = launcher.CreateProcess("1.16.2-forge-33.0.5", launchOption);
+// launch forge (install forge if not installed)
+// var process = launcher.CreateProcess("1.16.2", "33.0.5", launchOption);
 
-     // launch forge (install forge if not installed)
-     // var process = launcher.CreateProcess("1.16.2", "33.0.5", launchOption);
-
-     process.Start();
-
+process.Start();
+```
 ### More Information
 
 Go to [wiki](https://github.com/AlphaBs/CmlLib.Core/wiki/MLaunchOption)
