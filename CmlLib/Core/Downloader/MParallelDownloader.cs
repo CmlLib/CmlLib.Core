@@ -1,8 +1,10 @@
 ﻿using CmlLib.Core.Version;
+using CmlLib.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CmlLib.Core.Downloader
@@ -19,70 +21,73 @@ namespace CmlLib.Core.Downloader
             MaxThread = maxThread;
 
             if (setConnectionLimit)
-                ServicePointManager.DefaultConnectionLimit = maxThread;
+                ServicePointManager.DefaultConnectionLimit = maxThread + 5;
         }
 
         public int MaxThread { get; private set; }
-        object lockEvent = new object();
 
         public override void DownloadFiles(DownloadFile[] files)
         {
-            TryDownloadFiles(files, 3, null);
+            DownloadParallelAsync(files, MaxThread)
+                .Wait();
         }
 
-        private void TryDownloadFiles(DownloadFile[] files, int retry, Exception failEx)
+        public async Task DownloadParallelAsync(DownloadFile[] files, int parallelDegree)
         {
-            if (retry == 0)
-            {
-                if (IgnoreInvalidFiles)
-                    return;
-                else
-                {
-                    if (failEx == null)
-                        failEx = new MDownloadFileException(failEx.Message, failEx, files[0]);
-                    throw failEx;
-                }
-            }
+            MFile filetype = MFile.Library;
+            if (files.Length > 0)
+                filetype = files[0].Type;
 
-            var length = files.Length;
-            if (length == 0)
-                return;
+            var downloadTasks = new List<Task>(files.Length);
+            var semaphore = new SemaphoreSlim(parallelDegree, parallelDegree);
 
             var progressed = 0;
-            fireDownloadFileChangedEvent(files[0].Type, files[0].Name, length, 0);
 
-            var option = new ParallelOptions()
+            foreach (var file in files)
             {
-                MaxDegreeOfParallelism = MaxThread
-            };
+                await semaphore.WaitAsync().ConfigureAwait(false);
+                var t = Task.Run(() => doDownload(file.Path, file.Url));
+                downloadTasks.Add(t);
+            }
 
-            var failedFiles = new List<DownloadFile>();
-
-            Exception lastEx = null;
-            Parallel.ForEach(files, option, (file) =>
+            Task waitEvent = null;
+            async Task doDownload(string path, string url)
             {
                 try
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(file.Path));
-                    using (var wc = new WebClient())
-                    {
-                        wc.DownloadFile(file.Url, file.Path);
-                    }
+                    Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-                    lock (lockEvent)
+                    var req = WebRequest.CreateHttp(url);
+                    req.Method = "GET";
+                    var res = await req.GetResponseAsync().ConfigureAwait(false);
+
+                    using (var httpStream = res.GetResponseStream())
+                    using (var fs = File.OpenWrite(path))
                     {
-                        progressed++;
-                        fireDownloadFileChangedEvent(file.Type, file.Name, length, progressed);
+                        await httpStream.CopyToAsync(fs).ConfigureAwait(false);
                     }
                 }
                 catch (Exception ex)
                 {
-                    failedFiles.Add(file);
-                    lastEx = ex;
+                    System.Diagnostics.Debug.WriteLine(ex);
                 }
-            });
+                finally
+                {
+                    Interlocked.Increment(ref progressed);
+                    waitEvent = Task.Run(() =>
+                    {
+                        fireDownloadFileChangedEvent(filetype, "", files.Length, progressed);
+                    });
 
-            TryDownloadFiles(failedFiles.ToArray(), retry - 1, lastEx);
+                    semaphore.Release();
+                }
+            }
+
+            var download = Task.WhenAll(downloadTasks);
+            await download;
+
+            if (waitEvent != null)
+                await waitEvent;
         }
     }
 }

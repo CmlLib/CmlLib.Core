@@ -191,13 +191,13 @@ namespace CmlLib.Core.Downloader
             string id = DownloadVersion.Jar;
             var path = Path.Combine(MinecraftPath.Versions, id, id + ".jar");
 
-            fireDownloadFileChangedEvent(MFile.Minecraft, id, 1, 0);
-
             if (!CheckFileValidation(path, DownloadVersion.ClientHash))
             {
                 var file = new DownloadFile(MFile.Minecraft, id, path, DownloadVersion.ClientDownloadUrl);
                 DownloadFiles(new DownloadFile[] { file });
             }
+
+            fireDownloadFileChangedEvent(MFile.Minecraft, id, 1, 1);
         }
 
         private bool CheckFileValidation(string path, string hash)
