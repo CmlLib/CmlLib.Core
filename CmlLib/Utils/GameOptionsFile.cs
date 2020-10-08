@@ -32,8 +32,8 @@ namespace CmlLib.Utils
                     if (!line.Contains(":"))
                         continue;
 
-                    var keyvalue = FromKeyValueString(reader.ReadLine());
-                    options.Add(keyvalue.Key, keyvalue.Value);
+                    var keyvalue = FromKeyValueString(line);
+                    options[keyvalue.Key] = keyvalue.Value;
                 }
             }
 
