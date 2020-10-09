@@ -84,7 +84,7 @@ namespace CmlLib.Core.Downloader
         /// </summary>
         public void DownloadIndex()
         {
-            string path = Path.Combine(MinecraftPath.Index, DownloadVersion.AssetId + ".json");
+            string path = MinecraftPath.GetIndexFilePath(DownloadVersion.AssetId);
 
             if (DownloadVersion.AssetUrl != "" && !CheckFileValidation(path, DownloadVersion.AssetHash))
             {
@@ -102,7 +102,7 @@ namespace CmlLib.Core.Downloader
         /// </summary>
         public void DownloadResource()
         {
-            var indexpath = Path.Combine(MinecraftPath.Index, DownloadVersion.AssetId + ".json");
+            var indexpath = MinecraftPath.GetIndexFilePath(DownloadVersion.AssetId);
             if (!File.Exists(indexpath)) return;
 
             var json = File.ReadAllText(indexpath);
@@ -131,7 +131,7 @@ namespace CmlLib.Core.Downloader
                 // download hash resource
                 var hash = job["hash"]?.ToString();
                 var hashName = hash.Substring(0, 2) + "/" + hash;
-                var hashPath = Path.Combine(MinecraftPath.AssetObject, hashName);
+                var hashPath = Path.Combine(MinecraftPath.GetAssetObjectPath(), hashName);
 
                 if (!CheckFileValidation(hashPath, hash))
                 {
@@ -141,7 +141,7 @@ namespace CmlLib.Core.Downloader
 
                 if (isVirtual)
                 {
-                    var resPath = Path.Combine(MinecraftPath.AssetLegacy, item.Key);
+                    var resPath = Path.Combine(MinecraftPath.GetAssetLegacyPath(), item.Key);
                     copyRequiredFiles.Add(new Tuple<string, string>(hashPath, resPath));
                 }
 
@@ -189,7 +189,7 @@ namespace CmlLib.Core.Downloader
             if (string.IsNullOrEmpty(DownloadVersion.ClientDownloadUrl)) return;
 
             string id = DownloadVersion.Jar;
-            var path = Path.Combine(MinecraftPath.Versions, id, id + ".jar");
+            var path = MinecraftPath.GetVersionJarPath(id);
 
             if (!CheckFileValidation(path, DownloadVersion.ClientHash))
             {

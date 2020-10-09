@@ -25,16 +25,6 @@ namespace CmlLib.Core
             }
         }
 
-        public string BasePath { get; set; }
-        public string Library { get; set; }
-        public string Versions { get; set; }
-        public string Resource { get; set; }
-        public string Index { get; set; }
-        public string Assets { get; set; }
-        public string AssetObject { get; set; }
-        public string AssetLegacy { get; set; }
-        public string Runtime { get; set; }
-
         public MinecraftPath()
         {
             var basePath = GetOSDefaultPath();
@@ -53,35 +43,62 @@ namespace CmlLib.Core
 
         private void Initialize(string p, string assetsPath)
         {
-            BasePath = c(p);
+            BasePath = Dir(p);
 
-            Library = c(BasePath + "/libraries");
-            Versions = c(BasePath + "/versions");
-            Resource = c(BasePath + "/resources");
+            Library = Dir(BasePath + "/libraries");
+            Versions = Dir(BasePath + "/versions");
+            Resource = Dir(BasePath + "/resources");
 
-            Runtime = c(BasePath + "/runtime");
-            SetAssetsPath(assetsPath + "/assets");
+            Runtime = Dir(BasePath + "/runtime");
+            Assets = Dir(assetsPath + "/assets");
         }
 
-        public void SetAssetsPath(string p)
-        {
-            Assets = c(p);
-            Index = c(Assets + "/indexes");
-            AssetObject = c(Assets + "/objects");
-            AssetLegacy = c(Assets + "/virtual/legacy");
-        }
+        public string BasePath { get; set; }
+        public string Library { get; set; }
+        public string Versions { get; set; }
+        public string Resource { get; set; }
+        public string Assets { get; set; }
+        public string Runtime { get; set; }
+
+        public virtual string GetIndexFilePath(string assetId)
+            => CreateFileDir($"{Assets}/indexes/{assetId}.json");
+
+        public virtual string GetAssetObjectPath()
+            => Dir($"{Assets}/objects");
+
+        public virtual string GetAssetLegacyPath()
+            => Dir($"{Assets}/virtual/legacy");
+
+        public virtual string GetVersionJarPath(string id)
+            => CreateFileDir($"{Versions}/{id}/{id}.jar");
+
+        public virtual string GetVersionJsonPath(string id)
+            => CreateFileDir($"{Versions}/{id}/{id}.json");
+
+        public virtual string GetNativePath(string id)
+            => Dir($"{Versions}/{id}/natives");
 
         public override string ToString()
         {
             return BasePath;
         }
 
-        static string c(string path)
+        protected static string Dir(string path)
         {
             var p = Path.GetFullPath(path);
             if (!Directory.Exists(p))
                 Directory.CreateDirectory(p);
 
+            return p;
+        }
+
+        protected static string CreateFileDir(string file)
+        {
+            var p = Path.GetFullPath(file);
+            if (File.Exists(p))
+                return p;
+
+            Dir(Path.GetDirectoryName(p));
             return p;
         }
     }

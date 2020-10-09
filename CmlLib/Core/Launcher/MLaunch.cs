@@ -85,7 +85,7 @@ namespace CmlLib.Core
                 .Select(lib => Path.GetFullPath(Path.Combine(MinecraftPath.Library, lib.Path)));
             libArgs.AddRange(mclibs);
 
-            libArgs.Add(Path.Combine(MinecraftPath.Versions, version.Jar, version.Jar + ".jar"));
+            libArgs.Add(MinecraftPath.GetVersionJarPath(version.Jar));
 
             var libs = IOUtil.CombinePath(libArgs.ToArray());
 
@@ -123,7 +123,7 @@ namespace CmlLib.Core
                 { "auth_access_token", LaunchOption.Session.AccessToken },
                 { "user_properties", "{}" },
                 { "user_type", "Mojang" },
-                { "game_assets", MinecraftPath.AssetLegacy },
+                { "game_assets", MinecraftPath.GetAssetLegacyPath() },
                 { "auth_session", LaunchOption.Session.AccessToken },
                 { "version_type", useNotNull(LaunchOption.VersionType, version.TypeStr) }
             };

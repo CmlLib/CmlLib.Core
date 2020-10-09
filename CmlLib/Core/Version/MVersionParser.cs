@@ -32,10 +32,7 @@ namespace CmlLib.Core.Version
                 using (var wc = new WebClient())
                 {
                     json = wc.DownloadString(info.Path);
-
-                    var jsonpath = Path.Combine(savePath.Versions, info.Name);
-                    Directory.CreateDirectory(jsonpath);
-                    File.WriteAllText(Path.Combine(jsonpath, info.Name + ".json"), json);
+                    File.WriteAllText(savePath.GetVersionJsonPath(info.Name), json);
 
                     return ParseFromJson(json);
                 }

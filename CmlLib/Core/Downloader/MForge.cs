@@ -39,7 +39,7 @@ namespace CmlLib.Core.Downloader
 
         public string InstallForge(string mcversion, string forgeversion)
         {
-            var minecraftJar = Path.Combine(Minecraft.Versions, mcversion, mcversion + ".jar");
+            var minecraftJar = Minecraft.GetVersionJarPath(mcversion);
             if (!File.Exists(minecraftJar))
                 throw new IOException($"Install {mcversion} first");
 
@@ -70,11 +70,7 @@ namespace CmlLib.Core.Downloader
                            ?? installerObj["version"]?.ToString()
                            ?? GetForgeName(mcversion, forgeversion);
 
-            var versionPath = Path.Combine(
-                Minecraft.Versions,
-                versionName,
-                versionName + ".json"
-            );
+            var versionPath = Minecraft.GetVersionJsonPath(versionName);
 
             // write version profile json
             writeProfile(profileObj, versionPath);
