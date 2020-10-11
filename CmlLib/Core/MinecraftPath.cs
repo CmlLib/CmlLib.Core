@@ -61,22 +61,22 @@ namespace CmlLib.Core
         public string Runtime { get; set; }
 
         public virtual string GetIndexFilePath(string assetId)
-            => CreateFileDir($"{Assets}/indexes/{assetId}.json");
+            => $"{Assets}/indexes/{assetId}.json";
 
         public virtual string GetAssetObjectPath()
-            => Dir($"{Assets}/objects");
+            => $"{Assets}/objects";
 
         public virtual string GetAssetLegacyPath()
-            => Dir($"{Assets}/virtual/legacy");
+            => $"{Assets}/virtual/legacy";
 
         public virtual string GetVersionJarPath(string id)
-            => CreateFileDir($"{Versions}/{id}/{id}.jar");
+            => $"{Versions}/{id}/{id}.jar";
 
         public virtual string GetVersionJsonPath(string id)
-            => CreateFileDir($"{Versions}/{id}/{id}.json");
+            => $"{Versions}/{id}/{id}.json";
 
         public virtual string GetNativePath(string id)
-            => Dir($"{Versions}/{id}/natives");
+            => $"{Versions}/{id}/natives";
 
         public override string ToString()
         {
@@ -89,16 +89,6 @@ namespace CmlLib.Core
             if (!Directory.Exists(p))
                 Directory.CreateDirectory(p);
 
-            return p;
-        }
-
-        protected static string CreateFileDir(string file)
-        {
-            var p = Path.GetFullPath(file);
-            if (File.Exists(p))
-                return p;
-
-            Dir(Path.GetDirectoryName(p));
             return p;
         }
     }
