@@ -47,7 +47,7 @@ namespace CmlLib.Core
 
         public MVersionCollection UpdateVersions()
         {
-            Versions = MVersionLoader.GetVersionMetadatas(MinecraftPath);
+            Versions = new MVersionLoader(MinecraftPath).GetVersionMetadatas();
             return Versions;
         }
 
@@ -120,7 +120,7 @@ namespace CmlLib.Core
         }
 
         public void CheckGameFiles(MVersion version, bool downloadAsset = true, bool checkFileHash = true)
-        { 
+        {
             var downloader = new MDownloader(MinecraftPath, version);
             downloadGameFiles(downloader, downloadAsset, checkFileHash);
         }

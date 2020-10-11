@@ -7,33 +7,40 @@ namespace CmlLib.Core.Version
 {
     public class MVersionLoader
     {
+        public MVersionLoader(MinecraftPath path)
+        {
+            this.MinecraftPath = path;
+        }
+
+        public MinecraftPath MinecraftPath { get; private set; }
+
         /// <summary>
         /// Get All MVersionInfo from mojang server and local
         /// </summary>
-        public static MVersionCollection GetVersionMetadatas(MinecraftPath mc)
+        public MVersionCollection GetVersionMetadatas()
         {
-            var list = getFromLocal(mc);
+            var list = getFromLocal();
             var web = GetVersionMetadatasFromWeb();
             foreach (var item in web)
             {
                 if (!list.Contains(item))
                     list.Add(item);
             }
-            return new MVersionCollection(list.ToArray(), mc, web.LatestReleaseVersion, web.LatestSnapshotVersion);
+            return new MVersionCollection(list.ToArray(), MinecraftPath, web.LatestReleaseVersion, web.LatestSnapshotVersion);
         }
 
         /// <summary>
         /// Get All MVersionInfo from local
         /// </summary>
-        public static MVersionCollection GetVersionMetadatasFromLocal(MinecraftPath mc)
+        public MVersionCollection GetVersionMetadatasFromLocal()
         {
-            var list = getFromLocal(mc).ToArray();
-            return new MVersionCollection(list, mc);
+            var list = getFromLocal().ToArray();
+            return new MVersionCollection(list, MinecraftPath);
         }
 
-        private static List<MVersionMetadata> getFromLocal(MinecraftPath mc)
+        private List<MVersionMetadata> getFromLocal()
         {
-            var dirs = new DirectoryInfo(mc.Versions).GetDirectories();
+            var dirs = new DirectoryInfo(MinecraftPath.Versions).GetDirectories();
             var arr = new List<MVersionMetadata>(dirs.Length);
 
             for (int i = 0; i < dirs.Length; i++)

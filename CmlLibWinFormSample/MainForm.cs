@@ -43,7 +43,7 @@ namespace CmlLibWinFormSample
 
             var th = new Thread(new ThreadStart(delegate
             {
-                Versions = MVersionLoader.GetVersionMetadatas(MinecraftPath);
+                Versions = new MVersionLoader(MinecraftPath).GetVersionMetadatas();
                 Invoke(new Action(() =>
                 {
                     bool showVersionExist = false;
