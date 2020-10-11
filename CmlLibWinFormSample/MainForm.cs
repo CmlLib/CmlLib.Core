@@ -186,6 +186,8 @@ namespace CmlLibWinFormSample
                     GameLauncherName = Txt_GLauncherName.Text,
                     GameLauncherVersion = Txt_GLauncherVersion.Text,
 
+                    FullScreen = cbFullscreen.Checked,
+
                     ServerIp = Txt_ServerIp.Text,
 
                     DockName = Txt_DockName.Text,

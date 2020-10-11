@@ -19,8 +19,8 @@ namespace CmlLibCoreSample
 
             // There are two login methods, one is using mojang email and password, and the other is using only username
             // Choose one which you want.
-            //session = p.PremiumLogin(); // Login by mojang email and password
-            session = p.OfflineLogin(); // Login by username
+            session = p.PremiumLogin(); // Login by mojang email and password
+            //session = p.OfflineLogin(); // Login by username
 
             // log login session information
             Console.WriteLine("Success to login : {0} / {1} / {2}", session.Username, session.UUID, session.AccessToken);
@@ -88,7 +88,7 @@ namespace CmlLibCoreSample
             var launcher = new CMLauncher(game);
             launcher.ProgressChanged += Downloader_ChangeProgress;
             launcher.FileChanged += Downloader_ChangeFile;
-            launcher.LogOutput += (s, e) => Console.WriteLine(e);
+            launcher.LogOutput += (s, e) => Console.WriteLine(e); // forge installer log
 
             Console.WriteLine($"Initialized in {launcher.MinecraftPath.BasePath}");
 
@@ -114,7 +114,7 @@ namespace CmlLibCoreSample
             // Both methods automatically download essential files (ex: vanilla libraries) and create game process.
 
             // (A) download forge and launch
-            var process = launcher.CreateProcess("1.7.10", "10.13.4.1614", launchOption);
+            // var process = launcher.CreateProcess("1.12.2", "14.23.5.2768", launchOption);
 
             // (B) launch vanilla version
             // var process = launcher.CreateProcess("1.15.2", launchOption);
@@ -123,8 +123,8 @@ namespace CmlLibCoreSample
             // var process = launcher.CreateProcess("1.12.2-forge1.12.2-14.23.5.2838", launchOption);
 
             // launch by user input
-            //Console.WriteLine("input version (example: 1.12.2) : ");
-            //var process = launcher.CreateProcess(Console.ReadLine(), launchOption);
+            Console.WriteLine("input version (example: 1.12.2) : ");
+            var process = launcher.CreateProcess(Console.ReadLine(), launchOption);
 
             //var process = launcher.CreateProcess("1.16.2", "33.0.5", launchOption);
             Console.WriteLine(process.StartInfo.Arguments);
@@ -152,12 +152,14 @@ namespace CmlLibCoreSample
             var path = Path.Combine(Environment.CurrentDirectory, "game dir");
 
             // create minecraft path instance
-            var minecraft = new MinecraftPath(path);
-            minecraft.SetAssetsPath(Path.Combine(defaultPath, "assets")); // this speed up asset downloads
+            var minecraft = new MinecraftPath(path)
+            {
+                Assets = Path.Combine(defaultPath, "assets") // this speed up asset downloads
+            };
 
             // get all version metadatas
             // you can also use MVersionLoader.GetVersionMetadatasFromLocal and GetVersionMetadatasFromWeb
-            var versionMetadatas = MVersionLoader.GetVersionMetadatas(minecraft);
+            var versionMetadatas = new MVersionLoader(minecraft).GetVersionMetadatas();
             foreach (var item in versionMetadatas)
             {
                 Console.WriteLine("Name : {0}", item.Name);
