@@ -65,12 +65,15 @@ namespace CmlLib.Core
             if (LaunchOption.JVMArguments != null)
                 args.AddRange(LaunchOption.JVMArguments);
             else
+            {
                 args.AddRange(DefaultJavaParameter);
 
-            args.Add("-Xmx" + LaunchOption.MaximumRamMb + "m");
+                if (LaunchOption.MaximumRamMb > 0)
+                    args.Add("-Xmx" + LaunchOption.MaximumRamMb + "m");
 
-            if (LaunchOption.MinimumRamMb > 0)
-                args.Add("-Xms" + LaunchOption.MinimumRamMb + "m");
+                if (LaunchOption.MinimumRamMb > 0)
+                    args.Add("-Xms" + LaunchOption.MinimumRamMb + "m");
+            }
 
             if (!string.IsNullOrEmpty(LaunchOption.DockName))
                 args.Add("-Xdock:name=" + handleEmpty(LaunchOption.DockName));
@@ -78,16 +81,15 @@ namespace CmlLib.Core
                 args.Add("-Xdock:icon=" + handleEmpty(LaunchOption.DockIcon));
 
             // Version-specific JVM Arguments
-            var libArgs = new List<string>(version.Libraries.Length);
+            var classpath = new List<string>(version.Libraries.Length);
 
-            var mclibs = version.Libraries
+            var libraries = version.Libraries
                 .Where(lib => lib.IsRequire && !lib.IsNative)
                 .Select(lib => Path.GetFullPath(Path.Combine(MinecraftPath.Library, lib.Path)));
-            libArgs.AddRange(mclibs);
+            classpath.AddRange(libraries);
+            classpath.Add(MinecraftPath.GetVersionJarPath(version.Jar));
 
-            libArgs.Add(MinecraftPath.GetVersionJarPath(version.Jar));
-
-            var libs = IOUtil.CombinePath(libArgs.ToArray());
+            var classpathStr = IOUtil.CombinePath(classpath.ToArray());
 
             var native = new MNative(MinecraftPath, LaunchOption.StartVersion);
             native.CleanNatives();
@@ -98,7 +100,7 @@ namespace CmlLib.Core
                 { "natives_directory", nativePath },
                 { "launcher_name", useNotNull(LaunchOption.GameLauncherName, "minecraft-launcher") },
                 { "launcher_version", useNotNull(LaunchOption.GameLauncherVersion, "2") },
-                { "classpath", libs }
+                { "classpath", classpathStr }
             };
 
             if (version.JvmArguments != null)
@@ -106,7 +108,7 @@ namespace CmlLib.Core
             else
             {
                 args.Add("-Djava.library.path=" + handleEmpty(nativePath));
-                args.Add("-cp " + libs);
+                args.Add("-cp " + classpathStr);
             }
 
             args.Add(version.MainClass);
@@ -114,18 +116,18 @@ namespace CmlLib.Core
             // Game Arguments
             var gameDict = new Dictionary<string, string>()
             {
-                { "auth_player_name", LaunchOption.Session.Username },
-                { "version_name", LaunchOption.StartVersion.Id },
-                { "game_directory", MinecraftPath.BasePath },
-                { "assets_root", MinecraftPath.Assets },
+                { "auth_player_name" , LaunchOption.Session.Username },
+                { "version_name"     , LaunchOption.StartVersion.Id },
+                { "game_directory"   , MinecraftPath.BasePath },
+                { "assets_root"      , MinecraftPath.Assets },
                 { "assets_index_name", version.AssetId },
-                { "auth_uuid", LaunchOption.Session.UUID },
+                { "auth_uuid"        , LaunchOption.Session.UUID },
                 { "auth_access_token", LaunchOption.Session.AccessToken },
-                { "user_properties", "{}" },
-                { "user_type", "Mojang" },
-                { "game_assets", MinecraftPath.GetAssetLegacyPath() },
-                { "auth_session", LaunchOption.Session.AccessToken },
-                { "version_type", useNotNull(LaunchOption.VersionType, version.TypeStr) }
+                { "user_properties"  , "{}" },
+                { "user_type"        , "Mojang" },
+                { "game_assets"      , MinecraftPath.GetAssetLegacyPath() },
+                { "auth_session"     , LaunchOption.Session.AccessToken },
+                { "version_type"     , useNotNull(LaunchOption.VersionType, version.TypeStr) }
             };
 
             if (version.GameArguments != null)
