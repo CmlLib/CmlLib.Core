@@ -46,7 +46,10 @@ namespace CmlLib.Core.Downloader
             var installerPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
             var installerStream = getInstallerStream(mcversion, forgeversion); // download installer
-            var (profileObj, installerObj) = extractInstaller(installerStream, installerPath); // extract installer
+            var extractedFile = extractInstaller(installerStream, installerPath); // extract installer
+
+            var profileObj = extractedFile.Item1; // version profile json
+            var installerObj = extractedFile.Item2; // installer info
 
             // copy forge libraries to minecraft
             extractMaven(installerPath); // new installer
@@ -86,7 +89,7 @@ namespace CmlLib.Core.Downloader
             //return File.OpenRead(@"C:\temp\forge-1.16.2-33.0.5-installer.jar");
         }
 
-        private (JToken, JToken) extractInstaller(Stream stream, string extractPath)
+        private Tuple<JToken, JToken> extractInstaller(Stream stream, string extractPath)
         {
             // extract installer
             string install_profile = null;
@@ -132,7 +135,7 @@ namespace CmlLib.Core.Downloader
                 profileObj = versionInfo;
             }
 
-            return (profileObj, installObj);
+            return new Tuple<JToken, JToken>(profileObj, installObj);
         }
 
         private string readStreamString(Stream s)
