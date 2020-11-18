@@ -9,6 +9,6 @@ namespace CmlLib
 {
     public class _Test
     {
-        public static string tstr = "x3";
+        public static string tstr = "462,31";
     }
 }

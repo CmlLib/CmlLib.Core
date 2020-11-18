@@ -2,45 +2,39 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System;
 
 namespace CmlLib.Core.Version
 {
     public class MVersionLoader
     {
-        public MVersionLoader(MinecraftPath path)
-        {
-            this.MinecraftPath = path;
-        }
-
-        public MinecraftPath MinecraftPath { get; private set; }
-
         /// <summary>
         /// Get All MVersionInfo from mojang server and local
         /// </summary>
-        public MVersionCollection GetVersionMetadatas()
+        public MVersionCollection GetVersionMetadatas(MinecraftPath path)
         {
-            var list = getFromLocal();
+            var list = getFromLocal(path);
             var web = GetVersionMetadatasFromWeb();
             foreach (var item in web)
             {
                 if (!list.Contains(item))
                     list.Add(item);
             }
-            return new MVersionCollection(list.ToArray(), MinecraftPath, web.LatestReleaseVersion, web.LatestSnapshotVersion);
+            return new MVersionCollection(list.ToArray(), path, web.LatestReleaseVersion, web.LatestSnapshotVersion);
         }
 
         /// <summary>
         /// Get All MVersionInfo from local
         /// </summary>
-        public MVersionCollection GetVersionMetadatasFromLocal()
+        public MVersionCollection GetVersionMetadatasFromLocal(MinecraftPath path)
         {
-            var list = getFromLocal().ToArray();
-            return new MVersionCollection(list, MinecraftPath);
+            var list = getFromLocal(path).ToArray();
+            return new MVersionCollection(list, path);
         }
 
-        private List<MVersionMetadata> getFromLocal()
+        private List<MVersionMetadata> getFromLocal(MinecraftPath path)
         {
-            var dirs = new DirectoryInfo(MinecraftPath.Versions).GetDirectories();
+            var dirs = new DirectoryInfo(path.Versions).GetDirectories();
             var arr = new List<MVersionMetadata>(dirs.Length);
 
             for (int i = 0; i < dirs.Length; i++)
@@ -65,7 +59,7 @@ namespace CmlLib.Core.Version
         /// <summary>
         /// Get All MVersionInfo from mojang server
         /// </summary>
-        public static MVersionCollection GetVersionMetadatasFromWeb()
+        public MVersionCollection GetVersionMetadatasFromWeb()
         {
             string latestReleaseId = null;
             string latestSnapshotId = null;
