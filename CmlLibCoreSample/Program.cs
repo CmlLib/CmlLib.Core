@@ -34,28 +34,27 @@ namespace CmlLibCoreSample
         {
             var login = new MLogin();
 
-            // TryAutoLogin() read login cache file and check validation.
-            // if cached session is invalid, it refresh session automatically.
-            // but refreshing session doesn't always succeed, so you have to handle this.
-            Console.WriteLine("Try Auto login");
-            Console.WriteLine(login.SessionCacheFilePath);
+            // TryAutoLogin() reads the login cache file and check validation.
+            // If the cached session is invalid, it refreshes the session automatically.
+            // Refreshing the session doesn't always succeed, so you have to handle this.
+            Console.WriteLine("Attempting to automatically log in.");
             var response = login.TryAutoLogin();
 
-            if (!response.IsSuccess) // cached session is invalid and failed to refresh token
+            if (!response.IsSuccess) // if cached session is invalid and failed to refresh token
             {
-                Console.WriteLine("Auto login failed : {0}", response.Result.ToString());
+                Console.WriteLine("Auto login failed: {0}", response.Result.ToString());
 
-                Console.WriteLine("Input mojang email : ");
+                Console.WriteLine("Input your Mojang email: ");
                 var email = Console.ReadLine();
-                Console.WriteLine("Input mojang password : ");
+                Console.WriteLine("Input your Mojang password: ");
                 var pw = Console.ReadLine();
 
                 response = login.Authenticate(email, pw);
 
                 if (!response.IsSuccess)
                 {
-                    // session.Message contains detailed error message. it can be null or empty string.
-                    Console.WriteLine("failed to login. {0} : {1}", response.Result, response.ErrorMessage);
+                    // session.Message contains a detailed error message. It can be null or an empty string.
+                    Console.WriteLine("failed to login. {0} : {1}", response.Result.ToString(), response.ErrorMessage);
                     Console.ReadLine();
                     Environment.Exit(0);
                     return null;
@@ -159,7 +158,7 @@ namespace CmlLibCoreSample
 
             // get all version metadatas
             // you can also use MVersionLoader.GetVersionMetadatasFromLocal and GetVersionMetadatasFromWeb
-            var versionMetadatas = new MVersionLoader(minecraft).GetVersionMetadatas();
+            var versionMetadatas = new MVersionLoader().GetVersionMetadatas(minecraft);
             foreach (var item in versionMetadatas)
             {
                 Console.WriteLine("Name : {0}", item.Name);
@@ -204,7 +203,7 @@ namespace CmlLibCoreSample
             if (downloadModeInput == "1")
                 downloader = new MDownloader(minecraft, version); // Sequence Download
             else if (downloadModeInput == "2")
-                downloader = new MParallelDownloader(minecraft, version); // Parallel Download (note: Parallel Download is not stable yet)
+                downloader = new MAsyncDownloader(minecraft, version); // Parallel Download (note: Parallel Download is not stable yet)
             else
             {
                 Console.WriteLine("Input 1 or 2");
