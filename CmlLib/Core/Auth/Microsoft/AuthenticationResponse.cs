@@ -21,5 +21,8 @@ namespace CmlLib.Core.Auth.Microsoft
 
         [JsonProperty("expires_in")]
         public int ExpiresIn { get; set; }
+
+        [JsonProperty("expires_on")]
+        public DateTime ExpiresOn { get; set; }
     }
 }
