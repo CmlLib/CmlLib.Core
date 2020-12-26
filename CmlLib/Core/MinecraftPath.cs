@@ -41,7 +41,7 @@ namespace CmlLib.Core
             Initialize(basePath, basePathForAssets);
         }
 
-        private void Initialize(string p, string assetsPath)
+        protected virtual void Initialize(string p, string assetsPath)
         {
             BasePath = Dir(p);
 
