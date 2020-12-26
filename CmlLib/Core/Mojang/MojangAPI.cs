@@ -63,7 +63,7 @@ namespace CmlLib.Core.Mojang
                 Skin = new Skin
                 (
                     url: skinObj?["url"]?.ToString(),
-                    type: skinObj?["alias"].ToString()
+                    type: skinObj?["alias"]?.ToString()
                 )
             };
         }
