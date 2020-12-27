@@ -10,35 +10,34 @@ Support all version, with Forge
 
 ## Version
 
-Current version : 3.0.0
+Current version: 3.0.0
 
-(old versions)
-[v2.0.2](https://github.com/AlphaBs/CmlLib.Core/tree/v2.0.2)
+Old versions:
+* [v2.0.2](https://github.com/AlphaBs/CmlLib.Core/tree/v2.0.2)
 
 ## Functions
 
--   [x] Online / Offline Login
--   [x] Download game files in mojang file server
--   [x] Launch All Versions (tested up to 1.16.2)
--   [x] Launch Forge, Optifine or custom versions
--   [x] Download minecraft java runtime in mojang file server
+-   [x] Online or Offline login
+-   [x] Download the game files from the Mojang file server
+-   [x] Launch any version (tested up to 1.16.2)
+-   [x] Launch Forge, Optifine or any other custom version
+-   [x] Download the Minecraft java runtime from the Mojang file server
 -   [x] Install Forge
 -   [x] Launch with options (direct server connecting, screen resolution)
--   [x] Support cross-platform (win10, ubuntu, mac, only on .NET Core)
+-   [x] Supports cross-platform (windows, ubuntu, mac, only on .NET Core)
 
-## **Install**
+## How to Install
 
-Install Nuget Package 'CmlLib.Core'  
-or download dll files in [Releases](https://github.com/AlphaBs/CmlLib.Core/releases) and add reference to your project.
+Install the 'CmlLib.Core' Nuget package or download the dll files in [Releases](https://github.com/AlphaBs/CmlLib.Core/releases) and add references to them in your project.
 
-write this on the top of your source code:
+Write this at the top of your source code:
 ```csharp
 using CmlLib.Core;
 using CmlLib.Core.Auth;
 ```
-## How To Use
+## How to Use
 
-Official Documentation : [wiki](https://github.com/AlphaBs/CmlLib.Core/wiki)
+Official documentation: [wiki](https://github.com/AlphaBs/CmlLib.Core/wiki)
 
 **[Sample Code](https://github.com/AlphaBs/CmlLib.Core/wiki/Sample-Code)**
 
@@ -47,24 +46,22 @@ Official Documentation : [wiki](https://github.com/AlphaBs/CmlLib.Core/wiki)
 var login = new MLogin();
 var response = login.TryAutoLogin();
 
-if (!response.IsSuccess) // failed to auto login
+if (!response.IsSuccess) // failed to automatically log in
 {
     var email = Console.ReadLine();
     var pw = Console.ReadLine();
     response = login.Authenticate(email, pw);
 
     if (!response.IsSuccess)
-         throw new Exception(session.Result.ToString()) // failed to login
+         throw new Exception(session.Result.ToString()) // failed to log in
 }
 
-// This session variable is the result of login.
-// and used in MLaunchOption, in the Launch part below
+// This session variable is the result of logging in and is used in MLaunchOption, in the Launch part below.
 var session = response.Session;
 ```
 **Offline Login**
 ```csharp
-// This session variable is the result of login.
-// and used in MLaunchOption, in the Launch part below
+// This session variable is the result of logging in and is used in MLaunchOption, in the Launch part below.
 var session = MSession.GetOfflineSession("USERNAME");
 ```
 **Launch**
@@ -90,7 +87,7 @@ foreach (var item in launcher.GetAllVersions())
 var launchOption = new MLaunchOption
 {
     MaximumRamMb = 1024,
-    Session = session, // Login Session. ex) Session = MSession.GetOfflineSession("hello")
+    Session = session, // Login session. ex: Session = MSession.GetOfflineSession("hello")
 
     //ScreenWidth = 1600,
     //ScreenHeigth = 900,
@@ -108,16 +105,16 @@ var process = launcher.CreateProcess("1.15.2", launchOption);
 
 process.Start();
 ```
-### More Information
+### More information
 
 Go to [wiki](https://github.com/AlphaBs/CmlLib.Core/wiki/MLaunchOption)
 
 ### What is different between CmlLib.Core and [CmlLib](https://github.com/AlphaBs/MinecraftLauncherLibrary)?
 
-CmlLib.Core is developed using .NET Core and support crossplatform. but CmlLib doesn't support it is deprecated.
+CmlLib.Core is developed using .NET Core and supports cross platform, but CmlLib doesn't support it, and is deprecated.
 
-### Contacts
+### Contact
 
-Email : ksi123456ab@naver.com  
-Discord : ksi123456ab#3719  
-_(I prefer discord)_
+Email: ksi123456ab@naver.com  
+Discord: ksi123456ab#3719  
+_(I prefer Discord)_
