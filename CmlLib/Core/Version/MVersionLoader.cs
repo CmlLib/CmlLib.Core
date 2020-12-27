@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System;
 
 namespace CmlLib.Core.Version
 {
@@ -10,30 +11,30 @@ namespace CmlLib.Core.Version
         /// <summary>
         /// Get All MVersionInfo from mojang server and local
         /// </summary>
-        public static MVersionCollection GetVersionMetadatas(MinecraftPath mc)
+        public MVersionCollection GetVersionMetadatas(MinecraftPath path)
         {
-            var list = getFromLocal(mc);
+            var list = getFromLocal(path);
             var web = GetVersionMetadatasFromWeb();
             foreach (var item in web)
             {
                 if (!list.Contains(item))
                     list.Add(item);
             }
-            return new MVersionCollection(list.ToArray(), mc, web.LatestReleaseVersion, web.LatestSnapshotVersion);
+            return new MVersionCollection(list.ToArray(), path, web.LatestReleaseVersion, web.LatestSnapshotVersion);
         }
 
         /// <summary>
         /// Get All MVersionInfo from local
         /// </summary>
-        public static MVersionCollection GetVersionMetadatasFromLocal(MinecraftPath mc)
+        public MVersionCollection GetVersionMetadatasFromLocal(MinecraftPath path)
         {
-            var list = getFromLocal(mc).ToArray();
-            return new MVersionCollection(list, mc);
+            var list = getFromLocal(path).ToArray();
+            return new MVersionCollection(list, path);
         }
 
-        private static List<MVersionMetadata> getFromLocal(MinecraftPath mc)
+        private List<MVersionMetadata> getFromLocal(MinecraftPath path)
         {
-            var dirs = new DirectoryInfo(mc.Versions).GetDirectories();
+            var dirs = new DirectoryInfo(path.Versions).GetDirectories();
             var arr = new List<MVersionMetadata>(dirs.Length);
 
             for (int i = 0; i < dirs.Length; i++)
@@ -58,7 +59,7 @@ namespace CmlLib.Core.Version
         /// <summary>
         /// Get All MVersionInfo from mojang server
         /// </summary>
-        public static MVersionCollection GetVersionMetadatasFromWeb()
+        public MVersionCollection GetVersionMetadatasFromWeb()
         {
             string latestReleaseId = null;
             string latestSnapshotId = null;

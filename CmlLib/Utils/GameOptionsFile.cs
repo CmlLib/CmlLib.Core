@@ -30,10 +30,12 @@ namespace CmlLib.Utils
                 while ((line = reader.ReadLine()) != null)
                 {
                     if (!line.Contains(":"))
-                        continue;
-
-                    var keyvalue = FromKeyValueString(reader.ReadLine());
-                    options.Add(keyvalue.Key, keyvalue.Value);
+                        options[line] = null;
+                    else
+                    {
+                        var keyvalue = FromKeyValueString(line);
+                        options[keyvalue.Key] = keyvalue.Value;
+                    }
                 }
             }
 
@@ -53,8 +55,13 @@ namespace CmlLib.Utils
             {
                 foreach (KeyValuePair<string, string> keyvalue in options)
                 {
-                    var line = ToKeyValueString(keyvalue.Key, keyvalue.Value);
-                    writer.WriteLine(line);
+                    if (keyvalue.Value == null)
+                        writer.WriteLine(keyvalue.Key);
+                    else
+                    {
+                        var line = ToKeyValueString(keyvalue.Key, keyvalue.Value);
+                        writer.WriteLine(line);
+                    }
                 }
             }
         }

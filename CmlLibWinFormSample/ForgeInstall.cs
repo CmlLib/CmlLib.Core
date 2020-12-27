@@ -80,7 +80,6 @@ namespace CmlLibWinFormSample
                 txtLog.AppendText(item);
                 txtLog.AppendText("\n");
             }
-
         }
     }
 }

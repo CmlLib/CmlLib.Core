@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace CmlLib.Utils
 {
@@ -42,6 +43,48 @@ namespace CmlLib.Utils
             buffer = null;
             webStream.Dispose(); // Close streams
             fileStream.Dispose();
+        }
+
+        public async Task DownloadFileAsync(string url, string path)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+            var req = WebRequest.CreateHttp(url);
+            req.Method = "GET";
+            req.Timeout = 5000;
+            req.ReadWriteTimeout = 5000;
+            req.ContinueTimeout = 5000;
+            var res = await req.GetResponseAsync().ConfigureAwait(false);
+
+            using (var httpStream = res.GetResponseStream())
+            using (var fs = File.OpenWrite(path))
+            {
+                //System.Diagnostics.Debug.WriteLine("timeout : " + httpStream.CanTimeout);
+                httpStream.ReadTimeout = 5000;
+                httpStream.WriteTimeout = 5000;
+                await httpStream.CopyToAsync(fs).ConfigureAwait(false);
+            }
+        }
+
+        public void DownloadFileLimit(string url, string path)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+            var req = WebRequest.CreateHttp(url);
+            req.Method = "GET";
+            req.Timeout = 5000;
+            req.ReadWriteTimeout = 5000;
+            req.ContinueTimeout = 5000;
+            var res = req.GetResponse();
+
+            using (var httpStream = res.GetResponseStream())
+            using (var fs = File.OpenWrite(path))
+            {
+                //System.Diagnostics.Debug.WriteLine("timeout : " + httpStream.CanTimeout);
+                httpStream.ReadTimeout = 5000;
+                httpStream.WriteTimeout = 5000;
+                httpStream.CopyTo(fs);
+            }
         }
 
         void ProgressChanged(long value, long max)

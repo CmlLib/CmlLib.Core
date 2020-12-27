@@ -79,7 +79,6 @@ namespace CmlLib.Core.Version
                     GameArguments = parentVersion.GameArguments;
             }
 
-
             if (parentVersion.JvmArguments != null)
             {
                 if (JvmArguments != null)

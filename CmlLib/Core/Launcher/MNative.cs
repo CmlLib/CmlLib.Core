@@ -18,7 +18,7 @@ namespace CmlLib.Core
 
         public string ExtractNatives()
         {
-            var path = Path.Combine(gamePath.Versions, version.Id, "natives");
+            var path = gamePath.GetNativePath(version.Id);
             Directory.CreateDirectory(path);
 
             foreach (var item in version.Libraries)
@@ -41,8 +41,12 @@ namespace CmlLib.Core
         {
             try
             {
-                var path = Path.Combine(gamePath.Versions, version.Id, "natives");
+                var path = gamePath.GetNativePath(version.Id);
                 DirectoryInfo di = new DirectoryInfo(path);
+
+                if (!di.Exists)
+                    return;
+
                 foreach (var item in di.GetFiles())
                 {
                     item.Delete();

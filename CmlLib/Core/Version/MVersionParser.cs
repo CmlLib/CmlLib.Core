@@ -11,37 +11,52 @@ namespace CmlLib.Core.Version
     {
         public static MVersion Parse(MVersionMetadata info)
         {
-            string json;
-            if (!info.IsLocalVersion)
+            try
             {
-                using (var wc = new WebClient())
+                string json;
+                if (!info.IsLocalVersion)
                 {
-                    json = wc.DownloadString(info.Path);
-                    return ParseFromJson(json);
+                    using (var wc = new WebClient())
+                    {
+                        json = wc.DownloadString(info.Path);
+                        return ParseFromJson(json);
+                    }
                 }
+                else
+                    return ParseFromFile(info.Path);
             }
-            else
-                return ParseFromFile(info.Path);
+            catch (MVersionParseException ex)
+            {
+                ex.VersionName = info.Name;
+                throw ex;
+            }
         }
 
         public static MVersion ParseAndSave(MVersionMetadata info, MinecraftPath savePath)
         {
-            string json;
-            if (!info.IsLocalVersion)
+            try
             {
-                using (var wc = new WebClient())
+                string json;
+                if (!info.IsLocalVersion)
                 {
-                    json = wc.DownloadString(info.Path);
+                    using (var wc = new WebClient())
+                    {
+                        json = wc.DownloadString(info.Path);
+                        var path = savePath.GetVersionJsonPath(info.Name);
+                        Directory.CreateDirectory(Path.GetDirectoryName(path));
+                        File.WriteAllText(path, json);
 
-                    var jsonpath = Path.Combine(savePath.Versions, info.Name);
-                    Directory.CreateDirectory(jsonpath);
-                    File.WriteAllText(Path.Combine(jsonpath, info.Name + ".json"), json);
-
-                    return ParseFromJson(json);
+                        return ParseFromJson(json);
+                    }
                 }
+                else
+                    return ParseFromFile(info.Path);
             }
-            else
-                return ParseFromFile(info.Path);
+            catch (MVersionParseException ex)
+            {
+                ex.VersionName = info.Name;
+                throw ex;
+            }
         }
 
         public static MVersion ParseFromFile(string path)
@@ -52,77 +67,84 @@ namespace CmlLib.Core.Version
 
         public static MVersion ParseFromJson(string json)
         {
-            var version = new MVersion();
-            var job = JObject.Parse(json);
-
-            // id
-            version.Id = job["id"]?.ToString();
-
-            // assets
-            var assetindex = (JObject)job["assetIndex"];
-            var assets = job["assets"];
-            if (assetindex != null)
+            try
             {
-                version.AssetId = n(assetindex["id"]?.ToString());
-                version.AssetUrl = n(assetindex["url"]?.ToString());
-                version.AssetHash = n(assetindex["sha1"]?.ToString());
-            }
-            else if (assets != null)
-                version.AssetId = assets.ToString();
+                var version = new MVersion();
+                var job = JObject.Parse(json);
 
-            // client jar
-            var client = job["downloads"]?["client"];
-            if (client != null)
+                // id
+                version.Id = job["id"]?.ToString();
+
+                // assets
+                var assetindex = (JObject)job["assetIndex"];
+                var assets = job["assets"];
+                if (assetindex != null)
+                {
+                    version.AssetId = n(assetindex["id"]?.ToString());
+                    version.AssetUrl = n(assetindex["url"]?.ToString());
+                    version.AssetHash = n(assetindex["sha1"]?.ToString());
+                }
+                else if (assets != null)
+                    version.AssetId = assets.ToString();
+
+                // client jar
+                var client = job["downloads"]?["client"];
+                if (client != null)
+                {
+                    version.ClientDownloadUrl = client["url"]?.ToString();
+                    version.ClientHash = client["sha1"]?.ToString();
+                }
+
+                // libraries
+                var libJArr = (JArray)job["libraries"];
+                var libList = new List<MLibrary>(libJArr.Count);
+                foreach (var item in libJArr)
+                {
+                    var libs = MLibraryParser.ParseJsonObject((JObject)item);
+                    if (libs != null)
+                        libList.AddRange(libs);
+                }
+                version.Libraries = libList.ToArray();
+
+                // mainClass
+                version.MainClass = n(job["mainClass"]?.ToString());
+
+                // argument
+                var ma = job["minecraftArguments"]?.ToString();
+                if (ma != null)
+                    version.MinecraftArguments = ma;
+
+                var ag = job["arguments"];
+                if (ag != null)
+                {
+                    if (ag["game"] != null)
+                        version.GameArguments = argParse((JArray)ag["game"]);
+                    if (ag["jvm"] != null)
+                        version.JvmArguments = argParse((JArray)ag["jvm"]);
+                }
+
+                // metadata
+                version.ReleaseTime = job["releaseTime"]?.ToString();
+
+                var type = job["type"]?.ToString();
+                version.TypeStr = type;
+                version.Type = MVersionTypeConverter.FromString(type);
+
+                // inherits
+                if (job["inheritsFrom"] != null)
+                {
+                    version.IsInherited = true;
+                    version.ParentVersionId = job["inheritsFrom"].ToString();
+                }
+                else
+                    version.Jar = version.Id;
+
+                return version;
+            }
+            catch (Exception ex)
             {
-                version.ClientDownloadUrl = client["url"]?.ToString();
-                version.ClientHash = client["sha1"]?.ToString();
+                throw new MVersionParseException(ex);
             }
-
-            // libraries
-            var libJArr = (JArray)job["libraries"];
-            var libList = new List<MLibrary>(libJArr.Count);
-            foreach (var item in libJArr)
-            {
-                var libs = MLibraryParser.ParseJsonObject((JObject)item);
-                if (libs != null)
-                    libList.AddRange(libs);
-            }
-            version.Libraries = libList.ToArray();
-
-            // mainClass
-            version.MainClass = n(job["mainClass"]?.ToString());
-
-            // argument
-            var ma = job["minecraftArguments"]?.ToString();
-            if (ma != null)
-                version.MinecraftArguments = ma;
-
-            var ag = job["arguments"];
-            if (ag != null)
-            {
-                if (ag["game"] != null)
-                    version.GameArguments = argParse((JArray)ag["game"]);
-                if (ag["jvm"] != null)
-                    version.JvmArguments = argParse((JArray)ag["jvm"]);
-            }
-
-            // metadata
-            version.ReleaseTime = job["releaseTime"]?.ToString();
-
-            var ype = job["type"]?.ToString();
-            version.TypeStr = ype;
-            version.Type = MVersionTypeConverter.FromString(ype);
-
-            // inherits
-            if (job["inheritsFrom"] != null)
-            {
-                version.IsInherited = true;
-                version.ParentVersionId = job["inheritsFrom"].ToString();
-            }
-            else
-                version.Jar = version.Id;
-
-            return version;
         }
 
         static string[] argParse(JArray arr)

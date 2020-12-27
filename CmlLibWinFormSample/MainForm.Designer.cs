@@ -80,11 +80,12 @@
             this.cbSkipAssetsDownload = new System.Windows.Forms.CheckBox();
             this.cbCheckFileHash = new System.Windows.Forms.CheckBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.btnRefreshVersion = new System.Windows.Forms.Button();
             this.btnForgeInstall = new System.Windows.Forms.Button();
             this.btnSetLastVersion = new System.Windows.Forms.Button();
             this.btnMojangServer = new System.Windows.Forms.Button();
             this.btnOptions = new System.Windows.Forms.Button();
-            this.btnRefreshVersion = new System.Windows.Forms.Button();
+            this.cbFullscreen = new System.Windows.Forms.CheckBox();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -93,6 +94,7 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.cbFullscreen);
             this.groupBox2.Controls.Add(this.btnAutoRamSet);
             this.groupBox2.Controls.Add(this.Txt_DockIcon);
             this.groupBox2.Controls.Add(this.txtXms);
@@ -127,7 +129,7 @@
             // 
             // btnAutoRamSet
             // 
-            this.btnAutoRamSet.Location = new System.Drawing.Point(295, 316);
+            this.btnAutoRamSet.Location = new System.Drawing.Point(295, 330);
             this.btnAutoRamSet.Name = "btnAutoRamSet";
             this.btnAutoRamSet.Size = new System.Drawing.Size(75, 23);
             this.btnAutoRamSet.TabIndex = 24;
@@ -144,7 +146,7 @@
             // 
             // txtXms
             // 
-            this.txtXms.Location = new System.Drawing.Point(104, 301);
+            this.txtXms.Location = new System.Drawing.Point(104, 315);
             this.txtXms.Name = "txtXms";
             this.txtXms.Size = new System.Drawing.Size(182, 21);
             this.txtXms.TabIndex = 23;
@@ -168,7 +170,7 @@
             // label21
             // 
             this.label21.AutoSize = true;
-            this.label21.Location = new System.Drawing.Point(10, 306);
+            this.label21.Location = new System.Drawing.Point(10, 320);
             this.label21.Name = "label21";
             this.label21.Size = new System.Drawing.Size(92, 12);
             this.label21.TabIndex = 22;
@@ -224,7 +226,7 @@
             // 
             // TxtXmx
             // 
-            this.TxtXmx.Location = new System.Drawing.Point(104, 328);
+            this.TxtXmx.Location = new System.Drawing.Point(104, 342);
             this.TxtXmx.Name = "TxtXmx";
             this.TxtXmx.Size = new System.Drawing.Size(182, 21);
             this.TxtXmx.TabIndex = 11;
@@ -249,7 +251,7 @@
             // Xmx_RAM
             // 
             this.Xmx_RAM.AutoSize = true;
-            this.Xmx_RAM.Location = new System.Drawing.Point(6, 331);
+            this.Xmx_RAM.Location = new System.Drawing.Point(6, 345);
             this.Xmx_RAM.Name = "Xmx_RAM";
             this.Xmx_RAM.Size = new System.Drawing.Size(96, 12);
             this.Xmx_RAM.TabIndex = 10;
@@ -591,6 +593,16 @@
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Launch";
             // 
+            // btnRefreshVersion
+            // 
+            this.btnRefreshVersion.Location = new System.Drawing.Point(283, 52);
+            this.btnRefreshVersion.Name = "btnRefreshVersion";
+            this.btnRefreshVersion.Size = new System.Drawing.Size(75, 23);
+            this.btnRefreshVersion.TabIndex = 4;
+            this.btnRefreshVersion.Text = "Refresh";
+            this.btnRefreshVersion.UseVisualStyleBackColor = true;
+            this.btnRefreshVersion.Click += new System.EventHandler(this.btnRefreshVersion_Click);
+            // 
             // btnForgeInstall
             // 
             this.btnForgeInstall.Location = new System.Drawing.Point(92, 53);
@@ -631,15 +643,15 @@
             this.btnOptions.UseVisualStyleBackColor = true;
             this.btnOptions.Click += new System.EventHandler(this.btnOptions_Click);
             // 
-            // btnRefreshVersion
+            // cbFullscreen
             // 
-            this.btnRefreshVersion.Location = new System.Drawing.Point(283, 52);
-            this.btnRefreshVersion.Name = "btnRefreshVersion";
-            this.btnRefreshVersion.Size = new System.Drawing.Size(75, 23);
-            this.btnRefreshVersion.TabIndex = 4;
-            this.btnRefreshVersion.Text = "Refresh";
-            this.btnRefreshVersion.UseVisualStyleBackColor = true;
-            this.btnRefreshVersion.Click += new System.EventHandler(this.btnRefreshVersion_Click);
+            this.cbFullscreen.AutoSize = true;
+            this.cbFullscreen.Location = new System.Drawing.Point(133, 293);
+            this.cbFullscreen.Name = "cbFullscreen";
+            this.cbFullscreen.Size = new System.Drawing.Size(83, 16);
+            this.cbFullscreen.TabIndex = 25;
+            this.cbFullscreen.Text = "Fullscreen";
+            this.cbFullscreen.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
@@ -733,5 +745,6 @@
         private System.Windows.Forms.Button btnOptions;
         private System.Windows.Forms.Button btnForgeInstall;
         private System.Windows.Forms.Button btnRefreshVersion;
+        private System.Windows.Forms.CheckBox cbFullscreen;
     }
 }

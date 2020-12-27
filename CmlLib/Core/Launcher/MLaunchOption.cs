@@ -36,9 +36,6 @@ namespace CmlLib.Core
             if (Path == null)
                 exMsg = nameof(Path) + " is null";
 
-            if (MaximumRamMb < 1)
-                exMsg = "MaximumRamMb is too small.";
-
             if (StartVersion == null)
                 exMsg = "StartVersion is null";
 

@@ -43,7 +43,7 @@ namespace CmlLibWinFormSample
 
             var th = new Thread(new ThreadStart(delegate
             {
-                Versions = MVersionLoader.GetVersionMetadatas(MinecraftPath);
+                Versions = new MVersionLoader().GetVersionMetadatas(MinecraftPath);
                 Invoke(new Action(() =>
                 {
                     bool showVersionExist = false;
@@ -185,6 +185,8 @@ namespace CmlLibWinFormSample
                     VersionType = Txt_VersionType.Text,
                     GameLauncherName = Txt_GLauncherName.Text,
                     GameLauncherVersion = Txt_GLauncherVersion.Text,
+
+                    FullScreen = cbFullscreen.Checked,
 
                     ServerIp = Txt_ServerIp.Text,
 

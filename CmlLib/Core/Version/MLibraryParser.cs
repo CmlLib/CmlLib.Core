@@ -66,7 +66,7 @@ namespace CmlLib.Core.Version
             }
             catch (Exception ex)
             {
-
+                //System.Diagnostics.Debug.WriteLine(ex);
                 return null;
             }
         }

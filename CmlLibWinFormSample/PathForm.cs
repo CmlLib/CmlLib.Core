@@ -36,9 +36,11 @@ namespace CmlLibWinFormSample
 
         private void btnApply_Click(object sender, EventArgs e)
         {
-            var mc = new MinecraftPath(txtPath.Text);
-            mc.Runtime = MinecraftPath.Runtime;
-            mc.SetAssetsPath(Path.Combine(MinecraftPath.GetOSDefaultPath(), "assets"));
+            var mc = new MinecraftPath(txtPath.Text)
+            {
+                Runtime = MinecraftPath.Runtime,
+                Assets = Path.Combine(MinecraftPath.GetOSDefaultPath(), "assets")
+            };
             apply(mc);
         }
 
@@ -64,7 +66,7 @@ namespace CmlLibWinFormSample
                 // You have to call SetAssetsPath when you want to change assets directory to what you want.
                 // SetAssetsPath change not only Assets property, but also AssetsLegacy, AssetsObject, Index property.
                 if (txtAssets.Text != MinecraftPath.Assets)
-                    MinecraftPath.SetAssetsPath(txtAssets.Text);
+                    MinecraftPath.Assets = txtAssets.Text;
             }
 
             this.Close();
