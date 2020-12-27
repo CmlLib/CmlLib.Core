@@ -87,7 +87,7 @@ namespace CmlLib.Core.Downloader
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex);
+                //System.Diagnostics.Debug.WriteLine(ex);
                 failedCount++;
 
                 var result = await doDownload(file, failedCount);

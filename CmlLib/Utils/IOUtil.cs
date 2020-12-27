@@ -28,7 +28,7 @@ namespace CmlLib.Utils
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex);
+                //System.Diagnostics.Debug.WriteLine(ex);
             }
         }
 

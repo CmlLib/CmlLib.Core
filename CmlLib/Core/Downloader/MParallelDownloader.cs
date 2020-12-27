@@ -39,7 +39,7 @@ namespace CmlLib.Core.Downloader
                 new ParallelOptions() { MaxDegreeOfParallelism = MaxThread },
                 doDownload);
 
-            Console.WriteLine("completed");
+            //Console.WriteLine("completed");
         }
 
         private void doDownload(DownloadFile file)
@@ -55,9 +55,9 @@ namespace CmlLib.Core.Downloader
                     return false;
 
                 var downloader = new WebDownload();
-                Console.WriteLine("start " + file.Name);
+                //Console.WriteLine("start " + file.Name);
                 downloader.DownloadFileLimit(file.Url, file.Path);
-                Console.WriteLine("end " + file.Name);
+                //Console.WriteLine("end " + file.Name);
 
                 Interlocked.Increment(ref progressed);
 
@@ -69,7 +69,7 @@ namespace CmlLib.Core.Downloader
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex);
+                //System.Diagnostics.Debug.WriteLine(ex);
                 failedCount++;
 
                 return doDownload(file, failedCount);
