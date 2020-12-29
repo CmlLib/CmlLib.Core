@@ -5,7 +5,6 @@ using CmlLib.Core.Downloader;
 using CmlLib.Core.Version;
 using System;
 using System.IO;
-using XboxAuthNet;
 
 namespace CmlLibCoreSample
 {
