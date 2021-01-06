@@ -29,39 +29,38 @@ namespace XboxLoginTest
         /// </summary>
         private void InitializeComponent()
         {
-            this.webView21 = new Microsoft.Web.WebView2.WinForms.WebView2();
+            this.label1 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
-            // webView21
+            // label1
             // 
-            this.webView21.CreationProperties = null;
-            this.webView21.Location = new System.Drawing.Point(1, 1);
-            this.webView21.Name = "webView21";
-            this.webView21.Size = new System.Drawing.Size(600, 400);
-            this.webView21.TabIndex = 0;
-            this.webView21.Text = "webView21";
-            this.webView21.ZoomFactor = 1D;
+            this.label1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label1.Font = new System.Drawing.Font("굴림", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
+            this.label1.Location = new System.Drawing.Point(0, 0);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(603, 403);
+            this.label1.TabIndex = 0;
+            this.label1.Text = "Login...";
+            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // LoginForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(603, 403);
-            this.Controls.Add(this.webView21);
-            this.MaximumSize = new System.Drawing.Size(619, 442);
-            this.MinimumSize = new System.Drawing.Size(619, 442);
+            this.Controls.Add(this.label1);
             this.Name = "LoginForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Form1";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.LoginForm_FormClosing);
-            this.Load += new System.EventHandler(this.Form1_Load);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Window_Closing);
+            this.Load += new System.EventHandler(this.Window_Loaded);
             this.ResumeLayout(false);
 
         }
 
         #endregion
 
-        private Microsoft.Web.WebView2.WinForms.WebView2 webView21;
+        private System.Windows.Forms.Label label1;
     }
 }
 

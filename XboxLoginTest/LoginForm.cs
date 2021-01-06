@@ -1,21 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using CmlLib.Core;
+using CmlLib.Core.Auth;
+using CmlLib.Core.Auth.Microsoft;
+using CmlLib.Core.Mojang;
+using Microsoft.Web.WebView2.WinForms;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
+using System.IO;
+using System.Threading;
 using System.Windows.Forms;
 using XboxAuthNet.OAuth;
-using XboxAuthNet.Exchange;
-using Newtonsoft.Json;
-using System.IO;
-using CmlLib.Core.Auth.Microsoft;
-using CmlLib.Core.Auth;
-using CmlLib.Core.Mojang;
-using System.Threading;
+using XboxAuthNet.XboxLive;
 
 namespace XboxLoginTest
 {
@@ -24,35 +19,53 @@ namespace XboxLoginTest
         public LoginForm()
         {
             InitializeComponent();
-            webView21.NavigationStarting += WebView21_NavigationStarting;
         }
 
+        private void CreateWV()
+        {
+            wv = new WebView2();
+            wv.NavigationStarting += WebView21_NavigationStarting;
+            wv.Dock = DockStyle.Fill;
+            this.Controls.Add(wv);
+            this.Controls.SetChildIndex(wv, 0);
+        }
+
+        private void RemoveWV()
+        {
+            if (wv != null)
+            {
+                try
+                {
+                    this.Controls.Remove(wv);
+                    //wv.Dispose();
+                    wv = null;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                }
+            }
+        }
+
+        WebView2 wv;
+
         MicrosoftOAuth oauth;
-        MicrosoftOAuthResponse response;
-        AuthenticationResponse mcResponse;
         public MSession session;
 
         public string action = "login";
 
-        string microsoftOAuthPath = "msa.json";
-        string minecraftTokenPath = "token.json";
+        string microsoftOAuthPath = Path.Combine(MinecraftPath.GetOSDefaultPath(), "cml_msa.json");
+        string minecraftTokenPath = Path.Combine(MinecraftPath.GetOSDefaultPath(), "cml_token.json");
 
-        private void Form1_Load(object sender, EventArgs e)
+        private void Window_Loaded(object sender, EventArgs e)
         {
-            oauth = new MicrosoftOAuth("00000000402B5328", XboxExchanger.XboxScope);
-            response = readMicrosoft();
-            readMinecraft();
-
             if (action == "login")
-                button1_Click(null, null);
+            {
+                login();
+            }
             else if (action == "signout")
             {
-                response = null;
-                mcResponse = null;
-                writeMicrosoft(null);
-                writeMinecraft();
-
-                webView21.Source = new Uri(MicrosoftOAuth.GetSignOutUrl());
+                signout();
             }
         }
 
@@ -64,52 +77,98 @@ namespace XboxLoginTest
             var file = File.ReadAllText(microsoftOAuthPath);
             var response = JsonConvert.DeserializeObject<MicrosoftOAuthResponse>(file);
 
-            this.response = response;
             return response;
         }
 
         private void writeMicrosoft(MicrosoftOAuthResponse response)
         {
-            this.response = response;
-
             var json = JsonConvert.SerializeObject(response);
             File.WriteAllText(microsoftOAuthPath, json);
         }
 
-        private void readMinecraft()
+        private AuthenticationResponse readMinecraft()
         {
             if (!File.Exists(minecraftTokenPath))
-                return;
+                return null;
 
             var file = File.ReadAllText(minecraftTokenPath);
             var job = JObject.Parse(file);
 
-            this.mcResponse = job["auth"].ToObject<AuthenticationResponse>();
             this.session = job["session"].ToObject<MSession>();
+            return job["auth"].ToObject<AuthenticationResponse>();
         }
 
-        private void writeMinecraft()
+        private void writeMinecraft(AuthenticationResponse mcToken)
         {
             var obj = new
             {
-                auth = mcResponse,
+                auth = mcToken,
                 session = session
             };
             var json = JsonConvert.SerializeObject(obj);
             File.WriteAllText(minecraftTokenPath, json);
         }
 
+        private void login()
+        {
+            try
+            {
+                oauth = new MicrosoftOAuth("00000000402B5328", XboxAuth.XboxScope);
+                var msToken = readMicrosoft();
+                var mcToken = readMinecraft();
+
+                //if (true)
+                if (mcToken == null || DateTime.Now > mcToken.ExpiresOn) // expired
+                {
+                    this.session = null;
+
+                    //if (true)
+                    if (oauth.TryGetTokens(out msToken, msToken?.RefreshToken)) // try ms login
+                        successMS(msToken);
+                    else // failed to refresh ms token
+                    {
+                        var url = oauth.CreateUrl();
+                        CreateWV();
+                        wv.Source = new Uri(url);
+                    }
+                }
+                else // valid minecraft session
+                {
+                    if (this.session == null)
+                        this.session = getSession(mcToken);
+
+                    this.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+                this.session = null;
+            }
+        }
+
+        private void signout()
+        {
+            writeMicrosoft(null);
+            writeMinecraft(null);
+
+            CreateWV();
+            wv.Source = new Uri(MicrosoftOAuth.GetSignOutUrl());
+        }
+
         private void WebView21_NavigationStarting(object sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs e)
         {
             if (e.IsRedirected && oauth.CheckLoginSuccess(e.Uri)) // login success
             {
+                RemoveWV();
+
                 new Thread(() =>
                 {
                     var result = oauth.TryGetTokens(out MicrosoftOAuthResponse response); // get token
                     Invoke(new Action(() =>
                     {
                         if (result)
-                            msLoginSuccess(response);
+                            successMS(response);
                         else
                             msLoginFail(response);
                     }));
@@ -117,69 +176,94 @@ namespace XboxLoginTest
             }
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void successMS(MicrosoftOAuthResponse msToken)
         {
-            if (mcResponse == null || DateTime.Now > mcResponse.ExpiresOn) // expired
+            try
             {
-                if (oauth.TryGetTokens(out response, this.response?.RefreshToken))
+                writeMicrosoft(msToken);
+                var mcToken = mcLogin(msToken);
+                if (mcToken != null)
                 {
-                    msLoginSuccess(response);
+                    this.session = getSession(mcToken);
+                    writeMinecraft(mcToken);
                 }
-                else
-                {
-                    var url = oauth.CreateUrl();
-                    webView21.Source = new Uri(url);
-                    return;
-                }
-            }
 
-            getSession();
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+                this.Close();
+            }
         }
 
-        private void msLoginSuccess(MicrosoftOAuthResponse res)
+        private AuthenticationResponse mcLogin(MicrosoftOAuthResponse msToken)
         {
-            writeMicrosoft(res);
+            try
+            {
+                if (msToken == null)
+                    throw new ArgumentNullException("msToken was null");
 
-            var xbox = new XboxExchanger();
-            var rps = xbox.ExchangeRpsTicketForUserToken(response?.AccessToken);
-            var xsts = xbox.ExchangeTokensForXSTSIdentity(rps.Token, null, null, XboxMinecraftLogin.RelyingParty, null);
+                var xbox = new XboxAuth();
+                var rps = xbox.ExchangeRpsTicketForUserToken(msToken.AccessToken);
+                var xsts = xbox.ExchangeTokensForXSTSIdentity(rps.Token, null, null, XboxMinecraftLogin.RelyingParty, null);
 
-            var mclogin = new XboxMinecraftLogin();
-            mcResponse = mclogin.LoginWithXbox(xsts.UserHash, xsts.XSTSToken);
+                if (!xsts.IsSuccess)
+                {
+                    var msg = "";
+                    if (xsts.Error == XboxAuthResponse.ChildError)
+                        msg = "Child error";
+                    else if (xsts.Error == XboxAuthResponse.NoXboxAccountError)
+                        msg = "No Xbox Account";
 
-            getSession();
+                    MessageBox.Show($"Failed to xbox login : {xsts.Error}\n{xsts.Message}\n{msg}");
+                    return null;
+                }
+
+                var mclogin = new XboxMinecraftLogin();
+                var mcToken = mclogin.LoginWithXbox(xsts.UserHash, xsts.Token);
+                return mcToken;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+                return null;
+            }
         }
 
         private void msLoginFail(MicrosoftOAuthResponse res)
         {
             MessageBox.Show(
-    $"Failed to login : {response.Error}\n" +
-    $"ErrorDescription : {response.ErrorDescription}\n" +
-    $"ErrorCodes : {string.Join(",", response.ErrorCodes)}");
-        }
+    $"Failed to microsoft login : {res.Error}\n" +
+    $"ErrorDescription : {res.ErrorDescription}\n" +
+    $"ErrorCodes : {string.Join(",", res.ErrorCodes)}");
 
-        private void getSession()
-        {
-            if (!MojangAPI.CheckGameOwnership(mcResponse?.AccessToken))
-            {
-                MessageBox.Show("purchase game first");
-            }
-
-            var profile = MojangAPI.GetProfileUsingToken(mcResponse.AccessToken);
-            this.session = new MSession
-            {
-                AccessToken = mcResponse.AccessToken,
-                UUID = profile.UUID,
-                Username = profile.Name
-            };
-
-            writeMinecraft();
             this.Close();
         }
 
-        private void LoginForm_FormClosing(object sender, FormClosingEventArgs e)
+        private MSession getSession(AuthenticationResponse mcToken)
         {
-            this.Controls.Remove(webView21);
+            if (mcToken == null)
+                throw new ArgumentNullException("mcToken was null");
+
+            if (!MojangAPI.CheckGameOwnership(mcToken.AccessToken))
+            {
+                MessageBox.Show("로그인 실패 : 게임 구매를 하지 않았습니다.");
+                this.Close();
+            }
+
+            var profile = MojangAPI.GetProfileUsingToken(mcToken.AccessToken);
+            return new MSession
+            {
+                AccessToken = mcToken.AccessToken,
+                UUID = profile.UUID,
+                Username = profile.Name
+            };
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            RemoveWV();
         }
     }
 }
