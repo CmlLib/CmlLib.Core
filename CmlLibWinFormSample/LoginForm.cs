@@ -19,24 +19,7 @@ namespace CmlLibWinFormSample
         private void LoginForm_Load(object sender, EventArgs e)
         {
             UpdateSession(Session);
-            UpdateCachedSession();
             btnAutoLogin_Click(null, null);
-        }
-
-        private void UpdateCachedSession()
-        {
-            var th = new Thread(() =>
-            {
-                var session = login.ReadSessionCache();
-                Invoke(new Action(() =>
-                {
-                    lvATc.Text = session.AccessToken;
-                    lvUsernamec.Text = session.Username;
-                    lvUUIDc.Text = session.UUID;
-                    lvCTc.Text = session.ClientToken;
-                }));
-            });
-            th.Start();
         }
 
         private void btnAutoLogin_Click(object sender, EventArgs e)
@@ -63,6 +46,41 @@ namespace CmlLibWinFormSample
                     gMojangLogin.Enabled = true;
 
                     btnAutoLogin.Enabled = false;
+                    btnLogin.Enabled = false;
+                    btnAutoLoginMojangLauncher.Enabled = false;
+                    btnLogin.Text = "Auto Login\nSuccess";
+
+                    UpdateSession(result.Session);
+                }));
+            });
+            th.Start();
+        }
+
+        private void btnAutoLoginMojangLauncher_Click(object sender, EventArgs e)
+        {
+            gMojangLogin.Enabled = false;
+
+            var th = new Thread(() =>
+            {
+                var result = login.TryAutoLoginFromMojangLauncher();
+
+                if (result.Result != MLoginResult.Success)
+                {
+                    MessageBox.Show($"Failed to AutoLogin : {result.Result}\n{result.ErrorMessage}");
+                    Invoke(new Action(() =>
+                    {
+                        gMojangLogin.Enabled = true;
+                    }));
+                    return;
+                }
+
+                MessageBox.Show("Auto Login Success!");
+                Invoke(new Action(() =>
+                {
+                    gMojangLogin.Enabled = true;
+
+                    btnAutoLogin.Enabled = false;
+                    btnAutoLoginMojangLauncher.Enabled = false;
                     btnLogin.Enabled = false;
                     btnLogin.Text = "Auto Login\nSuccess";
 
@@ -112,7 +130,6 @@ namespace CmlLibWinFormSample
             {
                 MessageBox.Show("Success");
                 gMojangLogin.Enabled = true;
-                UpdateCachedSession();
             }
             else
                 MessageBox.Show("Fail");
@@ -125,7 +142,6 @@ namespace CmlLibWinFormSample
             {
                 MessageBox.Show("Success");
                 gMojangLogin.Enabled = true;
-                UpdateCachedSession();
             }
             else
                 MessageBox.Show("Fail");
@@ -136,7 +152,6 @@ namespace CmlLibWinFormSample
             login.DeleteTokenFile();
             MessageBox.Show("Success");
             gMojangLogin.Enabled = true;
-            UpdateCachedSession();
         }
 
         private void btnOfflineLogin_Click(object sender, EventArgs e)
@@ -148,14 +163,15 @@ namespace CmlLibWinFormSample
         private void UpdateSession(MSession session)
         {
             this.Session = session;
-            lvAT.Text = session.AccessToken;
-            lvUsername.Text = session.Username;
-            lvUUID.Text = session.UUID;
-            UpdateCachedSession();
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
+            MessageBox.Show(
+                $"AccessToken : {Session.AccessToken}\n" +
+                $"UUID : {Session.UUID}\n" +
+                $"Username : {Session.Username}");
+
             this.Close();
         }
     }

@@ -201,6 +201,22 @@ namespace CmlLib.Core.Auth
             }
         }
 
+        public MLoginResponse TryAutoLoginFromMojangLauncher()
+        {
+            var mojangAccounts = MojangLauncher.MojangLauncherAccounts.FromDefaultPath();
+            var activeAccount = mojangAccounts.GetActiveAccount();
+
+            return TryAutoLogin(activeAccount.ToSession());
+        }
+
+        public MLoginResponse TryAutoLoginFromMojangLauncher(string accountFilePath)
+        {
+            var mojangAccounts = MojangLauncher.MojangLauncherAccounts.FromFile(accountFilePath);
+            var activeAccount = mojangAccounts.GetActiveAccount();
+
+            return TryAutoLogin(activeAccount.ToSession());
+        }
+
         public MLoginResponse Refresh()
         {
             var session = ReadSessionCache();
