@@ -21,7 +21,7 @@ namespace CmlLib.Core.Auth
         }
 
         public string SessionCacheFilePath { get; private set; }
-        public bool SaveSession { get; private set; } = true;
+        public bool SaveSession { get; set; } = true;
 
         private string CreateNewClientToken()
         {
