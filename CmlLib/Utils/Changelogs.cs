@@ -46,7 +46,7 @@ namespace CmlLib.Utils
                 html = Encoding.UTF8.GetString(wc.DownloadData(url));
             }
 
-            System.IO.File.WriteAllText("test.txt", html);
+            //System.IO.File.WriteAllText("test.txt", html);
 
             var regResult = articleRegex.Match(html);
             if (!regResult.Success)
