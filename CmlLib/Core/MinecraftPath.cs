@@ -61,22 +61,22 @@ namespace CmlLib.Core
         public string Runtime { get; set; }
 
         public virtual string GetIndexFilePath(string assetId)
-            => $"{Assets}/indexes/{assetId}.json";
+            => NormalizePath($"{Assets}/indexes/{assetId}.json");
 
         public virtual string GetAssetObjectPath()
-            => $"{Assets}/objects";
+            => NormalizePath($"{Assets}/objects");
 
         public virtual string GetAssetLegacyPath()
-            => $"{Assets}/virtual/legacy";
+            => NormalizePath($"{Assets}/virtual/legacy");
 
         public virtual string GetVersionJarPath(string id)
-            => $"{Versions}/{id}/{id}.jar";
+            => NormalizePath($"{Versions}/{id}/{id}.jar");
 
         public virtual string GetVersionJsonPath(string id)
-            => $"{Versions}/{id}/{id}.json";
+            => NormalizePath($"{Versions}/{id}/{id}.json");
 
         public virtual string GetNativePath(string id)
-            => $"{Versions}/{id}/natives";
+            => NormalizePath($"{Versions}/{id}/natives");
 
         public override string ToString()
         {
@@ -85,11 +85,18 @@ namespace CmlLib.Core
 
         protected static string Dir(string path)
         {
-            var p = Path.GetFullPath(path);
+            var p = NormalizePath(path);
             if (!Directory.Exists(p))
                 Directory.CreateDirectory(p);
 
             return p;
+        }
+
+        protected static string NormalizePath(string path)
+        {
+            return Path.GetFullPath(path)
+                .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
+                .TrimEnd(Path.DirectorySeparatorChar);
         }
     }
 }

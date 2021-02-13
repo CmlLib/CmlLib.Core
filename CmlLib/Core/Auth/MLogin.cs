@@ -21,7 +21,7 @@ namespace CmlLib.Core.Auth
         }
 
         public string SessionCacheFilePath { get; private set; }
-        public bool SaveSession { get; private set; } = true;
+        public bool SaveSession { get; set; } = true;
 
         private string CreateNewClientToken()
         {
@@ -199,6 +199,22 @@ namespace CmlLib.Core.Auth
             {
                 return new MLoginResponse(MLoginResult.UnknownError, null, ex.ToString(), null);
             }
+        }
+
+        public MLoginResponse TryAutoLoginFromMojangLauncher()
+        {
+            var mojangAccounts = MojangLauncher.MojangLauncherAccounts.FromDefaultPath();
+            var activeAccount = mojangAccounts.GetActiveAccount();
+
+            return TryAutoLogin(activeAccount.ToSession());
+        }
+
+        public MLoginResponse TryAutoLoginFromMojangLauncher(string accountFilePath)
+        {
+            var mojangAccounts = MojangLauncher.MojangLauncherAccounts.FromFile(accountFilePath);
+            var activeAccount = mojangAccounts.GetActiveAccount();
+
+            return TryAutoLogin(activeAccount.ToSession());
         }
 
         public MLoginResponse Refresh()

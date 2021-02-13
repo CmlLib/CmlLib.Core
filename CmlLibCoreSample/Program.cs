@@ -5,7 +5,6 @@ using CmlLib.Core.Downloader;
 using CmlLib.Core.Version;
 using System;
 using System.IO;
-using XboxAuthNet;
 
 namespace CmlLibCoreSample
 {
@@ -21,9 +20,9 @@ namespace CmlLibCoreSample
 
             // There are two login methods, one is using mojang email and password, and the other is using only username
             // Choose one which you want.
-            //session = p.PremiumLogin(); // Login by mojang email and password
+            session = p.PremiumLogin(); // Login by mojang email and password
             //session = p.OfflineLogin(); // Login by username
-            session = p.XboxLogin();
+            //session = p.XboxLogin();
 
             // log login session information
             Console.WriteLine("Success to login : {0} / {1} / {2}", session.Username, session.UUID, session.AccessToken);
@@ -65,44 +64,6 @@ namespace CmlLibCoreSample
             }
 
             return response.Session;
-        }
-
-        MSession XboxLogin()
-        {
-            Console.WriteLine("Input your Microsoft email: ");
-            var email = Console.ReadLine();
-            Console.WriteLine("Input your Microsoft password: ");
-            var pw = Console.ReadLine();
-
-            var login = new XboxMinecraftLogin();
-
-            //var xbox = new XboxAuth();
-            //var xboxRes = xbox.Authenticate(email, pw, XboxMinecraftLogin.RelyingParty);
-
-            var xboxRes = new XboxAuthResponse()
-            {
-                UserHash = "15355969977421195443",
-                XSTSToken = "eyJlbmMiOiJBMTI4Q0JDLUhTMjU2IiwiYWxnIjoiUlNBLU9BRVAiLCJjdHkiOiJKV1QiLCJ6aXAiOiJERUYiLCJ4NXQiOiJzYVkzV1ZoQzdnMmsxRW9FU0Jncm9Ob2l3MVEifQ.7gPCSDVRO3fa387ftVUoA2k4YKJeVVs0NRNXk62b5TXaqbBJv_UpBGHnOsYwOPKL_gcznbdiQ1ai9INS_yb7qoVPKE5M3yNLyaUX8crPjpt8LKtutyVR9nRJtZx4n-9Vz9Jt_KN5rqLHL0k82lSEVZiBgWgAPWIqaRsPiYW5gn0BLN9DzBWtsIR9nwrjVcQd4J1O0gp7Z15y7Ayq_NbSiuyVF4OFpHixlnh-NN3w4dbW_hLa0SK6BrqI-UFCBav6TdZ-Oj9nWB2DO7orZL2eOmksU_WHNEGUL_85YiYdyb5Q49oIdkEAvhdWm5E8FBLAR-kmCQaXaA6c7wItdqG12w.kQT0SZs2i_qbaPTi3-JBBQ.HzWsr6CIHetT-OloGUkPbStB4LpkXFaxx0qUf-PKQiEUxdfR0To1HhxVAnuypRT70qPcLqaN87wpYAX9dD9jcRFo9rODqVhsKUyjDkfjlOOabHxUftXKzufRMMEG4XqV9Pca0J0mzXUnNDq7LwKsIpO5E253ZMTdFHcB0V0YekBsSIz7ObcMeAMBCgdPldZXAvkjczVw1KJTcEdPwMITFs3Yh2962eC-bQ5rBGdulG5TCx0O7ghn18ChIBw7Df78ANnygNjNfpRm1eGo4qxbqdOG7ZZXQIo-c07NDqSWjIvDNI2_Ht-wYm5yuJke6l5N-eYI3CsSeU6XhvryeMPz6QwjwUC3Uui82JLCyGFF-OdBzduyjxw3Zgmd2WJ-WZHI3ptK-Mw-SgsOf6CQ8SOpgy5JTIkg-_kBS6L73CKMRJMqRu-0ojLk6VZJ8chL5du5TiOqi_ckMiOQhDLnayClzXRkHvE23vncF7NcQ542jWW-R8q0kgZwDyreYqBu-8ibdREcwZuCuMj8v6dSJbQPYrqGTsON4aJC_4vm4Z5zgEyXKuWpYWWHM2DaY3fOpieQbTd-MejHkk0QyCxR-r2YUz219AsEqYMzGgLTQO8C2aT2d0ybjSIQMer8qFit8mwuNiut410g8Ledn3nsTjP5sISaEmjRj6OSjx__egLs56t6E_c-FTtPrcwwEY1nnmN_p3pdkuu5FMqMs6sg81ndIShghvkv0c35iTsGEg0a1WoBZp3T2cdctjfTSV5SgIf3qmdREcZ0NoqpRHOopH2YptlcqgK7h5kW5HfFV8S32hS3tcQ8hEW0a_qIWGDG_ZBeD2-yiYf4nTFzo65_2K5H3ELDaMSdglNJLC_u71y-snBWGbcwrt6Pp_k8WeRnyyql9aVbaibrdYQ9mOZEh-W3Nv3xtom1jU-vGVyBmhmbRa7Ywb0P8EFmwgg8g-vR6upXj-aHI2dA0_95-DPQZm_JZDxu36U0z5m3_tCNSiaRUZhu9bY9FcRXH-Ut3Bfm2UoTyz4VBzgZcqjMaJ4igLnYUyNtjdrefe8kwPOq3AUHzi-B8_Y30hjBOEmtZULwhXVnaFfVEi7PHQcASJZpMP_pW_ybFVPAaZzKS_tglJdYntciKpe404r-YghNHNKqLHz017OG3dAdTEXHPsS66jCPxeAiBpYgyvwMGt7F6vvRFBBrMpD-0y9wzlRSSOW3GydTGkMre_R0MuzmymWy97pR_NmS501Q1lYfq-8cUESZvinthgi9WNyoqbunI0UmeatWBBSlrzAYOSAZS1QQ7um9Ro74Suig720zQ0FolOMECu3etEHerqRADCQ9JMnc-ejrl51o3py9kyJRtpZOBrCYc4rR3PfpY_6NFhw7pnsVU6uAo_sfo-TTmJTQAotUF2VHgRepzYTbS9FhVKuwwX4mL2eG8wdwBFu7qzv6mMfP1Rn729ppuZSHEs5iquaBfuT5cZ-MOhTwOeOLvzgd78vATtzRLUOQ-eVVTq8dELsEVS_rKRo7EIm6XteQjROZcv0ptuMNzuDGGBmwBldUhUGTsiurK9luB2O8-zfulfQWOqw.yRbdY1tpZL2t44nV2GYJbQ"
-            };
-
-            //var authRes = login.LoginWithXbox(xboxRes.UserHash, xboxRes.XSTSToken);
-
-            var authRes = new AuthenticationResponse()
-            {
-                AccessToken = "eyJhbGciOiJIUzI1NiJ9.eyJ4dWlkIjoiMjUzNTQxNTY2NTkyOTY4MyIsInN1YiI6IjM0N2Q0ODQxLTBkOWMtNGUyNC1iZWE5LWRkMWRkOTg4NWJmZCIsIm5iZiI6MTYwNzg3Mzg4Niwicm9sZXMiOltdLCJpc3MiOiJhdXRoZW50aWNhdGlvbiIsImV4cCI6MTYwNzk2MDI4NiwiaWF0IjoxNjA3ODczODg2LCJ5dWlkIjoiNWNiMzI1YjQ4ZmM3MmNmOWM0MmFmZGY3M2FkNmVjMDcifQ.9jbLu4SGUsUGPBqtd_B2vb_V_YCe3J7i9kYH-i8utbE"
-            };
-
-            var loginResponse = login.RequestSession(authRes.AccessToken);
-
-            if (loginResponse.IsSuccess)
-                return loginResponse.Session;
-            else
-            {
-                Console.WriteLine("failed to login. {0} : {1}", loginResponse.Result.ToString(), loginResponse.ErrorMessage);
-                Console.ReadLine();
-                Environment.Exit(0);
-                return null;
-            }
         }
 
         MSession OfflineLogin()
