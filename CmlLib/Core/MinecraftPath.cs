@@ -63,10 +63,10 @@ namespace CmlLib.Core
         public virtual string GetIndexFilePath(string assetId)
             => NormalizePath($"{Assets}/indexes/{assetId}.json");
 
-        public virtual string GetAssetObjectPath()
+        public virtual string GetAssetObjectPath(string assetId)
             => NormalizePath($"{Assets}/objects");
 
-        public virtual string GetAssetLegacyPath()
+        public virtual string GetAssetLegacyPath(string assetId)
             => NormalizePath($"{Assets}/virtual/legacy");
 
         public virtual string GetVersionJarPath(string id)

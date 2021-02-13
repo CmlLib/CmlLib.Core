@@ -66,7 +66,7 @@ namespace CmlLib.Core.Version
             }
             catch (Exception ex)
             {
-                //System.Diagnostics.Debug.WriteLine(ex);
+                System.Diagnostics.Debug.WriteLine(ex);
                 return null;
             }
         }
@@ -77,25 +77,17 @@ namespace CmlLib.Core.Version
             if (string.IsNullOrEmpty(path))
                 path = PackageName.Parse(name).GetPath(nativeId);
 
-            var url = job["url"]?.ToString();
-            if (url == null)
-                url = MojangServer.Library + path;
-            else if (url == "")
-                url = null;
-            else if (url.Split('/').Last() == "")
-                url += path;
-
             var hash = job["sha1"] ?? job["checksums"]?[0];
 
-            var library = new MLibrary();
-            library.Hash = hash?.ToString() ?? "";
-            library.IsNative = !string.IsNullOrEmpty(nativeId);
-            library.Name = name;
-            library.Path = path;
-            library.Url = url;
-            library.IsRequire = require;
-
-            return library;
+            return new MLibrary
+            {
+                Hash = hash?.ToString(),
+                IsNative = !string.IsNullOrEmpty(nativeId),
+                Name = name,
+                Path = path,
+                Url = job["url"]?.ToString(),
+                IsRequire = require
+            };
         }
     }
 }

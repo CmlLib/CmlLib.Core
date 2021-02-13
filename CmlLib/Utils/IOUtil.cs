@@ -28,7 +28,7 @@ namespace CmlLib.Utils
             }
             catch (Exception ex)
             {
-                //System.Diagnostics.Debug.WriteLine(ex);
+                System.Diagnostics.Debug.WriteLine(ex);
             }
         }
 
@@ -100,6 +100,17 @@ namespace CmlLib.Utils
             {
                 return false;
             }
+        }
+
+        public static bool CheckFileValidation(string path, string hash)
+        {
+            return File.Exists(path) && CheckSHA1(path, hash);
+        }
+
+        public static bool CheckFileValidation(string path, string hash, long size)
+        {
+            var file = new FileInfo(path);
+            return file.Exists && file.Length == size && CheckSHA1(path, hash);
         }
 
         [DllImport("libc", SetLastError = true)]

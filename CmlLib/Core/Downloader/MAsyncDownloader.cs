@@ -9,14 +9,14 @@ using System.Threading.Tasks;
 
 namespace CmlLib.Core.Downloader
 {
-    public class MAsyncDownloader : MDownloader
+    public class MAsyncDownloader
     {
         public MAsyncDownloader(MinecraftPath path, MVersion mVersion) : this(path, mVersion, 10, true)
         {
 
         }
 
-        public MAsyncDownloader(MinecraftPath path, MVersion mVersion, int maxThread, bool setConnectionLimit) : base(path, mVersion)
+        public MAsyncDownloader(MinecraftPath path, MVersion mVersion, int maxThread, bool setConnectionLimit)
         {
             MaxThread = maxThread;
 
@@ -31,7 +31,7 @@ namespace CmlLib.Core.Downloader
         SemaphoreSlim semaphore;
         Task progressEvent;
 
-        public override void DownloadFiles(DownloadFile[] files)
+        public void DownloadFiles(DownloadFile[] files)
         {
             DownloadParallelAsync(files, MaxThread)
                 .Wait();
@@ -76,7 +76,7 @@ namespace CmlLib.Core.Downloader
 
                 var ev = Task.Run(() =>
                 {
-                    fireDownloadFileChangedEvent(file.Type, file.Name, total, progressed);
+                    //fireDownloadFileChangedEvent(file.Type, file.Name, total, progressed);
                 });
 
                 Interlocked.Increment(ref progressed);
@@ -87,7 +87,7 @@ namespace CmlLib.Core.Downloader
             }
             catch (Exception ex)
             {
-                //System.Diagnostics.Debug.WriteLine(ex);
+                System.Diagnostics.Debug.WriteLine(ex);
                 failedCount++;
 
                 var result = await doDownload(file, failedCount);
