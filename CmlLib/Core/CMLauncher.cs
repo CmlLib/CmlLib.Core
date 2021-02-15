@@ -8,19 +8,26 @@ using System.Linq;
 using System.Diagnostics;
 using CmlLib.Core.Downloader;
 using CmlLib.Core.Version;
+using CmlLib.Core.Files;
+using System.Threading.Tasks;
 
 namespace CmlLib.Core
 {
     public class CMLauncher
     {
-        public CMLauncher(string path)
+        public CMLauncher(string path) : this(new MinecraftPath(path))
         {
-            this.MinecraftPath = new MinecraftPath(path);
         }
 
         public CMLauncher(MinecraftPath mc)
         {
             this.MinecraftPath = mc;
+
+            GameFileCheckers = new FileCheckerCollection();
+
+            FileDownloader = new SequenceDownloader();
+            FileDownloader.ChangeFile += (e) => FileChanged?.Invoke(e);
+            FileDownloader.ChangeProgress += (s, e) => ProgressChanged?.Invoke(this, e);
         }
 
         public event DownloadFileChangedHandler FileChanged;
@@ -30,20 +37,9 @@ namespace CmlLib.Core
         public MinecraftPath MinecraftPath { get; private set; }
         public MVersionCollection Versions { get; private set; }
 
-        private void fire(MFile kind, string name, int total, int progressed)
-        {
-            FileChanged?.Invoke(new DownloadFileChangedEventArgs(kind, name, total, progressed));
-        }
+        public FileCheckerCollection GameFileCheckers { get; private set; }
 
-        private void fire(DownloadFileChangedEventArgs e)
-        {
-            FileChanged?.Invoke(e);
-        }
-
-        private void fire(int progress)
-        {
-            ProgressChanged?.Invoke(this, new ProgressChangedEventArgs(progress, null));
-        }
+        public IDownloader FileDownloader { get; set; }
 
         public MVersionCollection UpdateVersions()
         {
@@ -119,24 +115,43 @@ namespace CmlLib.Core
             return name;
         }
 
-        public void CheckGameFiles(MVersion version, bool downloadAsset = true, bool checkFileHash = true)
+        public DownloadFile[] CheckLostGameFiles(MVersion version)
         {
-            var downloader = new MDownloader(MinecraftPath, version);
-            downloadGameFiles(downloader, downloadAsset, checkFileHash);
+            var lostFiles = new List<DownloadFile>();
+            foreach (IFileChecker checker in this.GameFileCheckers)
+            {
+                DownloadFile[] files = checker.CheckFiles(MinecraftPath, version);
+                if (files != null)
+                    lostFiles.AddRange(files);
+            }
+
+            return lostFiles.ToArray();
         }
 
-        public void CheckGameFilesParallel(MVersion version, bool downloadAsset = true, bool checkFileHash = true)
+        public async Task DownloadGameFiles(DownloadFile[] files)
         {
-            var downloader = new MAsyncDownloader(MinecraftPath, version);
-            downloadGameFiles(downloader, downloadAsset, checkFileHash);
+            if (this.FileDownloader == null)
+                throw new ArgumentNullException("this.FileDownloader");
+
+            await FileDownloader.DownloadFiles(files).ConfigureAwait(false);
         }
 
-        private void downloadGameFiles(MDownloader downloader, bool downloadAsset, bool checkFileHash)
+        public void CheckAndDownload(MVersion version)
         {
-            downloader.CheckHash = checkFileHash;
-            downloader.ChangeFile += (e) => fire(e);
-            downloader.ChangeProgress += (sender, e) => fire(e.ProgressPercentage);
-            downloader.DownloadAll(downloadAsset);
+            CheckAndDownloadAsync(version).Wait();
+        }
+
+        public async Task CheckAndDownloadAsync(MVersion version)
+        {
+            foreach (IFileChecker checker in this.GameFileCheckers)
+            {
+                DownloadFile[] files = checker.CheckFiles(MinecraftPath, version);
+
+                if (files == null || files.Length == 0)
+                    continue;
+
+                await DownloadGameFiles(files);
+            }
         }
 
         public Process CreateProcess(string mcversion, string forgeversion, MLaunchOption option)
@@ -144,7 +159,7 @@ namespace CmlLib.Core
             if (string.IsNullOrEmpty(option.JavaPath))
                 option.JavaPath = CheckJRE();
 
-            CheckGameFiles(GetVersion(mcversion), false);
+            CheckAndDownload(GetVersion(mcversion));
 
             var versionName = CheckForge(mcversion, forgeversion, option.JavaPath);
             UpdateVersions();
@@ -155,7 +170,14 @@ namespace CmlLib.Core
         public Process CreateProcess(string versionname, MLaunchOption option)
         {
             option.StartVersion = GetVersion(versionname);
-            CheckGameFiles(option.StartVersion);
+            CheckAndDownload(option.StartVersion);
+            return CreateProcess(option);
+        }
+
+        public async Task<Process> CreateProcessAsync(string versionname, MLaunchOption option)
+        {
+            option.StartVersion = GetVersion(versionname);
+            await CheckAndDownloadAsync(option.StartVersion);
             return CreateProcess(option);
         }
 
@@ -169,6 +191,35 @@ namespace CmlLib.Core
 
             var launch = new MLaunch(option);
             return launch.GetProcess();
+        }
+
+        public Process Launch(string versionname, MLaunchOption option)
+        {
+            Process process = CreateProcess(versionname, option);
+            process.Start();
+            return process;
+        }
+
+        public async Task<Process> LaunchAsync(string versionname, MLaunchOption option)
+        {
+            Process process = await CreateProcessAsync(versionname, option);
+            process.Start();
+            return process;
+        }
+
+        private void fire(MFile kind, string name, int total, int progressed)
+        {
+            FileChanged?.Invoke(new DownloadFileChangedEventArgs(kind, name, total, progressed));
+        }
+
+        private void fire(DownloadFileChangedEventArgs e)
+        {
+            FileChanged?.Invoke(e);
+        }
+
+        private void fire(int progress)
+        {
+            ProgressChanged?.Invoke(this, new ProgressChangedEventArgs(progress, null));
         }
     }
 }

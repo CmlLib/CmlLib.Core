@@ -1,4 +1,5 @@
-﻿using CmlLib.Core.Version;
+﻿using CmlLib.Core.Files;
+using CmlLib.Core.Version;
 using CmlLib.Utils;
 using ICSharpCode.SharpZipLib.Zip;
 using Newtonsoft.Json.Linq;
@@ -30,10 +31,13 @@ namespace CmlLib.Core.Downloader
         {
             this.Minecraft = mc;
             JavaPath = java;
+            Downloader = new SequenceDownloader();
+            Downloader.ChangeFile += (e) => FileChanged?.Invoke(e);
         }
 
         public string JavaPath { get; private set; }
         MinecraftPath Minecraft;
+        private IDownloader Downloader;
         public event DownloadFileChangedHandler FileChanged;
         public event EventHandler<string> InstallerOutput;
 
@@ -250,9 +254,10 @@ namespace CmlLib.Core.Downloader
                 libs.AddRange(parsedLib);
             }
 
-            var downloader = new MDownloader(Minecraft);
-            downloader.ChangeFile += (e) => FileChanged?.Invoke(e);
-            downloader.DownloadLibraries(libs.ToArray());
+            var libraryChecker = new LibraryChecker();
+            var lostLibrary = libraryChecker.CheckFiles(Minecraft, libs.ToArray());
+
+            Downloader.DownloadFiles(lostLibrary);
         }
 
         private void process(JArray processors, Dictionary<string, string> mapData)

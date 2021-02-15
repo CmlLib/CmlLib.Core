@@ -8,18 +8,28 @@ using System.Threading.Tasks;
 
 namespace CmlLib.Core.Downloader
 {
-    public class ParallelDownloader : IDownloader
+    public class AsyncParallelDownloader : IDownloader
     {
         public event DownloadFileChangedHandler ChangeFile;
         public event ProgressChangedEventHandler ChangeProgress;
 
-        public int MaxThread { get; set; } = 10;
+        public int MaxThread { get; private set; }
         public bool IgnoreInvalidFiles { get; set; } = true;
 
         int total = 0;
         int progressed = 0;
 
         bool isRunning = false;
+
+        public AsyncParallelDownloader() : this(10)
+        {
+
+        }
+
+        public AsyncParallelDownloader(int parallelism)
+        {
+            this.MaxThread = parallelism;
+        }
 
         public Task DownloadFiles(DownloadFile[] files)
         {
@@ -29,69 +39,72 @@ namespace CmlLib.Core.Downloader
             total = files.Length;
             progressed = 0;
 
-            return Task.Run(() =>
-            {
-                Parallel.ForEach(
-                    files,
-                    new ParallelOptions { MaxDegreeOfParallelism = MaxThread },
-                    doDownload);
-
-                isRunning = false;
-            });
+            return ForEachAsyncSemaphore(files, MaxThread, doDownload);
         }
 
-        private void doDownload(DownloadFile file)
+        private async Task ForEachAsyncSemaphore<T>(IEnumerable<T> source,
+    int degreeOfParallelism, Func<T, Task> body)
         {
-            //doDownload(file, 0);
+            var tasks = new List<Task>();
+            using (var throttler = new SemaphoreSlim(degreeOfParallelism))
+            {
+                foreach (var element in source)
+                {
+                    await throttler.WaitAsync();
+                    tasks.Add(Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await body(element);
+                        }
+                        finally
+                        {
+                            throttler.Release();
+                        }
+                    }));
+                }
+                await Task.WhenAll(tasks);
+            }
+        }
 
+        private async Task doDownload(DownloadFile file)
+        {
+            try
+            {
+                await doDownload(file, 3);
+            }
+            catch (Exception ex)
+            {
+                if (!IgnoreInvalidFiles)
+                    throw new MDownloadFileException("failed to download", ex, file);
+            }
+        }
+
+        private async Task doDownload(DownloadFile file, int retry)
+        {
             try
             {
                 var downloader = new WebDownload();
                 //Console.WriteLine("start " + file.Name);
-                downloader.DownloadFileLimit(file.Url, file.Path);
+                await downloader.DownloadFileLimitTaskAsync(file.Url, file.Path);
                 //Console.WriteLine("end " + file.Name);
 
                 Interlocked.Increment(ref progressed);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(ex.ToString());
-            }
-            finally
-            {
-                Task.Run(() =>
+
+                _ = Task.Run(() =>
                 {
                     fireDownloadFileChangedEvent(file.Type, file.Name, total, progressed);
                 });
             }
-        }
-
-        private bool doDownload(DownloadFile file, int failedCount)
-        {
-            try
-            {
-                if (failedCount > 2)
-                    return false;
-
-                var downloader = new WebDownload();
-                Console.WriteLine("start " + file.Name);
-                downloader.DownloadFileLimit(file.Url, file.Path);
-                Console.WriteLine("end " + file.Name);
-
-                Interlocked.Increment(ref progressed);
-
-                var ev = Task.Run(() =>
-                {
-                    fireDownloadFileChangedEvent(file.Type, file.Name, total, progressed);
-                });
-                return true;
-            }
             catch (Exception ex)
             {
+                if (retry <= 0)
+                    return;
+
                 System.Diagnostics.Debug.WriteLine(ex);
-                failedCount++;
+                retry--;
 
-                return doDownload(file, failedCount);
+                await doDownload(file, retry);
             }
         }
 

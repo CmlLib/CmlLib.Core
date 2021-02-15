@@ -9,6 +9,8 @@ namespace CmlLib.Core.Downloader
         public string Path { get; set; }
         public string Url { get; set; }
 
+        public Action[] AfterDownload { get; set; }
+
         bool IEquatable<DownloadFile>.Equals(DownloadFile other)
         {
             if (other == null)
