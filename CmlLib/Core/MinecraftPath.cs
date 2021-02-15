@@ -29,28 +29,46 @@ namespace CmlLib.Core
         {
             var basePath = GetOSDefaultPath();
             Initialize(basePath, basePath);
+            CreateDirs();
         }
 
         public MinecraftPath(string basePath)
         {
-            Initialize(basePath, basePath);
+            Initialize(basePath);
+            CreateDirs();
         }
 
         public MinecraftPath(string basePath, string basePathForAssets)
         {
             Initialize(basePath, basePathForAssets);
+            CreateDirs();
+        }
+
+        protected virtual void Initialize(string p)
+        {
+            Initialize(p, p);
         }
 
         protected virtual void Initialize(string p, string assetsPath)
         {
-            BasePath = Dir(p);
+            BasePath = NormalizePath(p);
 
-            Library = Dir(BasePath + "/libraries");
-            Versions = Dir(BasePath + "/versions");
-            Resource = Dir(BasePath + "/resources");
+            Library = NormalizePath(BasePath + "/libraries");
+            Versions = NormalizePath(BasePath + "/versions");
+            Resource = NormalizePath(BasePath + "/resources");
 
-            Runtime = Dir(BasePath + "/runtime");
-            Assets = Dir(assetsPath + "/assets");
+            Runtime = NormalizePath(BasePath + "/runtime");
+            Assets = NormalizePath(assetsPath + "/assets");
+        }
+
+        public void CreateDirs()
+        {
+            Dir(BasePath);
+            Dir(Library);
+            Dir(Versions);
+            Dir(Resource);
+            Dir(Runtime);
+            Dir(Assets);
         }
 
         public string BasePath { get; set; }
