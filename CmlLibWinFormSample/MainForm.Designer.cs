@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.cbFullscreen = new System.Windows.Forms.CheckBox();
             this.btnAutoRamSet = new System.Windows.Forms.Button();
             this.Txt_DockIcon = new System.Windows.Forms.TextBox();
             this.txtXms = new System.Windows.Forms.TextBox();
@@ -78,14 +79,12 @@
             this.rbParallelDownload = new System.Windows.Forms.RadioButton();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.cbSkipAssetsDownload = new System.Windows.Forms.CheckBox();
-            this.cbCheckFileHash = new System.Windows.Forms.CheckBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.btnRefreshVersion = new System.Windows.Forms.Button();
             this.btnForgeInstall = new System.Windows.Forms.Button();
             this.btnSetLastVersion = new System.Windows.Forms.Button();
             this.btnMojangServer = new System.Windows.Forms.Button();
             this.btnOptions = new System.Windows.Forms.Button();
-            this.cbFullscreen = new System.Windows.Forms.CheckBox();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -126,6 +125,16 @@
             this.groupBox2.TabIndex = 20;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Options (Empty textbox means using default option)";
+            // 
+            // cbFullscreen
+            // 
+            this.cbFullscreen.AutoSize = true;
+            this.cbFullscreen.Location = new System.Drawing.Point(133, 293);
+            this.cbFullscreen.Name = "cbFullscreen";
+            this.cbFullscreen.Size = new System.Drawing.Size(83, 16);
+            this.cbFullscreen.TabIndex = 25;
+            this.cbFullscreen.Text = "Fullscreen";
+            this.cbFullscreen.UseVisualStyleBackColor = true;
             // 
             // btnAutoRamSet
             // 
@@ -546,7 +555,6 @@
             // groupBox3
             // 
             this.groupBox3.Controls.Add(this.cbSkipAssetsDownload);
-            this.groupBox3.Controls.Add(this.cbCheckFileHash);
             this.groupBox3.Controls.Add(this.rbSequenceDownload);
             this.groupBox3.Controls.Add(this.rbParallelDownload);
             this.groupBox3.Location = new System.Drawing.Point(14, 134);
@@ -559,24 +567,12 @@
             // cbSkipAssetsDownload
             // 
             this.cbSkipAssetsDownload.AutoSize = true;
-            this.cbSkipAssetsDownload.Location = new System.Drawing.Point(163, 51);
+            this.cbSkipAssetsDownload.Location = new System.Drawing.Point(92, 46);
             this.cbSkipAssetsDownload.Name = "cbSkipAssetsDownload";
             this.cbSkipAssetsDownload.Size = new System.Drawing.Size(151, 16);
             this.cbSkipAssetsDownload.TabIndex = 25;
             this.cbSkipAssetsDownload.Text = "Skip Assets Download";
             this.cbSkipAssetsDownload.UseVisualStyleBackColor = true;
-            // 
-            // cbCheckFileHash
-            // 
-            this.cbCheckFileHash.AutoSize = true;
-            this.cbCheckFileHash.Checked = true;
-            this.cbCheckFileHash.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbCheckFileHash.Location = new System.Drawing.Point(40, 51);
-            this.cbCheckFileHash.Name = "cbCheckFileHash";
-            this.cbCheckFileHash.Size = new System.Drawing.Size(117, 16);
-            this.cbCheckFileHash.TabIndex = 24;
-            this.cbCheckFileHash.Text = "Check File Hash";
-            this.cbCheckFileHash.UseVisualStyleBackColor = true;
             // 
             // groupBox4
             // 
@@ -642,16 +638,6 @@
             this.btnOptions.Text = "options.txt";
             this.btnOptions.UseVisualStyleBackColor = true;
             this.btnOptions.Click += new System.EventHandler(this.btnOptions_Click);
-            // 
-            // cbFullscreen
-            // 
-            this.cbFullscreen.AutoSize = true;
-            this.cbFullscreen.Location = new System.Drawing.Point(133, 293);
-            this.cbFullscreen.Name = "cbFullscreen";
-            this.cbFullscreen.Size = new System.Drawing.Size(83, 16);
-            this.cbFullscreen.TabIndex = 25;
-            this.cbFullscreen.Text = "Fullscreen";
-            this.cbFullscreen.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
@@ -738,7 +724,6 @@
         private System.Windows.Forms.RadioButton rbParallelDownload;
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.CheckBox cbSkipAssetsDownload;
-        private System.Windows.Forms.CheckBox cbCheckFileHash;
         private System.Windows.Forms.GroupBox groupBox4;
         private System.Windows.Forms.Button btnSetLastVersion;
         private System.Windows.Forms.Button btnMojangServer;

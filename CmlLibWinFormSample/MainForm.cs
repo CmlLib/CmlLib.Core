@@ -23,7 +23,9 @@ namespace CmlLibWinFormSample
 
         MinecraftPath MinecraftPath;
         MVersionCollection Versions;
+
         MSession Session = MSession.GetOfflineSession("test_user");
+        CMLauncher launcher;
 
         GameLog logForm;
 
@@ -34,6 +36,10 @@ namespace CmlLibWinFormSample
 
             if (useMJava)
                 lbJavaPath.Text = path.Runtime;
+
+            launcher = new CMLauncher(path);
+            launcher.FileChanged += Launcher_FileChanged;
+            launcher.ProgressChanged += Launcher_ProgressChanged;
             refreshVersions(null);
         }
 
@@ -43,7 +49,7 @@ namespace CmlLibWinFormSample
 
             var th = new Thread(new ThreadStart(delegate
             {
-                Versions = new MVersionLoader().GetVersionMetadatas(MinecraftPath);
+                Versions = launcher.UpdateVersions();
                 Invoke(new Action(() =>
                 {
                     bool showVersionExist = false;
@@ -171,14 +177,31 @@ namespace CmlLibWinFormSample
             groupBox4.Enabled = value;
         }
 
-        private MLaunchOption createLaunchOption()
+        private void Btn_Launch_Click(object sender, EventArgs e)
         {
+            // Launch
+
+            if (Session == null)
+            {
+                MessageBox.Show("Login First");
+                return;
+            }
+
+            if (cbVersion.Text == "")
+            {
+                MessageBox.Show("Select Version");
+                return;
+            }
+
+            // disable ui
+            setUIEnabled(false);
+
+            // create LaunchOption
+            MLaunchOption launchOption;
             try
             {
-                var launchOption = new MLaunchOption()
+                launchOption = new MLaunchOption()
                 {
-                    Path = MinecraftPath,
-
                     MaximumRamMb = int.Parse(TxtXmx.Text),
                     Session = this.Session,
 
@@ -211,43 +234,15 @@ namespace CmlLibWinFormSample
 
                 if (!string.IsNullOrEmpty(Txt_JavaArgs.Text))
                     launchOption.JVMArguments = Txt_JavaArgs.Text.Split(' ');
-
-                return launchOption;
             }
             catch (Exception ex) // exceptions. like FormatException in int.Parse
             {
                 MessageBox.Show("Failed to create MLaunchOption\n\n" + ex.ToString());
-                return null;
-            }
-        }
-
-        private void Btn_Launch_Click(object sender, EventArgs e)
-        {
-            // Launch
-
-            if (Session == null)
-            {
-                MessageBox.Show("Login First");
                 return;
             }
-
-            if (cbVersion.Text == "")
-            {
-                MessageBox.Show("Select Version");
-                return;
-            }
-
-            // disable ui
-            setUIEnabled(false);
-
-            // create LaunchOption
-            var launchOption = createLaunchOption();
-            if (launchOption == null)
-                return;
 
             var version = cbVersion.Text;
             var useParallel = rbParallelDownload.Checked;
-            var checkHash = cbCheckFileHash.Checked;
             var downloadAssets = !cbSkipAssetsDownload.Checked;
 
             var th = new Thread(() =>
@@ -263,22 +258,15 @@ namespace CmlLibWinFormSample
                         launchOption.JavaPath = javapath;
                     }
 
-                    MVersion versionInfo = Versions.GetVersion(version); // Get Version Info
-                    launchOption.StartVersion = versionInfo;
-
-                    MDownloader downloader; // Create Downloader
                     if (useParallel)
-                        downloader = new MParallelDownloader(MinecraftPath, versionInfo, 10, true);
+                        launcher.FileDownloader = new ParallelDownloader();
                     else
-                        downloader = new MDownloader(MinecraftPath, versionInfo);
+                        launcher.FileDownloader = new SequenceDownloader();
 
-                    downloader.ChangeFile += Launcher_FileChanged;
-                    downloader.ChangeProgress += Launcher_ProgressChanged;
-                    downloader.CheckHash = checkHash;
-                    downloader.DownloadAll(downloadAssets);
+                    if (!downloadAssets)
+                        launcher.GameFileCheckers.AssetFileChecker = null;
 
-                    var launch = new MLaunch(launchOption); // Create Arguments and Process
-                    var process = launch.GetProcess();
+                    var process = launcher.CreateProcess(version, launchOption); // Create Arguments and Process
 
                     StartProcess(process); // Start Process with debug options
 
