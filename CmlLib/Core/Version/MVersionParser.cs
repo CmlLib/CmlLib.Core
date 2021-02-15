@@ -28,7 +28,7 @@ namespace CmlLib.Core.Version
             catch (MVersionParseException ex)
             {
                 ex.VersionName = info.Name;
-                throw ex;
+                throw;
             }
         }
 
@@ -55,7 +55,7 @@ namespace CmlLib.Core.Version
             catch (MVersionParseException ex)
             {
                 ex.VersionName = info.Name;
-                throw ex;
+                throw;
             }
         }
 
