@@ -125,7 +125,7 @@ namespace CmlLib.Core
                 { "auth_access_token", LaunchOption.Session.AccessToken },
                 { "user_properties"  , "{}" },
                 { "user_type"        , "Mojang" },
-                { "game_assets"      , MinecraftPath.GetAssetLegacyPath() },
+                { "game_assets"      , MinecraftPath.GetAssetLegacyPath(version.AssetId) },
                 { "auth_session"     , LaunchOption.Session.AccessToken },
                 { "version_type"     , useNotNull(LaunchOption.VersionType, version.TypeStr) }
             };
