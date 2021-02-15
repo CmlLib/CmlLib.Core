@@ -9,7 +9,7 @@ using System.Text;
 
 namespace CmlLib.Core.Files
 {
-    public class LibraryChecker : IFileChecker
+    public sealed class LibraryChecker : IFileChecker
     {
         public event DownloadFileChangedHandler ChangeFile;
 
@@ -32,7 +32,15 @@ namespace CmlLib.Core.Files
             if (version == null)
                 throw new ArgumentNullException(nameof(version));
 
-            return version.Libraries
+            return CheckFiles(path, version.Libraries);
+        }
+
+        public DownloadFile[] CheckFiles(MinecraftPath path, MLibrary[] libs)
+        {
+            if (libs == null)
+                throw new ArgumentNullException(nameof(libs));
+
+            return libs
                 .Where(lib => CheckDownloadRequire(path, lib))
                 .Select(lib => new DownloadFile
                 {
@@ -64,15 +72,18 @@ namespace CmlLib.Core.Files
             return lib.IsRequire
                 && !string.IsNullOrEmpty(lib.Path)
                 && !string.IsNullOrEmpty(lib.Url)
-                && !CheckFileValidation(path, lib);
+                && !CheckFileValidation(Path.Combine(path.Library, lib.Path), lib.Hash);
         }
 
-        private bool CheckFileValidation(MinecraftPath path, MLibrary lib)
+        private bool CheckFileValidation(string path, string hash)
         {
-            if (CheckHash)
+            if (!File.Exists(path))
+                return false;
+
+            if (!CheckHash)
                 return true;
             else
-                return IOUtil.CheckFileValidation(Path.Combine(path.Library, lib.Path), lib.Hash);
+                return IOUtil.CheckFileValidation(path, hash);
         }
     }
 }

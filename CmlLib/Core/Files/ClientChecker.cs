@@ -3,11 +3,12 @@ using CmlLib.Core.Version;
 using CmlLib.Utils;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace CmlLib.Core.Files
 {
-    public class ClientChecker : IFileChecker
+    public sealed class ClientChecker : IFileChecker
     {
         public event DownloadFileChangedHandler ChangeFile;
 
@@ -39,7 +40,10 @@ namespace CmlLib.Core.Files
 
         private bool CheckFileValidation(string path, string hash)
         {
-            if (CheckHash)
+            if (!File.Exists(path))
+                return false;
+
+            if (!CheckHash)
                 return true;
             else
                 return IOUtil.CheckFileValidation(path, hash);
