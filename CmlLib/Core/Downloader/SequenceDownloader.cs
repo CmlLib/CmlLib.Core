@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -23,7 +24,7 @@ namespace CmlLib.Core.Downloader
             var downloader = new WebDownload();
             downloader.DownloadProgressChangedEvent += fireDownloadProgressChangedEvent;
 
-            fireDownloadFileChangedEvent(files[0], 0, 0);
+            //fireDownloadFileChangedEvent(files[0], 0, files.Length);
 
             for (var i = 0; i < files.Length; i++)
             {
@@ -31,8 +32,18 @@ namespace CmlLib.Core.Downloader
 
                 try
                 {
+                    fireDownloadFileChangedEvent(file, files.Length, i);
+
                     Directory.CreateDirectory(Path.GetDirectoryName(file.Path));
-                    await downloader.DownloadFileAsync(file.Url, file.Path);
+                    await downloader.DownloadFileAsync(file.Url, file.Path, true);
+
+                    if (file.AfterDownload != null)
+                    {
+                        foreach (var item in file.AfterDownload)
+                        {
+                            item?.Invoke();
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -41,11 +52,9 @@ namespace CmlLib.Core.Downloader
                     if (!IgnoreInvalidFiles)
                         throw new MDownloadFileException(ex.Message, ex, files[i]);
                 }
-                finally
-                {
-                    fireDownloadFileChangedEvent(file, files.Length, i);
-                }
             }
+
+            fireDownloadFileChangedEvent(files.Last(), files.Length, files.Length);
         }
 
         private void fireDownloadFileChangedEvent(MFile file, string name, int totalFiles, int progressedFiles)

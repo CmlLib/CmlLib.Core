@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,7 +32,7 @@ namespace CmlLib.Core.Downloader
             this.MaxThread = parallelism;
         }
 
-        public Task DownloadFiles(DownloadFile[] files)
+        public async Task DownloadFiles(DownloadFile[] files)
         {
             if (isRunning)
                 throw new InvalidOperationException("already downloading");
@@ -39,7 +40,10 @@ namespace CmlLib.Core.Downloader
             total = files.Length;
             progressed = 0;
 
-            return ForEachAsyncSemaphore(files, MaxThread, doDownload);
+            await ForEachAsyncSemaphore(files, MaxThread, doDownload);
+
+            var lastFile = files.Last();
+            fireDownloadFileChangedEvent(lastFile, files.Length, files.Length);
         }
 
         private async Task ForEachAsyncSemaphore<T>(IEnumerable<T> source,
@@ -85,16 +89,20 @@ namespace CmlLib.Core.Downloader
             try
             {
                 var downloader = new WebDownload();
-                //Console.WriteLine("start " + file.Name);
-                await downloader.DownloadFileLimitTaskAsync(file.Url, file.Path);
-                //Console.WriteLine("end " + file.Name);
+                var downloadTask = downloader.DownloadFileLimitTaskAsync(file.Url, file.Path);
+
+                fireDownloadFileChangedEvent(file.Type, file.Name, total, progressed);
+                await downloadTask;
+
+                if (file.AfterDownload != null)
+                {
+                    foreach (var item in file.AfterDownload)
+                    {
+                        item?.Invoke();
+                    }
+                }
 
                 Interlocked.Increment(ref progressed);
-
-                _ = Task.Run(() =>
-                {
-                    fireDownloadFileChangedEvent(file.Type, file.Name, total, progressed);
-                });
             }
             catch (Exception ex)
             {

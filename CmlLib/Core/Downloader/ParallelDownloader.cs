@@ -51,6 +51,14 @@ namespace CmlLib.Core.Downloader
                 downloader.DownloadFileLimit(file.Url, file.Path);
                 //Console.WriteLine("end " + file.Name);
 
+                if (file.AfterDownload != null)
+                {
+                    foreach (var item in file.AfterDownload)
+                    {
+                        item?.Invoke();
+                    }
+                }
+
                 Interlocked.Increment(ref progressed);
             }
             catch (Exception ex)
