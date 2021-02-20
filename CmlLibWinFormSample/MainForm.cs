@@ -7,32 +7,46 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace CmlLibWinFormSample
 {
     public partial class MainForm : Form
     {
-        public MainForm()
+        public MainForm(MSession session)
         {
+            this.Session = session;
             InitializeComponent();
         }
 
+        CMLauncher launcher;
+        MSession Session;
+        MinecraftPath GamePath;
+
         bool useMJava = true;
         string javaPath = "java.exe";
-
-        MinecraftPath MinecraftPath;
-        MVersionCollection Versions;
-
-        MSession Session = MSession.GetOfflineSession("test_user");
-        CMLauncher launcher;
-
+        
         GameLog logForm;
+
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void MainForm_Shown(object sender, EventArgs e)
+        {
+            // Initialize launcher
+            this.Refresh();
+
+            var defaultPath = new MinecraftPath(MinecraftPath.GetOSDefaultPath());
+            InitializeLauncher(defaultPath);
+        }
 
         private void InitializeLauncher(MinecraftPath path)
         {
             txtPath.Text = path.BasePath;
-            MinecraftPath = path;
+            this.GamePath = path;
 
             if (useMJava)
                 lbJavaPath.Text = path.Runtime;
@@ -43,17 +57,22 @@ namespace CmlLibWinFormSample
             refreshVersions(null);
         }
 
+        private void btnRefreshVersion_Click(object sender, EventArgs e)
+        {
+            refreshVersions(null);
+        }
+
         private void refreshVersions(string showVersion)
         {
             cbVersion.Items.Clear();
 
             var th = new Thread(new ThreadStart(delegate
             {
-                Versions = launcher.UpdateVersions();
-                Invoke(new Action(() =>
+                var versions = launcher.UpdateVersions();
+                BeginInvoke(new Action(() =>
                 {
                     bool showVersionExist = false;
-                    foreach (var item in Versions)
+                    foreach (var item in versions)
                     {
                         if (showVersion != null && item.Name == showVersion)
                             showVersionExist = true;
@@ -69,118 +88,14 @@ namespace CmlLibWinFormSample
             th.Start();
         }
 
-        private void SetSession(MSession session)
-        {
-            lbUsername.Text = session.Username;
-            this.Session = session;
-        }
-
-        private void MainForm_Load(object sender, EventArgs e)
-        {
-            // Initialize launcher
-
-            var defaultPath = new MinecraftPath(MinecraftPath.GetOSDefaultPath());
-            InitializeLauncher(defaultPath);
-        }
-
-        private void btnChangePath_Click(object sender, EventArgs e)
-        {
-            var form = new PathForm(MinecraftPath);
-            form.ShowDialog();
-            InitializeLauncher(form.MinecraftPath);
-        }
-
-        private void btnRefreshVersion_Click(object sender, EventArgs e)
-        {
-            refreshVersions(null);
-        }
-
-        private void btnLogin_Click(object sender, EventArgs e)
-        {
-            var form = new LoginForm(Session);
-            form.ShowDialog();
-            SetSession(form.Session);
-        }
-
-        private void btnChangeJava_Click(object sender, EventArgs e)
-        {
-            var form = new JavaForm(useMJava, MinecraftPath.Runtime, javaPath);
-            form.ShowDialog();
-
-            useMJava = form.UseMJava;
-            MinecraftPath.Runtime = form.MJavaDirectory;
-            javaPath = form.JavaBinaryPath;
-
-            if (useMJava)
-                lbJavaPath.Text = form.MJavaDirectory;
-            else
-                lbJavaPath.Text = form.JavaBinaryPath;
-        }
-
         private void btnSetLastVersion_Click(object sender, EventArgs e)
         {
-            cbVersion.Text = Versions.LatestReleaseVersion?.Name;
+            cbVersion.Text = launcher.Versions.LatestReleaseVersion?.Name;
         }
 
-        private void btnForgeInstall_Click(object sender, EventArgs e)
-        {
-            setUIEnabled(false);
-            new Thread(() =>
-            {
-                var forgeJava = "";
-
-                if (useMJava)
-                {
-                    var java = new MJava();
-                    java.ProgressChanged += Launcher_ProgressChanged;
-                    forgeJava = java.CheckJava();
-                }
-                else
-                    forgeJava = javaPath;
-
-                Invoke(new Action(() =>
-                {
-                    var forgeForm = new ForgeInstall(MinecraftPath, forgeJava);
-                    forgeForm.ShowDialog();
-                    setUIEnabled(true);
-                    refreshVersions(forgeForm.LastInstalledVersion);
-                }));
-            }).Start();
-        }
-
-        private void btnAutoRamSet_Click(object sender, EventArgs e)
-        {
-            var computerMemory = Util.GetMemoryMb();
-            if (computerMemory == null)
-            {
-                MessageBox.Show("Failed to get computer memory");
-                return;
-            }
-
-            var max = computerMemory / 2;
-            if (max < 1024)
-                max = 1024;
-            else if (max > 8192)
-                max = 8192;
-
-            var min = max / 10;
-
-            TxtXmx.Text = max.ToString();
-            txtXms.Text = min.ToString();
-        }
-
-        private void setUIEnabled(bool value)
-        {
-            groupBox1.Enabled = value;
-            groupBox2.Enabled = value;
-            groupBox3.Enabled = value;
-            groupBox4.Enabled = value;
-        }
-
+        // Start Game
         private void Btn_Launch_Click(object sender, EventArgs e)
         {
-            // Launch
-
             if (Session == null)
             {
                 MessageBox.Show("Login First");
@@ -235,7 +150,7 @@ namespace CmlLibWinFormSample
                 if (!string.IsNullOrEmpty(Txt_JavaArgs.Text))
                     launchOption.JVMArguments = Txt_JavaArgs.Text.Split(' ');
             }
-            catch (Exception ex) // exceptions. like FormatException in int.Parse
+            catch (Exception ex) // handle exceptions. (ex) FormatException in int.Parse
             {
                 MessageBox.Show("Failed to create MLaunchOption\n\n" + ex.ToString());
                 return;
@@ -251,7 +166,7 @@ namespace CmlLibWinFormSample
                 {
                     if (useMJava) // Download Java
                     {
-                        var mjava = new MJava(MinecraftPath.Runtime);
+                        var mjava = new MJava(GamePath.Runtime);
                         mjava.ProgressChanged += Launcher_ProgressChanged;
 
                         var javapath = mjava.CheckJava();
@@ -259,7 +174,7 @@ namespace CmlLibWinFormSample
                     }
 
                     if (useParallel)
-                        launcher.FileDownloader = new ParallelDownloader();
+                        launcher.FileDownloader = new AsyncParallelDownloader();
                     else
                         launcher.FileDownloader = new SequenceDownloader();
 
@@ -309,6 +224,7 @@ namespace CmlLibWinFormSample
             th.Start();
         }
 
+        // Event Handler. Show download progress
         private void Launcher_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             Invoke(new Action(() =>
@@ -325,6 +241,84 @@ namespace CmlLibWinFormSample
                 Pb_File.Value = e.ProgressedFileCount;
                 Lv_Status.Text = $"{e.FileKind.ToString()} : {e.FileName} ({e.ProgressedFileCount}/{e.TotalFileCount})";
             }));
+        }
+
+        private void btnChangePath_Click(object sender, EventArgs e)
+        {
+            var form = new PathForm(this.GamePath);
+            form.ShowDialog();
+            InitializeLauncher(form.MinecraftPath);
+        }
+
+        private void btnChangeJava_Click(object sender, EventArgs e)
+        {
+            var form = new JavaForm(useMJava, this.GamePath.Runtime, javaPath);
+            form.ShowDialog();
+
+            useMJava = form.UseMJava;
+            this.GamePath.Runtime = form.MJavaDirectory;
+            javaPath = form.JavaBinaryPath;
+
+            if (useMJava)
+                lbJavaPath.Text = form.MJavaDirectory;
+            else
+                lbJavaPath.Text = form.JavaBinaryPath;
+        }
+
+        private void btnAutoRamSet_Click(object sender, EventArgs e)
+        {
+            var computerMemory = Util.GetMemoryMb();
+            if (computerMemory == null)
+            {
+                MessageBox.Show("Failed to get computer memory");
+                return;
+            }
+
+            var max = computerMemory / 2;
+            if (max < 1024)
+                max = 1024;
+            else if (max > 8192)
+                max = 8192;
+
+            var min = max / 10;
+
+            TxtXmx.Text = max.ToString();
+            txtXms.Text = min.ToString();
+        }
+
+        private void setUIEnabled(bool value)
+        {
+            groupBox1.Enabled = value;
+            groupBox2.Enabled = value;
+            groupBox3.Enabled = value;
+            groupBox4.Enabled = value;
+        }
+
+        // not stable
+        private void btnForgeInstall_Click(object sender, EventArgs e)
+        {
+            setUIEnabled(false);
+            new Thread(() =>
+            {
+                var forgeJava = "";
+
+                if (useMJava)
+                {
+                    var java = new MJava();
+                    java.ProgressChanged += Launcher_ProgressChanged;
+                    forgeJava = java.CheckJava();
+                }
+                else
+                    forgeJava = javaPath;
+
+                Invoke(new Action(() =>
+                {
+                    var forgeForm = new ForgeInstall(GamePath, forgeJava);
+                    forgeForm.ShowDialog();
+                    setUIEnabled(true);
+                    refreshVersions(forgeForm.LastInstalledVersion);
+                }));
+            }).Start();
         }
 
         private void StartProcess(Process process)
@@ -378,7 +372,7 @@ namespace CmlLibWinFormSample
         private void btnOptions_Click(object sender, EventArgs e)
         {
             // options.txt
-            var path = System.IO.Path.Combine(MinecraftPath.BasePath, "options.txt");
+            var path = System.IO.Path.Combine(GamePath.BasePath, "options.txt");
             var f = new GameOptions(path);
             f.Show();
         }

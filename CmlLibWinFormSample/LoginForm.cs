@@ -7,18 +7,15 @@ namespace CmlLibWinFormSample
 {
     public partial class LoginForm : Form
     {
-        public LoginForm(MSession session)
+        public LoginForm()
         {
-            this.Session = session;
             InitializeComponent();
         }
 
-        public MSession Session;
         MLogin login = new MLogin();
 
         private void LoginForm_Load(object sender, EventArgs e)
         {
-            UpdateSession(Session);
             btnAutoLogin_Click(null, null);
         }
 
@@ -157,22 +154,16 @@ namespace CmlLibWinFormSample
         private void btnOfflineLogin_Click(object sender, EventArgs e)
         {
             UpdateSession(MSession.GetOfflineSession(txtUsername.Text));
-            MessageBox.Show("Success");
         }
 
         private void UpdateSession(MSession session)
         {
-            this.Session = session;
-        }
+            // Success to login!
 
-        private void button1_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show(
-                $"AccessToken : {Session.AccessToken}\n" +
-                $"UUID : {Session.UUID}\n" +
-                $"Username : {Session.Username}");
-
-            this.Close();
+            var mainForm = new MainForm(session);
+            mainForm.FormClosed += (s, e) => this.Close();
+            mainForm.Show();
+            this.Hide();
         }
     }
 }
