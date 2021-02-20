@@ -24,10 +24,7 @@ namespace CmlLib.Core
             this.MinecraftPath = mc;
 
             GameFileCheckers = new FileCheckerCollection();
-
             FileDownloader = new SequenceDownloader();
-            FileDownloader.ChangeFile += (e) => FileChanged?.Invoke(e);
-            FileDownloader.ChangeProgress += (s, e) => ProgressChanged?.Invoke(this, e);
         }
 
         public event DownloadFileChangedHandler FileChanged;
@@ -39,7 +36,32 @@ namespace CmlLib.Core
 
         public FileCheckerCollection GameFileCheckers { get; private set; }
 
-        public IDownloader FileDownloader { get; set; }
+        IDownloader _fileDownloader;
+        public IDownloader FileDownloader
+        {
+            get => _fileDownloader;
+            set
+            {
+                if (_fileDownloader != null)
+                {
+                    _fileDownloader.ChangeFile -= fireFileChangeEvent;
+                    _fileDownloader.ChangeProgress -= FileDownloader_ChangeProgress;
+                }
+
+                _fileDownloader = value;
+
+                if (_fileDownloader != null)
+                {
+                    _fileDownloader.ChangeFile += fireFileChangeEvent;
+                    _fileDownloader.ChangeProgress += FileDownloader_ChangeProgress;
+                }
+            }
+        }
+
+        private void FileDownloader_ChangeProgress(object sender, ProgressChangedEventArgs e)
+        {
+            fireProgressChangeEvent(e.ProgressPercentage);
+        }
 
         public MVersionCollection UpdateVersions()
         {
@@ -65,13 +87,13 @@ namespace CmlLib.Core
 
         public string CheckJRE()
         {
-            fire(MFile.Runtime, "java", 1, 0);
+            fireFileChangeEvent(MFile.Runtime, "java", 1, 0);
 
             var mjava = new MJava(MinecraftPath.Runtime);
-            mjava.ProgressChanged += (sender, e) => fire(e.ProgressPercentage);
+            mjava.ProgressChanged += (sender, e) => fireProgressChangeEvent(e.ProgressPercentage);
             mjava.DownloadCompleted += (sender, e) =>
             {
-                fire(MFile.Runtime, "java", 1, 1);
+                fireFileChangeEvent(MFile.Runtime, "java", 1, 1);
             };
             return mjava.CheckJava();
         }
@@ -105,7 +127,7 @@ namespace CmlLib.Core
             if (!exist)
             {
                 var mforge = new MForge(MinecraftPath, java);
-                mforge.FileChanged += (e) => fire(e);
+                mforge.FileChanged += (e) => fireFileChangeEvent(e);
                 mforge.InstallerOutput += (s, e) => LogOutput?.Invoke(this, e);
                 name = mforge.InstallForge(mcversion, forgeversion);
 
@@ -120,9 +142,13 @@ namespace CmlLib.Core
             var lostFiles = new List<DownloadFile>();
             foreach (IFileChecker checker in this.GameFileCheckers)
             {
+                checker.ChangeFile += fireFileChangeEvent;
+
                 DownloadFile[] files = checker.CheckFiles(MinecraftPath, version);
                 if (files != null)
                     lostFiles.AddRange(files);
+
+                checker.ChangeFile -= fireFileChangeEvent;
             }
 
             return lostFiles.ToArray();
@@ -145,10 +171,14 @@ namespace CmlLib.Core
         {
             foreach (IFileChecker checker in this.GameFileCheckers)
             {
+                checker.ChangeFile += fireFileChangeEvent;
+
                 DownloadFile[] files = checker.CheckFiles(MinecraftPath, version);
 
                 if (files == null || files.Length == 0)
                     continue;
+
+                checker.ChangeFile -= fireFileChangeEvent;
 
                 await DownloadGameFiles(files);
             }
@@ -207,17 +237,17 @@ namespace CmlLib.Core
             return process;
         }
 
-        private void fire(MFile kind, string name, int total, int progressed)
+        private void fireFileChangeEvent(MFile kind, string name, int total, int progressed)
         {
             FileChanged?.Invoke(new DownloadFileChangedEventArgs(kind, name, total, progressed));
         }
 
-        private void fire(DownloadFileChangedEventArgs e)
+        private void fireFileChangeEvent(DownloadFileChangedEventArgs e)
         {
             FileChanged?.Invoke(e);
         }
 
-        private void fire(int progress)
+        private void fireProgressChangeEvent(int progress)
         {
             ProgressChanged?.Invoke(this, new ProgressChangedEventArgs(progress, null));
         }
