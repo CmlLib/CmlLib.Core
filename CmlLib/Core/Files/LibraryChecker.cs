@@ -40,17 +40,27 @@ namespace CmlLib.Core.Files
             if (libs == null)
                 throw new ArgumentNullException(nameof(libs));
 
-            return libs
-                .Where(lib => CheckDownloadRequire(path, lib))
-                .Select(lib => new DownloadFile
+            int progressed = 0;
+            var files = new List<DownloadFile>(libs.Length);
+            foreach (MLibrary library in libs)
+            {
+                if (CheckDownloadRequire(path, library))
                 {
-                    Type = MFile.Library,
-                    Name = lib.Name,
-                    Path = Path.Combine(path.Library, lib.Path),
-                    Url = CreateDownloadUrl(lib)
-                })
-                .Distinct()
-                .ToArray();
+                    files.Add(new DownloadFile
+                    {
+                        Type = MFile.Library,
+                        Name = library.Name,
+                        Path = Path.Combine(path.Library, library.Path),
+                        Url = CreateDownloadUrl(library)
+                    });
+                }
+
+                progressed++;
+                ChangeFile?.Invoke(new DownloadFileChangedEventArgs(
+                    MFile.Library, library.Name, libs.Length, progressed));
+            }
+
+            return files.Distinct().ToArray();
         }
 
         private string CreateDownloadUrl(MLibrary lib)

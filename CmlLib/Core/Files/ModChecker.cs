@@ -21,17 +21,27 @@ namespace CmlLib.Core.Files
             if (version == null)
                 throw new ArgumentNullException(nameof(version));
 
-            return Mods
-                .Where(mod => CheckDownloadRequire(path, mod))
-                .Select(mod => new DownloadFile
+            int progressed = 0;
+            var files = new List<DownloadFile>(Mods.Length);
+            foreach (ModFile mod in Mods)
+            {
+                if (CheckDownloadRequire(path, mod))
                 {
-                    Type = MFile.Others,
-                    Name = mod.Name,
-                    Path = Path.Combine(path.BasePath, mod.Path),
-                    Url = mod.Url
-                })
-                .Distinct()
-                .ToArray();
+                    files.Add(new DownloadFile
+                    {
+                        Type = MFile.Others,
+                        Name = mod.Name,
+                        Path = Path.Combine(path.BasePath, mod.Path),
+                        Url = mod.Url
+                    });
+                }
+
+                progressed++;
+                ChangeFile?.Invoke(new DownloadFileChangedEventArgs(
+                    MFile.Others, mod.Name, Mods.Length, progressed));
+            }
+
+            return files.Distinct().ToArray();
         }
 
         private bool CheckDownloadRequire(MinecraftPath path, ModFile mod)
@@ -50,11 +60,6 @@ namespace CmlLib.Core.Files
                 return true;
             else
                 return IOUtil.CheckFileValidation(path, hash);
-        }
-
-        public void fire(MFile type, string name, int total, int progressed)
-        {
-            ChangeFile?.Invoke(new DownloadFileChangedEventArgs(type, name, total, progressed));
         }
     }
 }
