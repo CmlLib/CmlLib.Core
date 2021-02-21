@@ -16,6 +16,10 @@ namespace CmlLib.Core
                 Arch = "32";
         }
 
+        public const string Windows = "windows";
+        public const string OSX = "osx";
+        public const string Linux = "linux";
+
         public static string OSName { get; private set; }
         public static string Arch { get; private set; }
 
@@ -23,24 +27,24 @@ namespace CmlLib.Core
         {
 #if NETCOREAPP
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                return "osx";
+                return OSX;
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                return "windows";
+                return Windows;
             else
-                return "linux";
+                return Linux;
 #elif NETFRAMEWORK
             var osType = Environment.OSVersion.Platform;
 
             if (osType == PlatformID.MacOSX)
-                return "osx";
+                return OSX;
             else if (osType == PlatformID.Unix)
-                return "linux";
+                return Linux;
             else
-                return "windows";
+                return Windows;
 #endif
         }
 
-        public bool CheckOSRequire(JArray arr)
+        public static bool CheckOSRequire(JArray arr)
         {
             var require = true;
 
@@ -51,14 +55,10 @@ namespace CmlLib.Core
 
                 foreach (var item in job)
                 {
-                    // action
                     if (item.Key == "action")
                         action = (item.Value.ToString() == "allow" ? true : false);
-
-                    // os (containCurrentOS)
                     else if (item.Key == "os")
                         containCurrentOS = checkOSContains((JObject)item.Value);
-
                     else if (item.Key == "features") // etc
                         return false;
                 }

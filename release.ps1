@@ -7,7 +7,7 @@ else
     $ver = Read-Host 'version'
 }
 
-Remove-Item -Path .\release -Confirm -Recurse
+Remove-Item -Path .\release -Recurse
 
 mkdir .\release\CmlLib.Core.$ver
 mkdir .\release\SampleCoreLauncher$ver
@@ -22,6 +22,6 @@ Compress-Archive -Path .\release\CmlLib.Core.$ver -DestinationPath .\release\Cml
 Compress-Archive -Path .\release\SampleCoreLauncher$ver -DestinationPath .\release\SampleCoreLauncher$ver.zip
 Compress-Archive -Path .\release\SampleWinformLauncher$ver -DestinationPath .\release\SampleWinformLauncher$ver.zip
 
-Remove-Item -Path .\release\CmlLib.Core.$ver -Confirm -Recurse
-Remove-Item -Path .\release\SampleCoreLauncher$ver -Confirm -Recurse
-Remove-Item -Path .\release\SampleWinformLauncher$ver -Confirm -Recurse
+Remove-Item -Path .\release\CmlLib.Core.$ver -Recurse
+Remove-Item -Path .\release\SampleCoreLauncher$ver -Recurse
+Remove-Item -Path .\release\SampleWinformLauncher$ver -Recurse

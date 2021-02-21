@@ -34,7 +34,12 @@ namespace CmlLib.Utils
                         Directory.CreateDirectory(dirName);
 
                     if (!string.IsNullOrWhiteSpace(fileName))
-                        IOUtil.CopyStreamToFile(s, zfile, 1024 * 1024);
+                    {
+                        using (var zFileStream = File.OpenWrite(zfile))
+                        {
+                            s.CopyTo(zFileStream);
+                        }
+                    }
 
                     //Console.WriteLine(zfile);
                     ev(s.Position, length);
