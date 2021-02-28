@@ -41,8 +41,8 @@ namespace CmlLib.Core.Version
 
                     if (classifiers != null && nativeId != null)
                     {
-                        JObject lObj = (JObject)classifiers[nativeId];
-                        list.Add(createMLibrary(name, nativeId, isRequire, lObj));
+                        var nativeLibraryObj = classifiers[nativeId] ?? classifiers[MRule.OSName];
+                        list.Add(createMLibrary(name, nativeId, isRequire, (JObject)nativeLibraryObj));
                     }
                     else
                         list.Add(createMLibrary(name, nativeId, isRequire, new JObject()));
