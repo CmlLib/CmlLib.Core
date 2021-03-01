@@ -94,7 +94,7 @@ namespace CmlLibWinFormSample
         }
 
         // Start Game
-        private void Btn_Launch_Click(object sender, EventArgs e)
+        private async void Btn_Launch_Click(object sender, EventArgs e)
         {
             if (Session == null)
             {
@@ -111,11 +111,10 @@ namespace CmlLibWinFormSample
             // disable ui
             setUIEnabled(false);
 
-            // create LaunchOption
-            MLaunchOption launchOption;
             try
             {
-                launchOption = new MLaunchOption()
+                // create LaunchOption
+                var launchOption = new MLaunchOption()
                 {
                     MaximumRamMb = int.Parse(TxtXmx.Text),
                     Session = this.Session,
@@ -149,98 +148,77 @@ namespace CmlLibWinFormSample
 
                 if (!string.IsNullOrEmpty(Txt_JavaArgs.Text))
                     launchOption.JVMArguments = Txt_JavaArgs.Text.Split(' ');
+
+                if (useMJava) // Download Java
+                {
+                    var mjava = new MJava(GamePath.Runtime);
+                    mjava.ProgressChanged += Launcher_ProgressChanged;
+
+                    var javapath = mjava.CheckJava();
+                    launchOption.JavaPath = javapath;
+                }
+
+                if (rbParallelDownload.Checked)
+                    launcher.FileDownloader = new AsyncParallelDownloader();
+                else
+                    launcher.FileDownloader = new SequenceDownloader();
+
+                if (cbSkipAssetsDownload.Checked)
+                    launcher.GameFileCheckers.AssetFileChecker = null;
+
+                var process = await launcher.CreateProcessAsync(cbVersion.Text, launchOption); // Create Arguments and Process
+                StartProcess(process); // Start Process with debug options
+
+                // or just start process
+                // process.Start();
             }
-            catch (Exception ex) // handle exceptions. (ex) FormatException in int.Parse
+            catch (FormatException fex)
             {
-                MessageBox.Show("Failed to create MLaunchOption\n\n" + ex.ToString());
+                MessageBox.Show("Failed to create MLaunchOption\n\n" + fex.ToString());
                 return;
             }
-
-            var version = cbVersion.Text;
-            var useParallel = rbParallelDownload.Checked;
-            var downloadAssets = !cbSkipAssetsDownload.Checked;
-
-            var th = new Thread(() =>
+            catch (MDownloadFileException mex) // download exception
             {
-                try
-                {
-                    if (useMJava) // Download Java
-                    {
-                        var mjava = new MJava(GamePath.Runtime);
-                        mjava.ProgressChanged += Launcher_ProgressChanged;
+                MessageBox.Show(
+                    $"FileName : {mex.ExceptionFile.Name}\n" +
+                    $"FilePath : {mex.ExceptionFile.Path}\n" +
+                    $"FileUrl : {mex.ExceptionFile.Url}\n" +
+                    $"FileType : {mex.ExceptionFile.Type}\n\n" +
+                    mex.ToString());
+            }
+            catch (Win32Exception wex) // java exception
+            {
+                MessageBox.Show(wex.ToString() + "\n\nIt seems your java setting has problem");
+            }
+            catch (Exception ex) // all exception
+            {
+                MessageBox.Show(ex.ToString());
+            }
+            finally
+            {
+                // re open log form
+                if (logForm != null)
+                    logForm.Close();
 
-                        var javapath = mjava.CheckJava();
-                        launchOption.JavaPath = javapath;
-                    }
+                logForm = new GameLog();
+                logForm.Show();
 
-                    if (useParallel)
-                        launcher.FileDownloader = new AsyncParallelDownloader();
-                    else
-                        launcher.FileDownloader = new SequenceDownloader();
-
-                    if (!downloadAssets)
-                        launcher.GameFileCheckers.AssetFileChecker = null;
-
-                    var process = launcher.CreateProcess(version, launchOption); // Create Arguments and Process
-
-                    StartProcess(process); // Start Process with debug options
-
-                    // or just start process
-                    // process.Start();
-                }
-                catch (MDownloadFileException mex) // download exception
-                {
-                    MessageBox.Show(
-                        $"FileName : {mex.ExceptionFile.Name}\n" +
-                        $"FilePath : {mex.ExceptionFile.Path}\n" +
-                        $"FileUrl : {mex.ExceptionFile.Url}\n" +
-                        $"FileType : {mex.ExceptionFile.Type}\n\n" +
-                        mex.ToString());
-                }
-                catch (Win32Exception wex) // java exception
-                {
-                    MessageBox.Show(wex.ToString() + "\n\nIt seems your java setting has problem");
-                }
-                catch (Exception ex) // all exception
-                {
-                    MessageBox.Show(ex.ToString());
-                }
-                finally
-                {
-                    Invoke(new Action(() =>
-                    {
-                        // re open log form
-                        if (logForm != null)
-                            logForm.Close();
-
-                        logForm = new GameLog();
-                        logForm.Show();
-
-                        // enable ui
-                        setUIEnabled(true);
-                    }));
-                }
-            });
-            th.Start();
+                // enable ui
+                setUIEnabled(true);
+            }
         }
 
         // Event Handler. Show download progress
         private void Launcher_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            Invoke(new Action(() =>
-            {
-                Pb_Progress.Value = e.ProgressPercentage;
-            }));
+            Pb_Progress.Value = e.ProgressPercentage;
         }
 
         private void Launcher_FileChanged(DownloadFileChangedEventArgs e)
         {
-            Invoke(new Action(() =>
-            {
-                Pb_File.Maximum = e.TotalFileCount;
-                Pb_File.Value = e.ProgressedFileCount;
-                Lv_Status.Text = $"{e.FileKind.ToString()} : {e.FileName} ({e.ProgressedFileCount}/{e.TotalFileCount})";
-            }));
+            Pb_File.Maximum = e.TotalFileCount;
+            Pb_File.Value = e.ProgressedFileCount;
+            Lv_Status.Text = $"{e.FileKind.ToString()} : {e.FileName} ({e.ProgressedFileCount}/{e.TotalFileCount})";
         }
 
         private void btnChangePath_Click(object sender, EventArgs e)
