@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace CmlLib.Core.Files
 {
@@ -16,13 +17,20 @@ namespace CmlLib.Core.Files
 
         public DownloadFile[] CheckFiles(MinecraftPath path, MVersion version)
         {
+            return CheckFilesTaskAsync(path, version).GetAwaiter().GetResult();
+        }
+
+        public async Task<DownloadFile[]> CheckFilesTaskAsync(MinecraftPath path, MVersion version)
+        {
             if (string.IsNullOrEmpty(version.ClientDownloadUrl)) return null;
 
             string id = version.Jar;
             string clientPath = path.GetVersionJarPath(id);
 
-            if (!CheckFileValidation(clientPath, version.ClientHash))
+            if (!await IOUtil.CheckFileValidationAsync(clientPath, version.ClientHash))
             {
+                ChangeFile?.Invoke(new DownloadFileChangedEventArgs(MFile.Minecraft, id, 1, 1));
+
                 return new DownloadFile[]
                 {
                     new DownloadFile
@@ -36,17 +44,6 @@ namespace CmlLib.Core.Files
             }
             else
                 return null;
-        }
-
-        private bool CheckFileValidation(string path, string hash)
-        {
-            if (!File.Exists(path))
-                return false;
-
-            if (!CheckHash)
-                return true;
-            else
-                return IOUtil.CheckFileValidation(path, hash);
         }
     }
 }

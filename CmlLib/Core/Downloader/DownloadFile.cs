@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace CmlLib.Core.Downloader
 {
@@ -9,7 +10,7 @@ namespace CmlLib.Core.Downloader
         public string Path { get; set; }
         public string Url { get; set; }
 
-        public Action[] AfterDownload { get; set; }
+        public Func<Task>[] AfterDownload { get; set; }
 
         bool IEquatable<DownloadFile>.Equals(DownloadFile other)
         {

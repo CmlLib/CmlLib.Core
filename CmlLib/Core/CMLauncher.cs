@@ -139,12 +139,17 @@ namespace CmlLib.Core
 
         public DownloadFile[] CheckLostGameFiles(MVersion version)
         {
+            return CheckLostGameFilesTaskAsync(version).GetAwaiter().GetResult();
+        }
+
+        public async Task<DownloadFile[]> CheckLostGameFilesTaskAsync(MVersion version)
+        {
             var lostFiles = new List<DownloadFile>();
             foreach (IFileChecker checker in this.GameFileCheckers)
             {
                 checker.ChangeFile += fireFileChangeEvent;
 
-                DownloadFile[] files = checker.CheckFiles(MinecraftPath, version);
+                DownloadFile[] files = await checker.CheckFilesTaskAsync(MinecraftPath, version);
                 if (files != null)
                     lostFiles.AddRange(files);
 
@@ -159,12 +164,12 @@ namespace CmlLib.Core
             if (this.FileDownloader == null)
                 throw new ArgumentNullException("this.FileDownloader");
 
-            await FileDownloader.DownloadFiles(files).ConfigureAwait(false);
+            await FileDownloader.DownloadFiles(files);
         }
 
         public void CheckAndDownload(MVersion version)
         {
-            CheckAndDownloadAsync(version).Wait();
+            CheckAndDownloadAsync(version).GetAwaiter().GetResult();
         }
 
         public async Task CheckAndDownloadAsync(MVersion version)
@@ -173,7 +178,7 @@ namespace CmlLib.Core
             {
                 checker.ChangeFile += fireFileChangeEvent;
 
-                DownloadFile[] files = checker.CheckFiles(MinecraftPath, version);
+                DownloadFile[] files = await checker.CheckFilesTaskAsync(MinecraftPath, version);
 
                 if (files == null || files.Length == 0)
                     continue;

@@ -4,6 +4,7 @@ using CmlLib.Utils;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -32,21 +33,27 @@ namespace CmlLib.Core.Files
 
         public DownloadFile[] CheckFiles(MinecraftPath path, MVersion version)
         {
-            CheckIndex(path, version);
-            return CheckAsset(path, version);
+            return CheckFilesTaskAsync(path, version).GetAwaiter().GetResult();
         }
 
-        private void CheckIndex(MinecraftPath path, MVersion version)
+        public async Task<DownloadFile[]> CheckFilesTaskAsync(MinecraftPath path, MVersion version)
+        {
+            await CheckIndex(path, version);
+            return await CheckAssetFiles(path, version);
+        }
+
+        private async Task CheckIndex(MinecraftPath path, MVersion version)
         {
             string index = path.GetIndexFilePath(version.AssetId);
 
-            if (!string.IsNullOrEmpty(version.AssetUrl) && !CheckFileValidation(index, version.AssetHash))
+            if (!string.IsNullOrEmpty(version.AssetUrl))
+            if (!await IOUtil.CheckFileValidationAsync(index, version.AssetHash, CheckHash))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(index));
 
                 using (var wc = new WebClient())
                 {
-                    wc.DownloadFile(version.AssetUrl, index);
+                    await wc.DownloadFileTaskAsync(version.AssetUrl, index);
                 }
             }
         }
@@ -62,7 +69,7 @@ namespace CmlLib.Core.Files
             return index;
         }
 
-        public DownloadFile[] CheckAsset(MinecraftPath path, MVersion version)
+        public async Task<DownloadFile[]> CheckAssetFiles(MinecraftPath path, MVersion version)
         {
             var index = ReadIndex(path, version);
             if (index == null)
@@ -76,57 +83,71 @@ namespace CmlLib.Core.Files
 
             int total = list.Count;
             int progressed = 0;
+
             foreach (var item in list)
             {
-                JToken job = item.Value;
-
-                // download hash resource
-                var hash = job["hash"]?.ToString();
-                var hashName = hash.Substring(0, 2) + "/" + hash;
-                var hashPath = Path.Combine(path.GetAssetObjectPath(version.AssetId), hashName);
-
-                var afterDownload = new List<Action>(1);
-
-                if (isVirtual)
-                {
-                    afterDownload.Add(new Action(() =>
-                    {
-                        var resPath = Path.Combine(path.GetAssetLegacyPath(version.AssetId), item.Key);
-                        safeCopy(hashPath, resPath);
-                    }));
-                }
-
-                if (mapResource)
-                {
-                    afterDownload.Add(new Action(() =>
-                    {
-                        var resPath = Path.Combine(path.Resource, item.Key);
-                        safeCopy(hashPath, resPath);
-                    }));
-                }
-
-                if (!CheckFileValidation(hashPath, hash))
-                {
-                    var hashUrl = AssetServer + hashName;
-                    downloadRequiredFiles.Add(new DownloadFile
-                    {
-                        Type = MFile.Resource,
-                        Name = item.Key,
-                        Path = hashPath,
-                        Url = hashUrl,
-                        AfterDownload = afterDownload.ToArray()
-                    });
-                }
-                else
-                {
-                    afterDownload.ForEach(x => x.Invoke());
-                }
-
-                progressed++;
+                var task = CheckAssetFile(item.Key, item.Value, path, version, isVirtual, mapResource);
                 fireDownloadFileChangedEvent(MFile.Resource, "", total, progressed);
+
+                var f = await task;
+                if (f != null)
+                    downloadRequiredFiles.Add(f);
+                progressed++;
             }
 
+            fireDownloadFileChangedEvent(MFile.Resource, "", total, total);
+
             return downloadRequiredFiles.Distinct().ToArray();
+        }
+
+        private async Task<DownloadFile> CheckAssetFile(string key, JToken job, MinecraftPath path, MVersion version, bool isVirtual, bool mapResource)
+        {
+            // download hash resource
+            var hash = job["hash"]?.ToString();
+            var hashName = hash.Substring(0, 2) + "/" + hash;
+            var hashPath = Path.Combine(path.GetAssetObjectPath(version.AssetId), hashName);
+
+            var afterDownload = new List<Func<Task>>(1);
+
+            if (isVirtual)
+            {
+                afterDownload.Add(new Func<Task>(() =>
+                {
+                    var resPath = Path.Combine(path.GetAssetLegacyPath(version.AssetId), key);
+                    return safeCopy(hashPath, resPath);
+                }));
+            }
+
+            if (mapResource)
+            {
+                afterDownload.Add(new Func<Task>(() =>
+                {
+                    var resPath = Path.Combine(path.Resource, key);
+                    return safeCopy(hashPath, resPath);
+                }));
+            }
+
+            if (!await IOUtil.CheckFileValidationAsync(hashPath, hash, CheckHash))
+            {
+                var hashUrl = AssetServer + hashName;
+                return new DownloadFile
+                {
+                    Type = MFile.Resource,
+                    Name = key,
+                    Path = hashPath,
+                    Url = hashUrl,
+                    AfterDownload = afterDownload.ToArray()
+                };
+            }
+            else
+            {
+                foreach (var item in afterDownload)
+                {
+                    await item();
+                }
+
+                return null;
+            }
         }
 
         private void fireDownloadFileChangedEvent(MFile file, string name, int totalFiles, int progressedFiles)
@@ -144,23 +165,12 @@ namespace CmlLib.Core.Files
                 return false;
         }
 
-        private bool CheckFileValidation(string path, string hash)
-        {
-            if (!File.Exists(path))
-                return false;
-
-            if (!CheckHash)
-                return true;
-            else
-                return IOUtil.CheckFileValidation(path, hash);
-        }
-
-        private void safeCopy(string org, string des)
+        private async Task safeCopy(string org, string des)
         {
             try
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(des));
-                File.Copy(org, des, true);
+                await IOUtil.CopyFileAsync(org, des);
             }
             catch (Exception ex)
             {
