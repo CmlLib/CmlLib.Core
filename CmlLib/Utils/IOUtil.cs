@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace CmlLib.Utils
 {
@@ -107,10 +108,28 @@ namespace CmlLib.Utils
             return File.Exists(path) && CheckSHA1(path, hash);
         }
 
+        public static async Task<bool> CheckFileValidationAsync(string path, string hash, bool checkHash=true)
+        {
+            if (!File.Exists(path))
+                return false;
+
+            if (!checkHash)
+                return true;
+            else
+                return await Task.Run(() => CheckSHA1(path, hash));
+        }
+
         public static bool CheckFileValidation(string path, string hash, long size)
         {
             var file = new FileInfo(path);
             return file.Exists && file.Length == size && CheckSHA1(path, hash);
+        }
+
+        public static async Task CopyFileAsync(string sourceFile, string destinationFile)
+        {
+            using (var sourceStream = new FileStream(sourceFile, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.Asynchronous | FileOptions.SequentialScan))
+            using (var destinationStream = new FileStream(destinationFile, FileMode.Create, FileAccess.Write, FileShare.None, 4096, FileOptions.Asynchronous | FileOptions.SequentialScan))
+                await sourceStream.CopyToAsync(destinationStream);
         }
 
         [DllImport("libc", SetLastError = true)]
