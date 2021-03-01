@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace CmlLib.Utils
 {
-    class WebDownload
+    public class WebDownload
     {
-        static int DefaultBufferSize = 1024 * 1024 * 1; // 1MB
+        static int DefaultBufferSize = 1024 * 64; // 64kb
 
         public event ProgressChangedEventHandler DownloadProgressChangedEvent;
 
@@ -46,50 +46,58 @@ namespace CmlLib.Utils
             fileStream.Dispose();
         }
 
-        public async Task DownloadFileAsync(string url, string path)
+        public async Task DownloadFileAsync(string url, string path, bool eventStep)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-
-            var req = WebRequest.CreateHttp(url);
-            req.Method = "GET";
-            req.Timeout = 5000;
-            req.ReadWriteTimeout = 5000;
-            req.ContinueTimeout = 5000;
-            var res = await req.GetResponseAsync().ConfigureAwait(false);
-            var filesize = long.Parse(res.Headers.Get("Content-Length")); // Get File Length
-            var bufferSize = DefaultBufferSize; // Make buffer
-            var buffer = new byte[bufferSize];
-            var length = 0;
-
-            var fireEvent = filesize > DefaultBufferSize;
-            var processedBytes = 0;
-
-            using (var httpStream = res.GetResponseStream())
-            using (var fs = File.OpenWrite(path))
+            using (var wc = new WebClient())
             {
-                //System.Diagnostics.Debug.WriteLine("timeout : " + httpStream.CanTimeout);
-                httpStream.ReadTimeout = 5000;
-                httpStream.WriteTimeout = 5000;
-                //await httpStream.CopyToAsync(fs).ConfigureAwait(false);
-
-                while ((length = await httpStream.ReadAsync(buffer, 0, bufferSize)) > 0) // read to end and write file
-                {
-                    await fs.WriteAsync(buffer, 0, length);
-
-                    // raise event
-                    if (fireEvent)
-                    {
-                        processedBytes += length;
-
-                        _ = Task.Run(() =>
-                        {
-                            ProgressChanged(processedBytes, filesize);
-                        });
-                    }
-                }
+                wc.DownloadProgressChanged += (s, e) => DownloadProgressChangedEvent?.Invoke(this, e);
+                await wc.DownloadFileTaskAsync(url, path);
             }
 
-            buffer = null;
+            //Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+            //var req = WebRequest.CreateHttp(url);
+            //req.Method = "GET";
+            //req.Timeout = 5000;
+            //req.ReadWriteTimeout = 5000;
+            //req.ContinueTimeout = 5000;
+            //var res = await req.GetResponseAsync().ConfigureAwait(false);
+            //var filesize = long.Parse(res.Headers.Get("Content-Length")); // Get File Length
+            //var bufferSize = DefaultBufferSize; // Make buffer
+            //var buffer = new byte[bufferSize];
+            //var length = 0;
+
+            //var fireEvent = filesize > DefaultBufferSize;
+            //var processedBytes = 0;
+
+            //Task waitingTask = Task.CompletedTask;
+
+            //using (var httpStream = res.GetResponseStream())
+            //using (var fs = File.OpenWrite(path))
+            //{
+            //    while ((length = await httpStream.ReadAsync(buffer, 0, bufferSize)) > 0) // read to end and write file
+            //    {
+            //        var writeTask = fs.WriteAsync(buffer, 0, length);
+
+            //        // raise event
+            //        if (fireEvent)
+            //        {
+            //            if (!waitingTask.IsCompleted)
+            //                continue;
+
+            //            Console.WriteLine("{0}/{1}", processedBytes, filesize);
+            //            ProgressChanged(processedBytes, filesize);
+
+            //            if (eventStep)
+            //                waitingTask = Task.Delay(1000);
+            //        }
+
+            //        await writeTask;
+            //        processedBytes += length;
+            //    }
+            //}
+
+            //buffer = null;
         }
 
         public void DownloadFileLimit(string url, string path)
