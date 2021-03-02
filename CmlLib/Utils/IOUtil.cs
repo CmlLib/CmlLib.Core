@@ -2,12 +2,15 @@
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace CmlLib.Utils
 {
     public class IOUtil
     {
+        private const int DefaultBufferSize = 4096;
+
         public static void DeleteDirectory(string target_dir)
         {
             try
@@ -79,6 +82,34 @@ namespace CmlLib.Utils
             }
         }
 
+        // If we use the path-taking constructors we will not have FileOptions.Asynchronous set and
+        // we will have asynchronous file access faked by the thread pool. We want the real thing.
+        public static StreamReader AsyncStreamReader(string path, Encoding encoding)
+        {
+            FileStream stream = new FileStream(
+                path, FileMode.Open, FileAccess.Read, FileShare.Read, DefaultBufferSize,
+                FileOptions.Asynchronous | FileOptions.SequentialScan);
+
+            return new StreamReader(stream, encoding, detectEncodingFromByteOrderMarks: true);
+        }
+
+        private static StreamWriter AsyncStreamWriter(string path, Encoding encoding, bool append)
+        {
+            FileStream stream = new FileStream(
+                path, append ? FileMode.Append : FileMode.Create, FileAccess.Write, FileShare.Read, DefaultBufferSize,
+                FileOptions.Asynchronous | FileOptions.SequentialScan);
+
+            return new StreamWriter(stream, encoding);
+        }
+
+        public static async Task<string> ReadFileAsync(string path)
+        {
+            using (var reader = AsyncStreamReader(path, Encoding.UTF8))
+            {
+                return await reader.ReadToEndAsync();
+            }
+        }
+
         public static bool CheckSHA1(string path, string compareHash)
         {
             try
@@ -103,9 +134,15 @@ namespace CmlLib.Utils
             }
         }
 
-        public static bool CheckFileValidation(string path, string hash)
+        public static bool CheckFileValidation(string path, string hash, bool checkHash=true)
         {
-            return File.Exists(path) && CheckSHA1(path, hash);
+            if (!File.Exists(path))
+                return false;
+
+            if (!checkHash)
+                return true;
+            else
+                return CheckSHA1(path, hash);
         }
 
         public static async Task<bool> CheckFileValidationAsync(string path, string hash, bool checkHash=true)
@@ -127,9 +164,9 @@ namespace CmlLib.Utils
 
         public static async Task CopyFileAsync(string sourceFile, string destinationFile)
         {
-            using (var sourceStream = new FileStream(sourceFile, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.Asynchronous | FileOptions.SequentialScan))
-            using (var destinationStream = new FileStream(destinationFile, FileMode.Create, FileAccess.Write, FileShare.None, 4096, FileOptions.Asynchronous | FileOptions.SequentialScan))
-                await sourceStream.CopyToAsync(destinationStream);
+            using (var sourceStream = AsyncStreamReader(sourceFile, Encoding.UTF8))
+            using (var destinationStream = AsyncStreamWriter(destinationFile, Encoding.UTF8, false))
+                await sourceStream.BaseStream.CopyToAsync(destinationStream.BaseStream);
         }
 
         [DllImport("libc", SetLastError = true)]

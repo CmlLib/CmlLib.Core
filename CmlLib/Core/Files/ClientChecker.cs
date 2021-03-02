@@ -17,29 +17,35 @@ namespace CmlLib.Core.Files
 
         public DownloadFile[] CheckFiles(MinecraftPath path, MVersion version)
         {
-            return CheckFilesTaskAsync(path, version).GetAwaiter().GetResult();
+            ChangeFile?.Invoke(new DownloadFileChangedEventArgs(MFile.Minecraft, version.Jar, 1, 0));
+            var result = CheckClientFile(path, version);
+            ChangeFile?.Invoke(new DownloadFileChangedEventArgs(MFile.Minecraft, version.Jar, 1, 1));
+            return new DownloadFile[] { result };
         }
 
         public async Task<DownloadFile[]> CheckFilesTaskAsync(MinecraftPath path, MVersion version)
+        {
+            ChangeFile?.Invoke(new DownloadFileChangedEventArgs(MFile.Minecraft, version.Jar, 1, 0));
+            var result = await Task.Run(() => CheckClientFile(path, version));
+            ChangeFile?.Invoke(new DownloadFileChangedEventArgs(MFile.Minecraft, version.Jar, 1, 1));
+            return new DownloadFile[] { result };
+        }
+
+        private DownloadFile CheckClientFile(MinecraftPath path, MVersion version)
         {
             if (string.IsNullOrEmpty(version.ClientDownloadUrl)) return null;
 
             string id = version.Jar;
             string clientPath = path.GetVersionJarPath(id);
 
-            if (!await IOUtil.CheckFileValidationAsync(clientPath, version.ClientHash))
+            if (!IOUtil.CheckFileValidation(clientPath, version.ClientHash))
             {
-                ChangeFile?.Invoke(new DownloadFileChangedEventArgs(MFile.Minecraft, id, 1, 1));
-
-                return new DownloadFile[]
+                return new DownloadFile
                 {
-                    new DownloadFile
-                    {
-                        Type = MFile.Minecraft,
-                        Name = id,
-                        Path = clientPath,
-                        Url = version.ClientDownloadUrl
-                    }
+                    Type = MFile.Minecraft,
+                    Name = id,
+                    Path = clientPath,
+                    Url = version.ClientDownloadUrl
                 };
             }
             else

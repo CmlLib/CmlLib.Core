@@ -58,12 +58,12 @@ namespace CmlLib.Core.Files
             }
         }
 
-        public JObject ReadIndex(MinecraftPath path, MVersion version)
+        public async Task<JObject> ReadIndexAsync(MinecraftPath path, MVersion version)
         {
             var indexpath = path.GetIndexFilePath(version.AssetId);
             if (!File.Exists(indexpath)) return null;
 
-            var json = File.ReadAllText(indexpath);
+            var json = await IOUtil.ReadFileAsync(indexpath);
             var index = JObject.Parse(json);
 
             return index;
@@ -71,7 +71,7 @@ namespace CmlLib.Core.Files
 
         public async Task<DownloadFile[]> CheckAssetFiles(MinecraftPath path, MVersion version)
         {
-            var index = ReadIndex(path, version);
+            var index = await ReadIndexAsync(path, version);
             if (index == null)
                 return null;
 
@@ -86,7 +86,7 @@ namespace CmlLib.Core.Files
 
             foreach (var item in list)
             {
-                var task = CheckAssetFile(item.Key, item.Value, path, version, isVirtual, mapResource);
+                var task = Task.Run(() => CheckAssetFile(item.Key, item.Value, path, version, isVirtual, mapResource));
                 fireDownloadFileChangedEvent(MFile.Resource, "", total, progressed);
 
                 var f = await task;
@@ -100,7 +100,7 @@ namespace CmlLib.Core.Files
             return downloadRequiredFiles.Distinct().ToArray();
         }
 
-        private async Task<DownloadFile> CheckAssetFile(string key, JToken job, MinecraftPath path, MVersion version, bool isVirtual, bool mapResource)
+        private DownloadFile CheckAssetFile(string key, JToken job, MinecraftPath path, MVersion version, bool isVirtual, bool mapResource)
         {
             // download hash resource
             var hash = job["hash"]?.ToString();
@@ -127,7 +127,7 @@ namespace CmlLib.Core.Files
                 }));
             }
 
-            if (!await IOUtil.CheckFileValidationAsync(hashPath, hash, CheckHash))
+            if (!IOUtil.CheckFileValidation(hashPath, hash, CheckHash))
             {
                 var hashUrl = AssetServer + hashName;
                 return new DownloadFile
@@ -143,7 +143,7 @@ namespace CmlLib.Core.Files
             {
                 foreach (var item in afterDownload)
                 {
-                    await item();
+                    item().GetAwaiter().GetResult();
                 }
 
                 return null;
