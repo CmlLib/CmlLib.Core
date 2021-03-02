@@ -180,10 +180,10 @@ namespace CmlLib.Core
 
                 DownloadFile[] files = await checker.CheckFilesTaskAsync(MinecraftPath, version);
 
+                checker.ChangeFile -= fireFileChangeEvent;
+
                 if (files == null || files.Length == 0)
                     continue;
-
-                checker.ChangeFile -= fireFileChangeEvent;
 
                 await DownloadGameFiles(files);
             }
