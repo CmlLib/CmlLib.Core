@@ -95,7 +95,7 @@ namespace XboxLoginTest
             }));
         }
 
-        private void Launcher_FileChanged(CmlLib.Core.Downloader.DownloadFileChangedEventArgs e)
+        private void Launcher_FileChanged(CmlLib.Core.Installer.DownloadFileChangedEventArgs e)
         {
             Invoke(new Action(() =>
             {

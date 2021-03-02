@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CmlLib.Core.Downloader
+namespace CmlLib.Core.Installer
 {
     public interface IDownloader
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace CmlLib.Core.Downloader
+namespace CmlLib.Core.Installer
 {
     public class DownloadFile : IEquatable<DownloadFile>
     {

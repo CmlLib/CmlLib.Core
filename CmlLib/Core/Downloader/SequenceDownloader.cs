@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CmlLib.Core.Downloader
+namespace CmlLib.Core.Installer
 {
     public class SequenceDownloader : IDownloader
     {

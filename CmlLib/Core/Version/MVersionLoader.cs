@@ -4,7 +4,7 @@ using System.IO;
 using System.Net;
 using System;
 
-namespace CmlLib.Core.Version
+namespace CmlLib.Core.Files
 {
     public class MVersionLoader
     {

@@ -5,7 +5,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 
-namespace CmlLib.Core.Version
+namespace CmlLib.Core.Files
 {
     public class MVersionParser
     {

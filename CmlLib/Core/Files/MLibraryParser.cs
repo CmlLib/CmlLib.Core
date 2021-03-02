@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace CmlLib.Core.Version
+namespace CmlLib.Core.Files
 {
     public class MLibraryParser
     {
@@ -41,8 +41,8 @@ namespace CmlLib.Core.Version
 
                     if (classifiers != null && nativeId != null)
                     {
-                        JObject lObj = (JObject)classifiers[nativeId];
-                        list.Add(createMLibrary(name, nativeId, isRequire, lObj));
+                        JToken lObj = classifiers[nativeId] ?? classifiers[MRule.OSName] ?? new JObject();
+                        list.Add(createMLibrary(name, nativeId, isRequire, (JObject)lObj));
                     }
                     else
                         list.Add(createMLibrary(name, nativeId, isRequire, new JObject()));

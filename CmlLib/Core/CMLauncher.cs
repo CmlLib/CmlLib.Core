@@ -6,8 +6,7 @@ using System.Text;
 using System.ComponentModel;
 using System.Linq;
 using System.Diagnostics;
-using CmlLib.Core.Downloader;
-using CmlLib.Core.Version;
+using CmlLib.Core.Installer;
 using CmlLib.Core.Files;
 using System.Threading.Tasks;
 

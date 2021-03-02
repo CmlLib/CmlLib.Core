@@ -1,8 +1,8 @@
 ﻿using CmlLib.Core;
 using CmlLib.Core.Auth;
 using CmlLib.Core.Auth.Microsoft;
-using CmlLib.Core.Downloader;
-using CmlLib.Core.Version;
+using CmlLib.Core.Installer;
+using CmlLib.Core.Files;
 using CmlLib.Utils;
 using System;
 using System.IO;
@@ -13,58 +13,11 @@ namespace CmlLibCoreSample
 {
     class Program
     {
-        async Task t()
-        {
-            var d = new WebDownload();
-            d.DownloadProgressChangedEvent += (s, e) => Console.WriteLine(e.ProgressPercentage);
-            await d.DownloadFileAsync("http://speedtest-ca.turnkeyinternet.net/100mb.bin", "test/test.zip", true);
-        }
-
-        static async Task t2()
-        {
-            var launcher = new CMLauncher(MinecraftPath.GetOSDefaultPath());
-            var filechecker = new CmlLib.Core.Files.AssetChecker();
-            filechecker.ChangeFile += (e) =>
-            {
-                Console.WriteLine($"{e.FileKind} {e.FileName} {e.ProgressedFileCount} {e.TotalFileCount}");
-                //System.Threading.Thread.Sleep(1);
-            };
-
-            var stopwatch = new System.Diagnostics.Stopwatch();
-            stopwatch.Start();
-
-            await filechecker.CheckFilesTaskAsync(launcher.MinecraftPath, launcher.GetVersion("1.16.5"));
-
-            stopwatch.Stop();
-            Console.WriteLine(stopwatch.ElapsedMilliseconds);
-        }
 
         static void Main()
         {
             Console.WriteLine(CmlLib._Test.tstr);
             var p = new Program();
-
-            t2().Wait();
-            ;
-
-            //p.t().Wait();
-            //Console.ReadLine();
-
-            //for (int i = 0; i < 100; i++)
-            //{
-            //    var n = Guid.NewGuid();
-            //    p.Downloader_ChangeFile(new DownloadFileChangedEventArgs(MFile.Library, n.ToString(), 100, i));
-
-            //    if (i % 7 == 0)
-            //    {
-            //        for (int j = 0; j <= 100; j++)
-            //        {
-            //            p.Downloader_ChangeProgress(null, new System.ComponentModel.ProgressChangedEventArgs(j, null));
-            //            System.Threading.Thread.Sleep(10);
-            //        }
-            //    }
-            //}
-            //return;
 
             // Login
             MSession session; // login session

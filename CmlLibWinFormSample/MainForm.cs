@@ -1,7 +1,7 @@
 ﻿using CmlLib.Core;
 using CmlLib.Core.Auth;
-using CmlLib.Core.Downloader;
-using CmlLib.Core.Version;
+using CmlLib.Core.Installer;
+using CmlLib.Core.Files;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -89,7 +89,7 @@ namespace CmlLibWinFormSample
         }
 
         // Start Game
-        private void Btn_Launch_Click(object sender, EventArgs e)
+        private async void Btn_Launch_Click(object sender, EventArgs e)
         {
             if (Session == null)
             {
@@ -152,15 +152,21 @@ namespace CmlLibWinFormSample
                 if (cbSkipAssetsDownload.Checked)
                     launcher.GameFileCheckers.AssetFileChecker = null;
 
-                var th = new Thread(() => 
-                {
-                    var process = launcher.CreateProcess(cbVersion.Text, launchOption); // Create Arguments and Process
-                    StartProcess(process); // Start Process with debug options
+                //var th = new Thread(() => 
+                //{
+                //    var process = launcher.CreateProcess(cbVersion.Text, launchOption); // Create Arguments and Process
+                //    StartProcess(process); // Start Process with debug options
 
-                    // or just start process
-                    // process.Start();
-                });
-                th.Start();
+                //    // or just start process
+                //    // process.Start();
+                //});
+                //th.Start();
+
+                var process = await launcher.CreateProcessAsync(cbVersion.Text, launchOption); // Create Arguments and Process
+                StartProcess(process); // Start Process with debug options
+
+                //var files = await launcher.CheckLostGameFilesTaskAsync(launcher.GetVersion(cbVersion.Text));
+                //Console.WriteLine(files.Length);
             }
             catch (FormatException fex)
             {

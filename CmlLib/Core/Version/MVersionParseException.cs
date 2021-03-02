@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CmlLib.Core.Version
+namespace CmlLib.Core.Files
 {
     public class MVersionParseException : Exception
     {

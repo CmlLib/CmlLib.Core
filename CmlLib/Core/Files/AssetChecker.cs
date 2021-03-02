@@ -1,5 +1,5 @@
-﻿using CmlLib.Core.Downloader;
-using CmlLib.Core.Version;
+﻿using CmlLib.Core.Installer;
+using CmlLib.Core.Files;
 using CmlLib.Utils;
 using Newtonsoft.Json.Linq;
 using System;

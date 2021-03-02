@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 
-namespace CmlLib.Core.Version
+namespace CmlLib.Core.Files
 {
     public class MVersion
     {

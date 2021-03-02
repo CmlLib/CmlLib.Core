@@ -5,7 +5,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Net;
 
-namespace CmlLib.Core.Downloader
+namespace CmlLib.Core.Installer
 {
     public class MJava
     {
