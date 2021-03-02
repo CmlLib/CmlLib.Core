@@ -29,11 +29,6 @@ namespace CmlLibWinFormSample
         
         GameLog logForm;
 
-        private void MainForm_Load(object sender, EventArgs e)
-        {
-
-        }
-
         private void MainForm_Shown(object sender, EventArgs e)
         {
             // Initialize launcher
@@ -94,7 +89,7 @@ namespace CmlLibWinFormSample
         }
 
         // Start Game
-        private async void Btn_Launch_Click(object sender, EventArgs e)
+        private void Btn_Launch_Click(object sender, EventArgs e)
         {
             if (Session == null)
             {
@@ -149,15 +144,6 @@ namespace CmlLibWinFormSample
                 if (!string.IsNullOrEmpty(Txt_JavaArgs.Text))
                     launchOption.JVMArguments = Txt_JavaArgs.Text.Split(' ');
 
-                if (useMJava) // Download Java
-                {
-                    var mjava = new MJava(GamePath.Runtime);
-                    mjava.ProgressChanged += Launcher_ProgressChanged;
-
-                    var javapath = mjava.CheckJava();
-                    launchOption.JavaPath = javapath;
-                }
-
                 if (rbParallelDownload.Checked)
                     launcher.FileDownloader = new AsyncParallelDownloader();
                 else
@@ -166,11 +152,15 @@ namespace CmlLibWinFormSample
                 if (cbSkipAssetsDownload.Checked)
                     launcher.GameFileCheckers.AssetFileChecker = null;
 
-                var process = await launcher.CreateProcessAsync(cbVersion.Text, launchOption); // Create Arguments and Process
-                StartProcess(process); // Start Process with debug options
+                var th = new Thread(() => 
+                {
+                    var process = launcher.CreateProcess(cbVersion.Text, launchOption); // Create Arguments and Process
+                    StartProcess(process); // Start Process with debug options
 
-                // or just start process
-                // process.Start();
+                    // or just start process
+                    // process.Start();
+                });
+                th.Start();
             }
             catch (FormatException fex)
             {
