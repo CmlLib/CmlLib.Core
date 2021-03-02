@@ -247,9 +247,10 @@ namespace CmlLib.Core.Installer
                 return;
 
             var libs = new List<MLibrary>();
+            var parser = new MLibraryParser();
             foreach (var item in jarr)
             {
-                var parsedLib = MLibraryParser.ParseJsonObject((JObject)item);
+                var parsedLib = parser.ParseJsonObject((JObject)item);
                 libs.AddRange(parsedLib);
             }
 

@@ -98,9 +98,10 @@ namespace CmlLib.Core.Files
                 // libraries
                 var libJArr = (JArray)job["libraries"];
                 var libList = new List<MLibrary>(libJArr.Count);
+                var libParser = new MLibraryParser();
                 foreach (var item in libJArr)
                 {
-                    var libs = MLibraryParser.ParseJsonObject((JObject)item);
+                    var libs = libParser.ParseJsonObject((JObject)item);
                     if (libs != null)
                         libList.AddRange(libs);
                 }

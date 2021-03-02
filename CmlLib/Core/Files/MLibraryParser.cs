@@ -8,9 +8,14 @@ namespace CmlLib.Core.Files
 {
     public class MLibraryParser
     {
-        public static bool CheckOSRules = true;
+        public MLibraryParser(bool checkOSRules=true)
+        {
+            this.CheckOSRules = CheckOSRules;
+        }
 
-        public static MLibrary[] ParseJsonObject(JObject item)
+        public bool CheckOSRules { get; private set; }
+
+        public MLibrary[] ParseJsonObject(JObject item)
         {
             try
             {
@@ -71,7 +76,7 @@ namespace CmlLib.Core.Files
             }
         }
 
-        private static MLibrary createMLibrary(string name, string nativeId, bool require, JObject job)
+        private MLibrary createMLibrary(string name, string nativeId, bool require, JObject job)
         {
             var path = job["path"]?.ToString();
             if (string.IsNullOrEmpty(path))
