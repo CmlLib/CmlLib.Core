@@ -152,23 +152,12 @@ namespace CmlLibWinFormSample
                 if (cbSkipAssetsDownload.Checked)
                     launcher.GameFileCheckers.AssetFileChecker = null;
 
-                //var th = new Thread(() => 
-                //{
-                //    var process = launcher.CreateProcess(cbVersion.Text, launchOption); // Create Arguments and Process
-                //    StartProcess(process); // Start Process with debug options
-
-                //    // or just start process
-                //    // process.Start();
-                //});
-                //th.Start();
-
                 var process = await launcher.CreateProcessAsync(cbVersion.Text, launchOption); // Create Arguments and Process
-                StartProcess(process); // Start Process with debug options
 
-                //var files = await launcher.CheckLostGameFilesTaskAsync(launcher.GetVersion(cbVersion.Text));
-                //Console.WriteLine(files.Length);
+                // process.Start(); // Just start game. or
+                StartProcess(process); // Start Process with debug options
             }
-            catch (FormatException fex)
+            catch (FormatException fex) // int.Parse exception
             {
                 MessageBox.Show("Failed to create MLaunchOption\n\n" + fex.ToString());
                 return;

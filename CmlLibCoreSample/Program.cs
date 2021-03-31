@@ -8,6 +8,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace CmlLibCoreSample
 {
@@ -85,9 +86,8 @@ namespace CmlLibCoreSample
             // https://github.com/AlphaBs/CmlLib.Core/blob/master/CmlLib/Core/MinecraftPath.cs
 
             // You can set this path to what you want like this :
-            var path = Environment.GetEnvironmentVariable("APPDATA") + "\\.ogBeta";
-            //var path = MinecraftPath.GetOSDefaultPath();
             //var path = "./testdir";
+            var path = MinecraftPath.GetOSDefaultPath();
             var game = new MinecraftPath(path);
 
             // Create CMLauncher instance
@@ -140,8 +140,7 @@ namespace CmlLibCoreSample
             // launch by user input
             Console.WriteLine("input version (example: 1.12.2) : ");
             //var versionname = Console.ReadLine();
-            var versionname = "1.12.2-LiteLoader1.12.2-1.12.2-forge1.12.2-14.23.5.2826";
-            var version = launcher.GetVersion(versionname);
+            var versionname = "1.16.5";
             var process = launcher.CreateProcess(versionname, launchOption);
 
             //var process = launcher.CreateProcess("1.16.2", "33.0.5", launchOption);
@@ -159,6 +158,38 @@ namespace CmlLibCoreSample
             Console.ReadLine();
 
             return;
+        }
+
+        async Task Benchmark()
+        {
+            Console.WriteLine(Thread.CurrentThread.ManagedThreadId);
+
+            var path = new MinecraftPath();
+            var launcher = new CMLauncher(path);
+
+            launcher.GameFileCheckers.AssetFileChecker.CheckHash = true;
+            launcher.GameFileCheckers.ClientFileChecker.CheckHash = true;
+            launcher.GameFileCheckers.LibraryFileChecker.CheckHash = true;
+            //launcher.FileDownloader = new AsyncParallelDownloader();
+
+            launcher.ProgressChanged += Downloader_ChangeProgress;
+            launcher.FileChanged += Downloader_ChangeFile;
+
+            var launchOption = new MLaunchOption()
+            {
+                MaximumRamMb = 1024,
+                Session = MSession.GetOfflineSession("test")
+            };
+
+            Console.WriteLine("Start");
+            var stopwatch = new System.Diagnostics.Stopwatch();
+            stopwatch.Start();
+
+            var process = await launcher.CreateProcessAsync("1.16.5", launchOption);
+
+            stopwatch.Stop();
+            Console.WriteLine(stopwatch.Elapsed);
+            Console.ReadLine();
         }
 
         #region QuickStart
