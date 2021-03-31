@@ -20,7 +20,11 @@ namespace CmlLib.Core.Files
             ChangeFile?.Invoke(new DownloadFileChangedEventArgs(MFile.Minecraft, version.Jar, 1, 0));
             var result = CheckClientFile(path, version);
             ChangeFile?.Invoke(new DownloadFileChangedEventArgs(MFile.Minecraft, version.Jar, 1, 1));
-            return new DownloadFile[] { result };
+
+            if (result == null)
+                return null;
+            else
+                return new DownloadFile[] { result };
         }
 
         public async Task<DownloadFile[]> CheckFilesTaskAsync(MinecraftPath path, MVersion version)
@@ -28,7 +32,11 @@ namespace CmlLib.Core.Files
             ChangeFile?.Invoke(new DownloadFileChangedEventArgs(MFile.Minecraft, version.Jar, 1, 0));
             var result = await Task.Run(() => CheckClientFile(path, version));
             ChangeFile?.Invoke(new DownloadFileChangedEventArgs(MFile.Minecraft, version.Jar, 1, 1));
-            return new DownloadFile[] { result };
+
+            if (result == null)
+                return null;
+            else
+                return new DownloadFile[] { result };
         }
 
         private DownloadFile CheckClientFile(MinecraftPath path, MVersion version)
