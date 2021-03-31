@@ -204,14 +204,20 @@ namespace CmlLib.Core
         public Process CreateProcess(string versionname, MLaunchOption option)
         {
             option.StartVersion = GetVersion(versionname);
-            CheckAndDownload(option.StartVersion);
+
+            if (this.FileDownloader != null)
+                CheckAndDownload(option.StartVersion);
+
             return CreateProcess(option);
         }
 
         public async Task<Process> CreateProcessAsync(string versionname, MLaunchOption option)
         {
             option.StartVersion = GetVersion(versionname);
-            await CheckAndDownloadAsync(option.StartVersion);
+
+            if (this.FileDownloader != null)
+                await CheckAndDownloadAsync(option.StartVersion);
+
             return CreateProcess(option);
         }
 
