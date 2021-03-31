@@ -15,6 +15,7 @@ namespace CmlLib.Core.Files
 {
     public sealed class AssetChecker : IFileChecker
     {
+        IProgress<DownloadFileChangedEventArgs> pChangeFile;
         public event DownloadFileChangedHandler ChangeFile;
 
         private string assetServer = MojangServer.ResourceDownload;
@@ -38,6 +39,9 @@ namespace CmlLib.Core.Files
 
         public async Task<DownloadFile[]> CheckFilesTaskAsync(MinecraftPath path, MVersion version)
         {
+            pChangeFile = new Progress<DownloadFileChangedEventArgs>(
+                (e) => ChangeFile?.Invoke(e));
+
             await CheckIndex(path, version);
             return await CheckAssetFiles(path, version);
         }
@@ -153,7 +157,8 @@ namespace CmlLib.Core.Files
         private void fireDownloadFileChangedEvent(MFile file, string name, int totalFiles, int progressedFiles)
         {
             var e = new DownloadFileChangedEventArgs(file, name, totalFiles, progressedFiles);
-            ChangeFile?.Invoke(e);
+            //ChangeFile?.Invoke(e);
+            pChangeFile.Report(e);
         }
 
         private bool checkJsonTrue(JToken j)

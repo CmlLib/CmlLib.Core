@@ -22,6 +22,9 @@ namespace CmlLib.Core.Installer
 
         bool isRunning = false;
 
+        IProgress<ProgressChangedEventArgs> pChangeProgress;
+        IProgress<DownloadFileChangedEventArgs> pChangeFile;
+
         public AsyncParallelDownloader() : this(10)
         {
 
@@ -40,10 +43,16 @@ namespace CmlLib.Core.Installer
             total = files.Length;
             progressed = 0;
 
+            pChangeFile = new Progress<DownloadFileChangedEventArgs>(
+                (e) => fireDownloadFileChangedEvent(e));
+
+            pChangeProgress = new Progress<ProgressChangedEventArgs>(
+                (e) => fireDownloadProgressChangedEvent(this, e));
+
             await ForEachAsyncSemaphore(files, MaxThread, doDownload);
 
             var lastFile = files.Last();
-            fireDownloadFileChangedEvent(lastFile, files.Length, files.Length);
+            fireDownloadFileChangedProgress(lastFile, files.Length, files.Length);
         }
 
         private async Task ForEachAsyncSemaphore<T>(IEnumerable<T> source,
@@ -91,7 +100,7 @@ namespace CmlLib.Core.Installer
                 var downloader = new WebDownload();
                 var downloadTask = downloader.DownloadFileLimitTaskAsync(file.Url, file.Path);
 
-                fireDownloadFileChangedEvent(file.Type, file.Name, total, progressed);
+                fireDownloadFileChangedProgress(file.Type, file.Name, total, progressed);
                 await downloadTask;
 
                 if (file.AfterDownload != null)
@@ -116,15 +125,17 @@ namespace CmlLib.Core.Installer
             }
         }
 
-        private void fireDownloadFileChangedEvent(MFile file, string name, int totalFiles, int progressedFiles)
+        private void fireDownloadFileChangedProgress(MFile file, string name, int totalFiles, int progressedFiles)
         {
             var e = new DownloadFileChangedEventArgs(file, name, totalFiles, progressedFiles);
-            fireDownloadFileChangedEvent(e);
+            //fireDownloadFileChangedEvent(e);
+            pChangeFile.Report(e);
         }
 
-        private void fireDownloadFileChangedEvent(DownloadFile file, int totalFiles, int progressedFiles)
+        private void fireDownloadFileChangedProgress(DownloadFile file, int totalFiles, int progressedFiles)
         {
-            fireDownloadFileChangedEvent(file.Type, file.Name, totalFiles, progressedFiles);
+            fireDownloadFileChangedProgress(file.Type, file.Name, totalFiles, progressedFiles);
+            
         }
 
         private void fireDownloadFileChangedEvent(DownloadFileChangedEventArgs e)

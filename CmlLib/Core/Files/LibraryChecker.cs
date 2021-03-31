@@ -12,6 +12,7 @@ namespace CmlLib.Core.Files
 {
     public sealed class LibraryChecker : IFileChecker
     {
+        IProgress<DownloadFileChangedEventArgs> pChangeFile;
         public event DownloadFileChangedHandler ChangeFile;
 
         private string libServer = MojangServer.Library;
@@ -57,18 +58,20 @@ namespace CmlLib.Core.Files
             if (libs == null)
                 throw new ArgumentNullException(nameof(libs));
 
+            pChangeFile = new Progress<DownloadFileChangedEventArgs>(
+                (e) => ChangeFile?.Invoke(e));
+
             string lastLibraryName = "";
             int progressed = 0;
             var files = new List<DownloadFile>(libs.Length);
             foreach (MLibrary library in libs)
             {
-                var checkTask = CheckDownloadRequireAsync(path, library);
+                var downloadRequire = await CheckDownloadRequireAsync(path, library);
 
-                ChangeFile?.Invoke(new DownloadFileChangedEventArgs(
+                pChangeFile.Report(new DownloadFileChangedEventArgs(
                     MFile.Library, library.Name, libs.Length, progressed));
 
-                var taskResult = await checkTask;
-                if (taskResult)
+                if (downloadRequire)
                 {
                     files.Add(new DownloadFile
                     {
@@ -108,7 +111,7 @@ namespace CmlLib.Core.Files
             return lib.IsRequire
                 && !string.IsNullOrEmpty(lib.Path)
                 && !string.IsNullOrEmpty(lib.Url)
-                && !await IOUtil.CheckFileValidationAsync(Path.Combine(path.Library, lib.Path), lib.Hash, CheckHash);
+                && !await IOUtil.CheckFileValidationAsync(Path.Combine(path.Library, lib.Path), lib.Hash, CheckHash).ConfigureAwait(true);
         }
     }
 }

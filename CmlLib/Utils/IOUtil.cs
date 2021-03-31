@@ -153,7 +153,7 @@ namespace CmlLib.Utils
             if (!checkHash)
                 return true;
             else
-                return await Task.Run(() => CheckSHA1(path, hash));
+                return await Task.Run(() => CheckSHA1(path, hash)).ConfigureAwait(true);
         }
 
         public static bool CheckFileValidation(string path, string hash, long size)
