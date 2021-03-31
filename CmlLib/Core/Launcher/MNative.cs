@@ -27,8 +27,12 @@ namespace CmlLib.Core
                 {
                     if (item.IsRequire && item.IsNative)
                     {
-                        var z = new SharpZip(Path.Combine(gamePath.Library, item.Path));
-                        z.Unzip(path);
+                        var zPath = Path.Combine(gamePath.Library, item.Path);
+                        if (File.Exists(zPath))
+                        {
+                            var z = new SharpZip(zPath);
+                            z.Unzip(path);
+                        }
                     }
                 }
                 catch { }
@@ -39,6 +43,7 @@ namespace CmlLib.Core
 
         public void CleanNatives()
         {
+
             try
             {
                 var path = gamePath.GetNativePath(version.Id);
