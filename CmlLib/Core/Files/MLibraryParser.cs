@@ -10,7 +10,7 @@ namespace CmlLib.Core.Files
     {
         public MLibraryParser(bool checkOSRules=true)
         {
-            this.CheckOSRules = CheckOSRules;
+            this.CheckOSRules = checkOSRules;
         }
 
         public bool CheckOSRules { get; private set; }
@@ -46,8 +46,9 @@ namespace CmlLib.Core.Files
 
                     if (classifiers != null && nativeId != null)
                     {
-                        JToken lObj = classifiers[nativeId] ?? classifiers[MRule.OSName] ?? new JObject();
-                        list.Add(createMLibrary(name, nativeId, isRequire, (JObject)lObj));
+                        JToken lObj = classifiers[nativeId] ?? classifiers[MRule.OSName];
+                        if (lObj != null)
+                            list.Add(createMLibrary(name, nativeId, isRequire, (JObject)lObj));
                     }
                     else
                         list.Add(createMLibrary(name, nativeId, isRequire, new JObject()));
