@@ -1,4 +1,4 @@
-﻿namespace CmlLib.Core.Files
+﻿namespace CmlLib.Core.Version
 {
     public static class MVersionTypeConverter
     {

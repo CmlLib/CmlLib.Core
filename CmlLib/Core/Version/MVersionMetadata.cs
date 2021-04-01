@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 
-namespace CmlLib.Core.Files
+namespace CmlLib.Core.Version
 {
     public class MVersionMetadata
     {

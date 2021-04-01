@@ -1,5 +1,4 @@
 ﻿using CmlLib.Core.Installer;
-using CmlLib.Core.Files;
 using CmlLib.Utils;
 using System;
 using System.Collections.Generic;
@@ -7,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CmlLib.Core.Version;
 
 namespace CmlLib.Core.Files
 {

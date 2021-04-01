@@ -4,26 +4,26 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace CmlLib.Core.Files
+namespace CmlLib.Core.Version
 {
     public class MVersionCollection : IEnumerable<MVersionMetadata>
     {
         public MVersionCollection(MVersionMetadata[] datas)
             : this(datas, null, null, null)
-        { 
+        {
 
         }
 
         public MVersionCollection(MVersionMetadata[] datas, MinecraftPath originalPath)
             : this(datas, originalPath, null, null)
         {
-        
+
         }
 
         public MVersionCollection(
-            MVersionMetadata[] datas, 
-            MinecraftPath originalPath, 
-            MVersionMetadata latestRelease, 
+            MVersionMetadata[] datas,
+            MinecraftPath originalPath,
+            MVersionMetadata latestRelease,
             MVersionMetadata latestSnapshot)
         {
             if (datas == null)

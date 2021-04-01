@@ -9,6 +9,7 @@ using System.Diagnostics;
 using CmlLib.Core.Installer;
 using CmlLib.Core.Files;
 using System.Threading.Tasks;
+using CmlLib.Core.Version;
 
 namespace CmlLib.Core
 {
@@ -74,6 +75,11 @@ namespace CmlLib.Core
                 Versions = UpdateVersions();
 
             return Versions;
+        }
+
+        public MVersionCollection GetLocalVersions()
+        {
+            return new MVersionLoader().GetVersionMetadatasFromLocal(MinecraftPath);
         }
 
         public MVersion GetVersion(string versionname)

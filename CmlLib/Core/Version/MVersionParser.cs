@@ -1,11 +1,12 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using CmlLib.Core.Files;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
 
-namespace CmlLib.Core.Files
+namespace CmlLib.Core.Version
 {
     public class MVersionParser
     {
