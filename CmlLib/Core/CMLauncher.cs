@@ -25,6 +25,7 @@ namespace CmlLib.Core
 
             GameFileCheckers = new FileCheckerCollection();
             FileDownloader = new SequenceDownloader();
+            VersionLoader = new DefaultVersionLoader(MinecraftPath);
         }
 
         public event DownloadFileChangedHandler FileChanged;
@@ -34,6 +35,7 @@ namespace CmlLib.Core
         public MinecraftPath MinecraftPath { get; private set; }
         public MVersionCollection Versions { get; private set; }
 
+        public IVersionLoader VersionLoader { get; set; }
         public FileCheckerCollection GameFileCheckers { get; private set; }
 
         IDownloader _fileDownloader;
@@ -65,7 +67,7 @@ namespace CmlLib.Core
 
         public MVersionCollection UpdateVersions()
         {
-            Versions = new MVersionLoader().GetVersionMetadatas(MinecraftPath);
+            Versions = VersionLoader.GetVersionMetadatas();
             return Versions;
         }
 
@@ -77,15 +79,32 @@ namespace CmlLib.Core
             return Versions;
         }
 
-        public MVersionCollection GetLocalVersions()
+        public async Task<MVersionCollection> UpdateVersionsAsync()
         {
-            return new MVersionLoader().GetVersionMetadatasFromLocal(MinecraftPath);
+            Versions = await VersionLoader.GetVersionMetadatasAsync();
+            return Versions;
+        }
+
+        public async Task<MVersionCollection> GetAllVersionsAsync()
+        {
+            if (Versions == null)
+                Versions = await UpdateVersionsAsync();
+
+            return Versions;
         }
 
         public MVersion GetVersion(string versionname)
         {
             if (Versions == null)
                 UpdateVersions();
+
+            return Versions.GetVersion(versionname);
+        }
+
+        public async Task<MVersion> GetVersionAsync(string versionname)
+        {
+            if (Versions == null)
+                await UpdateVersionsAsync();
 
             return Versions.GetVersion(versionname);
         }
@@ -219,7 +238,7 @@ namespace CmlLib.Core
 
         public async Task<Process> CreateProcessAsync(string versionname, MLaunchOption option)
         {
-            option.StartVersion = GetVersion(versionname);
+            option.StartVersion = await GetVersionAsync(versionname);
 
             if (this.FileDownloader != null)
                 await CheckAndDownloadAsync(option.StartVersion);

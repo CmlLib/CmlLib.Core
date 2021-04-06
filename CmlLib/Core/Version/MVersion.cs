@@ -93,5 +93,10 @@ namespace CmlLib.Core.Version
         {
             return t == null || t == "";
         }
+
+        public override string ToString()
+        {
+            return this.Id;
+        }
     }
 }

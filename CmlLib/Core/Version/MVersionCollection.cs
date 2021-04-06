@@ -29,7 +29,7 @@ namespace CmlLib.Core.Version
             if (datas == null)
                 throw new ArgumentNullException(nameof(datas));
 
-            versions = datas;
+            versions = new List<MVersionMetadata>(datas);
             MinecraftPath = originalPath;
             LatestReleaseVersion = latestRelease;
             LatestSnapshotVersion = latestSnapshot;
@@ -38,7 +38,7 @@ namespace CmlLib.Core.Version
         public MVersionMetadata LatestReleaseVersion { get; private set; }
         public MVersionMetadata LatestSnapshotVersion { get; private set; }
         public MinecraftPath MinecraftPath { get; private set; }
-        MVersionMetadata[] versions;
+        List<MVersionMetadata> versions;
 
         public MVersionMetadata this[int index]
         {
@@ -85,6 +85,21 @@ namespace CmlLib.Core.Version
             }
 
             return startVersion;
+        }
+
+        public void Merge(MVersionCollection from)
+        {
+            foreach (var item in from)
+            {
+                if (!versions.Contains(item))
+                    versions.Add(item);
+            }
+
+            if (from.LatestReleaseVersion != null)
+                this.LatestReleaseVersion = from.LatestReleaseVersion;
+
+            if (from.LatestSnapshotVersion != null)
+                this.LatestSnapshotVersion = from.LatestSnapshotVersion;
         }
 
         public IEnumerator<MVersionMetadata> GetEnumerator()
