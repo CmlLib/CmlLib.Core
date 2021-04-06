@@ -107,7 +107,7 @@ namespace CmlLib.Core.Installer
                 {
                     foreach (var item in file.AfterDownload)
                     {
-                        item?.Invoke();
+                        await item?.Invoke();
                     }
                 }
 

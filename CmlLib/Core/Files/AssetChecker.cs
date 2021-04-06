@@ -10,6 +10,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using CmlLib.Core.Version;
+using System.Threading;
 
 namespace CmlLib.Core.Files
 {
@@ -96,7 +97,8 @@ namespace CmlLib.Core.Files
                 var f = await task;
                 if (f != null)
                     downloadRequiredFiles.Add(f);
-                progressed++;
+
+                Interlocked.Increment(ref progressed);
             }
 
             fireDownloadFileChangedEvent(MFile.Resource, "", total, total);
@@ -115,19 +117,21 @@ namespace CmlLib.Core.Files
 
             if (isVirtual)
             {
-                afterDownload.Add(new Func<Task>(() =>
+                afterDownload.Add(new Func<Task>(async () =>
                 {
                     var resPath = Path.Combine(path.GetAssetLegacyPath(version.AssetId), key);
-                    return safeCopy(hashPath, resPath);
+                    if (!await IOUtil.CheckFileValidationAsync(resPath, hash, CheckHash))
+                        await safeCopy(hashPath, resPath);
                 }));
             }
 
             if (mapResource)
             {
-                afterDownload.Add(new Func<Task>(() =>
+                afterDownload.Add(new Func<Task>(async () =>
                 {
                     var resPath = Path.Combine(path.Resource, key);
-                    return safeCopy(hashPath, resPath);
+                    if (!await IOUtil.CheckFileValidationAsync(resPath, hash, CheckHash))
+                        await safeCopy(hashPath, resPath);
                 }));
             }
 

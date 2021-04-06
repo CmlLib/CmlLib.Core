@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CmlLib.Core.Version;
+using System.Threading;
 
 namespace CmlLib.Core.Files
 {
@@ -83,7 +84,7 @@ namespace CmlLib.Core.Files
 
                     lastLibraryName = library.Name;
                 }
-                progressed++;
+                Interlocked.Increment(ref progressed);
             }
 
             ChangeFile?.Invoke(new DownloadFileChangedEventArgs(

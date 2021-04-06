@@ -41,7 +41,7 @@ namespace CmlLib.Core.Installer
                     {
                         foreach (var item in file.AfterDownload)
                         {
-                            item?.Invoke();
+                            item?.Invoke().GetAwaiter().GetResult();
                         }
                     }
                 }
