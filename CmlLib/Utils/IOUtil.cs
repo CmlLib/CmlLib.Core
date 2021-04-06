@@ -86,20 +86,32 @@ namespace CmlLib.Utils
         // we will have asynchronous file access faked by the thread pool. We want the real thing.
         public static StreamReader AsyncStreamReader(string path, Encoding encoding)
         {
-            FileStream stream = new FileStream(
-                path, FileMode.Open, FileAccess.Read, FileShare.Read, DefaultBufferSize,
-                FileOptions.Asynchronous | FileOptions.SequentialScan);
+            FileStream stream = AsyncReadStream(path);
+            return new StreamReader(stream, encoding, detectEncodingFromByteOrderMarks: false);
+        }
 
-            return new StreamReader(stream, encoding, detectEncodingFromByteOrderMarks: true);
+        public static FileStream AsyncReadStream(string path)
+        {
+            FileStream stream = new FileStream(
+    path, FileMode.Open, FileAccess.Read, FileShare.Read, DefaultBufferSize,
+    FileOptions.Asynchronous | FileOptions.SequentialScan);
+
+            return stream;
         }
 
         private static StreamWriter AsyncStreamWriter(string path, Encoding encoding, bool append)
         {
-            FileStream stream = new FileStream(
-                path, append ? FileMode.Append : FileMode.Create, FileAccess.Write, FileShare.Read, DefaultBufferSize,
-                FileOptions.Asynchronous | FileOptions.SequentialScan);
-
+            FileStream stream = AsyncWriteStream(path, append);
             return new StreamWriter(stream, encoding);
+        }
+
+        public static FileStream AsyncWriteStream(string path, bool append)
+        {
+            FileStream stream = new FileStream(
+    path, append ? FileMode.Append : FileMode.Create, FileAccess.Write, FileShare.Read, DefaultBufferSize,
+    FileOptions.Asynchronous | FileOptions.SequentialScan);
+
+            return stream;
         }
 
         public static async Task<string> ReadFileAsync(string path)
@@ -164,9 +176,9 @@ namespace CmlLib.Utils
 
         public static async Task CopyFileAsync(string sourceFile, string destinationFile)
         {
-            using (var sourceStream = AsyncStreamReader(sourceFile, Encoding.UTF8))
-            using (var destinationStream = AsyncStreamWriter(destinationFile, Encoding.UTF8, false))
-                await sourceStream.BaseStream.CopyToAsync(destinationStream.BaseStream);
+            using (var sourceStream = AsyncReadStream(sourceFile))
+            using (var destinationStream = AsyncWriteStream(destinationFile, false))
+                await sourceStream.CopyToAsync(destinationStream);
         }
 
         [DllImport("libc", SetLastError = true)]
