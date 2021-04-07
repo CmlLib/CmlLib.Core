@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
-using System.Text;
+using System.Linq;
 
 namespace CmlLib.Core.Version
 {
@@ -29,7 +30,12 @@ namespace CmlLib.Core.Version
             if (datas == null)
                 throw new ArgumentNullException(nameof(datas));
 
-            versions = new List<MVersionMetadata>(datas);
+            versions = new OrderedDictionary();
+            foreach (var item in datas)
+            {
+                versions.Add(item.Name, item);
+            }
+
             MinecraftPath = originalPath;
             LatestReleaseVersion = latestRelease;
             LatestSnapshotVersion = latestSnapshot;
@@ -38,26 +44,17 @@ namespace CmlLib.Core.Version
         public MVersionMetadata LatestReleaseVersion { get; private set; }
         public MVersionMetadata LatestSnapshotVersion { get; private set; }
         public MinecraftPath MinecraftPath { get; private set; }
-        List<MVersionMetadata> versions;
+        //List<MVersionMetadata> versions;
+        OrderedDictionary versions;
 
         public MVersionMetadata this[int index]
         {
-            get => versions[index];
+            get => (MVersionMetadata)versions[index];
         }
 
         public MVersion GetVersion(string name)
         {
-            MVersionMetadata versionMetadata = null;
-
-            foreach (var item in versions)
-            {
-                if (item.Name == name)
-                {
-                    versionMetadata = item;
-                    break;
-                }
-            }
-
+            MVersionMetadata versionMetadata = (MVersionMetadata)versions[name];
             if (versionMetadata == null)
                 throw new KeyNotFoundException("Cannot find " + name);
 
@@ -95,28 +92,36 @@ namespace CmlLib.Core.Version
 
             foreach (var item in from)
             {
-                if (!versions.Contains(item))
-                    versions.Add(item);
+                if (!versions.Contains(item.Name))
+                    versions[item.Name] = item;
             }
-
-            if (from.LatestReleaseVersion != null)
-                this.LatestReleaseVersion = from.LatestReleaseVersion;
-
-            if (from.LatestSnapshotVersion != null)
-                this.LatestSnapshotVersion = from.LatestSnapshotVersion;
 
             //stopwatch.Stop();
             //Console.WriteLine(stopwatch.Elapsed);
+
+            if (this.LatestReleaseVersion != null && from.LatestReleaseVersion != null)
+                this.LatestReleaseVersion = from.LatestReleaseVersion;
+
+            if (this.LatestSnapshotVersion != null && from.LatestSnapshotVersion != null)
+                this.LatestSnapshotVersion = from.LatestSnapshotVersion;
         }
 
         public IEnumerator<MVersionMetadata> GetEnumerator()
         {
-            return ((IEnumerable<MVersionMetadata>)versions).GetEnumerator();
+            foreach (DictionaryEntry item in versions)
+            {
+                var version = (MVersionMetadata)item.Value;
+                yield return version;
+            }
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return versions.GetEnumerator();
+            foreach (DictionaryEntry item in versions)
+            {
+                var version = item.Value;
+                yield return version;
+            }
         }
     }
 }
