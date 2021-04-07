@@ -89,6 +89,10 @@ namespace CmlLib.Core.Version
 
         public void Merge(MVersionCollection from)
         {
+            //Console.WriteLine("Start");
+            //var stopwatch = new System.Diagnostics.Stopwatch();
+            //stopwatch.Start();
+
             foreach (var item in from)
             {
                 if (!versions.Contains(item))
@@ -100,6 +104,9 @@ namespace CmlLib.Core.Version
 
             if (from.LatestSnapshotVersion != null)
                 this.LatestSnapshotVersion = from.LatestSnapshotVersion;
+
+            //stopwatch.Stop();
+            //Console.WriteLine(stopwatch.Elapsed);
         }
 
         public IEnumerator<MVersionMetadata> GetEnumerator()
