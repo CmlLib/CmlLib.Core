@@ -1,11 +1,12 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using CmlLib.Core.Version;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CmlLib.Core.Version
+namespace CmlLib.Core.VersionLoader
 {
     public class MojangVersionLoader : IVersionLoader
     {

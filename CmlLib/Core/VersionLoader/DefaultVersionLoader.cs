@@ -1,15 +1,16 @@
-﻿using System;
+﻿using CmlLib.Core.Version;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CmlLib.Core.Version
+namespace CmlLib.Core.VersionLoader
 {
     public class DefaultVersionLoader : IVersionLoader
     {
         public DefaultVersionLoader(MinecraftPath path)
         {
-            this.MinecraftPath = path;
+            MinecraftPath = path;
         }
 
         protected MinecraftPath MinecraftPath;

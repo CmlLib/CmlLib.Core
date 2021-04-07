@@ -10,6 +10,7 @@ using CmlLib.Core.Installer;
 using CmlLib.Core.Files;
 using System.Threading.Tasks;
 using CmlLib.Core.Version;
+using CmlLib.Core.VersionLoader;
 
 namespace CmlLib.Core
 {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace CmlLib.Core.Version.FabricMC
+namespace CmlLib.Core.VersionLoader.FabricMC
 {
     public class FabricLoader
     {

@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using CmlLib.Core.Version;
 using Newtonsoft.Json.Linq;
 
-namespace CmlLib.Core.Version.FabricMC
+namespace CmlLib.Core.VersionLoader.FabricMC
 {
     public class FabricVersionLoader : IVersionLoader
     {
