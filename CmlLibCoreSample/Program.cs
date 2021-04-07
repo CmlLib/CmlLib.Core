@@ -33,8 +33,7 @@ namespace CmlLibCoreSample
             Console.WriteLine("Success to login : {0} / {1} / {2}", session.Username, session.UUID, session.AccessToken);
 
             // Launch
-            p.Start(session);
-            //p.StartWithAdvancedOptions(session);
+            p.Start(session).GetAwaiter().GetResult();
         }
 
         MSession PremiumLogin()
@@ -77,7 +76,7 @@ namespace CmlLibCoreSample
             return MSession.GetOfflineSession("tester123");
         }
 
-        void Start(MSession session)
+        async Task Start(MSession session)
         {
             // Initializing Launcher
 
@@ -102,7 +101,8 @@ namespace CmlLibCoreSample
 
             Console.WriteLine($"Initialized in {launcher.MinecraftPath.BasePath}");
 
-            var versions = launcher.GetAllVersions(); // Get all installed profiles and load all profiles from mojang server
+            var versions = await launcher.GetAllVersionsAsync(); // Get all installed profiles and load all profiles from mojang server
+
             foreach (var item in versions) // Display all profiles 
             {
                 // You can filter snapshots and old versions to add if statement : 
@@ -120,28 +120,20 @@ namespace CmlLibCoreSample
                 //ServerIp = "mc.hypixel.net",
                 //MinimumRamMb = 102,
                 //FullScreen = true,
+
                 // More options:
                 // https://github.com/AlphaBs/CmlLib.Core/wiki/MLaunchOption
             };
 
-            // (A) checks forge installation and install forge if it was not installed.
-            // (B) launch any versions (vanilla, forge, liteloader, optifine, etc) if it was installed.
-            // Both methods automatically download essential files (ex: vanilla libraries) and create game process.
+            // download essential files (ex: vanilla libraries) and create game process.
 
-            // (A) download forge and launch
-            // var process = launcher.CreateProcess("1.12.2", "14.23.5.2768", launchOption);
+            // var process = await launcher.CreateProcessAsync("1.15.2", launchOption); // vanilla
+            // var process = await launcher.CreateProcessAsync("1.12.2-forge1.12.2-14.23.5.2838", launchOption); // forge
+            // var process = await launcher.CreateProcessAsync("1.12.2-LiteLoader1.12.2"); // liteloader
+            // var process = await launcher.CreateProcessAsync("fabric-loader-0.11.3-1.16.5") // fabric-loader
 
-            // (B) launch vanilla version
-            // var process = launcher.CreateProcess("1.15.2", launchOption);
-
-            // If you have already installed forge, you can launch it directly like this.
-            // var process = launcher.CreateProcess("1.12.2-forge1.12.2-14.23.5.2838", launchOption);
-
-            // launch by user input
             Console.WriteLine("input version (example: 1.12.2) : ");
-            //var versionname = Console.ReadLine();
-            var versionname = "1.16.5";
-            var process = launcher.CreateProcess(versionname, launchOption);
+            var process = await launcher.CreateProcessAsync(Console.ReadLine(), launchOption);
 
             //var process = launcher.CreateProcess("1.16.2", "33.0.5", launchOption);
             Console.WriteLine(process.StartInfo.Arguments);
@@ -156,40 +148,7 @@ namespace CmlLibCoreSample
             // process.Start();
 
             Console.ReadLine();
-
             return;
-        }
-
-        async Task Benchmark()
-        {
-            Console.WriteLine(Thread.CurrentThread.ManagedThreadId);
-
-            var path = new MinecraftPath();
-            var launcher = new CMLauncher(path);
-
-            launcher.GameFileCheckers.AssetFileChecker.CheckHash = true;
-            launcher.GameFileCheckers.ClientFileChecker.CheckHash = true;
-            launcher.GameFileCheckers.LibraryFileChecker.CheckHash = true;
-            //launcher.FileDownloader = new AsyncParallelDownloader();
-
-            launcher.ProgressChanged += Downloader_ChangeProgress;
-            launcher.FileChanged += Downloader_ChangeFile;
-
-            var launchOption = new MLaunchOption()
-            {
-                MaximumRamMb = 1024,
-                Session = MSession.GetOfflineSession("test")
-            };
-
-            Console.WriteLine("Start");
-            var stopwatch = new System.Diagnostics.Stopwatch();
-            stopwatch.Start();
-
-            var process = await launcher.CreateProcessAsync("1.16.5", launchOption);
-
-            stopwatch.Stop();
-            Console.WriteLine(stopwatch.Elapsed);
-            Console.ReadLine();
         }
 
         #region QuickStart
