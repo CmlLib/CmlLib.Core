@@ -1,14 +1,10 @@
 using CmlLib.Core;
 using CmlLib.Core.Auth;
-using CmlLib.Core.Auth.Microsoft;
-using CmlLib.Core.Files;
+using CmlLib.Core.Downloader;
 using CmlLib.Utils;
 using System;
-using System.IO;
-using System.Net;
-using System.Threading.Tasks;
 using System.Threading;
-using CmlLib.Core.Downloader;
+using System.Threading.Tasks;
 
 namespace CmlLibCoreSample
 {
@@ -94,7 +90,6 @@ namespace CmlLibCoreSample
 
             // if you want to download with parallel downloader, add below code :
             System.Net.ServicePointManager.DefaultConnectionLimit = 256;
-            launcher.FileDownloader = new AsyncParallelDownloader();
 
             launcher.ProgressChanged += Downloader_ChangeProgress;
             launcher.FileChanged += Downloader_ChangeFile;
@@ -155,7 +150,7 @@ namespace CmlLibCoreSample
 
         // this code is from README.md
 
-        void QuickStart()
+        async Task QuickStart()
         {
             //var path = new MinecraftPath("game_directory_path");
             var path = new MinecraftPath(); // use default directory
@@ -170,7 +165,8 @@ namespace CmlLibCoreSample
                 Console.WriteLine("{0}%", e.ProgressPercentage);
             };
 
-            foreach (var item in launcher.GetAllVersions())
+            var versions = await launcher.GetAllVersionsAsync();
+            foreach (var item in versions)
             {
                 Console.WriteLine(item.Name);
             }
@@ -186,7 +182,7 @@ namespace CmlLibCoreSample
             };
 
             // launch vanila
-            var process = launcher.CreateProcess("1.15.2", launchOption);
+            var process = await launcher.CreateProcessAsync("1.15.2", launchOption);
 
             process.Start();
         }

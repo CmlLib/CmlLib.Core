@@ -18,16 +18,16 @@ Support all version, with Forge
 
 ## Version
 
-Current version: 3.1.1
+Current version: 3.2.0-pre1
 
 ## Functions
 
+-   [x] Asynchronous APIs
 -   [x] Online or Offline login
 -   [x] Download the game files from the Mojang file server
--   [x] Launch any version (tested up to 1.16.2)
--   [x] Launch Forge, Optifine or any other custom version
+-   [x] Launch any version (tested up to 1.16.5)
+-   [x] Launch Forge, Optifine, FabricMC, LiteLoader or any other custom version
 -   [x] Download the Minecraft java runtime from the Mojang file server
--   [x] Install Forge
 -   [x] Launch with options (direct server connecting, screen resolution)
 -   [x] Supports cross-platform (windows, ubuntu, mac, only on .NET Core)
 -   [x] Microsoft Xbox Live Login
@@ -88,30 +88,29 @@ launcher.ProgressChanged += (s, e) =>
     Console.WriteLine("{0}%", e.ProgressPercentage);
 };
 
-foreach (var item in launcher.GetAllVersions())
+var versions = await launcher.GetAllVersionsAsync();
+foreach (var item in versions)
 {
-    Console.WriteLine(item.Name); // list version names
+    // show all version names
+    // use this version name in CreateProcessAsync method.
+    Console.WriteLine(item.Name);
 }
 
-// more options : https://github.com/AlphaBs/CmlLib.Core/wiki/MLaunchOption
 var launchOption = new MLaunchOption
 {
     MaximumRamMb = 1024,
-    Session = session, // Login session. ex: Session = MSession.GetOfflineSession("hello")
+    Session = MSession.GetOfflineSession("hello"), // Login Session. ex) Session = MSession.GetOfflineSession("hello")
 
     //ScreenWidth = 1600,
     //ScreenHeigth = 900,
     //ServerIp = "mc.hypixel.net"
 };
 
-// launch vanila
-var process = launcher.CreateProcess("1.15.2", launchOption);
-
-// launch forge (already installed, using this if you want to launch forge or optifine)
-// var process = launcher.CreateProcess("1.16.2-forge-33.0.5", launchOption);
-
-// launch forge (install forge if not installed, not stable, not recommended)
-// var process = launcher.CreateProcess("1.16.2", "33.0.5", launchOption);
+//var process = await launcher.CreateProcessAsync("input version name here", launchOption);
+var process = await launcher.CreateProcessAsync("1.15.2", launchOption); // vanilla
+// var process = await launcher.CreateProcessAsync("1.12.2-forge1.12.2-14.23.5.2838", launchOption); // forge
+// var process = await launcher.CreateProcessAsync("1.12.2-LiteLoader1.12.2"); // liteloader
+// var process = await launcher.CreateProcessAsync("fabric-loader-0.11.3-1.16.5") // fabric-loader
 
 process.Start();
 ```
