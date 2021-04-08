@@ -9,6 +9,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using CmlLib.Core.Downloader;
 
 namespace CmlLibWinFormSample
 {
@@ -57,30 +58,24 @@ namespace CmlLibWinFormSample
             refreshVersions(null);
         }
 
-        private void refreshVersions(string showVersion)
+        private async void refreshVersions(string showVersion)
         {
             cbVersion.Items.Clear();
 
-            var th = new Thread(new ThreadStart(delegate
-            {
-                var versions = launcher.UpdateVersions();
-                BeginInvoke(new Action(() =>
-                {
-                    bool showVersionExist = false;
-                    foreach (var item in versions)
-                    {
-                        if (showVersion != null && item.Name == showVersion)
-                            showVersionExist = true;
-                        cbVersion.Items.Add(item.Name);
-                    }
+            var versions = await launcher.GetAllVersionsAsync();
 
-                    if (showVersion == null || !showVersionExist)
-                        btnSetLastVersion_Click(null, null);
-                    else
-                        cbVersion.Text = showVersion;
-                }));
-            }));
-            th.Start();
+            bool showVersionExist = false;
+            foreach (var item in versions)
+            {
+                if (showVersion != null && item.Name == showVersion)
+                    showVersionExist = true;
+                cbVersion.Items.Add(item.Name);
+            }
+
+            if (showVersion == null || !showVersionExist)
+                btnSetLastVersion_Click(null, null);
+            else
+                cbVersion.Text = showVersion;
         }
 
         private void btnSetLastVersion_Click(object sender, EventArgs e)
@@ -145,16 +140,24 @@ namespace CmlLibWinFormSample
                     launchOption.JVMArguments = Txt_JavaArgs.Text.Split(' ');
 
                 if (rbParallelDownload.Checked)
+                {
+                    System.Net.ServicePointManager.DefaultConnectionLimit = 256;
                     launcher.FileDownloader = new AsyncParallelDownloader();
+                }
                 else
                     launcher.FileDownloader = new SequenceDownloader();
+
+                // check file hash or don't check
+                launcher.GameFileCheckers.AssetFileChecker.CheckHash = cbSkipHashCheck.Checked;
+                launcher.GameFileCheckers.ClientFileChecker.CheckHash = cbSkipHashCheck.Checked;
+                launcher.GameFileCheckers.LibraryFileChecker.CheckHash = cbSkipHashCheck.Checked;
 
                 if (cbSkipAssetsDownload.Checked)
                     launcher.GameFileCheckers.AssetFileChecker = null;
 
                 var process = await launcher.CreateProcessAsync(cbVersion.Text, launchOption); // Create Arguments and Process
 
-                // process.Start(); // Just start game. or
+                // process.Start(); // Just start game, or
                 StartProcess(process); // Start Process with debug options
             }
             catch (FormatException fex) // int.Parse exception
@@ -196,7 +199,15 @@ namespace CmlLibWinFormSample
         // Event Handler. Show download progress
         private void Launcher_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            Pb_Progress.Value = e.ProgressPercentage;
+            if (e is FileProgressChangedEventArgs)
+            {
+                var fp = (FileProgressChangedEventArgs)e;
+
+                Pb_Progress.Maximum = (int)(fp.TotalBytes / 1024);
+                Pb_Progress.Value = (int)(fp.ReceivedBytes / 1024);
+            }
+            else
+                Pb_Progress.Value = e.ProgressPercentage;
         }
 
         private void Launcher_FileChanged(DownloadFileChangedEventArgs e)

@@ -77,6 +77,7 @@
             this.rbSequenceDownload = new System.Windows.Forms.RadioButton();
             this.rbParallelDownload = new System.Windows.Forms.RadioButton();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.cbSkipHashCheck = new System.Windows.Forms.CheckBox();
             this.cbSkipAssetsDownload = new System.Windows.Forms.CheckBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.btnRefreshVersion = new System.Windows.Forms.Button();
@@ -122,7 +123,7 @@
             this.groupBox2.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Padding = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.groupBox2.Size = new System.Drawing.Size(440, 460);
+            this.groupBox2.Size = new System.Drawing.Size(440, 447);
             this.groupBox2.TabIndex = 20;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Options (Empty textbox means using default option)";
@@ -130,7 +131,7 @@
             // cbFullscreen
             // 
             this.cbFullscreen.AutoSize = true;
-            this.cbFullscreen.Location = new System.Drawing.Point(152, 366);
+            this.cbFullscreen.Location = new System.Drawing.Point(152, 359);
             this.cbFullscreen.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.cbFullscreen.Name = "cbFullscreen";
             this.cbFullscreen.Size = new System.Drawing.Size(95, 19);
@@ -140,7 +141,7 @@
             // 
             // btnAutoRamSet
             // 
-            this.btnAutoRamSet.Location = new System.Drawing.Point(337, 412);
+            this.btnAutoRamSet.Location = new System.Drawing.Point(337, 400);
             this.btnAutoRamSet.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btnAutoRamSet.Name = "btnAutoRamSet";
             this.btnAutoRamSet.Size = new System.Drawing.Size(86, 29);
@@ -159,7 +160,7 @@
             // 
             // txtXms
             // 
-            this.txtXms.Location = new System.Drawing.Point(119, 394);
+            this.txtXms.Location = new System.Drawing.Point(119, 382);
             this.txtXms.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.txtXms.Name = "txtXms";
             this.txtXms.Size = new System.Drawing.Size(207, 25);
@@ -185,7 +186,7 @@
             // label21
             // 
             this.label21.AutoSize = true;
-            this.label21.Location = new System.Drawing.Point(11, 400);
+            this.label21.Location = new System.Drawing.Point(11, 388);
             this.label21.Name = "label21";
             this.label21.Size = new System.Drawing.Size(105, 15);
             this.label21.TabIndex = 22;
@@ -244,7 +245,7 @@
             // 
             // TxtXmx
             // 
-            this.TxtXmx.Location = new System.Drawing.Point(119, 428);
+            this.TxtXmx.Location = new System.Drawing.Point(119, 416);
             this.TxtXmx.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.TxtXmx.Name = "TxtXmx";
             this.TxtXmx.Size = new System.Drawing.Size(207, 25);
@@ -271,7 +272,7 @@
             // Xmx_RAM
             // 
             this.Xmx_RAM.AutoSize = true;
-            this.Xmx_RAM.Location = new System.Drawing.Point(7, 431);
+            this.Xmx_RAM.Location = new System.Drawing.Point(7, 419);
             this.Xmx_RAM.Name = "Xmx_RAM";
             this.Xmx_RAM.Size = new System.Drawing.Size(112, 15);
             this.Xmx_RAM.TabIndex = 10;
@@ -548,30 +549,30 @@
             // rbSequenceDownload
             // 
             this.rbSequenceDownload.AutoSize = true;
-            this.rbSequenceDownload.Checked = true;
-            this.rbSequenceDownload.Location = new System.Drawing.Point(19, 30);
+            this.rbSequenceDownload.Location = new System.Drawing.Point(44, 30);
             this.rbSequenceDownload.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.rbSequenceDownload.Name = "rbSequenceDownload";
             this.rbSequenceDownload.Size = new System.Drawing.Size(164, 19);
             this.rbSequenceDownload.TabIndex = 22;
-            this.rbSequenceDownload.TabStop = true;
             this.rbSequenceDownload.Text = "Sequence Download";
             this.rbSequenceDownload.UseVisualStyleBackColor = true;
             // 
             // rbParallelDownload
             // 
             this.rbParallelDownload.AutoSize = true;
-            this.rbParallelDownload.Location = new System.Drawing.Point(186, 30);
+            this.rbParallelDownload.Checked = true;
+            this.rbParallelDownload.Location = new System.Drawing.Point(211, 30);
             this.rbParallelDownload.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.rbParallelDownload.Name = "rbParallelDownload";
-            this.rbParallelDownload.Size = new System.Drawing.Size(244, 19);
+            this.rbParallelDownload.Size = new System.Drawing.Size(198, 19);
             this.rbParallelDownload.TabIndex = 23;
             this.rbParallelDownload.TabStop = true;
-            this.rbParallelDownload.Text = "Parallel Download (experimental)";
+            this.rbParallelDownload.Text = "Parallel Download (faster)";
             this.rbParallelDownload.UseVisualStyleBackColor = true;
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.cbSkipHashCheck);
             this.groupBox3.Controls.Add(this.cbSkipAssetsDownload);
             this.groupBox3.Controls.Add(this.rbSequenceDownload);
             this.groupBox3.Controls.Add(this.rbParallelDownload);
@@ -584,15 +585,26 @@
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Download Options";
             // 
+            // cbSkipHashCheck
+            // 
+            this.cbSkipHashCheck.AutoSize = true;
+            this.cbSkipHashCheck.Location = new System.Drawing.Point(229, 57);
+            this.cbSkipHashCheck.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.cbSkipHashCheck.Name = "cbSkipHashCheck";
+            this.cbSkipHashCheck.Size = new System.Drawing.Size(157, 19);
+            this.cbSkipHashCheck.TabIndex = 26;
+            this.cbSkipHashCheck.Text = "Skip hash checking";
+            this.cbSkipHashCheck.UseVisualStyleBackColor = true;
+            // 
             // cbSkipAssetsDownload
             // 
             this.cbSkipAssetsDownload.AutoSize = true;
-            this.cbSkipAssetsDownload.Location = new System.Drawing.Point(105, 58);
+            this.cbSkipAssetsDownload.Location = new System.Drawing.Point(50, 57);
             this.cbSkipAssetsDownload.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.cbSkipAssetsDownload.Name = "cbSkipAssetsDownload";
-            this.cbSkipAssetsDownload.Size = new System.Drawing.Size(177, 19);
+            this.cbSkipAssetsDownload.Size = new System.Drawing.Size(166, 19);
             this.cbSkipAssetsDownload.TabIndex = 25;
-            this.cbSkipAssetsDownload.Text = "Skip Assets Download";
+            this.cbSkipAssetsDownload.Text = "Skip asset download";
             this.cbSkipAssetsDownload.UseVisualStyleBackColor = true;
             // 
             // groupBox4
@@ -759,5 +771,6 @@
         private System.Windows.Forms.Button btnForgeInstall;
         private System.Windows.Forms.Button btnRefreshVersion;
         private System.Windows.Forms.CheckBox cbFullscreen;
+        private System.Windows.Forms.CheckBox cbSkipHashCheck;
     }
 }

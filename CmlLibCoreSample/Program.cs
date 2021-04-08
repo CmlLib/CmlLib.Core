@@ -1,7 +1,6 @@
-﻿using CmlLib.Core;
+using CmlLib.Core;
 using CmlLib.Core.Auth;
 using CmlLib.Core.Auth.Microsoft;
-using CmlLib.Core.Installer;
 using CmlLib.Core.Files;
 using CmlLib.Utils;
 using System;
@@ -9,6 +8,7 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using System.Threading;
+using CmlLib.Core.Downloader;
 
 namespace CmlLibCoreSample
 {
