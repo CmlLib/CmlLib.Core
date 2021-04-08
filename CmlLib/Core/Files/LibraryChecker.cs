@@ -79,6 +79,7 @@ namespace CmlLib.Core.Files
                         Type = MFile.Library,
                         Name = library.Name,
                         Path = Path.Combine(path.Library, library.Path),
+                        Size = library.Size,
                         Url = CreateDownloadUrl(library)
                     });
 
@@ -102,7 +103,7 @@ namespace CmlLib.Core.Files
             else if (url == "")
                 url = null;
             else if (url.Split('/').Last() == "")
-                url += lib.Path;
+                url += lib.Path.Replace("\\", "/");
 
             return url;
         }
@@ -111,7 +112,6 @@ namespace CmlLib.Core.Files
         {
             return lib.IsRequire
                 && !string.IsNullOrEmpty(lib.Path)
-                && !string.IsNullOrEmpty(lib.Url)
                 && !await IOUtil.CheckFileValidationAsync(Path.Combine(path.Library, lib.Path), lib.Hash, CheckHash).ConfigureAwait(true);
         }
     }
