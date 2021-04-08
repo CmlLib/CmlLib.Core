@@ -1,13 +1,11 @@
-﻿using CmlLib.Utils;
+using CmlLib.Utils;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CmlLib.Core.Installer
+namespace CmlLib.Core.Downloader
 {
     public class AsyncParallelDownloader : IDownloader
     {

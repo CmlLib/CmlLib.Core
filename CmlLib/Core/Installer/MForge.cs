@@ -1,4 +1,5 @@
-﻿using CmlLib.Core.Files;
+﻿using CmlLib.Core.Downloader;
+using CmlLib.Core.Files;
 using CmlLib.Utils;
 using ICSharpCode.SharpZipLib.Zip;
 using Newtonsoft.Json.Linq;

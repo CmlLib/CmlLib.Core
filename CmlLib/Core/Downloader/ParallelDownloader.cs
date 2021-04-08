@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CmlLib.Core.Installer
+namespace CmlLib.Core.Downloader
 {
     public class ParallelDownloader : IDownloader
     {

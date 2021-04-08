@@ -11,6 +11,7 @@ using CmlLib.Core.Files;
 using System.Threading.Tasks;
 using CmlLib.Core.Version;
 using CmlLib.Core.VersionLoader;
+using CmlLib.Core.Downloader;
 
 namespace CmlLib.Core
 {
