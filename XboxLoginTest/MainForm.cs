@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using CmlLib.Core;
+﻿using CmlLib.Core;
 using CmlLib.Core.Auth;
+using CmlLib.Core.Downloader;
+using System;
+using System.ComponentModel;
+using System.Threading;
+using System.Windows.Forms;
 
 namespace XboxLoginTest
 {
@@ -95,7 +90,7 @@ namespace XboxLoginTest
             }));
         }
 
-        private void Launcher_FileChanged(CmlLib.Core.Installer.DownloadFileChangedEventArgs e)
+        private void Launcher_FileChanged(DownloadFileChangedEventArgs e)
         {
             Invoke(new Action(() =>
             {
