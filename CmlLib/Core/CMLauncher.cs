@@ -26,7 +26,7 @@ namespace CmlLib.Core
             this.MinecraftPath = mc;
 
             GameFileCheckers = new FileCheckerCollection();
-            FileDownloader = new SequenceDownloader();
+            FileDownloader = new AsyncParallelDownloader();
             VersionLoader = new DefaultVersionLoader(MinecraftPath);
         }
 
