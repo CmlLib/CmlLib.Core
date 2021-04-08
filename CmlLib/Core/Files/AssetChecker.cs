@@ -113,6 +113,10 @@ namespace CmlLib.Core.Files
             var hashName = hash.Substring(0, 2) + "/" + hash;
             var hashPath = Path.Combine(path.GetAssetObjectPath(version.AssetId), hashName);
 
+            var sizestr = job["size"]?.ToString();
+            long size = 0;
+            long.TryParse(sizestr, out size);
+
             var afterDownload = new List<Func<Task>>(1);
 
             if (isVirtual)
@@ -144,6 +148,7 @@ namespace CmlLib.Core.Files
                     Name = key,
                     Path = hashPath,
                     Url = hashUrl,
+                    Size = size,
                     AfterDownload = afterDownload.ToArray()
                 };
             }

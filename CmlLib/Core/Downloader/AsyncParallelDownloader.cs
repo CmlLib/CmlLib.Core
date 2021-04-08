@@ -1,4 +1,4 @@
-using CmlLib.Utils;
+﻿using CmlLib.Utils;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -15,12 +15,17 @@ namespace CmlLib.Core.Downloader
         public int MaxThread { get; private set; }
         public bool IgnoreInvalidFiles { get; set; } = true;
 
-        int total = 0;
-        int progressed = 0;
+        int totalFiles = 0;
+        int progressedFiles = 0;
+
+        long totalBytes = 0;
+        long receivedBytes = 0;
+
+        object progressEventLock = new object();
 
         bool isRunning = false;
 
-        IProgress<ProgressChangedEventArgs> pChangeProgress;
+        IProgress<FileProgressChangedEventArgs> pChangeProgress;
         IProgress<DownloadFileChangedEventArgs> pChangeFile;
 
         public AsyncParallelDownloader() : this(10)
@@ -30,7 +35,7 @@ namespace CmlLib.Core.Downloader
 
         public AsyncParallelDownloader(int parallelism)
         {
-            this.MaxThread = parallelism;
+            MaxThread = parallelism;
         }
 
         public async Task DownloadFiles(DownloadFile[] files)
@@ -38,19 +43,28 @@ namespace CmlLib.Core.Downloader
             if (isRunning)
                 throw new InvalidOperationException("already downloading");
 
-            total = files.Length;
-            progressed = 0;
+            totalFiles = files.Length;
+            progressedFiles = 0;
+
+            totalBytes = 1;
+            receivedBytes = 0;
 
             pChangeFile = new Progress<DownloadFileChangedEventArgs>(
                 (e) => fireDownloadFileChangedEvent(e));
 
-            pChangeProgress = new Progress<ProgressChangedEventArgs>(
-                (e) => fireDownloadProgressChangedEvent(this, e));
+            pChangeProgress = new Progress<FileProgressChangedEventArgs>(
+                (e) => ChangeProgress?.Invoke(this, e));
+
+            foreach (var item in files)
+            {
+                if (item.Size > 0)
+                    totalBytes += item.Size;
+            }
 
             await ForEachAsyncSemaphore(files, MaxThread, doDownload);
 
-            var lastFile = files.Last();
-            fireDownloadFileChangedProgress(lastFile, files.Length, files.Length);
+            //var lastFile = files.Last();
+            //fireDownloadFileChangedProgress(lastFile, files.Length, files.Length);
         }
 
         private async Task ForEachAsyncSemaphore<T>(IEnumerable<T> source,
@@ -96,9 +110,11 @@ namespace CmlLib.Core.Downloader
             try
             {
                 var downloader = new WebDownload();
-                var downloadTask = downloader.DownloadFileLimitTaskAsync(file.Url, file.Path);
+                downloader.FileDownloadProgressChanged += Downloader_FileDownloadProgressChanged;
 
-                fireDownloadFileChangedProgress(file.Type, file.Name, total, progressed);
+                var downloadTask = downloader.DownloadFileAsync(file);
+
+                fireDownloadFileChangedProgress(file.Type, file.Name, totalFiles, progressedFiles);
                 await downloadTask;
 
                 if (file.AfterDownload != null)
@@ -109,7 +125,7 @@ namespace CmlLib.Core.Downloader
                     }
                 }
 
-                Interlocked.Increment(ref progressed);
+                Interlocked.Increment(ref progressedFiles);
             }
             catch (Exception ex)
             {
@@ -123,27 +139,35 @@ namespace CmlLib.Core.Downloader
             }
         }
 
+        private void Downloader_FileDownloadProgressChanged(object sender, FileDownloadProgress e)
+        {
+            lock (progressEventLock)
+            {
+                if (e.File.Size <= 0)
+                {
+                    totalBytes += e.TotalBytes;
+                    e.File.Size = e.TotalBytes;
+                }
+
+                receivedBytes += e.ProgressedBytes;
+
+                if (receivedBytes > totalBytes)
+                    return;
+
+                float percent = (float)receivedBytes / totalBytes * 100;
+                pChangeProgress.Report(new FileProgressChangedEventArgs(totalBytes, receivedBytes, (int)percent));
+            }
+        }
+
         private void fireDownloadFileChangedProgress(MFile file, string name, int totalFiles, int progressedFiles)
         {
             var e = new DownloadFileChangedEventArgs(file, name, totalFiles, progressedFiles);
-            //fireDownloadFileChangedEvent(e);
             pChangeFile.Report(e);
-        }
-
-        private void fireDownloadFileChangedProgress(DownloadFile file, int totalFiles, int progressedFiles)
-        {
-            fireDownloadFileChangedProgress(file.Type, file.Name, totalFiles, progressedFiles);
-            
         }
 
         private void fireDownloadFileChangedEvent(DownloadFileChangedEventArgs e)
         {
             ChangeFile?.Invoke(e);
-        }
-
-        private void fireDownloadProgressChangedEvent(object sender, ProgressChangedEventArgs e)
-        {
-            ChangeProgress?.Invoke(this, e);
         }
     }
 }

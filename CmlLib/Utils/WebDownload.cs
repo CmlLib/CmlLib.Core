@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CmlLib.Core.Downloader;
+using System;
 using System.ComponentModel;
 using System.IO;
 using System.Net;
@@ -11,6 +12,7 @@ namespace CmlLib.Utils
     {
         static int DefaultBufferSize = 1024 * 64; // 64kb
 
+        public event EventHandler<FileDownloadProgress> FileDownloadProgressChanged;
         public event ProgressChangedEventHandler DownloadProgressChangedEvent;
 
         public void DownloadFile(string url, string path)
@@ -46,12 +48,23 @@ namespace CmlLib.Utils
             fileStream.Dispose();
         }
 
-        public async Task DownloadFileAsync(string url, string path, bool eventStep)
+        public async Task DownloadFileAsync(DownloadFile file)
         {
+            Directory.CreateDirectory(Path.GetDirectoryName(file.Path));
             using (var wc = new WebClient())
             {
-                wc.DownloadProgressChanged += (s, e) => DownloadProgressChangedEvent?.Invoke(this, e);
-                await wc.DownloadFileTaskAsync(url, path);
+                long lastBytes = 0;
+
+                wc.DownloadProgressChanged += (s, e) =>
+                {
+                    var progressedBytes = e.BytesReceived - lastBytes;
+                    lastBytes = e.BytesReceived;
+
+                    var progress = new FileDownloadProgress(
+                        file, e.TotalBytesToReceive, progressedBytes, e.BytesReceived, e.ProgressPercentage);
+                    FileDownloadProgressChanged?.Invoke(this, progress);
+                };
+                await wc.DownloadFileTaskAsync(file.Url, file.Path);
             }
 
             //Directory.CreateDirectory(Path.GetDirectoryName(path));

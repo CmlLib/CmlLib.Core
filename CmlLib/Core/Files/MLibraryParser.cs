@@ -85,12 +85,17 @@ namespace CmlLib.Core.Files
 
             var hash = job["sha1"] ?? job["checksums"]?[0];
 
+            var sizestr = job["size"]?.ToString();
+            long size = 0;
+            long.TryParse(sizestr, out size);
+
             return new MLibrary
             {
                 Hash = hash?.ToString(),
                 IsNative = !string.IsNullOrEmpty(nativeId),
                 Name = name,
                 Path = path,
+                Size = size,
                 Url = job["url"]?.ToString(),
                 IsRequire = require
             };

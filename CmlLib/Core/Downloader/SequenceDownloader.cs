@@ -22,7 +22,8 @@ namespace CmlLib.Core.Downloader
                 return;
 
             var downloader = new WebDownload();
-            downloader.DownloadProgressChangedEvent += fireDownloadProgressChangedEvent;
+            //downloader.DownloadProgressChangedEvent += fireDownloadProgressChangedEvent;
+            downloader.FileDownloadProgressChanged += Downloader_FileDownloadProgressChanged;
 
             //fireDownloadFileChangedEvent(files[0], 0, files.Length);
 
@@ -35,7 +36,7 @@ namespace CmlLib.Core.Downloader
                     fireDownloadFileChangedEvent(file, files.Length, i);
 
                     Directory.CreateDirectory(Path.GetDirectoryName(file.Path));
-                    await downloader.DownloadFileAsync(file.Url, file.Path, true);
+                    await downloader.DownloadFileAsync(file);
 
                     if (file.AfterDownload != null)
                     {
@@ -55,6 +56,11 @@ namespace CmlLib.Core.Downloader
             }
 
             fireDownloadFileChangedEvent(files.Last(), files.Length, files.Length);
+        }
+
+        private void Downloader_FileDownloadProgressChanged(object sender, FileDownloadProgress e)
+        {
+            ChangeProgress?.Invoke(this, new ProgressChangedEventArgs(e.ProgressPercentage, null));
         }
 
         private void fireDownloadFileChangedEvent(MFile file, string name, int totalFiles, int progressedFiles)

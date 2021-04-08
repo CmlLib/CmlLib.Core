@@ -1,4 +1,4 @@
-﻿using CmlLib.Core;
+using CmlLib.Core;
 using CmlLib.Utils;
 using System;
 using System.Collections.Generic;
@@ -64,7 +64,7 @@ namespace CmlLib.Core
 
         private void FileDownloader_ChangeProgress(object sender, ProgressChangedEventArgs e)
         {
-            fireProgressChangeEvent(e.ProgressPercentage);
+            ProgressChanged?.Invoke(this, e);
         }
 
         public MVersionCollection UpdateVersions()
