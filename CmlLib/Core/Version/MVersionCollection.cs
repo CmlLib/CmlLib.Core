@@ -99,10 +99,10 @@ namespace CmlLib.Core.Version
             //stopwatch.Stop();
             //Console.WriteLine(stopwatch.Elapsed);
 
-            if (this.LatestReleaseVersion != null && from.LatestReleaseVersion != null)
+            if (this.LatestReleaseVersion == null && from.LatestReleaseVersion != null)
                 this.LatestReleaseVersion = from.LatestReleaseVersion;
 
-            if (this.LatestSnapshotVersion != null && from.LatestSnapshotVersion != null)
+            if (this.LatestSnapshotVersion == null && from.LatestSnapshotVersion != null)
                 this.LatestSnapshotVersion = from.LatestSnapshotVersion;
         }
 
