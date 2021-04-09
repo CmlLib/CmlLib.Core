@@ -75,6 +75,9 @@ var session = MSession.GetOfflineSession("USERNAME");
 ```
 **Launch**
 ```csharp
+// increase connection limit to fast download
+System.Net.ServicePointManager.DefaultConnectionLimit = 256;
+
 //var path = new MinecraftPath("game_directory_path");
 var path = new MinecraftPath(); // use default directory
 
