@@ -99,6 +99,9 @@ namespace CmlLib.Core.Version
             //stopwatch.Stop();
             //Console.WriteLine(stopwatch.Elapsed);
 
+            if (this.MinecraftPath == null && from.MinecraftPath != null)
+                this.MinecraftPath = from.MinecraftPath;
+
             if (this.LatestReleaseVersion == null && from.LatestReleaseVersion != null)
                 this.LatestReleaseVersion = from.LatestReleaseVersion;
 
