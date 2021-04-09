@@ -207,7 +207,10 @@ namespace CmlLibWinFormSample
                 Pb_Progress.Value = (int)(fp.ReceivedBytes / 1024);
             }
             else
+            {
+                Pb_Progress.Maximum = 100;
                 Pb_Progress.Value = e.ProgressPercentage;
+            }
         }
 
         private void Launcher_FileChanged(DownloadFileChangedEventArgs e)
