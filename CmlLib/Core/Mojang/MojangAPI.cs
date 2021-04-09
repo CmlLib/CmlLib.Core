@@ -7,6 +7,9 @@ using Newtonsoft.Json.Linq;
 
 namespace CmlLib.Core.Mojang
 {
+    // use MojangAPI library!
+    // https://github.com/CmlLib/MojangAPI
+
     public class MojangAPI
     {
         private static void writeReq(WebRequest req, string data)

@@ -5,6 +5,9 @@ using System.IO;
 using System.Net;
 using System.Text;
 
+// use new library:
+// https://github.com/CmlLib/MojangAPI
+
 namespace CmlLib.Core.Auth
 {
     public enum MLoginResult { Success, BadRequest, WrongAccount, NeedLogin, UnknownError, NoProfile }
