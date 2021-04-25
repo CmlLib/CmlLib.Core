@@ -11,7 +11,7 @@ namespace CmlLib.Core.Auth.Microsoft
 {
     public class XboxMinecraftLogin
     {
-        public const string RelyingParty = "rp://api.minecraftservices.com/";
+        public static readonly string RelyingParty = "rp://api.minecraftservices.com/";
 
         private void writeReq(WebRequest req, string data)
         {

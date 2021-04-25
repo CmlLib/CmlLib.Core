@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace CmlLib.Core
 {
-    public class Mapper
+    public static class Mapper
     {
         private static Regex argBracket = new Regex(@"\$?\{(.*?)}");
 

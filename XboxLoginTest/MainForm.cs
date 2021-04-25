@@ -49,56 +49,47 @@ namespace XboxLoginTest
             loginForm.ShowDialog();
         }
 
-        private void btnStart_Click(object sender, EventArgs e)
+        private async void btnStart_Click(object sender, EventArgs e)
         {
             btnLogin.Enabled = false;
             btnSignout.Enabled = false;
             btnStart.Enabled = false;
 
-            new Thread(() =>
+            try
             {
-                try
+                var path = new MinecraftPath();
+                var launcher = new CMLauncher(path);
+                launcher.FileChanged += Launcher_FileChanged;
+                launcher.ProgressChanged += Launcher_ProgressChanged;
+
+                var versions = await launcher.GetAllVersionsAsync();
+                var lastVersion = versions.LatestReleaseVersion;
+
+                var process = await launcher.CreateProcessAsync(lastVersion.Name, new MLaunchOption()
                 {
-                    var path = new MinecraftPath();
-                    var launcher = new CMLauncher(path);
-                    launcher.FileChanged += Launcher_FileChanged;
-                    launcher.ProgressChanged += Launcher_ProgressChanged;
+                    Session = this.session
+                });
 
-                    var versions = launcher.GetAllVersions();
-                    var lastVersion = versions.LatestReleaseVersion;
-
-                    var process = launcher.CreateProcess(lastVersion.Name, new MLaunchOption()
-                    {
-                        Session = this.session
-                    });
-
-                    process.Start();
-                    MessageBox.Show("Success");
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.ToString());
-                }
-            }).Start();
+                process.Start();
+                MessageBox.Show("Success");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
         }
 
         private void Launcher_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            Invoke(new Action(() =>
-            {
-                pbProgress.Value = e.ProgressPercentage;
-            }));
+            pbProgress.Value = e.ProgressPercentage;
         }
 
         private void Launcher_FileChanged(DownloadFileChangedEventArgs e)
         {
-            Invoke(new Action(() =>
-            {
-                pbPatch.Maximum = e.TotalFileCount;
-                pbPatch.Value = e.ProgressedFileCount;
+            pbPatch.Maximum = e.TotalFileCount;
+            pbPatch.Value = e.ProgressedFileCount;
 
-                lbMessage.Text = $"{e.FileKind} - {e.FileName}";
-            }));
+            lbMessage.Text = $"{e.FileKind} - {e.FileName}";
         }
     }
 }

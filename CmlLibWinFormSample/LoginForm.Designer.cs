@@ -40,7 +40,7 @@
             this.gMojangLogin = new System.Windows.Forms.GroupBox();
             this.btnAutoLoginMojangLauncher = new System.Windows.Forms.Button();
             this.btnAutoLogin = new System.Windows.Forms.Button();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.gOfflineLogin = new System.Windows.Forms.GroupBox();
             this.btnOfflineLogin = new System.Windows.Forms.Button();
             this.txtUsername = new System.Windows.Forms.TextBox();
             this.label8 = new System.Windows.Forms.Label();
@@ -48,7 +48,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.gMojangLogin.SuspendLayout();
-            this.groupBox1.SuspendLayout();
+            this.gOfflineLogin.SuspendLayout();
             this.SuspendLayout();
             // 
             // label5
@@ -183,19 +183,19 @@
             this.btnAutoLogin.UseVisualStyleBackColor = true;
             this.btnAutoLogin.Click += new System.EventHandler(this.btnAutoLogin_Click);
             // 
-            // groupBox1
+            // gOfflineLogin
             // 
-            this.groupBox1.Controls.Add(this.btnOfflineLogin);
-            this.groupBox1.Controls.Add(this.txtUsername);
-            this.groupBox1.Controls.Add(this.label8);
-            this.groupBox1.Location = new System.Drawing.Point(12, 326);
-            this.groupBox1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Padding = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.groupBox1.Size = new System.Drawing.Size(527, 72);
-            this.groupBox1.TabIndex = 15;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Offline Login";
+            this.gOfflineLogin.Controls.Add(this.btnOfflineLogin);
+            this.gOfflineLogin.Controls.Add(this.txtUsername);
+            this.gOfflineLogin.Controls.Add(this.label8);
+            this.gOfflineLogin.Location = new System.Drawing.Point(12, 326);
+            this.gOfflineLogin.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.gOfflineLogin.Name = "gOfflineLogin";
+            this.gOfflineLogin.Padding = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.gOfflineLogin.Size = new System.Drawing.Size(527, 72);
+            this.gOfflineLogin.TabIndex = 15;
+            this.gOfflineLogin.TabStop = false;
+            this.gOfflineLogin.Text = "Offline Login";
             // 
             // btnOfflineLogin
             // 
@@ -263,7 +263,7 @@
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.label2);
-            this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this.gOfflineLogin);
             this.Controls.Add(this.gMojangLogin);
             this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.Name = "LoginForm";
@@ -271,8 +271,8 @@
             this.Load += new System.EventHandler(this.LoginForm_Load);
             this.gMojangLogin.ResumeLayout(false);
             this.gMojangLogin.PerformLayout();
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
+            this.gOfflineLogin.ResumeLayout(false);
+            this.gOfflineLogin.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -290,7 +290,7 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.GroupBox gMojangLogin;
         private System.Windows.Forms.Button btnAutoLogin;
-        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.GroupBox gOfflineLogin;
         private System.Windows.Forms.Button btnOfflineLogin;
         private System.Windows.Forms.TextBox txtUsername;
         private System.Windows.Forms.Label label8;

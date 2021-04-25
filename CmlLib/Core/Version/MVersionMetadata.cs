@@ -25,12 +25,12 @@ namespace CmlLib.Core.Version
         {
             var info = obj as MVersionMetadata;
 
-            if (info != null)
+            if (info != null) // obj is MVersionMetadata
                 return info.Name.Equals(Name);
             else if (obj is string)
                 return info.Name.Equals(obj.ToString());
             else
-                return base.Equals(obj);
+                return false;
         }
 
         public override string ToString()

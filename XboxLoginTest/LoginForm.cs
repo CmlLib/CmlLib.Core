@@ -21,6 +21,10 @@ namespace XboxLoginTest
             InitializeComponent();
         }
 
+        WebView2 wv;
+        #region Create/Remove WebView2 control
+
+        // Show webview on form
         private void CreateWV()
         {
             wv = new WebView2();
@@ -30,6 +34,7 @@ namespace XboxLoginTest
             this.Controls.SetChildIndex(wv, 0);
         }
 
+        // Remove webview on form
         private void RemoveWV()
         {
             if (wv != null)
@@ -47,15 +52,10 @@ namespace XboxLoginTest
             }
         }
 
-        WebView2 wv;
+        #endregion
 
-        MicrosoftOAuth oauth;
         public MSession session;
-
         public string action = "login";
-
-        string microsoftOAuthPath = Path.Combine(MinecraftPath.GetOSDefaultPath(), "cml_msa.json");
-        string minecraftTokenPath = Path.Combine(MinecraftPath.GetOSDefaultPath(), "cml_token.json");
 
         private void Window_Loaded(object sender, EventArgs e)
         {
@@ -69,6 +69,11 @@ namespace XboxLoginTest
             }
         }
 
+        #region Microsoft token cache
+
+        string microsoftOAuthPath = Path.Combine(MinecraftPath.GetOSDefaultPath(), "cml_msa.json");
+
+        // read microsoft token cache file
         private MicrosoftOAuthResponse readMicrosoft()
         {
             if (!File.Exists(microsoftOAuthPath))
@@ -80,12 +85,20 @@ namespace XboxLoginTest
             return response;
         }
 
+        // write microsoft login cache file
         private void writeMicrosoft(MicrosoftOAuthResponse response)
         {
             var json = JsonConvert.SerializeObject(response);
             File.WriteAllText(microsoftOAuthPath, json);
         }
 
+        #endregion
+
+        #region Minecraft token cache
+
+        string minecraftTokenPath = Path.Combine(MinecraftPath.GetOSDefaultPath(), "cml_token.json");
+
+        // read minecraft login cache file
         private AuthenticationResponse readMinecraft()
         {
             if (!File.Exists(minecraftTokenPath))
@@ -98,6 +111,7 @@ namespace XboxLoginTest
             return job["auth"].ToObject<AuthenticationResponse>();
         }
 
+        // write minecraft login cache file
         private void writeMinecraft(AuthenticationResponse mcToken)
         {
             var obj = new
@@ -109,35 +123,50 @@ namespace XboxLoginTest
             File.WriteAllText(minecraftTokenPath, json);
         }
 
+        #endregion
+
+        // Login
+        // 1. read microsoft, minecraft token cache file
+        // 2. check if minecraft token is valid
+        // 3. try to get microsoft token (check if microsoft token is valid)
+        // 4. microsoft browser login
+        // 5. get minecraft token
+        // 6. get minecraft profile (username, uuid)
+
+        MicrosoftOAuth oauth;
+
         private void login()
         {
             try
             {
                 oauth = new MicrosoftOAuth("00000000402B5328", XboxAuth.XboxScope);
+
+                // 1. Read microsoft, minecraft token cache file
                 var msToken = readMicrosoft();
                 var mcToken = readMinecraft();
 
-                //if (true)
-                if (mcToken == null || DateTime.Now > mcToken.ExpiresOn) // expired
+                // 2. Check if minecraft token is valid
+                if (mcToken == null || DateTime.Now > mcToken.ExpiresOn) // invalid minecraft token
                 {
                     this.session = null;
 
-                    //if (true)
-                    if (oauth.TryGetTokens(out msToken, msToken?.RefreshToken)) // try ms login
-                        successMS(msToken);
-                    else // failed to refresh ms token
+                    // 3. Try to get microsoft token
+                    if (!oauth.TryGetTokens(out msToken, msToken?.RefreshToken))
                     {
+                        // 4. Browser login
                         var url = oauth.CreateUrl();
-                        CreateWV();
+                        CreateWV(); // show webview control
                         wv.Source = new Uri(url);
                     }
+                    else // success to get microsoft token
+                        successMS(msToken); // goto 5
                 }
-                else // valid minecraft session
+                else // valid minecraft token
                 {
                     if (this.session == null)
-                        this.session = getSession(mcToken);
+                        this.session = getSession(mcToken); // goto 6
 
-                    this.Close();
+                    this.Close(); // success
                 }
             }
             catch (Exception ex)
@@ -147,20 +176,11 @@ namespace XboxLoginTest
             }
         }
 
-        private void signout()
-        {
-            writeMicrosoft(null);
-            writeMinecraft(null);
-
-            CreateWV();
-            wv.Source = new Uri(MicrosoftOAuth.GetSignOutUrl());
-        }
-
         private void WebView21_NavigationStarting(object sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs e)
         {
-            if (e.IsRedirected && oauth.CheckLoginSuccess(e.Uri)) // login success
+            if (e.IsRedirected && oauth.CheckLoginSuccess(e.Uri)) // microsoft browser login success
             {
-                RemoveWV();
+                RemoveWV(); // remove webview control
 
                 new Thread(() =>
                 {
@@ -168,7 +188,7 @@ namespace XboxLoginTest
                     Invoke(new Action(() =>
                     {
                         if (result)
-                            successMS(response);
+                            successMS(response); // goto 5
                         else
                             msLoginFail(response);
                     }));
@@ -181,14 +201,15 @@ namespace XboxLoginTest
             try
             {
                 writeMicrosoft(msToken);
+                // 5. get minecraft token
                 var mcToken = mcLogin(msToken);
                 if (mcToken != null)
                 {
-                    this.session = getSession(mcToken);
+                    this.session = getSession(mcToken); // goto 6
                     writeMinecraft(mcToken);
                 }
 
-                this.Close();
+                this.Close(); // success
             }
             catch (Exception ex)
             {
@@ -243,12 +264,14 @@ namespace XboxLoginTest
 
         private MSession getSession(AuthenticationResponse mcToken)
         {
+            // 6. get minecraft profile (username, uuid)
+
             if (mcToken == null)
                 throw new ArgumentNullException("mcToken was null");
 
             if (!MojangAPI.CheckGameOwnership(mcToken.AccessToken))
             {
-                MessageBox.Show("로그인 실패 : 게임 구매를 하지 않았습니다.");
+                MessageBox.Show("You don't have minecraft JE");
                 this.Close();
             }
 
@@ -261,9 +284,18 @@ namespace XboxLoginTest
             };
         }
 
+        private void signout()
+        {
+            writeMicrosoft(null);
+            writeMinecraft(null);
+
+            CreateWV(); // show webview control
+            wv.Source = new Uri(MicrosoftOAuth.GetSignOutUrl());
+        }
+
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            RemoveWV();
+            RemoveWV(); // remove webview control
         }
     }
 }

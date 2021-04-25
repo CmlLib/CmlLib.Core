@@ -25,6 +25,7 @@ namespace CmlLib.Core
 
         private static string getOSName()
         {
+            // Environment.OSVersion.Platform does not work in NET Core   
 #if NETCOREAPP
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 return OSX;

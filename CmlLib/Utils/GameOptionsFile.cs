@@ -5,7 +5,7 @@ using System.IO;
 
 namespace CmlLib.Utils
 {
-    public class GameOptionsFile
+    public static class GameOptionsFile
     {
         public const int MaxOptionFileLength = 1024 * 1024; // 1MB
 
@@ -101,7 +101,7 @@ namespace CmlLib.Utils
 
         public static string ToKeyValueString(string key, bool value)
         {
-            var str = value.ToString().ToLower();
+            var str = value.ToString().ToLowerInvariant();
             return ToKeyValueString(key, str, false);
         }
 

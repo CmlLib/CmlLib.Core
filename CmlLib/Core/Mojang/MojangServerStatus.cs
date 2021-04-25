@@ -26,11 +26,11 @@ namespace CmlLib.Core.Mojang
             {
                 var property = item.First as JProperty;
                 var color = ToStatusColor(property.Value.ToString());
-                dict.Add(property.Name, (ServerStatusColor)color);
+                dict.Add(property.Name, color);
             }
 
             // to object
-            return new MojangServerStatus()
+            return new MojangServerStatus
             {
                 Minecraft = getColorFromDict(dict, "minecraft.net"),
                 Session = getColorFromDict(dict, "session.minecraft.net"),

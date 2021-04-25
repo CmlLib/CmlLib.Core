@@ -30,16 +30,16 @@ namespace CmlLibWinFormSample
         
         GameLog logForm;
 
-        private void MainForm_Shown(object sender, EventArgs e)
+        private async void MainForm_Shown(object sender, EventArgs e)
         {
             // Initialize launcher
             this.Refresh();
 
             var defaultPath = new MinecraftPath(MinecraftPath.GetOSDefaultPath());
-            InitializeLauncher(defaultPath);
+            await InitializeLauncher(defaultPath);
         }
 
-        private void InitializeLauncher(MinecraftPath path)
+        private async Task InitializeLauncher(MinecraftPath path)
         {
             txtPath.Text = path.BasePath;
             this.GamePath = path;
@@ -50,15 +50,15 @@ namespace CmlLibWinFormSample
             launcher = new CMLauncher(path);
             launcher.FileChanged += Launcher_FileChanged;
             launcher.ProgressChanged += Launcher_ProgressChanged;
-            refreshVersions(null);
+            await refreshVersions(null);
         }
 
-        private void btnRefreshVersion_Click(object sender, EventArgs e)
+        private async void btnRefreshVersion_Click(object sender, EventArgs e)
         {
-            refreshVersions(null);
+            await refreshVersions(null);
         }
 
-        private async void refreshVersions(string showVersion)
+        private async Task refreshVersions(string showVersion)
         {
             cbVersion.Items.Clear();
 
@@ -220,11 +220,11 @@ namespace CmlLibWinFormSample
             Lv_Status.Text = $"{e.FileKind.ToString()} : {e.FileName} ({e.ProgressedFileCount}/{e.TotalFileCount})";
         }
 
-        private void btnChangePath_Click(object sender, EventArgs e)
+        private async void btnChangePath_Click(object sender, EventArgs e)
         {
             var form = new PathForm(this.GamePath);
             form.ShowDialog();
-            InitializeLauncher(form.MinecraftPath);
+            await InitializeLauncher(form.MinecraftPath);
         }
 
         private void btnChangeJava_Click(object sender, EventArgs e)
@@ -288,12 +288,12 @@ namespace CmlLibWinFormSample
                 else
                     forgeJava = javaPath;
 
-                Invoke(new Action(() =>
+                Invoke(new Action(async () =>
                 {
                     var forgeForm = new ForgeInstall(GamePath, forgeJava);
                     forgeForm.ShowDialog();
                     setUIEnabled(true);
-                    refreshVersions(forgeForm.LastInstalledVersion);
+                    await refreshVersions(forgeForm.LastInstalledVersion);
                 }));
             }).Start();
         }
@@ -361,7 +361,7 @@ namespace CmlLibWinFormSample
 
         private void btnWiki_Click(object sender, EventArgs e)
         {
-            start("https://github.com/AlphaBs/CmlLib.Core/wiki/MLaunchOption");
+            start("https://github.com/AlphaBs/CmlLib.Core/wiki/");
         }
 
         private void start(string url)

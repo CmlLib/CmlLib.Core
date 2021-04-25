@@ -44,16 +44,18 @@ namespace CmlLib.Core.Version
         public MVersionMetadata LatestReleaseVersion { get; private set; }
         public MVersionMetadata LatestSnapshotVersion { get; private set; }
         public MinecraftPath MinecraftPath { get; private set; }
-        //List<MVersionMetadata> versions;
-        OrderedDictionary versions;
+        protected OrderedDictionary versions;
 
         public MVersionMetadata this[int index]
         {
             get => (MVersionMetadata)versions[index];
         }
 
-        public MVersion GetVersion(string name)
+        public virtual MVersion GetVersion(string name)
         {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+
             MVersionMetadata versionMetadata = (MVersionMetadata)versions[name];
             if (versionMetadata == null)
                 throw new KeyNotFoundException("Cannot find " + name);
@@ -61,7 +63,7 @@ namespace CmlLib.Core.Version
             return GetVersion(versionMetadata);
         }
 
-        public MVersion GetVersion(MVersionMetadata versionMetadata)
+        public virtual MVersion GetVersion(MVersionMetadata versionMetadata)
         {
             if (versionMetadata == null)
                 throw new ArgumentNullException(nameof(versionMetadata));
@@ -84,20 +86,13 @@ namespace CmlLib.Core.Version
             return startVersion;
         }
 
-        public void Merge(MVersionCollection from)
+        public virtual void Merge(MVersionCollection from)
         {
-            //Console.WriteLine("Start");
-            //var stopwatch = new System.Diagnostics.Stopwatch();
-            //stopwatch.Start();
-
             foreach (var item in from)
             {
                 if (!versions.Contains(item.Name))
                     versions[item.Name] = item;
             }
-
-            //stopwatch.Stop();
-            //Console.WriteLine(stopwatch.Elapsed);
 
             if (this.MinecraftPath == null && from.MinecraftPath != null)
                 this.MinecraftPath = from.MinecraftPath;

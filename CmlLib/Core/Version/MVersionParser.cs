@@ -75,6 +75,8 @@ namespace CmlLib.Core.Version
 
                 // id
                 version.Id = job["id"]?.ToString();
+                if (string.IsNullOrEmpty(version.Id))
+                    throw new MVersionParseException("Empty version id");
 
                 // assets
                 var assetindex = (JObject)job["assetIndex"];
@@ -142,6 +144,10 @@ namespace CmlLib.Core.Version
                     version.Jar = version.Id;
 
                 return version;
+            }
+            catch (MVersionParseException)
+            {
+                throw;
             }
             catch (Exception ex)
             {

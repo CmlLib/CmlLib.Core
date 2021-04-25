@@ -6,7 +6,7 @@ using System.Text;
 
 namespace CmlLib.Utils
 {
-    public class SharpZip
+    class SharpZip
     {
         public SharpZip(string path)
         {

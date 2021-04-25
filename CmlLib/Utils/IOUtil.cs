@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CmlLib.Utils
 {
-    public static class IOUtil
+    static class IOUtil
     {
         private const int DefaultBufferSize = 4096;
 
@@ -135,7 +135,7 @@ namespace CmlLib.Utils
                 using (var hasher = new System.Security.Cryptography.SHA1CryptoServiceProvider())
                 {
                     var binaryHash = hasher.ComputeHash(file);
-                    fileHash = BitConverter.ToString(binaryHash).Replace("-", "").ToLower();
+                    fileHash = BitConverter.ToString(binaryHash).Replace("-", "").ToLowerInvariant();
                 }
 
                 return fileHash == compareHash;

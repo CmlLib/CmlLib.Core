@@ -16,12 +16,15 @@ namespace CmlLibWinFormSample
 
         private void LoginForm_Load(object sender, EventArgs e)
         {
-            btnAutoLogin_Click(null, null);
+            CmlLib._Test.testTimer();
+            System.Diagnostics.Trace.WriteLine("CC");
+            //btnAutoLogin_Click(null, null);
         }
 
         private void btnAutoLogin_Click(object sender, EventArgs e)
         {
             gMojangLogin.Enabled = false;
+            gOfflineLogin.Enabled = false;
 
             var th = new Thread(() =>
             {
@@ -33,6 +36,7 @@ namespace CmlLibWinFormSample
                     Invoke(new Action(() =>
                     {
                         gMojangLogin.Enabled = true;
+                        gOfflineLogin.Enabled = true;
                     }));
                     return;
                 }
@@ -41,6 +45,7 @@ namespace CmlLibWinFormSample
                 Invoke(new Action(() =>
                 {
                     gMojangLogin.Enabled = true;
+                    gOfflineLogin.Enabled = true;
 
                     btnAutoLogin.Enabled = false;
                     btnLogin.Enabled = false;
@@ -56,6 +61,7 @@ namespace CmlLibWinFormSample
         private void btnAutoLoginMojangLauncher_Click(object sender, EventArgs e)
         {
             gMojangLogin.Enabled = false;
+            gOfflineLogin.Enabled = false;
 
             var th = new Thread(() =>
             {
@@ -67,6 +73,7 @@ namespace CmlLibWinFormSample
                     Invoke(new Action(() =>
                     {
                         gMojangLogin.Enabled = true;
+                        gOfflineLogin.Enabled = true;
                     }));
                     return;
                 }
@@ -75,6 +82,7 @@ namespace CmlLibWinFormSample
                 Invoke(new Action(() =>
                 {
                     gMojangLogin.Enabled = true;
+                    gOfflineLogin.Enabled = true;
 
                     btnAutoLogin.Enabled = false;
                     btnAutoLoginMojangLauncher.Enabled = false;
@@ -96,6 +104,7 @@ namespace CmlLibWinFormSample
             }
 
             gMojangLogin.Enabled = false;
+            gOfflineLogin.Enabled = false;
 
             var th = new Thread(new ThreadStart(delegate
             {
@@ -114,6 +123,7 @@ namespace CmlLibWinFormSample
                     Invoke(new Action(() =>
                     {
                         gMojangLogin.Enabled = true;
+                        gOfflineLogin.Enabled = true;
                     }));
                 }
             }));

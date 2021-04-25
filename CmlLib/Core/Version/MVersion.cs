@@ -10,10 +10,10 @@ namespace CmlLib.Core.Version
 {
     public class MVersion
     {
-        public bool IsInherited { get; set; } = false;
-        public string ParentVersionId { get; set; } = "";
+        public bool IsInherited { get; set; }
+        public string ParentVersionId { get; set; }
 
-        public string Id { get; set; } = "";
+        public string Id { get; set; }
 
         public string AssetId { get; set; } = "";
         public string AssetUrl { get; set; } = "";

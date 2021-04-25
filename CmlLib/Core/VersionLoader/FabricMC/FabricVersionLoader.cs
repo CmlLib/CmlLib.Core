@@ -11,7 +11,7 @@ namespace CmlLib.Core.VersionLoader.FabricMC
     public class FabricVersionLoader : IVersionLoader
     {
         public string ApiServer { get; } = "https://meta.fabricmc.net";
-        public string LoaderVersion;
+        public string LoaderVersion { get; set; }
 
         protected string GetVersionName(string version, string loaderVersion)
         {

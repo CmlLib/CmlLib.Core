@@ -13,8 +13,8 @@ namespace CmlLib.Core
             gamePath = _path;
         }
 
-        MVersion version;
-        MinecraftPath gamePath;
+        readonly MVersion version;
+        readonly MinecraftPath gamePath;
 
         public string ExtractNatives()
         {
@@ -35,7 +35,10 @@ namespace CmlLib.Core
                         }
                     }
                 }
-                catch { }
+                catch
+                {
+                    // ignore invalid native library file
+                }
             }
 
             return path;
@@ -57,7 +60,11 @@ namespace CmlLib.Core
                     item.Delete();
                 }
             }
-            catch { }
+            catch 
+            {
+                // ignore exception
+                // will be overwriten to new file
+            }
         }
     }
 }

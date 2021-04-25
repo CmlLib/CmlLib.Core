@@ -36,7 +36,7 @@ namespace CmlLib.Core.Installer
         }
 
         public string JavaPath { get; private set; }
-        MinecraftPath Minecraft;
+        readonly MinecraftPath Minecraft;
         private IDownloader Downloader;
         public event DownloadFileChangedHandler FileChanged;
         public event EventHandler<string> InstallerOutput;
@@ -90,7 +90,6 @@ namespace CmlLib.Core.Installer
                 $"forge-{mcversion}-{forgeversion}-installer.jar";
 
             return WebRequest.Create(url).GetResponse().GetResponseStream();
-            //return File.OpenRead(@"C:\temp\forge-1.16.2-33.0.5-installer.jar");
         }
 
         private Tuple<JToken, JToken> extractInstaller(Stream stream, string extractPath)
