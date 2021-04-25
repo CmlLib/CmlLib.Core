@@ -67,38 +67,22 @@ namespace CmlLib.Core
             ProgressChanged?.Invoke(this, e);
         }
 
-        public MVersionCollection UpdateVersions()
+        public MVersionCollection GetAllVersions()
         {
             Versions = VersionLoader.GetVersionMetadatas();
             return Versions;
         }
 
-        public MVersionCollection GetAllVersions()
-        {
-            if (Versions == null)
-                Versions = UpdateVersions();
-
-            return Versions;
-        }
-
-        public async Task<MVersionCollection> UpdateVersionsAsync()
-        {
-            Versions = await VersionLoader.GetVersionMetadatasAsync();
-            return Versions;
-        }
-
         public async Task<MVersionCollection> GetAllVersionsAsync()
         {
-            if (Versions == null)
-                Versions = await UpdateVersionsAsync();
-
+            Versions = await VersionLoader.GetVersionMetadatasAsync();
             return Versions;
         }
 
         public MVersion GetVersion(string versionname)
         {
             if (Versions == null)
-                UpdateVersions();
+                GetAllVersions();
 
             return Versions.GetVersion(versionname);
         }
@@ -106,28 +90,45 @@ namespace CmlLib.Core
         public async Task<MVersion> GetVersionAsync(string versionname)
         {
             if (Versions == null)
-                await UpdateVersionsAsync();
+                await GetAllVersionsAsync();
 
             return Versions.GetVersion(versionname);
         }
 
         public string CheckJRE()
         {
-            fireFileChangeEvent(MFile.Runtime, "java", 1, 0);
+            fireFileChangeEvent(MFile.Runtime, "java", 2, 0);
 
             var mjava = new MJava(MinecraftPath.Runtime);
             mjava.ProgressChanged += (sender, e) => fireProgressChangeEvent(e.ProgressPercentage);
             mjava.DownloadCompleted += (sender, e) =>
             {
-                fireFileChangeEvent(MFile.Runtime, "java", 1, 1);
+                fireFileChangeEvent(MFile.Runtime, "java", 2, 1);
             };
-            return mjava.CheckJava();
+            var j = mjava.CheckJava();
+            fireFileChangeEvent(MFile.Runtime, "java", 2, 2);
+            return j;
+        }
+
+        public async Task<string> CheckJREAsync()
+        {
+            fireFileChangeEvent(MFile.Runtime, "java", 2, 0);
+
+            var mjava = new MJava(MinecraftPath.Runtime);
+            mjava.ProgressChanged += (sender, e) => fireProgressChangeEvent(e.ProgressPercentage);
+            mjava.DownloadCompleted += (sender, e) =>
+            {
+                fireFileChangeEvent(MFile.Runtime, "java", 2, 1);
+            };
+            var j = await mjava.CheckJavaAsync();
+            fireFileChangeEvent(MFile.Runtime, "java", 2, 2);
+            return j;
         }
 
         public string CheckForge(string mcversion, string forgeversion, string java)
         {
             if (Versions == null)
-                UpdateVersions();
+                GetAllVersions();
 
             var forgeNameOld = MForge.GetOldForgeName(mcversion, forgeversion);
             var forgeName = MForge.GetForgeName(mcversion, forgeversion);
@@ -157,7 +158,7 @@ namespace CmlLib.Core
                 mforge.InstallerOutput += (s, e) => LogOutput?.Invoke(this, e);
                 name = mforge.InstallForge(mcversion, forgeversion);
 
-                UpdateVersions();
+                GetAllVersions();
             }
 
             return name;
@@ -223,7 +224,6 @@ namespace CmlLib.Core
             CheckAndDownload(GetVersion(mcversion));
 
             var versionName = CheckForge(mcversion, forgeversion, option.JavaPath);
-            UpdateVersions();
 
             return CreateProcess(versionName, option);
         }
@@ -245,7 +245,7 @@ namespace CmlLib.Core
             if (this.FileDownloader != null)
                 await CheckAndDownloadAsync(option.StartVersion);
 
-            return CreateProcess(option);
+            return await CreateProcessAsync(option);
         }
 
         public Process CreateProcess(MLaunchOption option)
@@ -255,6 +255,18 @@ namespace CmlLib.Core
 
             if (string.IsNullOrEmpty(option.JavaPath))
                 option.JavaPath = CheckJRE();
+
+            var launch = new MLaunch(option);
+            return launch.GetProcess();
+        }
+
+        public async Task<Process> CreateProcessAsync(MLaunchOption option)
+        {
+            if (option.Path == null)
+                option.Path = MinecraftPath;
+
+            if (string.IsNullOrEmpty(option.JavaPath))
+                option.JavaPath = await CheckJREAsync();
 
             var launch = new MLaunch(option);
             return launch.GetProcess();

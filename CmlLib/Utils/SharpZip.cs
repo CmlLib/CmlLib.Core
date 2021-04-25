@@ -41,7 +41,6 @@ namespace CmlLib.Utils
                         }
                     }
 
-                    //Console.WriteLine(zfile);
                     ev(s.Position, length);
                 }
             }

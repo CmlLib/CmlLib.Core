@@ -16,9 +16,9 @@ namespace CmlLib.Core
                 Arch = "32";
         }
 
-        public const string Windows = "windows";
-        public const string OSX = "osx";
-        public const string Linux = "linux";
+        public static readonly string Windows = "windows";
+        public static readonly string OSX = "osx";
+        public static readonly string Linux = "linux";
 
         public static string OSName { get; private set; }
         public static string Arch { get; private set; }
