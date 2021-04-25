@@ -14,7 +14,7 @@ namespace CmlLib.Core.VersionLoader
             MinecraftPath = path;
         }
 
-        MinecraftPath MinecraftPath;
+        readonly MinecraftPath MinecraftPath;
 
         public MVersionCollection GetVersionMetadatas()
         {

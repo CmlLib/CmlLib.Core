@@ -22,10 +22,9 @@ namespace CmlLib.Core.Downloader
                 return;
 
             var downloader = new WebDownload();
-            //downloader.DownloadProgressChangedEvent += fireDownloadProgressChangedEvent;
             downloader.FileDownloadProgressChanged += Downloader_FileDownloadProgressChanged;
 
-            //fireDownloadFileChangedEvent(files[0], 0, files.Length);
+            //fireDownloadFileChangedEvent(files[0], 0, files.Length)
 
             for (var i = 0; i < files.Length; i++)
             {

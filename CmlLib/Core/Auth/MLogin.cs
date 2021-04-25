@@ -58,7 +58,7 @@ namespace CmlLib.Core.Auth
                 var filedata = File.ReadAllText(SessionCacheFilePath, Encoding.UTF8);
                 try
                 {
-                    var session = JsonConvert.DeserializeObject<MSession>(filedata, new JsonSerializerSettings()
+                    var session = JsonConvert.DeserializeObject<MSession>(filedata, new JsonSerializerSettings
                     {
                         NullValueHandling = NullValueHandling.Ignore
                     });
@@ -103,7 +103,7 @@ namespace CmlLib.Core.Auth
                 return new MLoginResponse(MLoginResult.NoProfile, null, null, json);
             else
             {
-                var session = new MSession()
+                var session = new MSession
                 {
                     AccessToken = job["accessToken"]?.ToString(),
                     UUID = profile["id"]?.ToString(),
@@ -232,7 +232,7 @@ namespace CmlLib.Core.Auth
                 {
                     { "accessToken", session.AccessToken },
                     { "clientToken", session.ClientToken },
-                    { "selectedProfile", new JObject()
+                    { "selectedProfile", new JObject
                         {
                             { "id", session.UUID },
                             { "name", session.Username }

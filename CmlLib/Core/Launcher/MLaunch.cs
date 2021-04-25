@@ -12,7 +12,7 @@ namespace CmlLib.Core
     {
         private const int DefaultServerPort = 25565;
 
-        public const string SupportVersion = "1.16.1";
+        public static readonly string SupportVersion = "1.16.6";
         public readonly static string[] DefaultJavaParameter = new string[]
             {
                 "-XX:+UnlockExperimentalVMOptions",
@@ -95,7 +95,7 @@ namespace CmlLib.Core
             native.CleanNatives();
             var nativePath = native.ExtractNatives();
 
-            var jvmdict = new Dictionary<string, string>()
+            var jvmdict = new Dictionary<string, string>
             {
                 { "natives_directory", nativePath },
                 { "launcher_name", useNotNull(LaunchOption.GameLauncherName, "minecraft-launcher") },
@@ -114,7 +114,7 @@ namespace CmlLib.Core
             args.Add(version.MainClass);
 
             // Game Arguments
-            var gameDict = new Dictionary<string, string>()
+            var gameDict = new Dictionary<string, string>
             {
                 { "auth_player_name" , LaunchOption.Session.Username },
                 { "version_name"     , LaunchOption.StartVersion.Id },

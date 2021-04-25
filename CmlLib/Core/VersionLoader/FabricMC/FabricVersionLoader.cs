@@ -10,8 +10,8 @@ namespace CmlLib.Core.VersionLoader.FabricMC
 {
     public class FabricVersionLoader : IVersionLoader
     {
-        public string ApiServer = "https://meta.fabricmc.net";
-        public string LoaderVersion = null;
+        public string ApiServer { get; } = "https://meta.fabricmc.net";
+        public string LoaderVersion;
 
         protected string GetVersionName(string version, string loaderVersion)
         {
@@ -66,7 +66,7 @@ namespace CmlLib.Core.VersionLoader.FabricMC
                 var versionName = item["version"]?.ToString();
                 var jsonUrl = $"{ApiServer}/v2/versions/loader/{versionName}/{loader}/profile/json";
 
-                var versionMetadata = new MVersionMetadata()
+                var versionMetadata = new MVersionMetadata
                 {
                     IsLocalVersion = false,
                     MType = MVersionType.Custom,

@@ -43,14 +43,10 @@ namespace CmlLib.Core.Downloader
 
         private void doDownload(DownloadFile file)
         {
-            //doDownload(file, 0);
-
             try
             {
                 var downloader = new WebDownload();
-                //Console.WriteLine("start " + file.Name);
                 downloader.DownloadFileLimit(file.Url, file.Path);
-                //Console.WriteLine("end " + file.Name);
 
                 if (file.AfterDownload != null)
                 {

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CmlLib.Utils
 {
-    public class IOUtil
+    public static class IOUtil
     {
         private const int DefaultBufferSize = 4096;
 
@@ -118,7 +118,7 @@ namespace CmlLib.Utils
         {
             using (var reader = AsyncStreamReader(path, Encoding.UTF8))
             {
-                return await reader.ReadToEndAsync();
+                return await reader.ReadToEndAsync().ConfigureAwait(false);
             }
         }
 
@@ -146,7 +146,7 @@ namespace CmlLib.Utils
             }
         }
 
-        public static bool CheckFileValidation(string path, string hash, bool checkHash=true)
+        public static bool CheckFileValidation(string path, string hash, bool checkHash)
         {
             if (!File.Exists(path))
                 return false;
@@ -157,7 +157,7 @@ namespace CmlLib.Utils
                 return CheckSHA1(path, hash);
         }
 
-        public static async Task<bool> CheckFileValidationAsync(string path, string hash, bool checkHash=true)
+        public static async Task<bool> CheckFileValidationAsync(string path, string hash, bool checkHash)
         {
             if (!File.Exists(path))
                 return false;
@@ -165,7 +165,7 @@ namespace CmlLib.Utils
             if (!checkHash)
                 return true;
             else
-                return await Task.Run(() => CheckSHA1(path, hash)).ConfigureAwait(true);
+                return await Task.Run(() => CheckSHA1(path, hash)).ConfigureAwait(false);
         }
 
         public static bool CheckFileValidation(string path, string hash, long size)
@@ -178,7 +178,7 @@ namespace CmlLib.Utils
         {
             using (var sourceStream = AsyncReadStream(sourceFile))
             using (var destinationStream = AsyncWriteStream(destinationFile, false))
-                await sourceStream.CopyToAsync(destinationStream);
+                await sourceStream.CopyToAsync(destinationStream).ConfigureAwait(false);
         }
 
         [DllImport("libc", SetLastError = true)]

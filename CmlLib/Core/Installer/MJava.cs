@@ -10,7 +10,8 @@ namespace CmlLib.Core.Installer
 {
     public class MJava
     {
-        public static string DefaultRuntimeDirectory = Path.Combine(MinecraftPath.GetOSDefaultPath(), "runtime");
+        public static readonly string DefaultRuntimeDirectory
+            = Path.Combine(MinecraftPath.GetOSDefaultPath(), "runtime");
 
         public event ProgressChangedEventHandler ProgressChanged;
         public event EventHandler DownloadCompleted;
@@ -60,7 +61,7 @@ namespace CmlLib.Core.Installer
                 DecompressJavaFile(lzmaPath);
 
                 if (!File.Exists(javapath))
-                    throw new Exception("Failed Download");
+                    throw new WebException("failed to download");
 
                 if (MRule.OSName != MRule.Windows)
                     IOUtil.Chmod(javapath, IOUtil.Chmod755);
@@ -85,7 +86,7 @@ namespace CmlLib.Core.Installer
                 await decompressTask;
 
                 if (!File.Exists(javapath))
-                    throw new Exception("Failed Download");
+                    throw new WebException("failed to download");
 
                 if (MRule.OSName != MRule.Windows)
                     IOUtil.Chmod(javapath, IOUtil.Chmod755);

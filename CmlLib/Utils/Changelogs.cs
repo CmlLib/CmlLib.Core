@@ -8,7 +8,9 @@ namespace CmlLib.Utils
 {
     public class Changelogs
     {
-        private static Dictionary<string, string> changelogUrls = new Dictionary<string, string>()
+        private Changelogs() { }
+
+        private static Dictionary<string, string> changelogUrls = new Dictionary<string, string>
         {
             { "1.13",   "https://feedback.minecraft.net/hc/en-us/articles/360007323492-Minecraft-Java-Edition-1-13-Update-Aquatic-" },
             { "1.14.2", "https://feedback.minecraft.net/hc/en-us/articles/360028919851-Minecraft-Java-Edition-1-14-2" },

@@ -21,7 +21,7 @@ namespace CmlLib.Core.Downloader
         long totalBytes = 0;
         long receivedBytes = 0;
 
-        object progressEventLock = new object();
+        readonly object progressEventLock = new object();
 
         bool isRunning = false;
 
@@ -43,6 +43,8 @@ namespace CmlLib.Core.Downloader
             if (isRunning)
                 throw new InvalidOperationException("already downloading");
 
+            isRunning = true;
+
             totalFiles = files.Length;
             progressedFiles = 0;
 
@@ -61,10 +63,9 @@ namespace CmlLib.Core.Downloader
                     totalBytes += item.Size;
             }
 
-            await ForEachAsyncSemaphore(files, MaxThread, doDownload);
+            await ForEachAsyncSemaphore(files, MaxThread, doDownload).ConfigureAwait(false);
 
-            //var lastFile = files.Last();
-            //fireDownloadFileChangedProgress(lastFile, files.Length, files.Length);
+            isRunning = false;
         }
 
         private async Task ForEachAsyncSemaphore<T>(IEnumerable<T> source,
@@ -135,7 +136,7 @@ namespace CmlLib.Core.Downloader
                 System.Diagnostics.Debug.WriteLine(ex);
                 retry--;
 
-                await doDownload(file, retry);
+                await doDownload(file, retry).ConfigureAwait(false);
             }
         }
 

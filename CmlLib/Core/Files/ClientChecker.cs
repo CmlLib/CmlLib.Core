@@ -46,7 +46,7 @@ namespace CmlLib.Core.Files
             string id = version.Jar;
             string clientPath = path.GetVersionJarPath(id);
 
-            if (!IOUtil.CheckFileValidation(clientPath, version.ClientHash))
+            if (!IOUtil.CheckFileValidation(clientPath, version.ClientHash, CheckHash))
             {
                 return new DownloadFile
                 {
