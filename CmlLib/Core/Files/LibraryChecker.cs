@@ -54,6 +54,7 @@ namespace CmlLib.Core.Files
             return CheckFilesTaskAsync(path, version.Libraries);
         }
 
+        [MethodTimer.Time]
         public async Task<DownloadFile[]> CheckFilesTaskAsync(MinecraftPath path, MLibrary[] libs)
         {
             if (libs == null)

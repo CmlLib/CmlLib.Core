@@ -74,6 +74,7 @@ namespace CmlLib.Core.Files
             return index;
         }
 
+        [MethodTimer.Time]
         public async Task<DownloadFile[]> CheckAssetFiles(MinecraftPath path, MVersion version)
         {
             var index = await ReadIndexAsync(path, version);
