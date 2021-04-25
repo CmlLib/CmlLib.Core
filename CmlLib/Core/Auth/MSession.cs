@@ -31,7 +31,7 @@ namespace CmlLib.Core.Auth
 
         public static MSession GetOfflineSession(string username)
         {
-            var login = new MSession();
+            MSession login = new MSession();
             login.Username = username;
             login.AccessToken = "access_token";
             login.UUID = "user_uuid";

@@ -1,10 +1,8 @@
 ﻿using CmlLib.Utils;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CmlLib.Core.Downloader
@@ -21,12 +19,12 @@ namespace CmlLib.Core.Downloader
             if (files == null || files.Length == 0)
                 return;
 
-            var downloader = new WebDownload();
+            WebDownload downloader = new WebDownload();
             downloader.FileDownloadProgressChanged += Downloader_FileDownloadProgressChanged;
 
             //fireDownloadFileChangedEvent(files[0], 0, files.Length)
 
-            for (var i = 0; i < files.Length; i++)
+            for (int i = 0; i < files.Length; i++)
             {
                 DownloadFile file = files[i];
 

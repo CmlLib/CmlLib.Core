@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CmlLib.Utils
@@ -29,7 +27,7 @@ namespace CmlLib.Utils
             Process.ErrorDataReceived += (s, e) => OutputReceived?.Invoke(this, e.Data);
             Process.OutputDataReceived += (s, e) => OutputReceived?.Invoke(this, e.Data);
             Process.Exited += (s, e) => Exited?.Invoke(this, new EventArgs());
-            
+
             Process.Start();
             Process.BeginErrorReadLine();
             Process.BeginOutputReadLine();

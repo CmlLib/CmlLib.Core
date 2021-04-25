@@ -1,14 +1,12 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace CmlLib.Core.Files
 {
     public class MLibraryParser
     {
-        public MLibraryParser(bool checkOSRules=true)
+        public MLibraryParser(bool checkOSRules = true)
         {
             this.CheckOSRules = checkOSRules;
         }
@@ -57,14 +55,14 @@ namespace CmlLib.Core.Files
                 // COMMON library
                 if (artifact != null)
                 {
-                    var obj = createMLibrary(name, "", isRequire, (JObject)artifact);
+                    MLibrary obj = createMLibrary(name, "", isRequire, (JObject)artifact);
                     list.Add(obj);
                 }
 
                 // library
                 if (artifact == null && natives == null)
                 {
-                    var obj = createMLibrary(name, "", isRequire, item);
+                    MLibrary obj = createMLibrary(name, "", isRequire, item);
                     list.Add(obj);
                 }
 
@@ -79,15 +77,14 @@ namespace CmlLib.Core.Files
 
         private MLibrary createMLibrary(string name, string nativeId, bool require, JObject job)
         {
-            var path = job["path"]?.ToString();
+            string path = job["path"]?.ToString();
             if (string.IsNullOrEmpty(path))
                 path = PackageName.Parse(name).GetPath(nativeId);
 
             var hash = job["sha1"] ?? job["checksums"]?[0];
 
-            var sizestr = job["size"]?.ToString();
-            long size = 0;
-            long.TryParse(sizestr, out size);
+            string sizestr = job["size"]?.ToString();
+            long.TryParse(sizestr, out long size);
 
             return new MLibrary
             {

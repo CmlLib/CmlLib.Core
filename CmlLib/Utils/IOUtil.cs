@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CmlLib.Utils
 {
-    static class IOUtil
+    internal static class IOUtil
     {
         private const int DefaultBufferSize = 4096;
 
@@ -41,7 +41,7 @@ namespace CmlLib.Utils
             return string.Join(Path.PathSeparator.ToString(),
                 paths.Select(x =>
                 {
-                    var path = Path.GetFullPath(x);
+                    string path = Path.GetFullPath(x);
                     if (path.Contains(' '))
                         return "\"" + path + "\"";
                     else
@@ -185,19 +185,19 @@ namespace CmlLib.Utils
         private static extern int chmod(string pathname, int mode);
 
         // user permissions
-        const int S_IRUSR = 0x100;
-        const int S_IWUSR = 0x80;
-        const int S_IXUSR = 0x40;
+        private const int S_IRUSR = 0x100;
+        private const int S_IWUSR = 0x80;
+        private const int S_IXUSR = 0x40;
 
         // group permission
-        const int S_IRGRP = 0x20;
-        const int S_IWGRP = 0x10;
-        const int S_IXGRP = 0x8;
+        private const int S_IRGRP = 0x20;
+        private const int S_IWGRP = 0x10;
+        private const int S_IXGRP = 0x8;
 
         // other permissions
-        const int S_IROTH = 0x4;
-        const int S_IWOTH = 0x2;
-        const int S_IXOTH = 0x1;
+        private const int S_IROTH = 0x4;
+        private const int S_IWOTH = 0x2;
+        private const int S_IXOTH = 0x1;
 
         public const int Chmod755 = S_IRUSR | S_IXUSR | S_IWUSR
                             | S_IRGRP | S_IXGRP

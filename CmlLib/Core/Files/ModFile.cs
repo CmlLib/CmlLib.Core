@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace CmlLib.Core.Files
+﻿namespace CmlLib.Core.Files
 {
     public class ModFile
     {

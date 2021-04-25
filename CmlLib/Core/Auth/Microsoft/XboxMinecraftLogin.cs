@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Net;
-using System.IO;
+﻿using CmlLib.Core.Mojang;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using CmlLib.Core.Mojang;
+using System;
+using System.IO;
+using System.Net;
 
 namespace CmlLib.Core.Auth.Microsoft
 {
@@ -15,8 +12,8 @@ namespace CmlLib.Core.Auth.Microsoft
 
         private void writeReq(WebRequest req, string data)
         {
-            using(var reqStream = req.GetRequestStream())
-            using(var sw = new StreamWriter(reqStream))
+            using (var reqStream = req.GetRequestStream())
+            using (var sw = new StreamWriter(reqStream))
             {
                 sw.Write(data);
             }

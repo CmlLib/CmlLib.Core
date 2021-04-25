@@ -1,22 +1,20 @@
-﻿using CmlLib.Utils;
+﻿using CmlLib.Core.Downloader;
+using CmlLib.Core.Version;
+using CmlLib.Utils;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using CmlLib.Core.Version;
 using System.Threading;
-using CmlLib.Core.Downloader;
+using System.Threading.Tasks;
 
 namespace CmlLib.Core.Files
 {
     public sealed class AssetChecker : IFileChecker
     {
-        IProgress<DownloadFileChangedEventArgs> pChangeFile;
+        private IProgress<DownloadFileChangedEventArgs> pChangeFile;
         public event DownloadFileChangedHandler ChangeFile;
 
         private string assetServer = MojangServer.ResourceDownload;
@@ -52,23 +50,23 @@ namespace CmlLib.Core.Files
             string index = path.GetIndexFilePath(version.AssetId);
 
             if (!string.IsNullOrEmpty(version.AssetUrl))
-            if (!await IOUtil.CheckFileValidationAsync(index, version.AssetHash, CheckHash))
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(index));
-
-                using (var wc = new WebClient())
+                if (!await IOUtil.CheckFileValidationAsync(index, version.AssetHash, CheckHash))
                 {
-                    await wc.DownloadFileTaskAsync(version.AssetUrl, index);
+                    Directory.CreateDirectory(Path.GetDirectoryName(index));
+
+                    using (var wc = new WebClient())
+                    {
+                        await wc.DownloadFileTaskAsync(version.AssetUrl, index);
+                    }
                 }
-            }
         }
 
         public async Task<JObject> ReadIndexAsync(MinecraftPath path, MVersion version)
         {
-            var indexpath = path.GetIndexFilePath(version.AssetId);
+            string indexpath = path.GetIndexFilePath(version.AssetId);
             if (!File.Exists(indexpath)) return null;
 
-            var json = await IOUtil.ReadFileAsync(indexpath);
+            string json = await IOUtil.ReadFileAsync(indexpath);
             var index = JObject.Parse(json);
 
             return index;
@@ -77,12 +75,12 @@ namespace CmlLib.Core.Files
         [MethodTimer.Time]
         public async Task<DownloadFile[]> CheckAssetFiles(MinecraftPath path, MVersion version)
         {
-            var index = await ReadIndexAsync(path, version);
+            JObject index = await ReadIndexAsync(path, version);
             if (index == null)
                 return null;
 
-            var isVirtual = checkJsonTrue(index["virtual"]); // check virtual
-            var mapResource = checkJsonTrue(index["map_to_resources"]); // check map_to_resources
+            bool isVirtual = checkJsonTrue(index["virtual"]); // check virtual
+            bool mapResource = checkJsonTrue(index["map_to_resources"]); // check map_to_resources
 
             var list = (JObject)index["objects"];
             var downloadRequiredFiles = new List<DownloadFile>(list.Count);
@@ -110,13 +108,12 @@ namespace CmlLib.Core.Files
         private DownloadFile CheckAssetFile(string key, JToken job, MinecraftPath path, MVersion version, bool isVirtual, bool mapResource)
         {
             // download hash resource
-            var hash = job["hash"]?.ToString();
-            var hashName = hash.Substring(0, 2) + "/" + hash;
-            var hashPath = Path.Combine(path.GetAssetObjectPath(version.AssetId), hashName);
+            string hash = job["hash"]?.ToString();
+            string hashName = hash.Substring(0, 2) + "/" + hash;
+            string hashPath = Path.Combine(path.GetAssetObjectPath(version.AssetId), hashName);
 
-            var sizestr = job["size"]?.ToString();
-            long size = 0;
-            long.TryParse(sizestr, out size);
+            string sizestr = job["size"]?.ToString();
+            long.TryParse(sizestr, out long size);
 
             var afterDownload = new List<Func<Task>>(1);
 
@@ -124,7 +121,7 @@ namespace CmlLib.Core.Files
             {
                 afterDownload.Add(new Func<Task>(async () =>
                 {
-                    var resPath = Path.Combine(path.GetAssetLegacyPath(version.AssetId), key);
+                    string resPath = Path.Combine(path.GetAssetLegacyPath(version.AssetId), key);
                     if (!await IOUtil.CheckFileValidationAsync(resPath, hash, CheckHash))
                         await safeCopy(hashPath, resPath);
                 }));
@@ -134,7 +131,7 @@ namespace CmlLib.Core.Files
             {
                 afterDownload.Add(new Func<Task>(async () =>
                 {
-                    var resPath = Path.Combine(path.Resource, key);
+                    string resPath = Path.Combine(path.Resource, key);
                     if (!await IOUtil.CheckFileValidationAsync(resPath, hash, CheckHash))
                         await safeCopy(hashPath, resPath);
                 }));
@@ -142,7 +139,7 @@ namespace CmlLib.Core.Files
 
             if (!IOUtil.CheckFileValidation(hashPath, hash, CheckHash))
             {
-                var hashUrl = AssetServer + hashName;
+                string hashUrl = AssetServer + hashName;
                 return new DownloadFile
                 {
                     Type = MFile.Resource,
@@ -167,13 +164,12 @@ namespace CmlLib.Core.Files
         private void fireDownloadFileChangedEvent(MFile file, string name, int totalFiles, int progressedFiles)
         {
             var e = new DownloadFileChangedEventArgs(file, name, totalFiles, progressedFiles);
-            //ChangeFile?.Invoke(e);
             pChangeFile.Report(e);
         }
 
         private bool checkJsonTrue(JToken j)
         {
-            var str = j?.ToString()?.ToLower();
+            string str = j?.ToString()?.ToLower();
             if (str != null && str == "true")
                 return true;
             else

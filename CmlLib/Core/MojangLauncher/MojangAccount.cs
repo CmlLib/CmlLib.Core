@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using CmlLib.Core.Auth;
+﻿using CmlLib.Core.Auth;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
 
 namespace CmlLib.Core.MojangLauncher
 {
@@ -33,10 +32,10 @@ namespace CmlLib.Core.MojangLauncher
         [JsonProperty("minecraftProfile")]
         public JObject MinecraftProfile { get; set; }
 
-        public string MinecraftProfileId 
+        public string MinecraftProfileId
             => MinecraftProfile?["id"]?.ToString();
 
-        public string MinecraftProfileName 
+        public string MinecraftProfileName
             => MinecraftProfile?["name"]?.ToString();
 
         [JsonProperty("persistent")]

@@ -1,10 +1,8 @@
-﻿using System;
+﻿using CmlLib.Core.Version;
+using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
-using CmlLib.Core.Version;
-using Newtonsoft.Json.Linq;
 
 namespace CmlLib.Core.VersionLoader.FabricMC
 {
@@ -26,8 +24,8 @@ namespace CmlLib.Core.VersionLoader.FabricMC
                 LoaderVersion = loaders[0].Version;
             }
 
-            var url = "https://meta.fabricmc.net/v2/versions/game/intermediary";
-            var res = "";
+            string url = "https://meta.fabricmc.net/v2/versions/game/intermediary";
+            string res = "";
             using (var wc = new WebClient())
             {
                 res = wc.DownloadString(url);
@@ -45,8 +43,8 @@ namespace CmlLib.Core.VersionLoader.FabricMC
                 LoaderVersion = loaders[0].Version;
             }
 
-            var url = "https://meta.fabricmc.net/v2/versions/game/intermediary";
-            var res = "";
+            string url = "https://meta.fabricmc.net/v2/versions/game/intermediary";
+            string res = "";
             using (var wc = new WebClient())
             {
                 res = await wc.DownloadStringTaskAsync(url);
@@ -63,8 +61,8 @@ namespace CmlLib.Core.VersionLoader.FabricMC
 
             foreach (var item in jarr)
             {
-                var versionName = item["version"]?.ToString();
-                var jsonUrl = $"{ApiServer}/v2/versions/loader/{versionName}/{loader}/profile/json";
+                string versionName = item["version"]?.ToString();
+                string jsonUrl = $"{ApiServer}/v2/versions/loader/{versionName}/{loader}/profile/json";
 
                 var versionMetadata = new MVersionMetadata
                 {
@@ -82,7 +80,7 @@ namespace CmlLib.Core.VersionLoader.FabricMC
 
         public async Task<FabricLoader[]> GetFabricLoaders()
         {
-            var res = "";
+            string res = "";
             using (var wc = new WebClient())
             {
                 res = await wc.DownloadStringTaskAsync(ApiServer + "/v2/versions/loader");

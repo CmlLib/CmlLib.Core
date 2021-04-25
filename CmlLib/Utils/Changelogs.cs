@@ -10,7 +10,7 @@ namespace CmlLib.Utils
     {
         private Changelogs() { }
 
-        private static Dictionary<string, string> changelogUrls = new Dictionary<string, string>
+        private static readonly Dictionary<string, string> changelogUrls = new Dictionary<string, string>
         {
             { "1.13",   "https://feedback.minecraft.net/hc/en-us/articles/360007323492-Minecraft-Java-Edition-1-13-Update-Aquatic-" },
             { "1.14.2", "https://feedback.minecraft.net/hc/en-us/articles/360028919851-Minecraft-Java-Edition-1-14-2" },
@@ -36,21 +36,19 @@ namespace CmlLib.Utils
                 return null;
         }
 
-        static Regex articleRegex = new Regex("<article class=\\\"article\\\">(.*)<\\/article>", RegexOptions.Singleline);
+        private static readonly Regex articleRegex = new Regex("<article class=\\\"article\\\">(.*)<\\/article>", RegexOptions.Singleline);
 
         public static string GetChangelogHtml(string version)
         {
-            var url = GetChangelogUrl(version);
+            string url = GetChangelogUrl(version);
             if (string.IsNullOrEmpty(url))
                 return "";
 
-            var html = "";
+            string html = "";
             using (var wc = new WebClient())
             {
                 html = Encoding.UTF8.GetString(wc.DownloadData(url));
             }
-
-            //System.IO.File.WriteAllText("test.txt", html);
 
             var regResult = articleRegex.Match(html);
             if (!regResult.Success)

@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace CmlLib.Core
 {
-    public class MRule
+    public static class MRule
     {
         static MRule()
         {
@@ -51,8 +51,8 @@ namespace CmlLib.Core
 
             foreach (JObject job in arr)
             {
-                var action = true; // true : "allow", false : "disallow"
-                var containCurrentOS = true; // if 'os' JArray contains current os name
+                bool action = true; // true : "allow", false : "disallow"
+                bool containCurrentOS = true; // if 'os' JArray contains current os name
 
                 foreach (var item in job)
                 {
@@ -75,7 +75,7 @@ namespace CmlLib.Core
             return require;
         }
 
-        static bool checkOSContains(JObject job)
+        private static bool checkOSContains(JObject job)
         {
             foreach (var os in job)
             {

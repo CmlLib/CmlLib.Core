@@ -4,11 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Text;
 
 namespace CmlLib.Core.Version
 {
-    public class MVersionParser
+    public static class MVersionParser
     {
         public static MVersion Parse(MVersionMetadata info)
         {
@@ -43,7 +42,7 @@ namespace CmlLib.Core.Version
                     using (var wc = new WebClient())
                     {
                         json = wc.DownloadString(info.Path);
-                        var path = savePath.GetVersionJsonPath(info.Name);
+                        string path = savePath.GetVersionJsonPath(info.Name);
                         Directory.CreateDirectory(Path.GetDirectoryName(path));
                         File.WriteAllText(path, json);
 
@@ -62,7 +61,7 @@ namespace CmlLib.Core.Version
 
         public static MVersion ParseFromFile(string path)
         {
-            var json = File.ReadAllText(path);
+            string json = File.ReadAllText(path);
             return ParseFromJson(json);
         }
 
@@ -155,7 +154,7 @@ namespace CmlLib.Core.Version
             }
         }
 
-        static string[] argParse(JArray arr)
+        private static string[] argParse(JArray arr)
         {
             var strList = new List<string>(arr.Count);
 
@@ -190,7 +189,7 @@ namespace CmlLib.Core.Version
             return strList.ToArray();
         }
 
-        static string n(string t) // handle null string
+        private static string n(string t) // handle null string
         {
             return t == null ? "" : t;
         }

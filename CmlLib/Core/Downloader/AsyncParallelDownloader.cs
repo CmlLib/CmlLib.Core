@@ -15,18 +15,18 @@ namespace CmlLib.Core.Downloader
         public int MaxThread { get; private set; }
         public bool IgnoreInvalidFiles { get; set; } = true;
 
-        int totalFiles = 0;
-        int progressedFiles = 0;
+        private int totalFiles = 0;
+        private int progressedFiles = 0;
 
-        long totalBytes = 0;
-        long receivedBytes = 0;
+        private long totalBytes = 0;
+        private long receivedBytes = 0;
 
-        readonly object progressEventLock = new object();
+        private readonly object progressEventLock = new object();
 
-        bool isRunning = false;
+        private bool isRunning = false;
 
-        IProgress<FileProgressChangedEventArgs> pChangeProgress;
-        IProgress<DownloadFileChangedEventArgs> pChangeFile;
+        private IProgress<FileProgressChangedEventArgs> pChangeProgress;
+        private IProgress<DownloadFileChangedEventArgs> pChangeFile;
 
         public AsyncParallelDownloader() : this(10)
         {
@@ -57,7 +57,7 @@ namespace CmlLib.Core.Downloader
             pChangeProgress = new Progress<FileProgressChangedEventArgs>(
                 (e) => ChangeProgress?.Invoke(this, e));
 
-            foreach (var item in files)
+            foreach (DownloadFile item in files)
             {
                 if (item.Size > 0)
                     totalBytes += item.Size;
@@ -71,10 +71,10 @@ namespace CmlLib.Core.Downloader
         private async Task ForEachAsyncSemaphore<T>(IEnumerable<T> source,
     int degreeOfParallelism, Func<T, Task> body)
         {
-            var tasks = new List<Task>();
-            using (var throttler = new SemaphoreSlim(degreeOfParallelism))
+            List<Task> tasks = new List<Task>();
+            using (SemaphoreSlim throttler = new SemaphoreSlim(degreeOfParallelism))
             {
-                foreach (var element in source)
+                foreach (T element in source)
                 {
                     await throttler.WaitAsync();
                     tasks.Add(Task.Run(async () =>
@@ -110,10 +110,10 @@ namespace CmlLib.Core.Downloader
         {
             try
             {
-                var downloader = new WebDownload();
+                WebDownload downloader = new WebDownload();
                 downloader.FileDownloadProgressChanged += Downloader_FileDownloadProgressChanged;
 
-                var downloadTask = downloader.DownloadFileAsync(file);
+                Task downloadTask = downloader.DownloadFileAsync(file);
 
                 fireDownloadFileChangedProgress(file.Type, file.Name, totalFiles, progressedFiles);
                 await downloadTask;

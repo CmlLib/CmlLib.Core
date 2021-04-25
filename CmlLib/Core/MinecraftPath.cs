@@ -91,7 +91,7 @@ namespace CmlLib.Core
 
         protected static string Dir(string path)
         {
-            var p = NormalizePath(path);
+            string p = NormalizePath(path);
             if (!Directory.Exists(p))
                 Directory.CreateDirectory(p);
 

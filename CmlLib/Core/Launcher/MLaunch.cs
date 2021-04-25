@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 
 namespace CmlLib.Core
 {
@@ -30,7 +28,7 @@ namespace CmlLib.Core
             this.MinecraftPath = option.Path;
         }
 
-        MinecraftPath MinecraftPath;
+        private readonly MinecraftPath MinecraftPath;
         public MLaunchOption LaunchOption { get; private set; }
 
         /// <summary>
@@ -157,7 +155,7 @@ namespace CmlLib.Core
         }
 
         // if input1 is null, return input2
-        string useNotNull(string input1, string input2)
+        private string useNotNull(string input1, string input2)
         {
             if (string.IsNullOrEmpty(input1))
                 return input2;
@@ -165,7 +163,7 @@ namespace CmlLib.Core
                 return input1;
         }
 
-        string handleEmpty(string input)
+        private string handleEmpty(string input)
         {
             if (input.Contains(" "))
                 return "\"" + input + "\"";

@@ -1,11 +1,7 @@
-﻿using CmlLib.Utils;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
+﻿using CmlLib.Core.Downloader;
 using CmlLib.Core.Version;
-using CmlLib.Core.Downloader;
+using CmlLib.Utils;
+using System.Threading.Tasks;
 
 namespace CmlLib.Core.Files
 {
@@ -18,7 +14,7 @@ namespace CmlLib.Core.Files
         public DownloadFile[] CheckFiles(MinecraftPath path, MVersion version)
         {
             ChangeFile?.Invoke(new DownloadFileChangedEventArgs(MFile.Minecraft, version.Jar, 1, 0));
-            var result = CheckClientFile(path, version);
+            DownloadFile result = CheckClientFile(path, version);
             ChangeFile?.Invoke(new DownloadFileChangedEventArgs(MFile.Minecraft, version.Jar, 1, 1));
 
             if (result == null)
@@ -30,7 +26,7 @@ namespace CmlLib.Core.Files
         public async Task<DownloadFile[]> CheckFilesTaskAsync(MinecraftPath path, MVersion version)
         {
             ChangeFile?.Invoke(new DownloadFileChangedEventArgs(MFile.Minecraft, version.Jar, 1, 0));
-            var result = await Task.Run(() => CheckClientFile(path, version));
+            DownloadFile result = await Task.Run(() => CheckClientFile(path, version));
             ChangeFile?.Invoke(new DownloadFileChangedEventArgs(MFile.Minecraft, version.Jar, 1, 1));
 
             if (result == null)

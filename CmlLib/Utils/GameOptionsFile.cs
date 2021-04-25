@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace CmlLib.Utils
 {
     public static class GameOptionsFile
     {
-        public const int MaxOptionFileLength = 1024 * 1024; // 1MB
+        public static readonly int MaxOptionFileLength = 1024 * 1024; // 1MB
 
         public static Dictionary<string, string> ReadFile(string filepath)
         {
@@ -73,7 +72,7 @@ namespace CmlLib.Utils
             return value;
         }
 
-        public static string ToKeyValueString(string key, string value, bool useHandleEmpty=true)
+        public static string ToKeyValueString(string key, string value, bool useHandleEmpty = true)
         {
             if (useHandleEmpty)
                 value = handleEmpty(value);

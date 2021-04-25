@@ -1,10 +1,5 @@
 ﻿using CmlLib.Core.Files;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net;
 
 namespace CmlLib.Core.Version
 {
@@ -89,7 +84,7 @@ namespace CmlLib.Core.Version
             }
         }
 
-        static bool nc(string t) // check null string
+        private static bool nc(string t) // check null string
         {
             return t == null || t == "";
         }

@@ -1,8 +1,6 @@
 ﻿using CmlLib.Core.Version;
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CmlLib.Core.VersionLoader
@@ -14,7 +12,7 @@ namespace CmlLib.Core.VersionLoader
             MinecraftPath = path;
         }
 
-        readonly MinecraftPath MinecraftPath;
+        private readonly MinecraftPath MinecraftPath;
 
         public MVersionCollection GetVersionMetadatas()
         {

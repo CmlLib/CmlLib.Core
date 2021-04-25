@@ -149,7 +149,7 @@ namespace CmlLibCoreSample
 
         async Task StartAsync(MSession session)
         {
-            await IOUtil.CopyFileAsync("sounds.json", "new.json");
+            //await IOUtil.CopyFileAsync("sounds.json", "new.json");
 
             var path = MinecraftPath.GetOSDefaultPath();
             var game = new MinecraftPath(path);

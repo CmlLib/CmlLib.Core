@@ -1,8 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
-using System.Text;
 using System.Net;
-using Newtonsoft.Json.Linq;
 
 namespace CmlLib.Core.Mojang
 {
@@ -13,7 +11,7 @@ namespace CmlLib.Core.Mojang
         public static MojangServerStatus GetStatus()
         {
             // request
-            var response = "";
+            string response;
             using (var wc = new WebClient())
             {
                 response = wc.DownloadString("https://status.mojang.com/check");
@@ -25,7 +23,7 @@ namespace CmlLib.Core.Mojang
             foreach (JObject item in jarr)
             {
                 var property = item.First as JProperty;
-                var color = ToStatusColor(property.Value.ToString());
+                ServerStatusColor color = ToStatusColor(property.Value.ToString());
                 dict.Add(property.Name, color);
             }
 

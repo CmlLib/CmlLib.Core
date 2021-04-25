@@ -1,12 +1,11 @@
-﻿using CmlLib.Utils;
+﻿using CmlLib.Core.Downloader;
+using CmlLib.Core.Version;
+using CmlLib.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using CmlLib.Core.Version;
-using CmlLib.Core.Downloader;
 
 namespace CmlLib.Core.Files
 {

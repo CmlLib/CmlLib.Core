@@ -1,25 +1,24 @@
-﻿using CmlLib.Utils;
+﻿using CmlLib.Core.Downloader;
+using CmlLib.Core.Version;
+using CmlLib.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CmlLib.Core.Version;
 using System.Threading;
-using CmlLib.Core.Downloader;
+using System.Threading.Tasks;
 
 namespace CmlLib.Core.Files
 {
     public sealed class LibraryChecker : IFileChecker
     {
-        IProgress<DownloadFileChangedEventArgs> pChangeFile;
+        private IProgress<DownloadFileChangedEventArgs> pChangeFile;
         public event DownloadFileChangedHandler ChangeFile;
 
         private string libServer = MojangServer.Library;
         public string LibraryServer
-        { 
-            get => libServer; 
+        {
+            get => libServer;
             set
             {
                 if (value.Last() == '/')
@@ -68,7 +67,7 @@ namespace CmlLib.Core.Files
             var files = new List<DownloadFile>(libs.Length);
             foreach (MLibrary library in libs)
             {
-                var downloadRequire = await CheckDownloadRequireAsync(path, library);
+                bool downloadRequire = await CheckDownloadRequireAsync(path, library);
 
                 pChangeFile.Report(new DownloadFileChangedEventArgs(
                     MFile.Library, library.Name, libs.Length, progressed));
@@ -97,7 +96,7 @@ namespace CmlLib.Core.Files
 
         private string CreateDownloadUrl(MLibrary lib)
         {
-            var url = lib.Url;
+            string url = lib.Url;
 
             if (url == null)
                 url = LibraryServer + lib.Path;

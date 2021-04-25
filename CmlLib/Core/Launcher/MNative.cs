@@ -1,6 +1,5 @@
 ﻿using CmlLib.Core.Version;
 using CmlLib.Utils;
-using System;
 using System.IO;
 
 namespace CmlLib.Core
@@ -13,12 +12,12 @@ namespace CmlLib.Core
             gamePath = _path;
         }
 
-        readonly MVersion version;
-        readonly MinecraftPath gamePath;
+        private readonly MVersion version;
+        private readonly MinecraftPath gamePath;
 
         public string ExtractNatives()
         {
-            var path = gamePath.GetNativePath(version.Id);
+            string path = gamePath.GetNativePath(version.Id);
             Directory.CreateDirectory(path);
 
             foreach (var item in version.Libraries)
@@ -27,7 +26,7 @@ namespace CmlLib.Core
                 {
                     if (item.IsRequire && item.IsNative)
                     {
-                        var zPath = Path.Combine(gamePath.Library, item.Path);
+                        string zPath = Path.Combine(gamePath.Library, item.Path);
                         if (File.Exists(zPath))
                         {
                             var z = new SharpZip(zPath);
@@ -49,7 +48,7 @@ namespace CmlLib.Core
 
             try
             {
-                var path = gamePath.GetNativePath(version.Id);
+                string path = gamePath.GetNativePath(version.Id);
                 DirectoryInfo di = new DirectoryInfo(path);
 
                 if (!di.Exists)
@@ -60,7 +59,7 @@ namespace CmlLib.Core
                     item.Delete();
                 }
             }
-            catch 
+            catch
             {
                 // ignore exception
                 // will be overwriten to new file

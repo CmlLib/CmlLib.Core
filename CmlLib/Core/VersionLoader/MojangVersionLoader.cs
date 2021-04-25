@@ -1,9 +1,7 @@
 ﻿using CmlLib.Core.Version;
 using Newtonsoft.Json.Linq;
-using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CmlLib.Core.VersionLoader
@@ -23,7 +21,7 @@ namespace CmlLib.Core.VersionLoader
         {
             using (var wc = new WebClient())
             {
-                var res = await wc.DownloadStringTaskAsync(MojangServer.Version);
+                string res = await wc.DownloadStringTaskAsync(MojangServer.Version);
                 return parseList(res);
             }
         }
@@ -47,8 +45,8 @@ namespace CmlLib.Core.VersionLoader
                 latestSnapshotId = latest["snapshot"]?.ToString();
             }
 
-            var checkLatestRelease = !string.IsNullOrEmpty(latestReleaseId);
-            var checkLatestSnapshot = !string.IsNullOrEmpty(latestSnapshotId);
+            bool checkLatestRelease = !string.IsNullOrEmpty(latestReleaseId);
+            bool checkLatestSnapshot = !string.IsNullOrEmpty(latestSnapshotId);
 
             var arr = new List<MVersionMetadata>(jarr.Count);
             for (int i = 0; i < jarr.Count; i++)

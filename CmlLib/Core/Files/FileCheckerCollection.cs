@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 
 namespace CmlLib.Core.Files
 {
@@ -9,7 +8,7 @@ namespace CmlLib.Core.Files
     {
         public IFileChecker this[int index] => checkers[index];
 
-        private List<IFileChecker> checkers;
+        private readonly List<IFileChecker> checkers;
 
         private AssetChecker _asset = new AssetChecker();
         public AssetChecker AssetFileChecker
@@ -49,7 +48,7 @@ namespace CmlLib.Core.Files
                 _library = value;
 
                 if (_library != null)
-                checkers.Add(_library);
+                    checkers.Add(_library);
             }
         }
 
@@ -57,7 +56,7 @@ namespace CmlLib.Core.Files
         {
             checkers = new List<IFileChecker>(3);
 
-            checkers.AddRange(new IFileChecker[] 
+            checkers.AddRange(new IFileChecker[]
             {
                 LibraryFileChecker, AssetFileChecker, ClientFileChecker
             });
@@ -71,7 +70,7 @@ namespace CmlLib.Core.Files
 
         public void AddRange(IEnumerable<IFileChecker> items)
         {
-            foreach (var item in items)
+            foreach (IFileChecker item in items)
             {
                 Add(item);
             }

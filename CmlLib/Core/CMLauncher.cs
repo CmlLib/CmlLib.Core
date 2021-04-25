@@ -1,17 +1,13 @@
-using CmlLib.Core;
-using CmlLib.Utils;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.ComponentModel;
-using System.Linq;
-using System.Diagnostics;
-using CmlLib.Core.Installer;
+using CmlLib.Core.Downloader;
 using CmlLib.Core.Files;
-using System.Threading.Tasks;
+using CmlLib.Core.Installer;
 using CmlLib.Core.Version;
 using CmlLib.Core.VersionLoader;
-using CmlLib.Core.Downloader;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace CmlLib.Core
 {
@@ -40,7 +36,7 @@ namespace CmlLib.Core
         public IVersionLoader VersionLoader { get; set; }
         public FileCheckerCollection GameFileCheckers { get; private set; }
 
-        IDownloader _fileDownloader;
+        private IDownloader _fileDownloader;
         public IDownloader FileDownloader
         {
             get => _fileDownloader;

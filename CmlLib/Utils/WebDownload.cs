@@ -3,14 +3,13 @@ using System;
 using System.ComponentModel;
 using System.IO;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace CmlLib.Utils
 {
-    class WebDownload
+    internal class WebDownload
     {
-        static int DefaultBufferSize = 1024 * 64; // 64kb
+        private static readonly int DefaultBufferSize = 1024 * 64; // 64kb
 
         public event EventHandler<FileDownloadProgress> FileDownloadProgressChanged;
         public event ProgressChangedEventHandler DownloadProgressChangedEvent;
@@ -43,7 +42,6 @@ namespace CmlLib.Utils
                 }
             }
 
-            buffer = null;
             webStream.Dispose(); // Close streams
             fileStream.Dispose();
         }
@@ -96,7 +94,7 @@ namespace CmlLib.Utils
             req.ReadWriteTimeout = 5000;
             req.ContinueTimeout = 5000;
             var res = await req.GetResponseAsync();
-            
+
             using (var httpStream = res.GetResponseStream())
             using (var fs = File.OpenWrite(path))
             {
@@ -104,7 +102,7 @@ namespace CmlLib.Utils
             }
         }
 
-        void ProgressChanged(long value, long max)
+        private void ProgressChanged(long value, long max)
         {
             var percentage = (float)value / max * 100;
 

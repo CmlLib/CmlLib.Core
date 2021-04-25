@@ -14,7 +14,7 @@ namespace CmlLib.Core
             if (spliter.Length < 3)
                 throw new ArgumentException("invalid name");
 
-            var pn = new PackageName();
+            PackageName pn = new PackageName();
             pn.names = spliter;
 
             return pn;
@@ -51,7 +51,7 @@ namespace CmlLib.Core
             // [net.minecraft:client:1.16.2-20200812.004259:slim]
             // /libraries\net\minecraft\client\1.16.2-20200812.004259\client-1.16.2-20200812.004259-slim.jar
 
-            var filename = string.Join("-", names, 1, names.Length - 1);
+            string filename = string.Join("-", names, 1, names.Length - 1);
 
             if (!string.IsNullOrEmpty(nativeId))
                 filename += "-" + nativeId;
@@ -62,7 +62,7 @@ namespace CmlLib.Core
 
         public string GetDirectory()
         {
-            var dir = Package.Replace(".", "/");
+            string dir = Package.Replace(".", "/");
             return Path.Combine(dir, Name, Version);
         }
 

@@ -1,12 +1,10 @@
 ﻿using ICSharpCode.SharpZipLib.Zip;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace CmlLib.Utils
 {
-    class SharpZip
+    internal class SharpZip
     {
         public SharpZip(string path)
         {
@@ -46,13 +44,14 @@ namespace CmlLib.Utils
             }
         }
 
-        int previousPerc = 0;
-        void ev(long curr, long total)
+        private int previousPerc = 0;
+
+        private void ev(long curr, long total)
         {
             if (ProgressEvent == null)
                 return;
 
-            var progress = (int)((double)curr / (double)total * 100);
+            int progress = (int)(curr / (double)total * 100);
             if (previousPerc != progress)
             {
                 previousPerc = progress;

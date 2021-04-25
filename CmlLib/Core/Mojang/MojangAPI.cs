@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Net;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.IO;
-using Newtonsoft.Json.Linq;
+using System.Net;
+using System.Text;
 
 namespace CmlLib.Core.Mojang
 {
@@ -11,7 +10,7 @@ namespace CmlLib.Core.Mojang
     // https://github.com/CmlLib/MojangAPI
 
     [Obsolete("use MojangAPI library: https://github.com/CmlLib/MojangAPI")]
-    public class MojangAPI
+    public static class MojangAPI
     {
         private static void writeReq(WebRequest req, string data)
         {

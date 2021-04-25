@@ -30,7 +30,7 @@
 
         public static string ToString(MVersionType type)
         {
-            var c = "";
+            string c = "";
 
             switch (type)
             {

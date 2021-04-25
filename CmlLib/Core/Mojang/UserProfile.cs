@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace CmlLib.Core.Mojang
+﻿namespace CmlLib.Core.Mojang
 {
     public class UserProfile
     {

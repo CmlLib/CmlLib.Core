@@ -1,8 +1,6 @@
 ﻿using CmlLib.Utils;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,10 +15,9 @@ namespace CmlLib.Core.Downloader
         public int MaxThread { get; set; } = 10;
         public bool IgnoreInvalidFiles { get; set; } = true;
 
-        int total = 0;
-        int progressed = 0;
-
-        bool isRunning = false;
+        private int total = 0;
+        private int progressed = 0;
+        private bool isRunning = false;
 
         public Task DownloadFiles(DownloadFile[] files)
         {
@@ -45,7 +42,7 @@ namespace CmlLib.Core.Downloader
         {
             try
             {
-                var downloader = new WebDownload();
+                WebDownload downloader = new WebDownload();
                 downloader.DownloadFileLimit(file.Url, file.Path);
 
                 if (file.AfterDownload != null)
@@ -78,14 +75,14 @@ namespace CmlLib.Core.Downloader
                 if (failedCount > 2)
                     return false;
 
-                var downloader = new WebDownload();
+                WebDownload downloader = new WebDownload();
                 Console.WriteLine("start " + file.Name);
                 downloader.DownloadFileLimit(file.Url, file.Path);
                 Console.WriteLine("end " + file.Name);
 
                 Interlocked.Increment(ref progressed);
 
-                var ev = Task.Run(() =>
+                Task ev = Task.Run(() =>
                 {
                     fireDownloadFileChangedEvent(file.Type, file.Name, total, progressed);
                 });

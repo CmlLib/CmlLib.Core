@@ -3,7 +3,7 @@ using System.IO;
 
 namespace CmlLib.Utils
 {
-    static class SevenZipWrapper
+    internal static class SevenZipWrapper
     {
         public static void DecompressFileLZMA(string inFile, string outFile)
         {
