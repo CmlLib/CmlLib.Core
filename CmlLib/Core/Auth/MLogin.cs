@@ -55,13 +55,13 @@ namespace CmlLib.Core.Auth
         {
             if (File.Exists(SessionCacheFilePath))
             {
-                var filedata = File.ReadAllText(SessionCacheFilePath, Encoding.UTF8);
+                var fileData = File.ReadAllText(SessionCacheFilePath, Encoding.UTF8);
                 try
                 {
-                    var session = JsonConvert.DeserializeObject<MSession>(filedata, new JsonSerializerSettings
+                    var session = JsonConvert.DeserializeObject<MSession>(fileData, new JsonSerializerSettings
                     {
                         NullValueHandling = NullValueHandling.Ignore
-                    });
+                    }) ?? new MSession();
 
                     if (SaveSession && string.IsNullOrEmpty(session.ClientToken))
                         session.ClientToken = CreateNewClientToken();
@@ -267,13 +267,10 @@ namespace CmlLib.Core.Auth
                 };
 
             HttpWebResponse resHeader = mojangRequest("validate", req.ToString());
-            using (StreamReader res = new StreamReader(resHeader.GetResponseStream()))
-            {
-                if (resHeader.StatusCode == HttpStatusCode.NoContent) // StatusCode == 204
-                    return new MLoginResponse(MLoginResult.Success, session, null, null);
-                else
-                    return new MLoginResponse(MLoginResult.NeedLogin, null, null, null);
-            }
+            if (resHeader.StatusCode == HttpStatusCode.NoContent) // StatusCode == 204
+                return new MLoginResponse(MLoginResult.Success, session, null, null);
+            else
+                return new MLoginResponse(MLoginResult.NeedLogin, null, null, null);
         }
 
         public void DeleteTokenFile()

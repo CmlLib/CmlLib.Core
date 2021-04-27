@@ -25,7 +25,7 @@ namespace CmlLib.Core.VersionLoader.FabricMC
             }
 
             string url = "https://meta.fabricmc.net/v2/versions/game/intermediary";
-            string res = "";
+            string res;
             using (var wc = new WebClient())
             {
                 res = wc.DownloadString(url);
@@ -44,7 +44,7 @@ namespace CmlLib.Core.VersionLoader.FabricMC
             }
 
             string url = "https://meta.fabricmc.net/v2/versions/game/intermediary";
-            string res = "";
+            string res;
             using (var wc = new WebClient())
             {
                 res = await wc.DownloadStringTaskAsync(url);
@@ -80,7 +80,7 @@ namespace CmlLib.Core.VersionLoader.FabricMC
 
         public async Task<FabricLoader[]> GetFabricLoaders()
         {
-            string res = "";
+            string res;
             using (var wc = new WebClient())
             {
                 res = await wc.DownloadStringTaskAsync(ApiServer + "/v2/versions/loader");

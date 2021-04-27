@@ -120,11 +120,11 @@ namespace CmlLib.Utils
             var kv = FromKeyValueString(keyvalue);
             var value = kv.Value;
             if (!value.StartsWith("[") || !value.EndsWith("]"))
-                return new KeyValuePair<string, string[]>(kv.Key, new string[] { value });
+                return new KeyValuePair<string, string[]>(kv.Key, new [] { value });
 
             var innerStr = value.Substring(1, value.Length - 2);
             if (!innerStr.Contains(","))
-                return new KeyValuePair<string, string[]>(kv.Key, new string[] { innerStr });
+                return new KeyValuePair<string, string[]>(kv.Key, new [] { innerStr });
 
             var arrStr = innerStr.Split(',');
             var arr = new List<string>(arrStr.Length);

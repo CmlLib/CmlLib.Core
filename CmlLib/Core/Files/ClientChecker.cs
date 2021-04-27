@@ -20,7 +20,7 @@ namespace CmlLib.Core.Files
             if (result == null)
                 return null;
             else
-                return new DownloadFile[] { result };
+                return new [] { result };
         }
 
         public async Task<DownloadFile[]> CheckFilesTaskAsync(MinecraftPath path, MVersion version)
@@ -32,7 +32,7 @@ namespace CmlLib.Core.Files
             if (result == null)
                 return null;
             else
-                return new DownloadFile[] { result };
+                return new [] { result };
         }
 
         private DownloadFile CheckClientFile(MinecraftPath path, MVersion version)

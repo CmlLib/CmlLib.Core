@@ -30,7 +30,7 @@
 
         public static string ToString(MVersionType type)
         {
-            string c = "";
+            string c;
 
             switch (type)
             {
@@ -46,7 +46,6 @@
                 case MVersionType.Release:
                     c = "release";
                     break;
-                case MVersionType.Custom:
                 default:
                     c = "unknown";
                     break;

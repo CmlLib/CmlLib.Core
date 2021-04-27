@@ -20,9 +20,13 @@ namespace CmlLib.Core.Mojang
             // to dict
             var jarr = JArray.Parse(response);
             var dict = new Dictionary<string, ServerStatusColor>();
-            foreach (JObject item in jarr)
+            foreach (var token in jarr)
             {
-                var property = item.First as JProperty;
+                var item = token as JObject;
+                var property = item?.First as JProperty;
+                if (property == null)
+                    continue;
+                
                 ServerStatusColor color = ToStatusColor(property.Value.ToString());
                 dict.Add(property.Name, color);
             }
@@ -45,8 +49,7 @@ namespace CmlLib.Core.Mojang
 
         private static ServerStatusColor getColorFromDict(Dictionary<string, ServerStatusColor> dict, string key)
         {
-            ServerStatusColor color;
-            var result = dict.TryGetValue(key, out color);
+            var result = dict.TryGetValue(key, out var color);
             if (result)
                 return color;
             else

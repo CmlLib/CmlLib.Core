@@ -115,8 +115,12 @@ namespace CmlLib.Core.Installer
 
         private string parseLauncherMetadata(string json)
         {
-            var job = JObject.Parse(json)[MRule.OSName];
-            var javaUrl = job[MRule.Arch]?["jre"]?["url"]?.ToString();
+            var javaUrl = JObject.Parse(json)
+                 [MRule.OSName]
+                ?[MRule.Arch]
+                ?["jre"]
+                ?["url"]
+                ?.ToString();
 
             if (string.IsNullOrEmpty(javaUrl))
                 throw new PlatformNotSupportedException("Downloading JRE on current OS is not supported. Set JavaPath manually.");

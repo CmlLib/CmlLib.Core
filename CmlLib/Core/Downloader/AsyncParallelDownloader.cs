@@ -52,7 +52,7 @@ namespace CmlLib.Core.Downloader
             receivedBytes = 0;
 
             pChangeFile = new Progress<DownloadFileChangedEventArgs>(
-                (e) => fireDownloadFileChangedEvent(e));
+                fireDownloadFileChangedEvent);
 
             pChangeProgress = new Progress<FileProgressChangedEventArgs>(
                 (e) => ChangeProgress?.Invoke(this, e));
@@ -74,7 +74,7 @@ namespace CmlLib.Core.Downloader
             List<Task> tasks = new List<Task>();
             using (SemaphoreSlim throttler = new SemaphoreSlim(degreeOfParallelism))
             {
-                foreach (T element in source)
+                foreach (var element in source)
                 {
                     await throttler.WaitAsync();
                     tasks.Add(Task.Run(async () =>
@@ -122,7 +122,8 @@ namespace CmlLib.Core.Downloader
                 {
                     foreach (var item in file.AfterDownload)
                     {
-                        await item?.Invoke();
+                        if (item != null)
+                            await item.Invoke();
                     }
                 }
 

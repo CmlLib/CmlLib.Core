@@ -33,10 +33,9 @@ namespace CmlLib.Core.VersionLoader
 
             MVersionMetadata latestRelease = null;
             MVersionMetadata latestSnapshot = null;
-
-            JArray jarr;
+            
             var jobj = JObject.Parse(res);
-            jarr = JArray.Parse(jobj["versions"].ToString());
+            var jarr = jobj["versions"] as JArray;
 
             var latest = jobj["latest"];
             if (latest != null)
@@ -48,18 +47,24 @@ namespace CmlLib.Core.VersionLoader
             bool checkLatestRelease = !string.IsNullOrEmpty(latestReleaseId);
             bool checkLatestSnapshot = !string.IsNullOrEmpty(latestSnapshotId);
 
-            var arr = new List<MVersionMetadata>(jarr.Count);
-            for (int i = 0; i < jarr.Count; i++)
+            var arr = new List<MVersionMetadata>(jarr?.Count ?? 0);
+            if (jarr != null)
             {
-                var obj = jarr[i].ToObject<MVersionMetadata>();
-                obj.IsLocalVersion = false;
-                obj.MType = MVersionTypeConverter.FromString(obj.Type);
-                arr.Add(obj);
+                foreach (var t in jarr)
+                {
+                    var obj = t.ToObject<MVersionMetadata>();
+                    if (obj == null)
+                        continue;
+                    
+                    obj.IsLocalVersion = false;
+                    obj.MType = MVersionTypeConverter.FromString(obj.Type);
+                    arr.Add(obj);
 
-                if (checkLatestRelease && obj.Name == latestReleaseId)
-                    latestRelease = obj;
-                if (checkLatestSnapshot && obj.Name == latestSnapshotId)
-                    latestSnapshot = obj;
+                    if (checkLatestRelease && obj.Name == latestReleaseId)
+                        latestRelease = obj;
+                    if (checkLatestSnapshot && obj.Name == latestSnapshotId)
+                        latestSnapshot = obj;
+                }
             }
 
             return new MVersionCollection(arr.ToArray(), null, latestRelease, latestSnapshot);

@@ -49,15 +49,19 @@ namespace CmlLib.Core
         {
             var require = true;
 
-            foreach (JObject job in arr)
+            foreach (var token in arr)
             {
+                var job = token as JObject;
+                if (job == null)
+                    continue;
+
                 bool action = true; // true : "allow", false : "disallow"
                 bool containCurrentOS = true; // if 'os' JArray contains current os name
 
                 foreach (var item in job)
                 {
                     if (item.Key == "action")
-                        action = (item.Value.ToString() == "allow" ? true : false);
+                        action = (item.Value?.ToString() == "allow");
                     else if (item.Key == "os")
                         containCurrentOS = checkOSContains((JObject)item.Value);
                     else if (item.Key == "features") // etc

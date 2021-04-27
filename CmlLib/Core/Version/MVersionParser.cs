@@ -43,7 +43,9 @@ namespace CmlLib.Core.Version
                     {
                         json = wc.DownloadString(info.Path);
                         string path = savePath.GetVersionJsonPath(info.Name);
-                        Directory.CreateDirectory(Path.GetDirectoryName(path));
+                        var directoryName = Path.GetDirectoryName(path);
+                        if (!string.IsNullOrEmpty((directoryName)))
+                            Directory.CreateDirectory(directoryName);
                         File.WriteAllText(path, json);
 
                         return ParseFromJson(json);
@@ -98,7 +100,9 @@ namespace CmlLib.Core.Version
                 }
 
                 // libraries
-                var libJArr = (JArray)job["libraries"];
+                var libJArr = job["libraries"] as JArray;
+                if (libJArr != null)
+                {
                 var libList = new List<MLibrary>(libJArr.Count);
                 var libParser = new MLibraryParser();
                 foreach (var item in libJArr)
@@ -108,6 +112,7 @@ namespace CmlLib.Core.Version
                         libList.AddRange(libs);
                 }
                 version.Libraries = libList.ToArray();
+                }
 
                 // mainClass
                 version.MainClass = n(job["mainClass"]?.ToString());
@@ -191,7 +196,7 @@ namespace CmlLib.Core.Version
 
         private static string n(string t) // handle null string
         {
-            return t == null ? "" : t;
+            return t ?? "";
         }
     }
 }

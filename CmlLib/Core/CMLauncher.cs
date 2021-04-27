@@ -185,8 +185,8 @@ namespace CmlLib.Core
         public async Task DownloadGameFiles(DownloadFile[] files)
         {
             if (this.FileDownloader == null)
-                throw new ArgumentNullException("this.FileDownloader");
-
+                throw new ArgumentNullException(nameof(this.FileDownloader));
+            
             await FileDownloader.DownloadFiles(files);
         }
 
@@ -197,7 +197,7 @@ namespace CmlLib.Core
 
         public async Task CheckAndDownloadAsync(MVersion version)
         {
-            foreach (IFileChecker checker in this.GameFileCheckers)
+            foreach (var checker in this.GameFileCheckers)
             {
                 checker.ChangeFile += fireFileChangeEvent;
 

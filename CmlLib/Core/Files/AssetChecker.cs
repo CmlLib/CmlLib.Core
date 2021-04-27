@@ -52,7 +52,9 @@ namespace CmlLib.Core.Files
             if (!string.IsNullOrEmpty(version.AssetUrl))
                 if (!await IOUtil.CheckFileValidationAsync(index, version.AssetHash, CheckHash))
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(index));
+                    var directoryName = Path.GetDirectoryName(index);
+                    if (!string.IsNullOrEmpty(directoryName))
+                        Directory.CreateDirectory(directoryName);
 
                     using (var wc = new WebClient())
                     {
@@ -82,7 +84,10 @@ namespace CmlLib.Core.Files
             bool isVirtual = checkJsonTrue(index["virtual"]); // check virtual
             bool mapResource = checkJsonTrue(index["map_to_resources"]); // check map_to_resources
 
-            var list = (JObject)index["objects"];
+            var list = index["objects"] as JObject;
+            if (list == null)
+                return null;
+
             var downloadRequiredFiles = new List<DownloadFile>(list.Count);
 
             int total = list.Count;
@@ -109,6 +114,9 @@ namespace CmlLib.Core.Files
         {
             // download hash resource
             string hash = job["hash"]?.ToString();
+            if (hash == null)
+                return null;
+
             string hashName = hash.Substring(0, 2) + "/" + hash;
             string hashPath = Path.Combine(path.GetAssetObjectPath(version.AssetId), hashName);
 
@@ -119,22 +127,22 @@ namespace CmlLib.Core.Files
 
             if (isVirtual)
             {
-                afterDownload.Add(new Func<Task>(async () =>
+                afterDownload.Add(async () =>
                 {
                     string resPath = Path.Combine(path.GetAssetLegacyPath(version.AssetId), key);
                     if (!await IOUtil.CheckFileValidationAsync(resPath, hash, CheckHash))
                         await safeCopy(hashPath, resPath);
-                }));
+                });
             }
 
             if (mapResource)
             {
-                afterDownload.Add(new Func<Task>(async () =>
+                afterDownload.Add(async () =>
                 {
                     string resPath = Path.Combine(path.Resource, key);
                     if (!await IOUtil.CheckFileValidationAsync(resPath, hash, CheckHash))
                         await safeCopy(hashPath, resPath);
-                }));
+                });
             }
 
             if (!IOUtil.CheckFileValidation(hashPath, hash, CheckHash))
@@ -169,7 +177,7 @@ namespace CmlLib.Core.Files
 
         private bool checkJsonTrue(JToken j)
         {
-            string str = j?.ToString()?.ToLower();
+            string str = j?.ToString().ToLowerInvariant();
             if (str != null && str == "true")
                 return true;
             else
@@ -180,7 +188,11 @@ namespace CmlLib.Core.Files
         {
             try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(des));
+                var directoryName = Path.GetDirectoryName(des);
+                if (string.IsNullOrEmpty(directoryName))
+                    return;
+
+                Directory.CreateDirectory(directoryName);
                 await IOUtil.CopyFileAsync(org, des);
             }
             catch (Exception ex)

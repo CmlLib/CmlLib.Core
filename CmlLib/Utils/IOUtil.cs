@@ -129,7 +129,7 @@ namespace CmlLib.Utils
                 if (string.IsNullOrEmpty(compareHash))
                     return true;
 
-                var fileHash = "";
+                string fileHash;
 
                 using (var file = File.OpenRead(path))
                 using (var hasher = new System.Security.Cryptography.SHA1CryptoServiceProvider())

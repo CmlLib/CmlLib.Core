@@ -82,7 +82,7 @@ namespace CmlLib.Core.Downloader
 
                 Interlocked.Increment(ref progressed);
 
-                Task ev = Task.Run(() =>
+                Task.Run(() =>
                 {
                     fireDownloadFileChangedEvent(file.Type, file.Name, total, progressed);
                 });

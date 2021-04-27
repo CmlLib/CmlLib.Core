@@ -22,14 +22,18 @@ namespace CmlLib.Core.Version
 
         public override bool Equals(object obj)
         {
+            if (obj == null)
+                return false;
+
             var info = obj as MVersionMetadata;
 
             if (info != null) // obj is MVersionMetadata
                 return info.Name.Equals(Name);
-            else if (obj is string)
-                return info.Name.Equals(obj.ToString());
-            else
-                return false;
+            if (obj is string)
+                return Name.Equals(obj.ToString());
+            
+
+            return false;
         }
 
         public override string ToString()
