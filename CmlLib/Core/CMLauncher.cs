@@ -88,7 +88,8 @@ namespace CmlLib.Core
             if (Versions == null)
                 await GetAllVersionsAsync();
 
-            return Versions.GetVersion(versionname);
+            var version = await Task.Run(() => Versions.GetVersion(versionname));
+            return version;
         }
 
         public string CheckJRE()
