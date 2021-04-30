@@ -3,8 +3,11 @@ using CmlLib.Core.Auth;
 using CmlLib.Core.Downloader;
 using CmlLib.Utils;
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace CmlLibCoreSample
 {
@@ -13,7 +16,6 @@ namespace CmlLibCoreSample
 
         static void Main()
         {
-            CmlLib._Test.testTimer();
             Console.WriteLine(CmlLib._Test.tstr);
             var p = new Program();
 
@@ -97,7 +99,8 @@ namespace CmlLibCoreSample
 
             Console.WriteLine($"Initialized in {launcher.MinecraftPath.BasePath}");
 
-            var versions = await launcher.GetAllVersionsAsync(); // Get all installed profiles and load all profiles from mojang server
+            // Get all installed profiles and load all profiles from mojang server
+            var versions = await launcher.GetAllVersionsAsync(); 
 
             foreach (var item in versions) // Display all profiles 
             {
@@ -147,105 +150,6 @@ namespace CmlLibCoreSample
             return;
         }
 
-        async Task StartAsync(MSession session)
-        {
-            //await IOUtil.CopyFileAsync("sounds.json", "new.json");
-
-            var path = MinecraftPath.GetOSDefaultPath();
-            var game = new MinecraftPath(path);
-
-            var launcher = new CMLauncher(game);
-
-            System.Net.ServicePointManager.DefaultConnectionLimit = 256;
-            launcher.FileDownloader = new AsyncParallelDownloader();
-
-            launcher.ProgressChanged += Downloader_ChangeProgress;
-            launcher.FileChanged += Downloader_ChangeFile;
-
-            Console.WriteLine($"Initialized in {launcher.MinecraftPath.BasePath}");
-
-            var launchOption = new MLaunchOption
-            {
-                MaximumRamMb = 1024,
-                Session = session,
-
-                //ScreenWidth = 1600,
-                //ScreenHeight = 900,
-                //ServerIp = "mc.hypixel.net",
-                //MinimumRamMb = 102,
-                //FullScreen = true,
-                // More options:
-                // https://github.com/AlphaBs/CmlLib.Core/wiki/MLaunchOption
-            };
-
-            var versions = await launcher.GetAllVersionsAsync();
-            foreach (var item in versions)
-            {
-                Console.WriteLine(item.Type + " " + item.Name);
-
-                if (item.IsLocalVersion || item.MType != CmlLib.Core.Version.MVersionType.Release)
-                    continue;
-
-                var process = launcher.CreateProcess(item.Name, launchOption);
-
-                //var process = launcher.CreateProcess("1.16.2", "33.0.5", launchOption);
-                Console.WriteLine(process.StartInfo.Arguments);
-
-                // Below codes are print game logs in Console.
-                var processUtil = new CmlLib.Utils.ProcessUtil(process);
-                processUtil.OutputReceived += (s, e) => Console.WriteLine(e);
-                processUtil.StartWithEvents();
-
-                Thread.Sleep(1000 * 15);
-
-                if (process.HasExited)
-                {
-                    Console.WriteLine("FAILED!!!!!!!!!");
-                    Console.ReadLine();
-                }
-
-                process.Kill();
-                process.WaitForExit();
-            }
-
-            return;
-        }
-
-        async Task Benchmark()
-        {
-            Console.WriteLine(Thread.CurrentThread.ManagedThreadId);
-
-            var path = new MinecraftPath();
-            var launcher = new CMLauncher(path);
-
-            launcher.GameFileCheckers.AssetFileChecker.CheckHash = true;
-            launcher.GameFileCheckers.ClientFileChecker.CheckHash = true;
-            launcher.GameFileCheckers.LibraryFileChecker.CheckHash = true;
-            //launcher.FileDownloader = new AsyncParallelDownloader();
-
-            launcher.ProgressChanged += Downloader_ChangeProgress;
-            launcher.FileChanged += Downloader_ChangeFile;
-
-            var launchOption = new MLaunchOption()
-            {
-                MaximumRamMb = 1024,
-                Session = MSession.GetOfflineSession("test")
-            };
-
-            Console.WriteLine("Start");
-            var stopwatch = new System.Diagnostics.Stopwatch();
-            stopwatch.Start();
-
-            var versions = await launcher.GetAllVersionsAsync();
-
-            //var process = await launcher.CreateProcessAsync("1.16.5", launchOption);
-
-            stopwatch.Stop();
-            Console.WriteLine(stopwatch.Elapsed);
-
-            Console.ReadLine();
-        }
-
         #region QuickStart
 
         // this code is from README.md
@@ -289,6 +193,64 @@ namespace CmlLibCoreSample
 
         #endregion
 
+        #region TestCode
+
+        async Task TestAll(MSession session)
+        {
+            var path = MinecraftPath.GetOSDefaultPath();
+            var game = new MinecraftPath(path);
+
+            var launcher = new CMLauncher(game);
+
+            System.Net.ServicePointManager.DefaultConnectionLimit = 256;
+            launcher.FileDownloader = new AsyncParallelDownloader();
+
+            launcher.ProgressChanged += Downloader_ChangeProgress;
+            launcher.FileChanged += Downloader_ChangeFile;
+
+            Console.WriteLine($"Initialized in {launcher.MinecraftPath.BasePath}");
+
+            var launchOption = new MLaunchOption
+            {
+                MaximumRamMb = 1024,
+                Session = session,
+            };
+
+            var versions = await launcher.GetAllVersionsAsync();
+            foreach (var item in versions)
+            {
+                Console.WriteLine(item.Type + " " + item.Name);
+
+                if (!item.IsLocalVersion)
+                    continue;
+
+                var process = launcher.CreateProcess(item.Name, launchOption);
+
+                //var process = launcher.CreateProcess("1.16.2", "33.0.5", launchOption);
+                Console.WriteLine(process.StartInfo.Arguments);
+
+                // Below codes are print game logs in Console.
+                var processUtil = new CmlLib.Utils.ProcessUtil(process);
+                processUtil.OutputReceived += (s, e) => Console.WriteLine(e);
+                processUtil.StartWithEvents();
+
+                Thread.Sleep(1000 * 15);
+
+                if (process.HasExited)
+                {
+                    Console.WriteLine("FAILED!!!!!!!!!");
+                    Console.ReadLine();
+                }
+
+                process.Kill();
+                process.WaitForExit();
+            }
+
+            return;
+        }
+
+        #endregion
+        
         // Event Handling
 
         // The code below has some tricks to display logs prettier.

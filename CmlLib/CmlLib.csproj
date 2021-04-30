@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.1;net462;net5.0</TargetFrameworks>
-    <Version>3.2.0-pre1</Version>
+    <Version>3.2.0-pre2</Version>
     <Description>Minecraft Launcher Library for .NET Core and .NET Framework
 Support All versions, forge, optifine
 see github to learn how to use</Description>
@@ -11,7 +11,7 @@ see github to learn how to use</Description>
     <RepositoryUrl>https://github.com/AlphaBs/CmlLib.Core</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageTags>Minecraft Launcher forge optifine .NET Core Crossplatform C#</PackageTags>
+    <PackageTags>Minecraft Launcher forge optifine mojang .NET Core Crossplatform C#</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Authors>AlphaBs</Authors>
     <PackageReleaseNotes />
