@@ -10,45 +10,45 @@ namespace CmlLib.Core.Files
 
         private readonly List<IFileChecker> checkers;
 
-        private AssetChecker _asset = new AssetChecker();
+        private AssetChecker asset = new AssetChecker();
         public AssetChecker AssetFileChecker
         {
-            get => _asset;
+            get => asset;
             set
             {
-                checkers.Remove(_asset);
-                _asset = value;
+                checkers.Remove(asset);
+                asset = value;
 
-                if (_asset != null)
-                    checkers.Add(_asset);
+                if (asset != null)
+                    checkers.Add(asset);
             }
         }
 
-        private ClientChecker _client = new ClientChecker();
+        private ClientChecker client = new ClientChecker();
         public ClientChecker ClientFileChecker
         {
-            get => _client;
+            get => client;
             set
             {
-                checkers.Remove(_client);
-                _client = value;
+                checkers.Remove(client);
+                client = value;
 
-                if (_client != null)
-                    checkers.Add(_client);
+                if (client != null)
+                    checkers.Add(client);
             }
         }
 
-        private LibraryChecker _library = new LibraryChecker();
+        private LibraryChecker library = new LibraryChecker();
         public LibraryChecker LibraryFileChecker
         {
-            get => _library;
+            get => library;
             set
             {
-                checkers.Remove(_library);
-                _library = value;
+                checkers.Remove(library);
+                library = value;
 
-                if (_library != null)
-                    checkers.Add(_library);
+                if (library != null)
+                    checkers.Add(library);
             }
         }
 
@@ -114,7 +114,7 @@ namespace CmlLib.Core.Files
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            throw new NotImplementedException();
+            return checkers.GetEnumerator();
         }
     }
 }
