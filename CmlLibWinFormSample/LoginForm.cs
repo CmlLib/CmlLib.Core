@@ -1,6 +1,9 @@
 ﻿using CmlLib.Core.Auth;
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace CmlLibWinFormSample
@@ -16,9 +19,7 @@ namespace CmlLibWinFormSample
 
         private void LoginForm_Load(object sender, EventArgs e)
         {
-            CmlLib._Test.testTimer();
-            System.Diagnostics.Trace.WriteLine("CC");
-            //btnAutoLogin_Click(null, null);
+            btnAutoLogin_Click(null, null);
         }
 
         private void btnAutoLogin_Click(object sender, EventArgs e)

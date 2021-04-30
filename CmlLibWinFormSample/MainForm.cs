@@ -199,18 +199,8 @@ namespace CmlLibWinFormSample
         // Event Handler. Show download progress
         private void Launcher_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            if (e is FileProgressChangedEventArgs)
-            {
-                var fp = (FileProgressChangedEventArgs)e;
-
-                Pb_Progress.Maximum = (int)(fp.TotalBytes / 1024);
-                Pb_Progress.Value = (int)(fp.ReceivedBytes / 1024);
-            }
-            else
-            {
-                Pb_Progress.Maximum = 100;
-                Pb_Progress.Value = e.ProgressPercentage;
-            }
+            Pb_Progress.Maximum = 100;
+            Pb_Progress.Value = e.ProgressPercentage;
         }
 
         private void Launcher_FileChanged(DownloadFileChangedEventArgs e)
@@ -218,6 +208,7 @@ namespace CmlLibWinFormSample
             Pb_File.Maximum = e.TotalFileCount;
             Pb_File.Value = e.ProgressedFileCount;
             Lv_Status.Text = $"{e.FileKind.ToString()} : {e.FileName} ({e.ProgressedFileCount}/{e.TotalFileCount})";
+            //Debug.WriteLine(Lv_Status.Text);
         }
 
         private async void btnChangePath_Click(object sender, EventArgs e)
