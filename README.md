@@ -2,6 +2,8 @@
 
 ## Minecraft Launcher Library
 
+<img src='https://raw.githubusercontent.com/CmlLib/CmlLib.Core/master/logo.png' width=150>
+
 This library is minecraft launcher library for .NET 5.0 / .NET Core 3.1 / .NET Framework 4.6.2  
 Support all version, with Forge
 
@@ -16,10 +18,7 @@ Support all version, with Forge
 
 ## Version
 
-Current version: 3.1.0
-
-Old versions:
-* [v2.0.2](https://github.com/AlphaBs/CmlLib.Core/tree/v2.0.2)
+Current version: 3.1.1
 
 ## Functions
 
