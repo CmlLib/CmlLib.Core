@@ -17,15 +17,12 @@ namespace CmlLib.Core.VersionLoader
             }
         }
 
-        public async Task<MVersionCollection> GetVersionMetadatasAsync()
+        public Task<MVersionCollection> GetVersionMetadatasAsync()
         {
-            using (var wc = new WebClient())
-            {
-                string res = await wc.DownloadStringTaskAsync(MojangServer.Version);
-                return parseList(res);
-            }
+            return Task.Run(GetVersionMetadatas);
         }
 
+        [MethodTimer.Time]
         private MVersionCollection parseList(string res)
         {
             string latestReleaseId = null;

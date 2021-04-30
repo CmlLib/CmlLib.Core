@@ -50,6 +50,7 @@ namespace CmlLib.Core.Version
             get => (MVersionMetadata)versions[index];
         }
 
+        [MethodTimer.Time]
         public virtual MVersion GetVersion(string name)
         {
             if (name == null)
