@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace CmlLib.Core.Files
@@ -33,24 +32,32 @@ namespace CmlLib.Core.Files
 
         public DownloadFile[] CheckFiles(MinecraftPath path, MVersion version)
         {
-            return CheckFilesTaskAsync(path, version).GetAwaiter().GetResult();
+            pChangeFile = new Progress<DownloadFileChangedEventArgs>(
+                (e) => ChangeFile?.Invoke(e));
+
+            return checkIndexAndAsset(path, version);
         }
 
-        public async Task<DownloadFile[]> CheckFilesTaskAsync(MinecraftPath path, MVersion version)
+        public Task<DownloadFile[]> CheckFilesTaskAsync(MinecraftPath path, MVersion version)
         {
             pChangeFile = new Progress<DownloadFileChangedEventArgs>(
                 (e) => ChangeFile?.Invoke(e));
 
-            await CheckIndex(path, version);
-            return await CheckAssetFiles(path, version);
+            return Task.Run(() => checkIndexAndAsset(path, version));
         }
 
-        private async Task CheckIndex(MinecraftPath path, MVersion version)
+        private DownloadFile[] checkIndexAndAsset(MinecraftPath path, MVersion version)
+        {
+            CheckIndex(path, version);
+            return CheckAssetFiles(path, version);
+        }
+
+        private void CheckIndex(MinecraftPath path, MVersion version)
         {
             string index = path.GetIndexFilePath(version.AssetId);
 
             if (!string.IsNullOrEmpty(version.AssetUrl))
-                if (!await IOUtil.CheckFileValidationAsync(index, version.AssetHash, CheckHash))
+                if (!IOUtil.CheckFileValidation(index, version.AssetHash, CheckHash))
                 {
                     var directoryName = Path.GetDirectoryName(index);
                     if (!string.IsNullOrEmpty(directoryName))
@@ -58,26 +65,27 @@ namespace CmlLib.Core.Files
 
                     using (var wc = new WebClient())
                     {
-                        await wc.DownloadFileTaskAsync(version.AssetUrl, index);
+                        wc.DownloadFile(version.AssetUrl, index);
                     }
                 }
         }
 
-        public async Task<JObject> ReadIndexAsync(MinecraftPath path, MVersion version)
+        [MethodTimer.Time]
+        public JObject ReadIndex(MinecraftPath path, MVersion version)
         {
             string indexpath = path.GetIndexFilePath(version.AssetId);
             if (!File.Exists(indexpath)) return null;
 
-            string json = await IOUtil.ReadFileAsync(indexpath);
-            var index = JObject.Parse(json);
+            string json = File.ReadAllText(indexpath);
+            var index = JObject.Parse(json); // 100ms
 
             return index;
         }
 
         [MethodTimer.Time]
-        public async Task<DownloadFile[]> CheckAssetFiles(MinecraftPath path, MVersion version)
+        public DownloadFile[] CheckAssetFiles(MinecraftPath path, MVersion version)
         {
-            JObject index = await ReadIndexAsync(path, version);
+            JObject index = ReadIndex(path, version);
             if (index == null)
                 return null;
 
@@ -95,19 +103,15 @@ namespace CmlLib.Core.Files
 
             foreach (var item in list)
             {
-                var task = Task.Run(() => CheckAssetFile(item.Key, item.Value, path, version, isVirtual, mapResource));
-                fireDownloadFileChangedEvent(MFile.Resource, "", total, progressed);
+                var f = CheckAssetFile(item.Key, item.Value, path, version, isVirtual, mapResource);
 
-                var f = await task;
                 if (f != null)
                     downloadRequiredFiles.Add(f);
 
                 Interlocked.Increment(ref progressed);
             }
 
-            fireDownloadFileChangedEvent(MFile.Resource, "", total, total);
-
-            return downloadRequiredFiles.Distinct().ToArray();
+            return downloadRequiredFiles.Distinct().ToArray(); // 10ms
         }
 
         private DownloadFile CheckAssetFile(string key, JToken job, MinecraftPath path, MVersion version, bool isVirtual, bool mapResource)
@@ -172,7 +176,7 @@ namespace CmlLib.Core.Files
         private void fireDownloadFileChangedEvent(MFile file, string name, int totalFiles, int progressedFiles)
         {
             var e = new DownloadFileChangedEventArgs(file, name, totalFiles, progressedFiles);
-            pChangeFile.Report(e);
+            pChangeFile?.Report(e);
         }
 
         private bool checkJsonTrue(JToken j)
