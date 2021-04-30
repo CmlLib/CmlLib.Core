@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,15 +16,15 @@ namespace CmlLib.Core.Downloader
         public int MaxThread { get; private set; }
         public bool IgnoreInvalidFiles { get; set; } = true;
 
-        private int totalFiles = 0;
-        private int progressedFiles = 0;
+        private int totalFiles;
+        private int progressedFiles;
 
-        private long totalBytes = 0;
-        private long receivedBytes = 0;
+        private long totalBytes;
+        private long receivedBytes;
 
         private readonly object progressEventLock = new object();
 
-        private bool isRunning = false;
+        private bool isRunning;
 
         private IProgress<FileProgressChangedEventArgs> pChangeProgress;
         private IProgress<DownloadFileChangedEventArgs> pChangeFile;
@@ -48,7 +49,7 @@ namespace CmlLib.Core.Downloader
             totalFiles = files.Length;
             progressedFiles = 0;
 
-            totalBytes = 1;
+            totalBytes = 0;
             receivedBytes = 0;
 
             pChangeFile = new Progress<DownloadFileChangedEventArgs>(
@@ -64,7 +65,7 @@ namespace CmlLib.Core.Downloader
             }
 
             await ForEachAsyncSemaphore(files, MaxThread, doDownload).ConfigureAwait(false);
-
+            
             isRunning = false;
         }
 
@@ -113,10 +114,7 @@ namespace CmlLib.Core.Downloader
                 WebDownload downloader = new WebDownload();
                 downloader.FileDownloadProgressChanged += Downloader_FileDownloadProgressChanged;
 
-                Task downloadTask = downloader.DownloadFileAsync(file);
-
-                fireDownloadFileChangedProgress(file.Type, file.Name, totalFiles, progressedFiles);
-                await downloadTask;
+                await downloader.DownloadFileAsync(file);
 
                 if (file.AfterDownload != null)
                 {
@@ -128,13 +126,14 @@ namespace CmlLib.Core.Downloader
                 }
 
                 Interlocked.Increment(ref progressedFiles);
+                fireDownloadFileChangedProgress(file.Type, file.Name, totalFiles, progressedFiles);
             }
             catch (Exception ex)
             {
                 if (retry <= 0)
                     return;
 
-                System.Diagnostics.Debug.WriteLine(ex);
+                Debug.WriteLine(ex);
                 retry--;
 
                 await doDownload(file, retry).ConfigureAwait(false);
@@ -147,23 +146,28 @@ namespace CmlLib.Core.Downloader
             {
                 if (e.File.Size <= 0)
                 {
+                    //Interlocked.Add(ref totalBytes, e.TotalBytes);
                     totalBytes += e.TotalBytes;
                     e.File.Size = e.TotalBytes;
                 }
 
+                //Interlocked.Add(ref receivedBytes, e.ProgressedBytes);
                 receivedBytes += e.ProgressedBytes;
 
                 if (receivedBytes > totalBytes)
                     return;
 
                 float percent = (float)receivedBytes / totalBytes * 100;
-                pChangeProgress.Report(new FileProgressChangedEventArgs(totalBytes, receivedBytes, (int)percent));
+                if (percent >= 0)
+                    pChangeProgress.Report(new FileProgressChangedEventArgs(totalBytes, receivedBytes, (int)percent));
+                else
+                    Debug.WriteLine($"total: {totalBytes} received: {receivedBytes} filename: {e.File.Name} filesize: {e.File.Size}");
             }
         }
 
-        private void fireDownloadFileChangedProgress(MFile file, string name, int totalFiles, int progressedFiles)
+        private void fireDownloadFileChangedProgress(MFile file, string name, int totalFileCount, int progressedFileCount)
         {
-            var e = new DownloadFileChangedEventArgs(file, name, totalFiles, progressedFiles);
+            var e = new DownloadFileChangedEventArgs(file, name, totalFileCount, progressedFileCount);
             pChangeFile.Report(e);
         }
 
