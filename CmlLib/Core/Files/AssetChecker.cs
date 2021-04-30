@@ -108,7 +108,10 @@ namespace CmlLib.Core.Files
                 if (f != null)
                     downloadRequiredFiles.Add(f);
 
-                Interlocked.Increment(ref progressed);
+                progressed++;
+                
+                if (progressed % 50 == 0) // prevent ui freezing
+                    fireDownloadFileChangedEvent(MFile.Resource, "", total, progressed);
             }
 
             return downloadRequiredFiles.Distinct().ToArray(); // 10ms
