@@ -72,13 +72,13 @@ namespace CmlLib.Core.Installer
 
         public async Task<string> CheckJavaAsync(string binaryName)
         {
-            pProgressChanged = new Progress<ProgressChangedEventArgs>(
-    (e) => ProgressChanged?.Invoke(this, e));
-
             string javapath = Path.Combine(RuntimeDirectory, "bin", binaryName);
 
             if (!File.Exists(javapath))
             {
+                pProgressChanged = new Progress<ProgressChangedEventArgs>(
+                    (e) => ProgressChanged?.Invoke(this, e));
+                
                 string javaUrl = await GetJavaUrlAsync();
                 string lzmaPath = await DownloadJavaLzmaAsync(javaUrl);
 

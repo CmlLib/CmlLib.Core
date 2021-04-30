@@ -15,6 +15,7 @@ namespace CmlLib.Core
         private readonly MVersion version;
         private readonly MinecraftPath gamePath;
 
+        [MethodTimer.Time]
         public string ExtractNatives()
         {
             string path = gamePath.GetNativePath(version.Id);

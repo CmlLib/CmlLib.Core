@@ -86,7 +86,7 @@ namespace CmlLib.Core.Version
 
         private static bool nc(string t) // check null string
         {
-            return t == null || t == "";
+            return string.IsNullOrEmpty(t);
         }
 
         public override string ToString()

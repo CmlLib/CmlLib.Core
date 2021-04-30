@@ -53,6 +53,7 @@ namespace CmlLib.Core
             return mc;
         }
 
+        [MethodTimer.Time]
         public string[] CreateArg()
         {
             var version = LaunchOption.StartVersion;

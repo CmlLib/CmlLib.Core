@@ -83,7 +83,7 @@ namespace CmlLib.Core
         {
             foreach (var os in job)
             {
-                if (os.Key == "name" && os.Value.ToString() == OSName)
+                if (os.Key == "name" && os.Value?.ToString() == OSName)
                     return true;
             }
             return false;
