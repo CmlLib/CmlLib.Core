@@ -10,7 +10,8 @@ namespace CmlLib.Utils
     internal class WebDownload
     {
         private static readonly int DefaultBufferSize = 1024 * 64; // 64kb
-
+        private object locker = new object();
+        
         public event EventHandler<FileDownloadProgress> FileDownloadProgressChanged;
         public event ProgressChangedEventHandler DownloadProgressChangedEvent;
 
@@ -55,12 +56,18 @@ namespace CmlLib.Utils
 
                 wc.DownloadProgressChanged += (s, e) =>
                 {
-                    var progressedBytes = e.BytesReceived - lastBytes;
-                    lastBytes = e.BytesReceived;
+                    lock (locker)
+                    {
+                        var progressedBytes = e.BytesReceived - lastBytes;
+                        if (progressedBytes < 0)
+                            return;
 
-                    var progress = new FileDownloadProgress(
-                        file, e.TotalBytesToReceive, progressedBytes, e.BytesReceived, e.ProgressPercentage);
-                    FileDownloadProgressChanged?.Invoke(this, progress);
+                        lastBytes = e.BytesReceived;
+
+                        var progress = new FileDownloadProgress(
+                            file, e.TotalBytesToReceive, progressedBytes, e.BytesReceived, e.ProgressPercentage);
+                        FileDownloadProgressChanged?.Invoke(this, progress);
+                    }
                 };
                 await wc.DownloadFileTaskAsync(file.Url, file.Path);
             }
