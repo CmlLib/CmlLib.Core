@@ -225,6 +225,7 @@ namespace CmlLib.Core
             return CreateProcess(versionName, option);
         }
 
+        [MethodTimer.Time]
         public Process CreateProcess(string versionname, MLaunchOption option)
         {
             option.StartVersion = GetVersion(versionname);
@@ -235,6 +236,7 @@ namespace CmlLib.Core
             return CreateProcess(option);
         }
 
+        [MethodTimer.Time]
         public async Task<Process> CreateProcessAsync(string versionname, MLaunchOption option)
         {
             option.StartVersion = await GetVersionAsync(versionname);
@@ -244,7 +246,7 @@ namespace CmlLib.Core
 
             return await CreateProcessAsync(option);
         }
-
+        
         public Process CreateProcess(MLaunchOption option)
         {
             if (option.Path == null)
@@ -256,7 +258,7 @@ namespace CmlLib.Core
             var launch = new MLaunch(option);
             return launch.GetProcess();
         }
-
+        
         public async Task<Process> CreateProcessAsync(MLaunchOption option)
         {
             if (option.Path == null)
@@ -266,7 +268,7 @@ namespace CmlLib.Core
                 option.JavaPath = await CheckJREAsync();
 
             var launch = new MLaunch(option);
-            return launch.GetProcess();
+            return await Task.Run(launch.GetProcess);
         }
 
         public Process Launch(string versionname, MLaunchOption option)
