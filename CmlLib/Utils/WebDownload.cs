@@ -10,7 +10,7 @@ namespace CmlLib.Utils
     internal class WebDownload
     {
         private static readonly int DefaultBufferSize = 1024 * 64; // 64kb
-        private object locker = new object();
+        private readonly object locker = new object();
         
         public event EventHandler<FileDownloadProgress> FileDownloadProgressChanged;
         public event ProgressChangedEventHandler DownloadProgressChangedEvent;
@@ -69,7 +69,8 @@ namespace CmlLib.Utils
                         FileDownloadProgressChanged?.Invoke(this, progress);
                     }
                 };
-                await wc.DownloadFileTaskAsync(file.Url, file.Path);
+                await wc.DownloadFileTaskAsync(file.Url, file.Path)
+                    .ConfigureAwait(false);
             }
         }
 
@@ -88,24 +89,6 @@ namespace CmlLib.Utils
             using (var fs = File.OpenWrite(path))
             {
                 httpStream.CopyTo(fs);
-            }
-        }
-
-        public async Task DownloadFileLimitTaskAsync(string url, string path)
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-
-            var req = WebRequest.CreateHttp(url);
-            req.Method = "GET";
-            req.Timeout = 5000;
-            req.ReadWriteTimeout = 5000;
-            req.ContinueTimeout = 5000;
-            var res = await req.GetResponseAsync();
-
-            using (var httpStream = res.GetResponseStream())
-            using (var fs = File.OpenWrite(path))
-            {
-                await httpStream.CopyToAsync(fs);
             }
         }
 

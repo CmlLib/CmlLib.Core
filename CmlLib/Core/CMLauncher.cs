@@ -36,24 +36,24 @@ namespace CmlLib.Core
         public IVersionLoader VersionLoader { get; set; }
         public FileCheckerCollection GameFileCheckers { get; private set; }
 
-        private IDownloader _fileDownloader;
+        private IDownloader mFileDownloader;
         public IDownloader FileDownloader
         {
-            get => _fileDownloader;
+            get => mFileDownloader;
             set
             {
-                if (_fileDownloader != null)
+                if (mFileDownloader != null)
                 {
-                    _fileDownloader.ChangeFile -= fireFileChangeEvent;
-                    _fileDownloader.ChangeProgress -= FileDownloader_ChangeProgress;
+                    mFileDownloader.ChangeFile -= fireFileChangeEvent;
+                    mFileDownloader.ChangeProgress -= FileDownloader_ChangeProgress;
                 }
 
-                _fileDownloader = value;
+                mFileDownloader = value;
 
-                if (_fileDownloader != null)
+                if (mFileDownloader != null)
                 {
-                    _fileDownloader.ChangeFile += fireFileChangeEvent;
-                    _fileDownloader.ChangeProgress += FileDownloader_ChangeProgress;
+                    mFileDownloader.ChangeFile += fireFileChangeEvent;
+                    mFileDownloader.ChangeProgress += FileDownloader_ChangeProgress;
                 }
             }
         }
@@ -94,32 +94,29 @@ namespace CmlLib.Core
 
         public string CheckJRE()
         {
-            fireFileChangeEvent(MFile.Runtime, "java", 2, 0);
+            fireFileChangeEvent(MFile.Runtime, "java", 1, 0);
 
-            var mjava = new MJava(MinecraftPath.Runtime);
-            mjava.ProgressChanged += (sender, e) => fireProgressChangeEvent(e.ProgressPercentage);
-            mjava.DownloadCompleted += (sender, e) =>
-            {
-                fireFileChangeEvent(MFile.Runtime, "java", 2, 1);
-            };
+            var mjava = createMJava();
             var j = mjava.CheckJava();
-            fireFileChangeEvent(MFile.Runtime, "java", 2, 2);
+            fireFileChangeEvent(MFile.Runtime, "java", 1, 1);
             return j;
         }
 
         public async Task<string> CheckJREAsync()
         {
-            fireFileChangeEvent(MFile.Runtime, "java", 2, 0);
+            fireFileChangeEvent(MFile.Runtime, "java", 1, 0);
 
+            var mjava = createMJava();
+            var j = await mjava.CheckJavaAsync();
+            fireFileChangeEvent(MFile.Runtime, "java", 1, 1);
+            return j;
+        }
+
+        private MJava createMJava()
+        {
             var mjava = new MJava(MinecraftPath.Runtime);
             mjava.ProgressChanged += (sender, e) => fireProgressChangeEvent(e.ProgressPercentage);
-            mjava.DownloadCompleted += (sender, e) =>
-            {
-                fireFileChangeEvent(MFile.Runtime, "java", 2, 1);
-            };
-            var j = await mjava.CheckJavaAsync();
-            fireFileChangeEvent(MFile.Runtime, "java", 2, 2);
-            return j;
+            return mjava;
         }
 
         public string CheckForge(string mcversion, string forgeversion, string java)
@@ -187,7 +184,7 @@ namespace CmlLib.Core
         {
             if (this.FileDownloader == null)
                 throw new ArgumentNullException(nameof(this.FileDownloader));
-            
+
             await FileDownloader.DownloadFiles(files);
         }
 

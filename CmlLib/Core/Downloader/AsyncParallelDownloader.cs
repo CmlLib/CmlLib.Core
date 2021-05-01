@@ -98,7 +98,7 @@ namespace CmlLib.Core.Downloader
         {
             try
             {
-                await doDownload(file, 3);
+                await doDownload(file, 3).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -114,14 +114,14 @@ namespace CmlLib.Core.Downloader
                 WebDownload downloader = new WebDownload();
                 downloader.FileDownloadProgressChanged += Downloader_FileDownloadProgressChanged;
 
-                await downloader.DownloadFileAsync(file);
+                await downloader.DownloadFileAsync(file).ConfigureAwait(false);
 
                 if (file.AfterDownload != null)
                 {
                     foreach (var item in file.AfterDownload)
                     {
                         if (item != null)
-                            await item.Invoke();
+                            await item.Invoke().ConfigureAwait(false);
                     }
                 }
 
@@ -146,12 +146,10 @@ namespace CmlLib.Core.Downloader
             {
                 if (e.File.Size <= 0)
                 {
-                    //Interlocked.Add(ref totalBytes, e.TotalBytes);
                     totalBytes += e.TotalBytes;
                     e.File.Size = e.TotalBytes;
                 }
 
-                //Interlocked.Add(ref receivedBytes, e.ProgressedBytes);
                 receivedBytes += e.ProgressedBytes;
 
                 if (receivedBytes > totalBytes)

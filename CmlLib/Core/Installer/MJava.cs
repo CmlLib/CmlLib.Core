@@ -14,7 +14,6 @@ namespace CmlLib.Core.Installer
             = Path.Combine(MinecraftPath.GetOSDefaultPath(), "runtime");
 
         public event ProgressChangedEventHandler ProgressChanged;
-        public event EventHandler DownloadCompleted;
         public string RuntimeDirectory { get; private set; }
 
         private IProgress<ProgressChangedEventArgs> pProgressChanged;
@@ -40,12 +39,6 @@ namespace CmlLib.Core.Installer
             return CheckJava(binaryName);
         }
 
-        public async Task<string> CheckJavaAsync()
-        {
-            string binaryName = GetDefaultBinaryName();
-            return await CheckJavaAsync(binaryName);
-        }
-
         public string CheckJava(string binaryName)
         {
             pProgressChanged = new Progress<ProgressChangedEventArgs>(
@@ -69,6 +62,12 @@ namespace CmlLib.Core.Installer
 
             return javapath;
         }
+        
+        public async Task<string> CheckJavaAsync()
+        {
+            string binaryName = GetDefaultBinaryName();
+            return await CheckJavaAsync(binaryName).ConfigureAwait(false);
+        }
 
         public async Task<string> CheckJavaAsync(string binaryName)
         {
@@ -79,11 +78,11 @@ namespace CmlLib.Core.Installer
                 pProgressChanged = new Progress<ProgressChangedEventArgs>(
                     (e) => ProgressChanged?.Invoke(this, e));
                 
-                string javaUrl = await GetJavaUrlAsync();
-                string lzmaPath = await DownloadJavaLzmaAsync(javaUrl);
+                string javaUrl = await GetJavaUrlAsync().ConfigureAwait(false);
+                string lzmaPath = await DownloadJavaLzmaAsync(javaUrl).ConfigureAwait(false);
 
                 Task decompressTask = Task.Run(() => DecompressJavaFile(lzmaPath));
-                await decompressTask;
+                await decompressTask.ConfigureAwait(false);
 
                 if (!File.Exists(javapath))
                     throw new WebException("failed to download");
@@ -108,7 +107,8 @@ namespace CmlLib.Core.Installer
         {
             using (var wc = new WebClient())
             {
-                string json = await wc.DownloadStringTaskAsync(MojangServer.LauncherMeta);
+                string json = await wc.DownloadStringTaskAsync(MojangServer.LauncherMeta)
+                    .ConfigureAwait(false);
                 return parseLauncherMetadata(json);
             }
         }
@@ -135,7 +135,6 @@ namespace CmlLib.Core.Installer
             var webdownloader = new WebDownload();
             webdownloader.DownloadProgressChangedEvent += Downloader_DownloadProgressChangedEvent;
             webdownloader.DownloadFile(javaUrl, lzmapath);
-            DownloadCompleted?.Invoke(this, new EventArgs());
 
             return lzmapath;
         }
@@ -148,10 +147,9 @@ namespace CmlLib.Core.Installer
             using (var wc = new WebClient())
             {
                 wc.DownloadProgressChanged += Downloader_DownloadProgressChangedEvent;
-                await wc.DownloadFileTaskAsync(javaUrl, lzmapath);
+                await wc.DownloadFileTaskAsync(javaUrl, lzmapath)
+                    .ConfigureAwait(false);
             }
-
-            DownloadCompleted?.Invoke(this, new EventArgs());
 
             return lzmapath;
         }
@@ -172,8 +170,8 @@ namespace CmlLib.Core.Installer
         }
 
         private void Downloader_DownloadProgressChangedEvent(object sender, ProgressChangedEventArgs e)
-        {
-            ProgressChanged?.Invoke(this, new ProgressChangedEventArgs(e.ProgressPercentage / 2, null));
+        { 
+            pProgressChanged.Report(new ProgressChangedEventArgs(e.ProgressPercentage / 2, null));
         }
     }
 }

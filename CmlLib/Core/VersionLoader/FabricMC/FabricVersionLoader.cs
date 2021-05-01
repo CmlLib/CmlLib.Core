@@ -39,7 +39,7 @@ namespace CmlLib.Core.VersionLoader.FabricMC
         {
             if (string.IsNullOrEmpty(LoaderVersion))
             {
-                var loaders = await GetFabricLoaders();
+                var loaders = await GetFabricLoaders().ConfigureAwait(false);
                 LoaderVersion = loaders[0].Version;
             }
 
@@ -47,7 +47,7 @@ namespace CmlLib.Core.VersionLoader.FabricMC
             string res;
             using (var wc = new WebClient())
             {
-                res = await wc.DownloadStringTaskAsync(url);
+                res = await wc.DownloadStringTaskAsync(url).ConfigureAwait(false);
             }
 
             var versions = parseVersions(res, LoaderVersion);
@@ -83,7 +83,8 @@ namespace CmlLib.Core.VersionLoader.FabricMC
             string res;
             using (var wc = new WebClient())
             {
-                res = await wc.DownloadStringTaskAsync(ApiServer + "/v2/versions/loader");
+                res = await wc.DownloadStringTaskAsync(ApiServer + "/v2/versions/loader")
+                    .ConfigureAwait(false);
             }
 
             var jarr = JArray.Parse(res);

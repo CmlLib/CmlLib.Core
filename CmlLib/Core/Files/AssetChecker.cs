@@ -137,8 +137,8 @@ namespace CmlLib.Core.Files
                 afterDownload.Add(async () =>
                 {
                     string resPath = Path.Combine(path.GetAssetLegacyPath(version.AssetId), key);
-                    if (!await IOUtil.CheckFileValidationAsync(resPath, hash, CheckHash))
-                        await safeCopy(hashPath, resPath);
+                    if (!await IOUtil.CheckFileValidationAsync(resPath, hash, CheckHash).ConfigureAwait(false))
+                        await safeCopy(hashPath, resPath).ConfigureAwait(false);
                 });
             }
 
@@ -147,8 +147,8 @@ namespace CmlLib.Core.Files
                 afterDownload.Add(async () =>
                 {
                     string resPath = Path.Combine(path.Resource, key);
-                    if (!await IOUtil.CheckFileValidationAsync(resPath, hash, CheckHash))
-                        await safeCopy(hashPath, resPath);
+                    if (!await IOUtil.CheckFileValidationAsync(resPath, hash, CheckHash).ConfigureAwait(false))
+                        await safeCopy(hashPath, resPath).ConfigureAwait(false);
                 });
             }
 
@@ -200,7 +200,8 @@ namespace CmlLib.Core.Files
                     return;
 
                 Directory.CreateDirectory(directoryName);
-                await IOUtil.CopyFileAsync(org, des);
+                await IOUtil.CopyFileAsync(org, des)
+                    .ConfigureAwait(false);
             }
             catch (Exception ex)
             {

@@ -110,7 +110,8 @@ namespace CmlLib.Core.Files
         {
             return lib.IsRequire
                 && !string.IsNullOrEmpty(lib.Path)
-                && !await IOUtil.CheckFileValidationAsync(Path.Combine(path.Library, lib.Path), lib.Hash, CheckHash).ConfigureAwait(true);
+                && !await IOUtil.CheckFileValidationAsync(Path.Combine(path.Library, lib.Path), lib.Hash, CheckHash)
+                    .ConfigureAwait(false);
         }
     }
 }
