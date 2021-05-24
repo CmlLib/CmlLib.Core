@@ -71,7 +71,7 @@ namespace CmlLib.Core
 
         public async Task<MVersionCollection> GetAllVersionsAsync()
         {
-            Versions = await VersionLoader.GetVersionMetadatasAsync();
+            Versions = await VersionLoader.GetVersionMetadatasAsync().ConfigureAwait(false);
             return Versions;
         }
 
@@ -86,9 +86,9 @@ namespace CmlLib.Core
         public async Task<MVersion> GetVersionAsync(string versionname)
         {
             if (Versions == null)
-                await GetAllVersionsAsync();
+                await GetAllVersionsAsync().ConfigureAwait(false);
 
-            var version = await Task.Run(() => Versions.GetVersion(versionname));
+            var version = await Task.Run(() => Versions.GetVersion(versionname)).ConfigureAwait(false);
             return version;
         }
 
@@ -241,7 +241,7 @@ namespace CmlLib.Core
             if (this.FileDownloader != null)
                 await CheckAndDownloadAsync(option.StartVersion);
 
-            return await CreateProcessAsync(option);
+            return await CreateProcessAsync(option).ConfigureAwait(false);
         }
         
         public Process CreateProcess(MLaunchOption option)
@@ -262,10 +262,10 @@ namespace CmlLib.Core
                 option.Path = MinecraftPath;
 
             if (string.IsNullOrEmpty(option.JavaPath))
-                option.JavaPath = await CheckJREAsync();
+                option.JavaPath = await CheckJREAsync().ConfigureAwait(false);
 
             var launch = new MLaunch(option);
-            return await Task.Run(launch.GetProcess);
+            return await Task.Run(launch.GetProcess).ConfigureAwait(false);
         }
 
         public Process Launch(string versionname, MLaunchOption option)
