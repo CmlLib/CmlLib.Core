@@ -11,7 +11,7 @@ namespace CmlLib.Core
         private const int DefaultServerPort = 25565;
 
         public static readonly string SupportVersion = "1.16.6";
-        public readonly static string[] DefaultJavaParameter = new string[]
+        public readonly static string[] DefaultJavaParameter = 
             {
                 "-XX:+UnlockExperimentalVMOptions",
                 "-XX:+UseG1GC",

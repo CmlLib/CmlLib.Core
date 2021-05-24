@@ -44,7 +44,7 @@ namespace CmlLib.Utils
             }
         }
 
-        private int previousPerc = 0;
+        private int previousPerc;
 
         private void ev(long curr, long total)
         {

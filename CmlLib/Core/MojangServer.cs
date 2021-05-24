@@ -1,6 +1,6 @@
 ﻿namespace CmlLib.Core
 {
-    public class MojangServer
+    public static class MojangServer
     {
         public static readonly string
 

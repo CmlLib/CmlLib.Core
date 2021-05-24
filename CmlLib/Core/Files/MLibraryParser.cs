@@ -6,12 +6,7 @@ namespace CmlLib.Core.Files
 {
     public class MLibraryParser
     {
-        public MLibraryParser(bool checkOSRules = true)
-        {
-            this.CheckOSRules = checkOSRules;
-        }
-
-        public bool CheckOSRules { get; private set; }
+        public bool CheckOSRules { get; set; } = true;
 
         public MLibrary[] ParseJsonObject(JObject item)
         {

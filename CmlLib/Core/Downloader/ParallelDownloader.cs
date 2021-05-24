@@ -15,9 +15,9 @@ namespace CmlLib.Core.Downloader
         public int MaxThread { get; set; } = 10;
         public bool IgnoreInvalidFiles { get; set; } = true;
 
-        private int total = 0;
-        private int progressed = 0;
-        private bool isRunning = false;
+        private int total;
+        private int progressed;
+        private bool isRunning;
 
         public Task DownloadFiles(DownloadFile[] files)
         {
