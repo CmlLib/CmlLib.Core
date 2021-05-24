@@ -7,13 +7,15 @@ namespace CmlLibWinFormSample
 {
     public partial class GameOptions : Form
     {
-        public string Path;
+        public string Path { get; set; }
 
         public GameOptions(string path)
         {
             this.Path = path;
             InitializeComponent();
         }
+
+        GameOptionsFile optionFile;
 
         private void GameOptions_Load(object sender, EventArgs e)
         {
@@ -25,8 +27,8 @@ namespace CmlLibWinFormSample
         {
             this.Path = txtPath.Text;
 
-            var options = GameOptionsFile.ReadFile(this.Path);
-            foreach (var item in options)
+            optionFile = GameOptionsFile.ReadFile(this.Path);
+            foreach (var item in optionFile)
             {
                 listView1.Items.Add(new ListViewItem(new string[]
                 {
@@ -61,14 +63,12 @@ namespace CmlLibWinFormSample
 
         private void btnSave_Click(object sender, EventArgs e)
         {
-            var dict = new Dictionary<string, string>();
-            for (int i = 0; i < listView1.Items.Count; i++)
+            foreach (ListViewItem item in listView1.Items)
             {
-                var item = listView1.Items[i];
-                dict.Add(item.Text, item.SubItems[1].Text);
+                optionFile.SetRawValue(item.Text, item.SubItems[1].Text);
             }
 
-            GameOptionsFile.WriteFile(Path, dict);
+            optionFile.Save();
         }
 
         private void OpenPanel(string key, string value, bool enableKey)

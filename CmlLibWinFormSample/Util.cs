@@ -2,7 +2,7 @@
 
 namespace CmlLibWinFormSample
 {
-    public class Util
+    public static class Util
     {
         [DllImport("kernel32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]

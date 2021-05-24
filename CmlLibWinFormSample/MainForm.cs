@@ -22,7 +22,7 @@ namespace CmlLibWinFormSample
         }
 
         CMLauncher launcher;
-        MSession Session;
+        readonly MSession Session;
         MinecraftPath GamePath;
 
         bool useMJava = true;
@@ -162,8 +162,7 @@ namespace CmlLibWinFormSample
             }
             catch (FormatException fex) // int.Parse exception
             {
-                MessageBox.Show("Failed to create MLaunchOption\n\n" + fex.ToString());
-                return;
+                MessageBox.Show("Failed to create MLaunchOption\n\n" + fex);
             }
             catch (MDownloadFileException mex) // download exception
             {
@@ -176,7 +175,7 @@ namespace CmlLibWinFormSample
             }
             catch (Win32Exception wex) // java exception
             {
-                MessageBox.Show(wex.ToString() + "\n\nIt seems your java setting has problem");
+                MessageBox.Show(wex + "\n\nIt seems your java setting has problem");
             }
             catch (Exception ex) // all exception
             {
@@ -195,19 +194,29 @@ namespace CmlLibWinFormSample
                 setUIEnabled(true);
             }
         }
+        
+        private int uiThreadId = Thread.CurrentThread.ManagedThreadId;
 
         // Event Handler. Show download progress
         private void Launcher_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
+            if (Thread.CurrentThread.ManagedThreadId != uiThreadId)
+            {
+                Debug.WriteLine(e);
+            }
             Pb_Progress.Maximum = 100;
             Pb_Progress.Value = e.ProgressPercentage;
         }
 
         private void Launcher_FileChanged(DownloadFileChangedEventArgs e)
         {
+            if (Thread.CurrentThread.ManagedThreadId != uiThreadId)
+            {
+                Debug.WriteLine(e);
+            }
             Pb_File.Maximum = e.TotalFileCount;
             Pb_File.Value = e.ProgressedFileCount;
-            Lv_Status.Text = $"{e.FileKind.ToString()} : {e.FileName} ({e.ProgressedFileCount}/{e.TotalFileCount})";
+            Lv_Status.Text = $"{e.FileKind} : {e.FileName} ({e.ProgressedFileCount}/{e.TotalFileCount})";
             //Debug.WriteLine(Lv_Status.Text);
         }
 
