@@ -29,8 +29,10 @@ namespace CmlLib.Core.VersionLoader
             var localVersionLoader = new LocalVersionLoader(MinecraftPath);
             var mojangVersionLoader = new MojangVersionLoader();
 
-            var mojangVersions = await mojangVersionLoader.GetVersionMetadatasAsync();
-            var localVersions = await localVersionLoader.GetVersionMetadatasAsync();
+            var mojangVersions = await mojangVersionLoader.GetVersionMetadatasAsync()
+                .ConfigureAwait(false);
+            var localVersions = await localVersionLoader.GetVersionMetadatasAsync()
+                .ConfigureAwait(false);
 
             localVersions.Merge(mojangVersions);
             return localVersions;

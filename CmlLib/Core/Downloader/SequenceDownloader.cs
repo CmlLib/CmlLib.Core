@@ -2,27 +2,31 @@
 using System;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace CmlLib.Core.Downloader
 {
     public class SequenceDownloader : IDownloader
     {
-        public event DownloadFileChangedHandler ChangeFile;
-        public event ProgressChangedEventHandler ChangeProgress;
-
         public bool IgnoreInvalidFiles { get; set; } = true;
 
-        public async Task DownloadFiles(DownloadFile[] files)
+        private IProgress<DownloadFileChangedEventArgs> pChangeFile;
+        private IProgress<ProgressChangedEventArgs> pChangeProgress;
+
+        public async Task DownloadFiles(DownloadFile[] files, 
+            IProgress<DownloadFileChangedEventArgs> fileProgress,
+            IProgress<ProgressChangedEventArgs> downloadProgress)
         {
             if (files == null || files.Length == 0)
                 return;
 
+            pChangeFile = fileProgress;
+            pChangeProgress = downloadProgress;
+
             WebDownload downloader = new WebDownload();
             downloader.FileDownloadProgressChanged += Downloader_FileDownloadProgressChanged;
 
-            //fireDownloadFileChangedEvent(files[0], 0, files.Length)
+            //fireDownloadFileChangedEvent(null, 0, files.Length);
 
             for (int i = 0; i < files.Length; i++)
             {
@@ -33,13 +37,13 @@ namespace CmlLib.Core.Downloader
                     fireDownloadFileChangedEvent(file, files.Length, i);
 
                     Directory.CreateDirectory(Path.GetDirectoryName(file.Path));
-                    await downloader.DownloadFileAsync(file);
+                    await downloader.DownloadFileAsync(file).ConfigureAwait(false);
 
                     if (file.AfterDownload != null)
                     {
                         foreach (var item in file.AfterDownload)
                         {
-                            item?.Invoke().GetAwaiter().GetResult();
+                            await item().ConfigureAwait(false);
                         }
                     }
                 }
@@ -51,13 +55,11 @@ namespace CmlLib.Core.Downloader
                         throw new MDownloadFileException(ex.Message, ex, files[i]);
                 }
             }
-
-            fireDownloadFileChangedEvent(files.Last(), files.Length, files.Length);
         }
 
         private void Downloader_FileDownloadProgressChanged(object sender, FileDownloadProgress e)
         {
-            ChangeProgress?.Invoke(this, new ProgressChangedEventArgs(e.ProgressPercentage, null));
+            pChangeProgress?.Report(new ProgressChangedEventArgs(e.ProgressPercentage, null));
         }
 
         private void fireDownloadFileChangedEvent(MFile file, string name, int totalFiles, int progressedFiles)
@@ -73,12 +75,7 @@ namespace CmlLib.Core.Downloader
 
         private void fireDownloadFileChangedEvent(DownloadFileChangedEventArgs e)
         {
-            ChangeFile?.Invoke(e);
-        }
-
-        private void fireDownloadProgressChangedEvent(object sender, ProgressChangedEventArgs e)
-        {
-            ChangeProgress?.Invoke(this, e);
+            pChangeFile.Report(e);
         }
     }
 }

@@ -11,20 +11,21 @@ namespace CmlLib.Core.Files
 {
     public class ModChecker : IFileChecker
     {
-        public event DownloadFileChangedHandler ChangeFile;
-
         public bool CheckHash { get; set; } = true;
         public ModFile[] Mods { get; set; }
 
-        public DownloadFile[] CheckFiles(MinecraftPath path, MVersion version)
+        public DownloadFile[] CheckFiles(MinecraftPath path, MVersion version,
+            IProgress<DownloadFileChangedEventArgs> progress)
         {
             if (version == null)
                 throw new ArgumentNullException(nameof(version));
 
-            return CheckFilesTaskAsync(path, version).GetAwaiter().GetResult();
+            return CheckFilesTaskAsync(path, version, progress)
+                .GetAwaiter().GetResult();
         }
 
-        public async Task<DownloadFile[]> CheckFilesTaskAsync(MinecraftPath path, MVersion version)
+        public async Task<DownloadFile[]> CheckFilesTaskAsync(MinecraftPath path, MVersion version,
+            IProgress<DownloadFileChangedEventArgs> progress)
         {
             if (version == null)
                 throw new ArgumentNullException(nameof(version));
@@ -34,7 +35,7 @@ namespace CmlLib.Core.Files
             var files = new List<DownloadFile>(Mods.Length);
             foreach (ModFile mod in Mods)
             {
-                if (await CheckDownloadRequireAsync(path, mod))
+                if (await CheckDownloadRequireAsync(path, mod).ConfigureAwait(false))
                 {
                     files.Add(new DownloadFile
                     {
@@ -47,11 +48,11 @@ namespace CmlLib.Core.Files
                 }
 
                 progressed++;
-                ChangeFile?.Invoke(new DownloadFileChangedEventArgs(
+                progress?.Report(new DownloadFileChangedEventArgs(
                     MFile.Others, mod.Name, Mods.Length, progressed));
             }
 
-            ChangeFile?.Invoke(new DownloadFileChangedEventArgs(
+            progress?.Report(new DownloadFileChangedEventArgs(
     MFile.Others, lastModName, Mods.Length, Mods.Length));
 
             return files.Distinct().ToArray();
@@ -61,7 +62,7 @@ namespace CmlLib.Core.Files
         {
             return !string.IsNullOrEmpty(mod.Url)
                 && !string.IsNullOrEmpty(mod.Path)
-                && !await IOUtil.CheckFileValidationAsync(Path.Combine(path.BasePath, mod.Path), mod.Hash, CheckHash);
+                && !await IOUtil.CheckFileValidationAsync(Path.Combine(path.BasePath, mod.Path), mod.Hash, CheckHash).ConfigureAwait(false);
         }
     }
 }

@@ -10,9 +10,6 @@ namespace CmlLib.Core.Downloader
 {
     public class AsyncParallelDownloader : IDownloader
     {
-        public event DownloadFileChangedHandler ChangeFile;
-        public event ProgressChangedEventHandler ChangeProgress;
-
         public int MaxThread { get; private set; }
         public bool IgnoreInvalidFiles { get; set; } = true;
 
@@ -39,24 +36,23 @@ namespace CmlLib.Core.Downloader
             MaxThread = parallelism;
         }
 
-        public async Task DownloadFiles(DownloadFile[] files)
+        public async Task DownloadFiles(DownloadFile[] files, 
+            IProgress<DownloadFileChangedEventArgs> fileProgress,
+            IProgress<ProgressChangedEventArgs> downloadProgress)
         {
             if (isRunning)
                 throw new InvalidOperationException("already downloading");
 
             isRunning = true;
 
+            pChangeFile = fileProgress;
+            pChangeProgress = downloadProgress;
+            
             totalFiles = files.Length;
             progressedFiles = 0;
 
             totalBytes = 0;
             receivedBytes = 0;
-
-            pChangeFile = new Progress<DownloadFileChangedEventArgs>(
-                fireDownloadFileChangedEvent);
-
-            pChangeProgress = new Progress<FileProgressChangedEventArgs>(
-                (e) => ChangeProgress?.Invoke(this, e));
 
             foreach (DownloadFile item in files)
             {
@@ -77,12 +73,12 @@ namespace CmlLib.Core.Downloader
             {
                 foreach (var element in source)
                 {
-                    await throttler.WaitAsync();
+                    await throttler.WaitAsync().ConfigureAwait(false);
                     tasks.Add(Task.Run(async () =>
                     {
                         try
                         {
-                            await body(element);
+                            await body(element).ConfigureAwait(false);
                         }
                         finally
                         {
@@ -90,7 +86,7 @@ namespace CmlLib.Core.Downloader
                         }
                     }));
                 }
-                await Task.WhenAll(tasks);
+                await Task.WhenAll(tasks).ConfigureAwait(false);
             }
         }
 
@@ -126,7 +122,8 @@ namespace CmlLib.Core.Downloader
                 }
 
                 Interlocked.Increment(ref progressedFiles);
-                fireDownloadFileChangedProgress(file.Type, file.Name, totalFiles, progressedFiles);
+                pChangeFile?.Report(
+                    new DownloadFileChangedEventArgs(file.Type, file.Name, totalFiles, progressedFiles));
             }
             catch (Exception ex)
             {
@@ -157,21 +154,10 @@ namespace CmlLib.Core.Downloader
 
                 float percent = (float)receivedBytes / totalBytes * 100;
                 if (percent >= 0)
-                    pChangeProgress.Report(new FileProgressChangedEventArgs(totalBytes, receivedBytes, (int)percent));
+                    pChangeProgress?.Report(new FileProgressChangedEventArgs(totalBytes, receivedBytes, (int)percent));
                 else
                     Debug.WriteLine($"total: {totalBytes} received: {receivedBytes} filename: {e.File.Name} filesize: {e.File.Size}");
             }
-        }
-
-        private void fireDownloadFileChangedProgress(MFile file, string name, int totalFileCount, int progressedFileCount)
-        {
-            var e = new DownloadFileChangedEventArgs(file, name, totalFileCount, progressedFileCount);
-            pChangeFile.Report(e);
-        }
-
-        private void fireDownloadFileChangedEvent(DownloadFileChangedEventArgs e)
-        {
-            ChangeFile?.Invoke(e);
         }
     }
 }

@@ -24,10 +24,18 @@ namespace CmlLib.Core
             GameFileCheckers = new FileCheckerCollection();
             FileDownloader = new AsyncParallelDownloader();
             VersionLoader = new DefaultVersionLoader(MinecraftPath);
+
+            pFileChanged = new Progress<DownloadFileChangedEventArgs>(
+                e => FileChanged?.Invoke(e));
+            pProgressChanged = new Progress<ProgressChangedEventArgs>(
+                e => ProgressChanged.Invoke(this, e));
         }
 
         public event DownloadFileChangedHandler FileChanged;
         public event ProgressChangedEventHandler ProgressChanged;
+        
+        private readonly IProgress<DownloadFileChangedEventArgs> pFileChanged;
+        private readonly IProgress<ProgressChangedEventArgs> pProgressChanged;
         public event EventHandler<string> LogOutput;
 
         public MinecraftPath MinecraftPath { get; private set; }
@@ -36,32 +44,7 @@ namespace CmlLib.Core
         public IVersionLoader VersionLoader { get; set; }
         public FileCheckerCollection GameFileCheckers { get; private set; }
 
-        private IDownloader mFileDownloader;
-        public IDownloader FileDownloader
-        {
-            get => mFileDownloader;
-            set
-            {
-                if (mFileDownloader != null)
-                {
-                    mFileDownloader.ChangeFile -= fireFileChangeEvent;
-                    mFileDownloader.ChangeProgress -= FileDownloader_ChangeProgress;
-                }
-
-                mFileDownloader = value;
-
-                if (mFileDownloader != null)
-                {
-                    mFileDownloader.ChangeFile += fireFileChangeEvent;
-                    mFileDownloader.ChangeProgress += FileDownloader_ChangeProgress;
-                }
-            }
-        }
-
-        private void FileDownloader_ChangeProgress(object sender, ProgressChangedEventArgs e)
-        {
-            ProgressChanged?.Invoke(this, e);
-        }
+        public IDownloader FileDownloader { get; set; }
 
         public MVersionCollection GetAllVersions()
         {
@@ -71,7 +54,8 @@ namespace CmlLib.Core
 
         public async Task<MVersionCollection> GetAllVersionsAsync()
         {
-            Versions = await VersionLoader.GetVersionMetadatasAsync().ConfigureAwait(false);
+            Versions = await VersionLoader.GetVersionMetadatasAsync()
+                .ConfigureAwait(false);
             return Versions;
         }
 
@@ -88,34 +72,42 @@ namespace CmlLib.Core
             if (Versions == null)
                 await GetAllVersionsAsync().ConfigureAwait(false);
 
-            var version = await Task.Run(() => Versions.GetVersion(versionname)).ConfigureAwait(false);
+            var version = await Task.Run(() => Versions.GetVersion(versionname))
+                .ConfigureAwait(false);
             return version;
         }
 
         public string CheckJRE()
         {
-            fireFileChangeEvent(MFile.Runtime, "java", 1, 0);
+            pFileChanged?.Report(
+                new DownloadFileChangedEventArgs(MFile.Runtime, "java", 1, 0));
 
             var mjava = createMJava();
             var j = mjava.CheckJava();
-            fireFileChangeEvent(MFile.Runtime, "java", 1, 1);
+
+            pFileChanged?.Report(
+                new DownloadFileChangedEventArgs(MFile.Runtime, "java", 1, 1));
             return j;
         }
 
         public async Task<string> CheckJREAsync()
         {
-            fireFileChangeEvent(MFile.Runtime, "java", 1, 0);
-
+            pFileChanged?.Report(
+                new DownloadFileChangedEventArgs(MFile.Runtime, "java", 1, 0));
+            
             var mjava = createMJava();
-            var j = await mjava.CheckJavaAsync();
-            fireFileChangeEvent(MFile.Runtime, "java", 1, 1);
+            var j = await mjava.CheckJavaAsync().ConfigureAwait(false);
+            
+            pFileChanged?.Report(
+                new DownloadFileChangedEventArgs(MFile.Runtime, "java", 1, 1));
             return j;
         }
 
         private MJava createMJava()
         {
             var mjava = new MJava(MinecraftPath.Runtime);
-            mjava.ProgressChanged += (sender, e) => fireProgressChangeEvent(e.ProgressPercentage);
+            mjava.ProgressChanged += (sender, e)
+                => pProgressChanged?.Report(e);
             return mjava;
         }
 
@@ -148,7 +140,7 @@ namespace CmlLib.Core
             if (!exist)
             {
                 var mforge = new MForge(MinecraftPath, java);
-                mforge.FileChanged += (e) => fireFileChangeEvent(e);
+                mforge.FileChanged += (e) => FileChanged?.Invoke(e);
                 mforge.InstallerOutput += (s, e) => LogOutput?.Invoke(this, e);
                 name = mforge.InstallForge(mcversion, forgeversion);
 
@@ -168,13 +160,10 @@ namespace CmlLib.Core
             var lostFiles = new List<DownloadFile>();
             foreach (IFileChecker checker in this.GameFileCheckers)
             {
-                checker.ChangeFile += fireFileChangeEvent;
-
-                DownloadFile[] files = await checker.CheckFilesTaskAsync(MinecraftPath, version);
+                DownloadFile[] files = await checker.CheckFilesTaskAsync(MinecraftPath, version, pFileChanged)
+                    .ConfigureAwait(false);
                 if (files != null)
                     lostFiles.AddRange(files);
-
-                checker.ChangeFile -= fireFileChangeEvent;
             }
 
             return lostFiles.ToArray();
@@ -185,7 +174,8 @@ namespace CmlLib.Core
             if (this.FileDownloader == null)
                 throw new ArgumentNullException(nameof(this.FileDownloader));
 
-            await FileDownloader.DownloadFiles(files);
+            await FileDownloader.DownloadFiles(files, pFileChanged, pProgressChanged)
+                .ConfigureAwait(false);
         }
 
         public void CheckAndDownload(MVersion version)
@@ -197,16 +187,13 @@ namespace CmlLib.Core
         {
             foreach (var checker in this.GameFileCheckers)
             {
-                checker.ChangeFile += fireFileChangeEvent;
-
-                DownloadFile[] files = await checker.CheckFilesTaskAsync(MinecraftPath, version);
-
-                checker.ChangeFile -= fireFileChangeEvent;
+                DownloadFile[] files = await checker.CheckFilesTaskAsync(MinecraftPath, version, pFileChanged)
+                    .ConfigureAwait(false);
 
                 if (files == null || files.Length == 0)
                     continue;
 
-                await DownloadGameFiles(files);
+                await DownloadGameFiles(files).ConfigureAwait(false);
             }
         }
 
@@ -236,10 +223,10 @@ namespace CmlLib.Core
         [MethodTimer.Time]
         public async Task<Process> CreateProcessAsync(string versionname, MLaunchOption option)
         {
-            option.StartVersion = await GetVersionAsync(versionname);
+            option.StartVersion = await GetVersionAsync(versionname).ConfigureAwait(false);
 
             if (this.FileDownloader != null)
-                await CheckAndDownloadAsync(option.StartVersion);
+                await CheckAndDownloadAsync(option.StartVersion).ConfigureAwait(false);
 
             return await CreateProcessAsync(option).ConfigureAwait(false);
         }
@@ -277,24 +264,10 @@ namespace CmlLib.Core
 
         public async Task<Process> LaunchAsync(string versionname, MLaunchOption option)
         {
-            Process process = await CreateProcessAsync(versionname, option);
+            Process process = await CreateProcessAsync(versionname, option)
+                .ConfigureAwait(false);
             process.Start();
             return process;
-        }
-
-        private void fireFileChangeEvent(MFile kind, string name, int total, int progressed)
-        {
-            FileChanged?.Invoke(new DownloadFileChangedEventArgs(kind, name, total, progressed));
-        }
-
-        private void fireFileChangeEvent(DownloadFileChangedEventArgs e)
-        {
-            FileChanged?.Invoke(e);
-        }
-
-        private void fireProgressChangeEvent(int progress)
-        {
-            ProgressChanged?.Invoke(this, new ProgressChangedEventArgs(progress, null));
         }
     }
 }

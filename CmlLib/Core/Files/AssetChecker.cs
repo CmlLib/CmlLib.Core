@@ -13,9 +13,6 @@ namespace CmlLib.Core.Files
 {
     public sealed class AssetChecker : IFileChecker
     {
-        private IProgress<DownloadFileChangedEventArgs> pChangeFile;
-        public event DownloadFileChangedHandler ChangeFile;
-
         private string assetServer = MojangServer.ResourceDownload;
         public string AssetServer
         {
@@ -30,26 +27,23 @@ namespace CmlLib.Core.Files
         }
         public bool CheckHash { get; set; } = true;
 
-        public DownloadFile[] CheckFiles(MinecraftPath path, MVersion version)
+        public DownloadFile[] CheckFiles(MinecraftPath path, MVersion version, 
+            IProgress<DownloadFileChangedEventArgs> progress)
         {
-            pChangeFile = new Progress<DownloadFileChangedEventArgs>(
-                (e) => ChangeFile?.Invoke(e));
-
-            return checkIndexAndAsset(path, version);
+            return checkIndexAndAsset(path, version, progress);
         }
 
-        public Task<DownloadFile[]> CheckFilesTaskAsync(MinecraftPath path, MVersion version)
+        public Task<DownloadFile[]> CheckFilesTaskAsync(MinecraftPath path, MVersion version, 
+            IProgress<DownloadFileChangedEventArgs> progress)
         {
-            pChangeFile = new Progress<DownloadFileChangedEventArgs>(
-                (e) => ChangeFile?.Invoke(e));
-
-            return Task.Run(() => checkIndexAndAsset(path, version));
+            return Task.Run(() => checkIndexAndAsset(path, version, progress));
         }
 
-        private DownloadFile[] checkIndexAndAsset(MinecraftPath path, MVersion version)
+        private DownloadFile[] checkIndexAndAsset(MinecraftPath path, MVersion version,
+            IProgress<DownloadFileChangedEventArgs> progress)
         {
             CheckIndex(path, version);
-            return CheckAssetFiles(path, version);
+            return CheckAssetFiles(path, version, progress);
         }
 
         private void CheckIndex(MinecraftPath path, MVersion version)
@@ -83,7 +77,8 @@ namespace CmlLib.Core.Files
         }
 
         [MethodTimer.Time]
-        public DownloadFile[] CheckAssetFiles(MinecraftPath path, MVersion version)
+        public DownloadFile[] CheckAssetFiles(MinecraftPath path, MVersion version,
+            IProgress<DownloadFileChangedEventArgs> progress)
         {
             JObject index = ReadIndex(path, version);
             if (index == null)
@@ -111,7 +106,8 @@ namespace CmlLib.Core.Files
                 progressed++;
                 
                 if (progressed % 50 == 0) // prevent ui freezing
-                    fireDownloadFileChangedEvent(MFile.Resource, "", total, progressed);
+                    progress?.Report(
+                        new DownloadFileChangedEventArgs(MFile.Resource, "", total, progressed));
             }
 
             return downloadRequiredFiles.Distinct().ToArray(); // 10ms
@@ -174,12 +170,6 @@ namespace CmlLib.Core.Files
 
                 return null;
             }
-        }
-
-        private void fireDownloadFileChangedEvent(MFile file, string name, int totalFiles, int progressedFiles)
-        {
-            var e = new DownloadFileChangedEventArgs(file, name, totalFiles, progressedFiles);
-            pChangeFile?.Report(e);
         }
 
         private bool checkJsonTrue(JToken j)

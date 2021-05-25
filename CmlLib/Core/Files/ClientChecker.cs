@@ -1,4 +1,5 @@
-﻿using CmlLib.Core.Downloader;
+﻿using System;
+using CmlLib.Core.Downloader;
 using CmlLib.Core.Version;
 using CmlLib.Utils;
 using System.Threading.Tasks;
@@ -7,15 +8,14 @@ namespace CmlLib.Core.Files
 {
     public sealed class ClientChecker : IFileChecker
     {
-        public event DownloadFileChangedHandler ChangeFile;
-
         public bool CheckHash { get; set; } = true;
 
-        public DownloadFile[] CheckFiles(MinecraftPath path, MVersion version)
+        public DownloadFile[] CheckFiles(MinecraftPath path, MVersion version,
+            IProgress<DownloadFileChangedEventArgs> progress)
         {
-            ChangeFile?.Invoke(new DownloadFileChangedEventArgs(MFile.Minecraft, version.Jar, 1, 0));
+            progress?.Report(new DownloadFileChangedEventArgs(MFile.Minecraft, version.Jar, 1, 0));
             DownloadFile result = CheckClientFile(path, version);
-            ChangeFile?.Invoke(new DownloadFileChangedEventArgs(MFile.Minecraft, version.Jar, 1, 1));
+            progress?.Report(new DownloadFileChangedEventArgs(MFile.Minecraft, version.Jar, 1, 1));
 
             if (result == null)
                 return null;
@@ -23,11 +23,12 @@ namespace CmlLib.Core.Files
                 return new [] { result };
         }
 
-        public async Task<DownloadFile[]> CheckFilesTaskAsync(MinecraftPath path, MVersion version)
+        public async Task<DownloadFile[]> CheckFilesTaskAsync(MinecraftPath path, MVersion version,
+            IProgress<DownloadFileChangedEventArgs> progress)
         {
-            ChangeFile?.Invoke(new DownloadFileChangedEventArgs(MFile.Minecraft, version.Jar, 1, 0));
+            progress?.Report(new DownloadFileChangedEventArgs(MFile.Minecraft, version.Jar, 1, 0));
             DownloadFile result = await Task.Run(() => CheckClientFile(path, version));
-            ChangeFile?.Invoke(new DownloadFileChangedEventArgs(MFile.Minecraft, version.Jar, 1, 1));
+            progress?.Report(new DownloadFileChangedEventArgs(MFile.Minecraft, version.Jar, 1, 1));
 
             if (result == null)
                 return null;

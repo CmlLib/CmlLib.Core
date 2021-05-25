@@ -3,6 +3,7 @@ using CmlLib.Core.Auth;
 using CmlLib.Core.Downloader;
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -27,10 +28,10 @@ namespace XboxLoginTest
             var loginForm = new LoginForm();
             loginForm.action = "login";
             loginForm.ShowDialog();
-            var session = loginForm.session;
+            var newSession = loginForm.session;
 
-            if (session != null)
-                setSession(session);
+            if (newSession != null)
+                setSession(newSession);
         }
 
         private void setSession(MSession session)
@@ -65,7 +66,7 @@ namespace XboxLoginTest
                 var versions = await launcher.GetAllVersionsAsync();
                 var lastVersion = versions.LatestReleaseVersion;
 
-                var process = await launcher.CreateProcessAsync(lastVersion.Name, new MLaunchOption()
+                var process = await launcher.CreateProcessAsync(lastVersion.Name, new MLaunchOption
                 {
                     Session = this.session
                 });
@@ -78,7 +79,7 @@ namespace XboxLoginTest
                 MessageBox.Show(ex.ToString());
             }
         }
-
+        
         private void Launcher_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             pbProgress.Value = e.ProgressPercentage;

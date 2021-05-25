@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace CmlLib.Core.Downloader
 {
     [Obsolete("Use AsyncParallelDownloader")]
-    public class ParallelDownloader : IDownloader
+    public class ParallelDownloader
     {
         public event DownloadFileChangedHandler ChangeFile;
         public event ProgressChangedEventHandler ChangeProgress;

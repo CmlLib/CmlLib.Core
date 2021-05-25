@@ -11,9 +11,6 @@ namespace CmlLib.Core.Files
 {
     public sealed class LibraryChecker : IFileChecker
     {
-        private IProgress<DownloadFileChangedEventArgs> pChangeFile;
-        public event DownloadFileChangedHandler ChangeFile;
-
         private string libServer = MojangServer.Library;
         public string LibraryServer
         {
@@ -28,34 +25,32 @@ namespace CmlLib.Core.Files
         }
         public bool CheckHash { get; set; } = true;
 
-        public DownloadFile[] CheckFiles(MinecraftPath path, MVersion version)
+        public DownloadFile[] CheckFiles(MinecraftPath path, MVersion version,
+            IProgress<DownloadFileChangedEventArgs> progress)
         {
             if (version == null)
                 throw new ArgumentNullException(nameof(version));
-            return CheckFiles(path, version.Libraries);
+            return CheckFiles(path, version.Libraries, progress);
         }
 
-        public Task<DownloadFile[]> CheckFilesTaskAsync(MinecraftPath path, MVersion version)
+        public Task<DownloadFile[]> CheckFilesTaskAsync(MinecraftPath path, MVersion version,
+            IProgress<DownloadFileChangedEventArgs> progress)
         {
             if (version == null)
                 throw new ArgumentNullException(nameof(version));
-
-            pChangeFile = new Progress<DownloadFileChangedEventArgs>(
-                (e) => ChangeFile?.Invoke(e));
             
-            return Task.Run(() => checkLibraries(path, version.Libraries));
+            return Task.Run(() => checkLibraries(path, version.Libraries, progress));
         }
 
-        public DownloadFile[] CheckFiles(MinecraftPath path, MLibrary[] libs)
+        public DownloadFile[] CheckFiles(MinecraftPath path, MLibrary[] libs,
+            IProgress<DownloadFileChangedEventArgs> progress)
         {
-            pChangeFile = new Progress<DownloadFileChangedEventArgs>(
-                (e) => ChangeFile?.Invoke(e));
-
-            return checkLibraries(path, libs);
+            return checkLibraries(path, libs, progress);
         }
         
         [MethodTimer.Time]
-        private DownloadFile[] checkLibraries(MinecraftPath path, MLibrary[] libs)
+        private DownloadFile[] checkLibraries(MinecraftPath path, MLibrary[] libs,
+            IProgress<DownloadFileChangedEventArgs> progress)
         {
             if (libs == null)
                 throw new ArgumentNullException(nameof(libs));
@@ -79,7 +74,7 @@ namespace CmlLib.Core.Files
                 }
 
                 progressed++;
-                pChangeFile?.Report(new DownloadFileChangedEventArgs(
+                progress?.Report(new DownloadFileChangedEventArgs(
                     MFile.Library, library.Name, libs.Length, progressed));
             }
             return files.Distinct().ToArray();

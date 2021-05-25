@@ -32,7 +32,6 @@ namespace CmlLib.Core.Installer
             this.Minecraft = mc;
             JavaPath = java;
             Downloader = new SequenceDownloader();
-            Downloader.ChangeFile += (e) => FileChanged?.Invoke(e);
         }
 
         public string JavaPath { get; private set; }
@@ -254,10 +253,13 @@ namespace CmlLib.Core.Installer
                 libs.AddRange(parsedLib);
             }
 
+            var fileProgress = new Progress<DownloadFileChangedEventArgs>(
+                e => FileChanged?.Invoke(e));
+            
             var libraryChecker = new LibraryChecker();
-            var lostLibrary = libraryChecker.CheckFiles(Minecraft, libs.ToArray());
-
-            Downloader.DownloadFiles(lostLibrary);
+            var lostLibrary = libraryChecker.CheckFiles(Minecraft, libs.ToArray(), fileProgress);
+            
+            Downloader.DownloadFiles(lostLibrary, fileProgress, null);
         }
 
         private void process(JArray processors, Dictionary<string, string> mapData)
