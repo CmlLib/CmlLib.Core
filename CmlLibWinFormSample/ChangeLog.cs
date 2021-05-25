@@ -11,34 +11,25 @@ namespace CmlLibWinFormSample
             InitializeComponent();
         }
 
-        private void ChangeLog_Load(object sender, EventArgs e)
+        private Changelogs changelogs;
+        
+        private async void ChangeLog_Load(object sender, EventArgs e)
         {
-            listBox1.Items.AddRange(Changelogs.GetAvailableVersions());
+            btnLoad.Enabled = false;
+            changelogs = await Changelogs.GetChangelogs();
+            listBox1.Items.AddRange(changelogs.GetAvailableVersions());
+            btnLoad.Enabled = true;
         }
-
-        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
+        
+        private async void btnLoad_Click(object sender, EventArgs e)
         {
-            textBox1.Text = Changelogs.GetChangelogUrl(listBox1.SelectedItem.ToString());
-        }
+            btnLoad.Enabled = false;
+            
+            var version = listBox1.SelectedItem.ToString();
+            var body = await changelogs.GetChangelogHtml(version);
+            webBrowser1.DocumentText = body;
 
-        private void button1_Click(object sender, EventArgs e)
-        {
-            var html = Changelogs.GetChangelogHtml(listBox1.SelectedItem.ToString());
-
-            webBrowser1.DocumentText = html;
-            richTextBox1.Text = html;
-        }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            webBrowser1.Visible = true;
-            richTextBox1.Visible = false;
-        }
-
-        private void button3_Click(object sender, EventArgs e)
-        {
-            webBrowser1.Visible = false;
-            richTextBox1.Visible = true;
+            btnLoad.Enabled = true;
         }
     }
 }
