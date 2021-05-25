@@ -34,8 +34,6 @@ namespace CmlLib.Core.Downloader
 
                 try
                 {
-                    fireDownloadFileChangedEvent(file, files.Length, i);
-
                     Directory.CreateDirectory(Path.GetDirectoryName(file.Path));
                     await downloader.DownloadFileAsync(file).ConfigureAwait(false);
 
@@ -46,6 +44,9 @@ namespace CmlLib.Core.Downloader
                             await item().ConfigureAwait(false);
                         }
                     }
+                    
+                    pChangeFile?.Report(
+                        new DownloadFileChangedEventArgs(file.Type, file.Name, files.Length, i));
                 }
                 catch (Exception ex)
                 {
@@ -60,22 +61,6 @@ namespace CmlLib.Core.Downloader
         private void Downloader_FileDownloadProgressChanged(object sender, FileDownloadProgress e)
         {
             pChangeProgress?.Report(new ProgressChangedEventArgs(e.ProgressPercentage, null));
-        }
-
-        private void fireDownloadFileChangedEvent(MFile file, string name, int totalFiles, int progressedFiles)
-        {
-            var e = new DownloadFileChangedEventArgs(file, name, totalFiles, progressedFiles);
-            fireDownloadFileChangedEvent(e);
-        }
-
-        private void fireDownloadFileChangedEvent(DownloadFile file, int totalFiles, int progressedFiles)
-        {
-            fireDownloadFileChangedEvent(file.Type, file.Name, totalFiles, progressedFiles);
-        }
-
-        private void fireDownloadFileChangedEvent(DownloadFileChangedEventArgs e)
-        {
-            pChangeFile.Report(e);
         }
     }
 }
