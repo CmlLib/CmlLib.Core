@@ -3,51 +3,89 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 
 namespace CmlLib.Utils
 {
     public class Changelogs
     {
-        private Changelogs() { }
-
         private static readonly Dictionary<string, string> changelogUrls = new Dictionary<string, string>
         {
-            { "1.13",   "https://feedback.minecraft.net/hc/en-us/articles/360007323492-Minecraft-Java-Edition-1-13-Update-Aquatic-" },
             { "1.14.2", "https://feedback.minecraft.net/hc/en-us/articles/360028919851-Minecraft-Java-Edition-1-14-2" },
             { "1.14.3", "https://feedback.minecraft.net/hc/en-us/articles/360030771451-Minecraft-Java-Edition-1-14-3" },
             { "1.14.4", "https://feedback.minecraft.net/hc/en-us/articles/360030780172-Minecraft-Java-Edition-1-14-4" },
-            { "1.15.1", "https://feedback.minecraft.net/hc/en-us/articles/360038054332-Minecraft-Java-Edition-1-15-1" },
-            { "1.15.2", "https://feedback.minecraft.net/hc/en-us/articles/360038800232-Minecraft-Java-Edition-1-15-2" },
-            { "1.16",   "https://feedback.minecraft.net/hc/en-us/articles/360044911972-Minecraft-Java-Edition-Nether-Release" },
-            { "1.16.5", "https://feedback.minecraft.net/hc/en-us/articles/360055096392-Minecraft-Java-Edition-1-16-5" }
         };
-
-        public static string[] GetAvailableVersions()
+        
+        public static async Task<Changelogs> GetChangelogs()
         {
-            return changelogUrls.Keys.ToArray();
+            string response;
+            using (var wc = new WebClient())
+            {
+                var url = "https://launchercontent.mojang.com/javaPatchNotes.json";
+                response = await wc.DownloadStringTaskAsync(url)
+                    .ConfigureAwait(false);
+            }
+
+            var obj = JObject.Parse(response);
+            return new Changelogs(obj);
+        }
+        
+        private Changelogs(JObject obj)
+        {
+            this.versions = new Dictionary<string, string>();
+            var array = obj?["entries"] as JArray;
+            if (array == null)
+                return;
+
+            foreach (var item in array)
+            {
+                var version = item["version"]?.ToString();
+                var body = item["body"]?.ToString();
+
+                if (string.IsNullOrEmpty(version))
+                    continue;
+                
+                this.versions[version] = body;
+            }
         }
 
-        public static string GetChangelogUrl(string version)
+        private Dictionary<string, string> versions;
+
+        public string[] GetAvailableVersions()
         {
-            var url = "";
-            if (changelogUrls.TryGetValue(version, out url))
-                return url;
-            else
-                return null;
+            var list = new List<string>();
+            list.AddRange(versions.Keys);
+
+            foreach (var item in changelogUrls)
+            {
+                if (!versions.ContainsKey(item.Key))
+                    list.Add(item.Key);
+            }
+
+            return list.ToArray();
         }
 
-        private static readonly Regex articleRegex = new Regex("<article class=\\\"article\\\">(.*)<\\/article>", RegexOptions.Singleline);
-
-        public static string GetChangelogHtml(string version)
+        public async Task<string> GetChangelogHtml(string version)
         {
-            string url = GetChangelogUrl(version);
-            if (string.IsNullOrEmpty(url))
-                return "";
+            if (versions.TryGetValue(version, out string body))
+                return body;
+            if (changelogUrls.TryGetValue(version, out string url))
+                return await GetChangelogFromUrl(url).ConfigureAwait(false);
 
+            return null;
+        }
+
+        private static readonly Regex articleRegex = new Regex(
+            "<article class=\\\"article\\\">(.*)<\\/article>", RegexOptions.Singleline);
+
+        private async Task<string> GetChangelogFromUrl(string url)
+        {
             string html = "";
             using (var wc = new WebClient())
             {
-                html = Encoding.UTF8.GetString(wc.DownloadData(url));
+                var data = await wc.DownloadDataTaskAsync(url).ConfigureAwait(false);
+                html = Encoding.UTF8.GetString(data);
             }
 
             var regResult = articleRegex.Match(html);
