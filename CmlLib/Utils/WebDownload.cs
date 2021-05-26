@@ -19,14 +19,17 @@ namespace CmlLib.Utils
         {
             var req = WebRequest.CreateHttp(url); // Request
             var response = req.GetResponse();
-            var filesize = long.Parse(response.Headers.Get("Content-Length")); // Get File Length
+            var filesize = long.Parse(response.Headers.Get("Content-Length") ?? "0"); // Get File Length
 
             var webStream = response.GetResponseStream(); // Get NetworkStream
+            if (webStream == null)
+                throw new NullReferenceException(nameof(webStream));
+            
             var fileStream = File.Open(path, FileMode.Create); // Open FileStream
 
             var bufferSize = DefaultBufferSize; // Make buffer
             var buffer = new byte[bufferSize];
-            var length = 0;
+            int length;
 
             var fireEvent = filesize > DefaultBufferSize;
             var processedBytes = 0;
@@ -49,7 +52,7 @@ namespace CmlLib.Utils
 
         public async Task DownloadFileAsync(DownloadFile file)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(file.Path));
+            Directory.CreateDirectory(Path.GetDirectoryName(file.Path) ?? string.Empty);
             using (var wc = new WebClient())
             {
                 long lastBytes = 0;
@@ -76,7 +79,7 @@ namespace CmlLib.Utils
 
         public void DownloadFileLimit(string url, string path)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            Directory.CreateDirectory(Path.GetDirectoryName(path) ?? string.Empty);
 
             var req = WebRequest.CreateHttp(url);
             req.Method = "GET";
@@ -88,7 +91,7 @@ namespace CmlLib.Utils
             using (var httpStream = res.GetResponseStream())
             using (var fs = File.OpenWrite(path))
             {
-                httpStream.CopyTo(fs);
+                httpStream?.CopyTo(fs);
             }
         }
 

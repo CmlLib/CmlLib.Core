@@ -28,7 +28,7 @@ namespace CmlLib.Core
             pFileChanged = new Progress<DownloadFileChangedEventArgs>(
                 e => FileChanged?.Invoke(e));
             pProgressChanged = new Progress<ProgressChangedEventArgs>(
-                e => ProgressChanged.Invoke(this, e));
+                e => ProgressChanged?.Invoke(this, e));
         }
 
         public event DownloadFileChangedHandler FileChanged;
