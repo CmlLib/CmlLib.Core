@@ -82,7 +82,8 @@ namespace CmlLib.Core
             pFileChanged?.Report(
                 new DownloadFileChangedEventArgs(MFile.Runtime, "java", 1, 0));
 
-            var mjava = createMJava();
+            var mjava = new MJava();
+            mjava.ProgressChanged += (sender, e) => pProgressChanged?.Report(e);
             var j = mjava.CheckJava();
 
             pFileChanged?.Report(
@@ -95,20 +96,13 @@ namespace CmlLib.Core
             pFileChanged?.Report(
                 new DownloadFileChangedEventArgs(MFile.Runtime, "java", 1, 0));
             
-            var mjava = createMJava();
-            var j = await mjava.CheckJavaAsync().ConfigureAwait(false);
+            var mjava = new MJava();
+            var j = await mjava.CheckJavaAsync(pProgressChanged)
+                .ConfigureAwait(false);
             
             pFileChanged?.Report(
                 new DownloadFileChangedEventArgs(MFile.Runtime, "java", 1, 1));
             return j;
-        }
-
-        private MJava createMJava()
-        {
-            var mjava = new MJava(MinecraftPath.Runtime);
-            mjava.ProgressChanged += (sender, e)
-                => pProgressChanged?.Report(e);
-            return mjava;
         }
 
         public string CheckForge(string mcversion, string forgeversion, string java)

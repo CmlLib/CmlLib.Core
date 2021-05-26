@@ -62,21 +62,31 @@ namespace CmlLib.Core.Installer
 
             return javapath;
         }
-        
-        public async Task<string> CheckJavaAsync()
+
+        public Task<string> CheckJavaAsync()
+            => CheckJavaAsync(null);
+
+        public Task<string> CheckJavaAsync(IProgress<ProgressChangedEventArgs> progress)
         {
             string binaryName = GetDefaultBinaryName();
-            return await CheckJavaAsync(binaryName).ConfigureAwait(false);
+            return CheckJavaAsync(binaryName, progress);
         }
 
-        public async Task<string> CheckJavaAsync(string binaryName)
+        public async Task<string> CheckJavaAsync(string binaryName, IProgress<ProgressChangedEventArgs> progress)
         {
             string javapath = Path.Combine(RuntimeDirectory, "bin", binaryName);
 
             if (!File.Exists(javapath))
             {
-                pProgressChanged = new Progress<ProgressChangedEventArgs>(
-                    (e) => ProgressChanged?.Invoke(this, e));
+                if (progress == null)
+                {
+                    pProgressChanged = new Progress<ProgressChangedEventArgs>(
+                        (e) => ProgressChanged?.Invoke(this, e));
+                }
+                else
+                {
+                    pProgressChanged = progress;
+                }
                 
                 string javaUrl = await GetJavaUrlAsync().ConfigureAwait(false);
                 string lzmaPath = await DownloadJavaLzmaAsync(javaUrl).ConfigureAwait(false);
