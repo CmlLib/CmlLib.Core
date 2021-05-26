@@ -27,7 +27,8 @@ namespace CmlLib.Core.Files
             IProgress<DownloadFileChangedEventArgs> progress)
         {
             progress?.Report(new DownloadFileChangedEventArgs(MFile.Minecraft, version.Jar, 1, 0));
-            DownloadFile result = await Task.Run(() => CheckClientFile(path, version));
+            DownloadFile result = await Task.Run(() => CheckClientFile(path, version))
+                .ConfigureAwait(false);
             progress?.Report(new DownloadFileChangedEventArgs(MFile.Minecraft, version.Jar, 1, 1));
 
             if (result == null)
