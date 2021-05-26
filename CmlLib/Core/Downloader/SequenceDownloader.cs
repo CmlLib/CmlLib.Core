@@ -9,8 +9,6 @@ namespace CmlLib.Core.Downloader
     public class SequenceDownloader : IDownloader
     {
         public bool IgnoreInvalidFiles { get; set; } = true;
-
-        private IProgress<DownloadFileChangedEventArgs> pChangeFile;
         private IProgress<ProgressChangedEventArgs> pChangeProgress;
 
         public async Task DownloadFiles(DownloadFile[] files, 
@@ -20,7 +18,6 @@ namespace CmlLib.Core.Downloader
             if (files == null || files.Length == 0)
                 return;
 
-            pChangeFile = fileProgress;
             pChangeProgress = downloadProgress;
 
             WebDownload downloader = new WebDownload();
@@ -45,7 +42,7 @@ namespace CmlLib.Core.Downloader
                         }
                     }
                     
-                    pChangeFile?.Report(
+                    fileProgress?.Report(
                         new DownloadFileChangedEventArgs(file.Type, file.Name, files.Length, i));
                 }
                 catch (Exception ex)

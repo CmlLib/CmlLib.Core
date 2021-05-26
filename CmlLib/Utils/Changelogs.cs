@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -28,29 +28,31 @@ namespace CmlLib.Utils
             }
 
             var obj = JObject.Parse(response);
-            return new Changelogs(obj);
+            var versions = new Dictionary<string, string>();
+            var array = obj?["entries"] as JArray;
+            if (array != null)
+            {
+                foreach (var item in array)
+                {
+                    var version = item["version"]?.ToString();
+                    var body = item["body"]?.ToString();
+
+                    if (string.IsNullOrEmpty(version))
+                        continue;
+
+                    versions[version] = body;
+                }
+            }
+
+            return new Changelogs(versions);
         }
         
-        private Changelogs(JObject obj)
+        private Changelogs(Dictionary<string, string> versions)
         {
-            this.versions = new Dictionary<string, string>();
-            var array = obj?["entries"] as JArray;
-            if (array == null)
-                return;
-
-            foreach (var item in array)
-            {
-                var version = item["version"]?.ToString();
-                var body = item["body"]?.ToString();
-
-                if (string.IsNullOrEmpty(version))
-                    continue;
-                
-                this.versions[version] = body;
-            }
+            this.versions = versions;
         }
 
-        private Dictionary<string, string> versions;
+        private readonly Dictionary<string, string> versions;
 
         public string[] GetAvailableVersions()
         {

@@ -6,10 +6,10 @@ namespace CmlLib.Core
 {
     public class MNative
     {
-        public MNative(MinecraftPath _path, MVersion _version)
+        public MNative(MinecraftPath gamePath, MVersion version)
         {
-            version = _version;
-            gamePath = _path;
+            this.version = version;
+            this.gamePath = gamePath;
         }
 
         private readonly MVersion version;

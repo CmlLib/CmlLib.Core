@@ -1,6 +1,5 @@
 ﻿using CmlLib.Utils;
 using System;
-using System.Collections.Generic;
 using System.Windows.Forms;
 
 namespace CmlLibWinFormSample
@@ -30,7 +29,7 @@ namespace CmlLibWinFormSample
             optionFile = GameOptionsFile.ReadFile(this.Path);
             foreach (var item in optionFile)
             {
-                listView1.Items.Add(new ListViewItem(new string[]
+                listView1.Items.Add(new ListViewItem(new []
                 {
                     item.Key,
                     item.Value
@@ -85,7 +84,7 @@ namespace CmlLibWinFormSample
         private void btnOk_Click(object sender, EventArgs e)
         {
             if (txtKey.Enabled)
-                listView1.Items.Add(new ListViewItem(new string[] { txtKey.Text, txtValue.Text }));
+                listView1.Items.Add(new ListViewItem(new [] { txtKey.Text, txtValue.Text }));
             else
                 listView1.Items.Find(oKey, false)[0].SubItems[1].Text = txtValue.Text;
             pKeyValue.Visible = false;

@@ -1,13 +1,8 @@
 ﻿using CmlLib.Core;
 using CmlLib.Core.Auth;
 using CmlLib.Core.Downloader;
-using CmlLib.Utils;
 using System;
-using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace CmlLibCoreSample
 {
@@ -146,7 +141,6 @@ namespace CmlLibCoreSample
             // process.Start();
 
             Console.ReadLine();
-            return;
         }
 
         async Task StartAsync(MSession session) // async version

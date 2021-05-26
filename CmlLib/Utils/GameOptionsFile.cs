@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -27,7 +28,7 @@ namespace CmlLib.Utils
             using (var fs = fileinfo.OpenRead())
             using (var reader = new StreamReader(fs, encoding))
             {
-                string line = "";
+                string line;
                 while ((line = reader.ReadLine()) != null)
                 {
                     if (!line.Contains(":"))
@@ -56,22 +57,22 @@ namespace CmlLib.Utils
 
         public string this[string key] => GetRawValue(key);
         public string FilePath { get; private set; }
-        private Dictionary<string, string> Options;
+        private readonly Dictionary<string, string> options;
 
         private GameOptionsFile(Dictionary<string, string> options, string path)
         {
-            this.Options = options;
+            this.options = options;
             this.FilePath = path;
         }
 
         public bool ContainsKey(string key)
         {
-            return Options.ContainsKey(key);
+            return options.ContainsKey(key);
         }
 
         public string GetRawValue(string key)
         {
-            return Options[key];
+            return options[key];
         }
 
         public string GetValueAsString(string key)
@@ -112,7 +113,7 @@ namespace CmlLib.Utils
 
         public void SetRawValue(string key, string value)
         {
-            Options[key] = value;
+            options[key] = value;
         }
 
         public void SetValue(string key, string value)
@@ -127,7 +128,7 @@ namespace CmlLib.Utils
 
         public void SetValue(string key, double value)
         {
-            SetRawValue(key, value.ToString());
+            SetRawValue(key, value.ToString(CultureInfo.InvariantCulture));
         }
 
         public void SetValue(string key, bool value)
@@ -166,7 +167,7 @@ namespace CmlLib.Utils
             using (var fs = File.OpenWrite(path))
             using (var writer = new StreamWriter(fs, encoding))
             {
-                foreach (KeyValuePair<string, string> keyvalue in Options)
+                foreach (KeyValuePair<string, string> keyvalue in options)
                 {
                     if (keyvalue.Value == null)
                         writer.WriteLine(keyvalue.Key);
@@ -196,7 +197,7 @@ namespace CmlLib.Utils
 
         public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
         {
-            return Options.GetEnumerator();
+            return options.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
