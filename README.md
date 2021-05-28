@@ -14,7 +14,7 @@ Support all version, with Forge
 ### Contact
 
 ![Discord](https://img.shields.io/discord/795952027443527690?label=discord&logo=discord&style=for-the-badge)  
-
+[Join the discord server](https://discord.gg/cDW2pvwHSc)
 
 ## Version
 
