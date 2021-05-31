@@ -22,8 +22,9 @@ namespace CmlLib.Utils
             using (var wc = new WebClient())
             {
                 var url = "https://launchercontent.mojang.com/javaPatchNotes.json";
-                response = await wc.DownloadStringTaskAsync(url)
+                var data = await wc.DownloadDataTaskAsync(url)
                     .ConfigureAwait(false);
+                response = Encoding.UTF8.GetString(data);
             }
 
             var obj = JObject.Parse(response);
