@@ -42,11 +42,11 @@ namespace CmlLib.Core.Files
         private DownloadFile[] checkIndexAndAsset(MinecraftPath path, MVersion version,
             IProgress<DownloadFileChangedEventArgs> progress)
         {
-            CheckIndex(path, version);
+            checkIndex(path, version);
             return CheckAssetFiles(path, version, progress);
         }
 
-        private void CheckIndex(MinecraftPath path, MVersion version)
+        private void checkIndex(MinecraftPath path, MVersion version)
         {
             string index = path.GetIndexFilePath(version.AssetId);
 
@@ -98,7 +98,7 @@ namespace CmlLib.Core.Files
 
             foreach (var item in list)
             {
-                var f = CheckAssetFile(item.Key, item.Value, path, version, isVirtual, mapResource);
+                var f = checkAssetFile(item.Key, item.Value, path, version, isVirtual, mapResource);
 
                 if (f != null)
                     downloadRequiredFiles.Add(f);
@@ -113,7 +113,7 @@ namespace CmlLib.Core.Files
             return downloadRequiredFiles.Distinct().ToArray(); // 10ms
         }
 
-        private DownloadFile CheckAssetFile(string key, JToken job, MinecraftPath path, MVersion version, bool isVirtual, bool mapResource)
+        private DownloadFile checkAssetFile(string key, JToken job, MinecraftPath path, MVersion version, bool isVirtual, bool mapResource)
         {
             // download hash resource
             string hash = job["hash"]?.ToString();

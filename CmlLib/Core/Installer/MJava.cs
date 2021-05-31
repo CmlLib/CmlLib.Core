@@ -48,10 +48,10 @@ namespace CmlLib.Core.Installer
 
             if (!File.Exists(javapath))
             {
-                string javaUrl = GetJavaUrl();
-                string lzmaPath = DownloadJavaLzma(javaUrl);
+                string javaUrl = getJavaUrl();
+                string lzmaPath = downloadJavaLzma(javaUrl);
 
-                DecompressJavaFile(lzmaPath);
+                decompressJavaFile(lzmaPath);
 
                 if (!File.Exists(javapath))
                     throw new WebException("failed to download");
@@ -88,10 +88,10 @@ namespace CmlLib.Core.Installer
                     pProgressChanged = progress;
                 }
                 
-                string javaUrl = await GetJavaUrlAsync().ConfigureAwait(false);
-                string lzmaPath = await DownloadJavaLzmaAsync(javaUrl).ConfigureAwait(false);
+                string javaUrl = await getJavaUrlAsync().ConfigureAwait(false);
+                string lzmaPath = await downloadJavaLzmaAsync(javaUrl).ConfigureAwait(false);
 
-                Task decompressTask = Task.Run(() => DecompressJavaFile(lzmaPath));
+                Task decompressTask = Task.Run(() => decompressJavaFile(lzmaPath));
                 await decompressTask.ConfigureAwait(false);
 
                 if (!File.Exists(javapath))
@@ -104,7 +104,7 @@ namespace CmlLib.Core.Installer
             return javapath;
         }
 
-        private string GetJavaUrl()
+        private string getJavaUrl()
         {
             using (var wc = new WebClient())
             {
@@ -113,7 +113,7 @@ namespace CmlLib.Core.Installer
             }
         }
 
-        private async Task<string> GetJavaUrlAsync()
+        private async Task<string> getJavaUrlAsync()
         {
             using (var wc = new WebClient())
             {
@@ -137,7 +137,7 @@ namespace CmlLib.Core.Installer
             return javaUrl;
         }
 
-        private string DownloadJavaLzma(string javaUrl)
+        private string downloadJavaLzma(string javaUrl)
         {
             Directory.CreateDirectory(RuntimeDirectory);
             string lzmapath = Path.Combine(Path.GetTempPath(), "jre.lzma");
@@ -149,7 +149,7 @@ namespace CmlLib.Core.Installer
             return lzmapath;
         }
 
-        private async Task<string> DownloadJavaLzmaAsync(string javaUrl)
+        private async Task<string> downloadJavaLzmaAsync(string javaUrl)
         {
             Directory.CreateDirectory(RuntimeDirectory);
             string lzmapath = Path.Combine(Path.GetTempPath(), "jre.lzma");
@@ -164,7 +164,7 @@ namespace CmlLib.Core.Installer
             return lzmapath;
         }
 
-        private void DecompressJavaFile(string lzmaPath)
+        private void decompressJavaFile(string lzmaPath)
         {
             string zippath = Path.Combine(Path.GetTempPath(), "jre.zip");
             SevenZipWrapper.DecompressFileLZMA(lzmaPath, zippath);

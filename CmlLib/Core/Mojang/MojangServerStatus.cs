@@ -27,7 +27,7 @@ namespace CmlLib.Core.Mojang
                 if (property == null)
                     continue;
                 
-                ServerStatusColor color = ToStatusColor(property.Value.ToString());
+                ServerStatusColor color = toStatusColor(property.Value.ToString());
                 dict.Add(property.Name, color);
             }
 
@@ -56,7 +56,7 @@ namespace CmlLib.Core.Mojang
                 return ServerStatusColor.Unknown;
         }
 
-        private static ServerStatusColor ToStatusColor(string str)
+        private static ServerStatusColor toStatusColor(string str)
         {
             switch (str)
             {

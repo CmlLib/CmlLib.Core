@@ -59,7 +59,7 @@ namespace CmlLib.Core.Files
             var files = new List<DownloadFile>(libs.Length);
             foreach (MLibrary library in libs)
             {
-                bool downloadRequire = CheckDownloadRequire(path, library);
+                bool downloadRequire = checkDownloadRequire(path, library);
                 
                 if (downloadRequire)
                 {
@@ -69,7 +69,7 @@ namespace CmlLib.Core.Files
                         Name = library.Name,
                         Path = Path.Combine(path.Library, library.Path),
                         Size = library.Size,
-                        Url = CreateDownloadUrl(library)
+                        Url = createDownloadUrl(library)
                     });
                 }
 
@@ -80,7 +80,7 @@ namespace CmlLib.Core.Files
             return files.Distinct().ToArray();
         }
 
-        private string CreateDownloadUrl(MLibrary lib)
+        private string createDownloadUrl(MLibrary lib)
         {
             string url = lib.Url;
 
@@ -94,14 +94,14 @@ namespace CmlLib.Core.Files
             return url;
         }
 
-        private bool CheckDownloadRequire(MinecraftPath path, MLibrary lib)
+        private bool checkDownloadRequire(MinecraftPath path, MLibrary lib)
         {
             return lib.IsRequire
                    && !string.IsNullOrEmpty(lib.Path)
                    && !IOUtil.CheckFileValidation(Path.Combine(path.Library, lib.Path), lib.Hash, CheckHash);
         }
         
-        private async Task<bool> CheckDownloadRequireAsync(MinecraftPath path, MLibrary lib)
+        private async Task<bool> checkDownloadRequireAsync(MinecraftPath path, MLibrary lib)
         {
             return lib.IsRequire
                 && !string.IsNullOrEmpty(lib.Path)

@@ -29,10 +29,10 @@ namespace CmlLib.Core.Version
             if (datas == null)
                 throw new ArgumentNullException(nameof(datas));
 
-            versions = new OrderedDictionary();
+            Versions = new OrderedDictionary();
             foreach (var item in datas)
             {
-                versions.Add(item.Name, item);
+                Versions.Add(item.Name, item);
             }
 
             MinecraftPath = originalPath;
@@ -43,11 +43,11 @@ namespace CmlLib.Core.Version
         public MVersionMetadata LatestReleaseVersion { get; private set; }
         public MVersionMetadata LatestSnapshotVersion { get; private set; }
         public MinecraftPath MinecraftPath { get; private set; }
-        protected OrderedDictionary versions;
+        protected OrderedDictionary Versions;
 
         public MVersionMetadata this[int index]
         {
-            get => (MVersionMetadata)versions[index];
+            get => (MVersionMetadata)Versions[index];
         }
 
         [MethodTimer.Time]
@@ -56,7 +56,7 @@ namespace CmlLib.Core.Version
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
 
-            MVersionMetadata versionMetadata = (MVersionMetadata)versions[name];
+            MVersionMetadata versionMetadata = (MVersionMetadata)Versions[name];
             if (versionMetadata == null)
                 throw new KeyNotFoundException("Cannot find " + name);
 
@@ -90,8 +90,8 @@ namespace CmlLib.Core.Version
         {
             foreach (var item in from)
             {
-                if (!versions.Contains(item.Name))
-                    versions[item.Name] = item;
+                if (!Versions.Contains(item.Name))
+                    Versions[item.Name] = item;
             }
 
             if (this.MinecraftPath == null && from.MinecraftPath != null)
@@ -106,7 +106,7 @@ namespace CmlLib.Core.Version
 
         public IEnumerator<MVersionMetadata> GetEnumerator()
         {
-            foreach (DictionaryEntry item in versions)
+            foreach (DictionaryEntry item in Versions)
             {
                 var version = (MVersionMetadata)item.Value;
                 yield return version;
@@ -115,7 +115,7 @@ namespace CmlLib.Core.Version
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            foreach (DictionaryEntry item in versions)
+            foreach (DictionaryEntry item in Versions)
             {
                 var version = item.Value;
                 yield return version;

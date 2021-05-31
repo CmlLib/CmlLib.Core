@@ -31,18 +31,18 @@ namespace CmlLib.Core.Auth
             return Guid.NewGuid().ToString().Replace("-", "");
         }
 
-        private MSession CreateNewSession()
+        private MSession createNewSession()
         {
             var session = new MSession();
             if (SaveSession)
             {
                 session.ClientToken = CreateNewClientToken();
-                WriteSessionCache(session);
+                writeSessionCache(session);
             }
             return session;
         }
 
-        private void WriteSessionCache(MSession session)
+        private void writeSessionCache(MSession session)
         {
             if (!SaveSession) return;
             Directory.CreateDirectory(Path.GetDirectoryName(SessionCacheFilePath));
@@ -70,12 +70,12 @@ namespace CmlLib.Core.Auth
                 }
                 catch (JsonReaderException) // invalid json
                 {
-                    return CreateNewSession();
+                    return createNewSession();
                 }
             }
             else
             {
-                return CreateNewSession();
+                return createNewSession();
             }
         }
 
@@ -111,7 +111,7 @@ namespace CmlLib.Core.Auth
                     ClientToken = clientToken
                 };
 
-                WriteSessionCache(session);
+                writeSessionCache(session);
                 return new MLoginResponse(MLoginResult.Success, session, null, null);
             }
         }

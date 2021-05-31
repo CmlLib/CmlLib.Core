@@ -9,15 +9,15 @@ namespace CmlLib.Core.VersionLoader
     {
         public LocalVersionLoader(MinecraftPath path)
         {
-            MinecraftPath = path;
+            minecraftPath = path;
         }
 
-        private readonly MinecraftPath MinecraftPath;
+        private readonly MinecraftPath minecraftPath;
 
         public MVersionCollection GetVersionMetadatas()
         {
-            var list = getFromLocal(MinecraftPath).ToArray();
-            return new MVersionCollection(list, MinecraftPath);
+            var list = getFromLocal(minecraftPath).ToArray();
+            return new MVersionCollection(list, minecraftPath);
         }
 
         public Task<MVersionCollection> GetVersionMetadatasAsync()

@@ -14,7 +14,7 @@ namespace CmlLib.Core.Files
             IProgress<DownloadFileChangedEventArgs> progress)
         {
             progress?.Report(new DownloadFileChangedEventArgs(MFile.Minecraft, version.Jar, 1, 0));
-            DownloadFile result = CheckClientFile(path, version);
+            DownloadFile result = checkClientFile(path, version);
             progress?.Report(new DownloadFileChangedEventArgs(MFile.Minecraft, version.Jar, 1, 1));
 
             if (result == null)
@@ -27,7 +27,7 @@ namespace CmlLib.Core.Files
             IProgress<DownloadFileChangedEventArgs> progress)
         {
             progress?.Report(new DownloadFileChangedEventArgs(MFile.Minecraft, version.Jar, 1, 0));
-            DownloadFile result = await Task.Run(() => CheckClientFile(path, version))
+            DownloadFile result = await Task.Run(() => checkClientFile(path, version))
                 .ConfigureAwait(false);
             progress?.Report(new DownloadFileChangedEventArgs(MFile.Minecraft, version.Jar, 1, 1));
 
@@ -37,7 +37,7 @@ namespace CmlLib.Core.Files
                 return new [] { result };
         }
 
-        private DownloadFile CheckClientFile(MinecraftPath path, MVersion version)
+        private DownloadFile checkClientFile(MinecraftPath path, MVersion version)
         {
             if (string.IsNullOrEmpty(version.ClientDownloadUrl)) return null;
 

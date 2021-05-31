@@ -35,7 +35,7 @@ namespace CmlLib.Core.Files
             var files = new List<DownloadFile>(Mods.Length);
             foreach (ModFile mod in Mods)
             {
-                if (await CheckDownloadRequireAsync(path, mod).ConfigureAwait(false))
+                if (await checkDownloadRequireAsync(path, mod).ConfigureAwait(false))
                 {
                     files.Add(new DownloadFile
                     {
@@ -58,7 +58,7 @@ namespace CmlLib.Core.Files
             return files.Distinct().ToArray();
         }
 
-        private async Task<bool> CheckDownloadRequireAsync(MinecraftPath path, ModFile mod)
+        private async Task<bool> checkDownloadRequireAsync(MinecraftPath path, ModFile mod)
         {
             return !string.IsNullOrEmpty(mod.Url)
                 && !string.IsNullOrEmpty(mod.Path)
