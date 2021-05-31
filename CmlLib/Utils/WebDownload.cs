@@ -7,8 +7,18 @@ using System.Threading.Tasks;
 
 namespace CmlLib.Utils
 {
-    internal class WebDownload
+    public class WebDownload
     {
+        private class TimeoutWebClient : WebClient
+        {
+            protected override WebRequest GetWebRequest(Uri uri)
+            {
+                WebRequest w = base.GetWebRequest(uri);
+                w.Timeout = 20 * 1000;
+                return w;
+            }
+        }
+        
         private static readonly int DefaultBufferSize = 1024 * 64; // 64kb
         private readonly object locker = new object();
         
@@ -52,8 +62,11 @@ namespace CmlLib.Utils
 
         public async Task DownloadFileAsync(DownloadFile file)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(file.Path) ?? string.Empty);
-            using (var wc = new WebClient())
+            string directoryName = Path.GetDirectoryName(file.Path);
+            if (!string.IsNullOrEmpty(directoryName))
+                Directory.CreateDirectory(directoryName);
+            
+            using (var wc = new TimeoutWebClient())
             {
                 long lastBytes = 0;
 
@@ -79,7 +92,9 @@ namespace CmlLib.Utils
 
         public void DownloadFileLimit(string url, string path)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(path) ?? string.Empty);
+            string directoryName = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(directoryName))
+                Directory.CreateDirectory(directoryName);
 
             var req = WebRequest.CreateHttp(url);
             req.Method = "GET";
