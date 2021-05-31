@@ -4,6 +4,8 @@
 
 <img src='https://raw.githubusercontent.com/CmlLib/CmlLib.Core/master/logo.png' width=150>
 
+[![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://github.com/CmlLib/CmlLib.Core/blob/master/LICENSE)
+
 This library is minecraft launcher library for .NET 5.0 / .NET Core 3.1 / .NET Framework 4.6.2  
 Support all version, with Forge
 
@@ -13,7 +15,7 @@ Support all version, with Forge
 
 ### Contact
 
-![Discord](https://img.shields.io/discord/795952027443527690?label=discord&logo=discord&style=for-the-badge)  
+[![Discord](https://img.shields.io/discord/795952027443527690?label=discord&logo=discord&style=for-the-badge)](https://discord.gg/cDW2pvwHSc)
 
 
 ## Version
