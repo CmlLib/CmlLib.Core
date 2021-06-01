@@ -11,17 +11,17 @@ namespace CmlLibCoreSample
     {
         public async Task TestDownloadFile()
         {
-            Console.WriteLine("TestDownloadFile");
-            var wd = new CmlLib.Utils.WebDownload();
-            wd.FileDownloadProgressChanged += (sender, args) => Console.WriteLine(args.ProgressPercentage); 
-            await wd.DownloadFileAsync(new DownloadFile()
-            {
-                Name = "test.bin",
-                Size = 0,
-                Url =  "https://github.com/AlphaBs/YoutubeMusicPlayer/releases/download/v2.0-b2/YMP_b2.zip",
-                Path = "test.bin"
-            });
-            Console.WriteLine("done");
+            // Console.WriteLine("TestDownloadFile");
+            // var wd = new CmlLib.Utils.WebDownload();
+            // wd.FileDownloadProgressChanged += (sender, args) => Console.WriteLine(args.ProgressPercentage); 
+            // await wd.DownloadFileAsync(new DownloadFile()
+            // {
+            //     Name = "test.bin",
+            //     Size = 0,
+            //     Url =  "https://github.com/AlphaBs/YoutubeMusicPlayer/releases/download/v2.0-b2/YMP_b2.zip",
+            //     Path = "test.bin"
+            // });
+            // Console.WriteLine("done");
         }
         
         async Task TestAll(MSession session)
