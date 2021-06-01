@@ -4,52 +4,51 @@
 
 <img src='https://raw.githubusercontent.com/CmlLib/CmlLib.Core/master/logo.png' width=150>
 
+[![Nuget Badge](https://img.shields.io/nuget/v/CmlLib.Core)](https://www.nuget.org/packages/CmlLib.Core)
 [![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://github.com/CmlLib/CmlLib.Core/blob/master/LICENSE)
-
-This library is minecraft launcher library for .NET 5.0 / .NET Core 3.1 / .NET Framework 4.6.2  
-Support all version, with Forge
-
-[한국어 README](https://github.com/AlphaBs/CmlLib.Core/blob/master/docs/README-kr.md)  
-한국어 문서는 최신 버전이 아닙니다. 빠른 시일 내에 업데이트하겠습니다.  
-궁금하신게 있다면 아래 디스코드 서버 접속해서 한국어 문의하기 채널에서 물어봐주세요.  
-
-### Contact
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/3f55a130ec3f4bccb55e7def97cfa2ce)](https://www.codacy.com/gh/CmlLib/CmlLib.Core/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=CmlLib/CmlLib.Core&amp;utm_campaign=Badge_Grade)
 
 [![Discord](https://img.shields.io/discord/795952027443527690?label=discord&logo=discord&style=for-the-badge)](https://discord.gg/cDW2pvwHSc)
 
+CmlLib.Core is minecraft launcher library for .NET 5.0 / .NET Core 3.1 / .NET Framework 4.6.2  
+Support all version, with Forge
 
-## Version
+[한국어 README](https://github.com/AlphaBs/CmlLib.Core/blob/master/docs/README-kr.md)  
 
-Current version: 3.2.0-pre1
-
-## Functions
+## Features
 
 -   [x] Asynchronous APIs
--   [x] Online or Offline login
+-   [x] Mojang Authentication
+-   [x] Microsoft Xbox Live Login
 -   [x] Download the game files from the Mojang file server
 -   [x] Launch any version (tested up to 1.16.5)
 -   [x] Launch Forge, Optifine, FabricMC, LiteLoader or any other custom version
--   [x] Download the Minecraft java runtime from the Mojang file server
+-   [x] Install Java runtime
 -   [x] Launch with options (direct server connecting, screen resolution)
--   [x] Supports cross-platform (windows, ubuntu, mac, only on .NET Core)
--   [x] Microsoft Xbox Live Login
+-   [x] Supports cross-platform (windows, ubuntu, macOS)
 
-## How to Install
+## Install
 
-Install the 'CmlLib.Core' Nuget package or download the dll files in [Releases](https://github.com/AlphaBs/CmlLib.Core/releases) and add references to them in your project.
+Install the 'CmlLib.Core' [Nuget package](https://www.nuget.org/packages/CmlLib.Core) or download the dll files in [Releases](https://github.com/AlphaBs/CmlLib.Core/releases) and add references to them in your project.
 
 Write this at the top of your source code:
 ```csharp
 using CmlLib.Core;
 using CmlLib.Core.Auth;
 ```
-## How to Use
 
-Official documentation: [wiki](https://github.com/AlphaBs/CmlLib.Core/wiki)
+## Documentation
 
-**[Sample Code](https://github.com/AlphaBs/CmlLib.Core/wiki/Sample-Code)**
+Many features are available for custom launchers. See wiki to use all features!  
+**Official documentation: [wiki](https://github.com/CmlLib/CmlLib.Core/wiki)**
 
-**Login**
+## QuickStart
+
+**Microsoft Xbox Login**
+
+[Wiki](https://github.com/CmlLib/CmlLib.Core/wiki/Microsoft-Xbox-Live-Login)
+
+**Mojang Login**
 
 [Login Process](https://github.com/AlphaBs/CmlLib.Core/wiki/Login-and-Sessions)
 
@@ -119,10 +118,7 @@ var process = await launcher.CreateProcessAsync("1.15.2", launchOption); // vani
 
 process.Start();
 ```
-### More information
 
-Go to [wiki](https://github.com/AlphaBs/CmlLib.Core/wiki)
+## Example
 
-### What is different between CmlLib.Core and [CmlLib](https://github.com/AlphaBs/MinecraftLauncherLibrary)?
-
-CmlLib.Core is developed using .NET Core and supports cross platform, but CmlLib doesn't support it, and is deprecated.
+[Sample Code](https://github.com/AlphaBs/CmlLib.Core/wiki/Sample-Code)
