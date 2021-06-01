@@ -2,120 +2,127 @@
 
 ## Minecraft Launcher Library
 
-.NET Core와 .NET Framework 를 지원하는 마인크래프트 런처 라이브러리입니다.
-포지를 포함한 모든 버전 실행 가능합니다
+<img src='https://raw.githubusercontent.com/CmlLib/CmlLib.Core/master/logo.png' width=150>
 
-## CmlLib.Core와 [CmlLib](https://github.com/AlphaBs/MinecraftLauncherLibrary)의 차이점?
-CmlLib.Core 는 .NET Core 에서도 동작하도록 만들어졌으며, 윈도우 뿐만 아니라 다른 운영체제에서도 작동합니다.  
-기존 라이브러리(MinecraftLauncherLibrary)는 더이상 개발하지 않습니다.  
+[![Nuget Badge](https://img.shields.io/nuget/v/CmlLib.Core)](https://www.nuget.org/packages/CmlLib.Core)
+[![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://github.com/CmlLib/CmlLib.Core/blob/master/LICENSE)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/3f55a130ec3f4bccb55e7def97cfa2ce)](https://www.codacy.com/gh/CmlLib/CmlLib.Core/dashboard?utm_source=github.com&utm_medium=referral&utm_content=CmlLib/CmlLib.Core&utm_campaign=Badge_Grade)
 
-## Contacts
+[![Discord](https://img.shields.io/discord/795952027443527690?label=discord&logo=discord&style=for-the-badge)](https://discord.gg/cDW2pvwHSc)
 
-Email : ksi123456ab@naver.com  
-Discord : ksi123456ab#3719
+CmlLib.Core 는 마인크래프트 커스텀 런처 제작을 위한 C# 라이브러리입니다.  
+포지를 포함한 모든 버전을 실행 가능합니다.  
+.NET 5.0 / .NET Core 3.1 / .NET Framework 4.6.2 지원  
 
-## License
+## 기능
 
-MIT License  
-자세한 설명 : [LICENSE](https://github.com/AlphaBs/CmlLib.Core/blob/master/LICENSE)
+- 비동기 APIs
+- 모장 인증(로그인)
+- 마이크로소프트 엑스박스 계정으로 로그인
+- 모장 파일 서버에서 게임 파일 다운로드
+- 모든 버전 실행(1.16.5 까지 테스트 완료)
+- 모든 커스텀 버전(포지, 옵티파인, Fabric, 라이트로더 등등) 실행 가능
+- 자바 런타임 자동 설치
+- 다양한 실행 옵션 (서버 바로 접속, 화면 크기 조정 등)
+- 크로스플랫폼 (windows, ubuntu, macOS)
 
+## 설치
 
-## Crossplatform
+CmlLib.Core [Nuget package](https://www.nuget.org/packages/CmlLib.Core) 를 설치하거나, [Releases](https://github.com/AlphaBs/CmlLib.Core/releases) 에서 dll 파일을 다운받고 프로젝트에 참조 추가하세요.
 
-.NET Core 버전은 크로스플랫폼을 지원합니다. Windows10, Ubuntu 18.04, macOS Catalina 에서 테스트하였습니다.  
+소스코드 최상단에 아래 소스코드를 입력하세요:
 
-## 종속성
+```csharp
+using CmlLib.Core;
+using CmlLib.Core.Auth;
+```
 
-Newtonsoft.Json 12.0.3  
-SharpZipLib 1.2.0  
-LZMA-SDK 19.0.0  
+## 문서
 
-## Functions
+커스텀 런처를 위한 많은 기능들이 있습니다. 위키에서 모든 기능 목록을 확인하세요.  
+**공식 문서: [wiki](https://github.com/CmlLib/CmlLib.Core/wiki)**
 
-- [x] 정품/복돌 로그인
-- [x] 게임 서버에서 게임 파일 다운로드
-- [x] 모든 버전 실행 (1.15.2 까지 테스트)
-- [x] 포지, 옵티파인 등 커스텀 버전 실행 가능
-- [x] 자바 런타임 다운로드
-- [x] 다양한 실행 옵션 (서버 주소, 창 크기, 런처 이름 등)
-- [x] 크로스플랫폼 지원
+## QuickStart
 
-## 사용법
+### 마이크로소프트 엑스박스 계정으로 로그인
 
-더 자세한 내용은 위키에 있습니다. [wiki](https://github.com/AlphaBs/CmlLib.Core/wiki)
+[Wiki 참고](https://github.com/CmlLib/CmlLib.Core/wiki/Microsoft-Xbox-Live-Login)
 
-**[샘플 코드](https://github.com/AlphaBs/CmlLib.Core/wiki/Sample-Code)**
+### 모장 계정으로 로그인
 
-### **설치**
+[Login Process](https://github.com/AlphaBs/CmlLib.Core/wiki/Login-and-Sessions)
 
-Nuget Package `CmlLib.Core` 를 설치하세요.  
-혹은 dll 파일을 직접 다운로드한 후 참조 추가하세요 : [Releases](https://github.com/AlphaBs/CmlLib.Core/releases)  
+```csharp
+var login = new MLogin();
+var response = login.TryAutoLogin();
 
-소스코드 최상단에 아래 코드를 입력하세요:  
+if (!response.IsSuccess) // 자동 로그인 실패
+{
+    var email = Console.ReadLine();
+    var pw = Console.ReadLine();
+    response = login.Authenticate(email, pw);
 
-     using CmlLib;
-     using CmlLib.Core;
+    if (!response.IsSuccess)
+         throw new Exception(session.Result.ToString()) // 로그인 실패
+}
 
-### **예시 코드**
+// session 변수가 로그인 결과를 나타내는 변수입니다. 아래 실행 부분에 있는 MLaunchOption에 같이 넣어서 게임을 실행하면 됩니다.
+var session = response.Session;
+```
 
-**로그인**
+### 오프라인 로그인 (복돌)
 
-     var login = new MLogin();
-     var session = login.TryAutoLogin(); // 'session' 변수는 아래 실행 코드의 LaunchOption 에서 사용됩니다.
+```csharp
+// session 변수가 로그인 결과를 나타내는 변수입니다. 아래 실행 부분에 있는 MLaunchOption에 같이 넣어서 게임을 실행하면 됩니다.
+var session = MSession.GetOfflineSession("USERNAME");
+```
 
-     if (session.Result != MLoginResult.Success) // failed to auto login
-     {
-         var email = Console.ReadLine();
-         var pw = Console.ReadLine();
-         session = login.Authenticate(email, pw);
+### 실행
 
-         if (session.Result != MLoginResult.Success)
-              throw new Exception(session.Result.ToString()); // failed to login
-     }
+```csharp
+// 빠른 다운로드를 위해 커넥션 제한을 늘립니다.
+System.Net.ServicePointManager.DefaultConnectionLimit = 256;
 
-**복돌 로그인**
+//var path = new MinecraftPath("게임 폴더 경로");
+var path = new MinecraftPath(); // 기본 게임 경로 사용
 
-     var session = MSession.GetOfflineSession("USERNAME"); // 'session' 변수는 아래 실행 코드의 LaunchOption 에서 사용됩니다.
+var launcher = new CMLauncher(path);
+launcher.FileChanged += (e) =>
+{
+    Console.WriteLine("[{0}] {1} - {2}/{3}", e.FileKind.ToString(), e.FileName, e.ProgressedFileCount, e.TotalFileCount);
+};
+launcher.ProgressChanged += (s, e) =>
+{
+    Console.WriteLine("{0}%", e.ProgressPercentage);
+};
 
-**실행**
+var versions = await launcher.GetAllVersionsAsync();
+foreach (var item in versions)
+{
+    // 모든 버전 이름 표시
+    // 여기서 출력되는 버전 이름을 CreateProcessAsync 메서드를 호출할 때 사용하면 됩니다.
+    Console.WriteLine(item.Name);
+}
 
-     //var path = "your minecraft directory";
-     var path = Minecraft.GetOSDefaultPath(); // 기본 게임 폴더 경로 가져오기
+var launchOption = new MLaunchOption
+{
+    MaximumRamMb = 1024,
+    Session = MSession.GetOfflineSession("hello"), // Login Session. ex) Session = MSession.GetOfflineSession("hello")
 
-     var game = new Minecraft(path);
+    //ScreenWidth = 1600,
+    //ScreenHeigth = 900,
+    //ServerIp = "mc.hypixel.net"
+};
 
-     var launcher = new CmlLib.CMLauncher(game);
-     launcher.ProgressChanged += (s, e) =>
-     {
-          Console.WriteLine("{0}%", e.ProgressPercentage);
-     };
-     launcher.FileChanged += (e) =>
-     {
-          Console.WriteLine("[{0}] {1} - {2}/{3}", e.FileKind.ToString(), e.FileName, e.ProgressedFileCount, e.TotalFileCount);
-     };
+//var process = await launcher.CreateProcessAsync("실행할 버전 이름을 여기에 입력하세요", launchOption);
+var process = await launcher.CreateProcessAsync("1.15.2", launchOption); // 바닐라
+// var process = await launcher.CreateProcessAsync("1.12.2-forge1.12.2-14.23.5.2838", launchOption); // 포지
+// var process = await launcher.CreateProcessAsync("1.12.2-LiteLoader1.12.2"); // 라이트로더
+// var process = await launcher.CreateProcessAsync("fabric-loader-0.11.3-1.16.5") // fabric-loader
 
-     launcher.UpdateProfiles();
-     foreach (var item in launcher.Profiles)
-     {
-         Console.WriteLine(item.Name);
-     }
+process.Start();
+```
 
-     var launchOption = new MLaunchOption
-     {
-         MaximumRamMb = 1024,
-         Session = session, // 로그인 세션. ex) Session = MSession.GetOfflineSession("hello")
+## 예제 코드
 
-         //LauncherName = "MyLauncher",
-         //ScreenWidth = 1600,
-         //ScreenHeigth = 900,
-         //ServerIp = "mc.hypixel.net"
-     };
-
-     // launch vanila
-     var process = launcher.CreateProcess("1.15.2", launchOption);
-
-     process.Start();
-
-
-### More Information 
-Go to [wiki](https://github.com/AlphaBs/CmlLib.Core/wiki/MLaunchOption)
+[Sample Code](https://github.com/AlphaBs/CmlLib.Core/wiki/Sample-Code)
