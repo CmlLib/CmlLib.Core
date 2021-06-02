@@ -552,22 +552,22 @@
             this.rbSequenceDownload.Location = new System.Drawing.Point(44, 30);
             this.rbSequenceDownload.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.rbSequenceDownload.Name = "rbSequenceDownload";
-            this.rbSequenceDownload.Size = new System.Drawing.Size(164, 19);
+            this.rbSequenceDownload.Size = new System.Drawing.Size(171, 19);
             this.rbSequenceDownload.TabIndex = 22;
-            this.rbSequenceDownload.Text = "Sequence Download";
+            this.rbSequenceDownload.Text = "SequenceDownloader";
             this.rbSequenceDownload.UseVisualStyleBackColor = true;
             // 
             // rbParallelDownload
             // 
             this.rbParallelDownload.AutoSize = true;
             this.rbParallelDownload.Checked = true;
-            this.rbParallelDownload.Location = new System.Drawing.Point(211, 30);
+            this.rbParallelDownload.Location = new System.Drawing.Point(221, 30);
             this.rbParallelDownload.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.rbParallelDownload.Name = "rbParallelDownload";
-            this.rbParallelDownload.Size = new System.Drawing.Size(198, 19);
+            this.rbParallelDownload.Size = new System.Drawing.Size(193, 19);
             this.rbParallelDownload.TabIndex = 23;
             this.rbParallelDownload.TabStop = true;
-            this.rbParallelDownload.Text = "Parallel Download (faster)";
+            this.rbParallelDownload.Text = "AsyncParallelDownloader";
             this.rbParallelDownload.UseVisualStyleBackColor = true;
             // 
             // groupBox3
@@ -711,7 +711,6 @@
             this.groupBox4.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
 
         #endregion

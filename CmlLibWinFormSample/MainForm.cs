@@ -17,13 +17,13 @@ namespace CmlLibWinFormSample
     {
         public MainForm(MSession session)
         {
-            this.Session = session;
+            this.session = session;
             InitializeComponent();
         }
 
         CMLauncher launcher;
-        readonly MSession Session;
-        MinecraftPath GamePath;
+        readonly MSession session;
+        MinecraftPath gamePath;
 
         bool useMJava = true;
         string javaPath = "java.exe";
@@ -36,13 +36,13 @@ namespace CmlLibWinFormSample
             this.Refresh();
 
             var defaultPath = new MinecraftPath(MinecraftPath.GetOSDefaultPath());
-            await InitializeLauncher(defaultPath);
+            await initializeLauncher(defaultPath);
         }
 
-        private async Task InitializeLauncher(MinecraftPath path)
+        private async Task initializeLauncher(MinecraftPath path)
         {
             txtPath.Text = path.BasePath;
-            this.GamePath = path;
+            this.gamePath = path;
 
             if (useMJava)
                 lbJavaPath.Text = path.Runtime;
@@ -86,7 +86,7 @@ namespace CmlLibWinFormSample
         // Start Game
         private async void Btn_Launch_Click(object sender, EventArgs e)
         {
-            if (Session == null)
+            if (session == null)
             {
                 MessageBox.Show("Login First");
                 return;
@@ -107,7 +107,7 @@ namespace CmlLibWinFormSample
                 var launchOption = new MLaunchOption()
                 {
                     MaximumRamMb = int.Parse(TxtXmx.Text),
-                    Session = this.Session,
+                    Session = this.session,
 
                     VersionType = Txt_VersionType.Text,
                     GameLauncherName = Txt_GLauncherName.Text,
@@ -222,18 +222,18 @@ namespace CmlLibWinFormSample
 
         private async void btnChangePath_Click(object sender, EventArgs e)
         {
-            var form = new PathForm(this.GamePath);
+            var form = new PathForm(this.gamePath);
             form.ShowDialog();
-            await InitializeLauncher(form.MinecraftPath);
+            await initializeLauncher(form.MinecraftPath);
         }
 
         private void btnChangeJava_Click(object sender, EventArgs e)
         {
-            var form = new JavaForm(useMJava, this.GamePath.Runtime, javaPath);
+            var form = new JavaForm(useMJava, this.gamePath.Runtime, javaPath);
             form.ShowDialog();
 
             useMJava = form.UseMJava;
-            this.GamePath.Runtime = form.MJavaDirectory;
+            this.gamePath.Runtime = form.MJavaDirectory;
             javaPath = form.JavaBinaryPath;
 
             if (useMJava)
@@ -290,7 +290,7 @@ namespace CmlLibWinFormSample
 
                 Invoke(new Action(async () =>
                 {
-                    var forgeForm = new ForgeInstall(GamePath, forgeJava);
+                    var forgeForm = new ForgeInstall(gamePath, forgeJava);
                     forgeForm.ShowDialog();
                     setUIEnabled(true);
                     await refreshVersions(forgeForm.LastInstalledVersion);
@@ -349,7 +349,7 @@ namespace CmlLibWinFormSample
         private void btnOptions_Click(object sender, EventArgs e)
         {
             // options.txt
-            var path = System.IO.Path.Combine(GamePath.BasePath, "options.txt");
+            var path = System.IO.Path.Combine(gamePath.BasePath, "options.txt");
             var f = new GameOptions(path);
             f.Show();
         }
