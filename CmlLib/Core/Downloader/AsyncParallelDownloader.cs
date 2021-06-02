@@ -40,6 +40,9 @@ namespace CmlLib.Core.Downloader
             IProgress<DownloadFileChangedEventArgs> fileProgress,
             IProgress<ProgressChangedEventArgs> downloadProgress)
         {
+            if (files.Length == 0)
+                return;
+            
             if (isRunning)
                 throw new InvalidOperationException("already downloading");
 
@@ -60,6 +63,8 @@ namespace CmlLib.Core.Downloader
                     totalBytes += item.Size;
             }
 
+            fileProgress?.Report(
+                new DownloadFileChangedEventArgs(files[0].Type, null, files.Length, 0));
             await ForEachAsyncSemaphore(files, MaxThread, doDownload).ConfigureAwait(false);
             
             isRunning = false;

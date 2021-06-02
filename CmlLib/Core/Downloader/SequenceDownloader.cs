@@ -23,7 +23,8 @@ namespace CmlLib.Core.Downloader
             WebDownload downloader = new WebDownload();
             downloader.FileDownloadProgressChanged += Downloader_FileDownloadProgressChanged;
 
-            //fireDownloadFileChangedEvent(null, 0, files.Length);
+            fileProgress?.Report(
+                new DownloadFileChangedEventArgs(files[0].Type, null, files.Length, 0));
 
             for (int i = 0; i < files.Length; i++)
             {
