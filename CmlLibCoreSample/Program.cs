@@ -18,15 +18,15 @@ namespace CmlLibCoreSample
 
             // There are two login methods, one is using mojang email and password, and the other is using only username
             // Choose one which you want.
-            //session = p.PremiumLogin(); // Login by mojang email and password
-            session = p.OfflineLogin(); // Login by username
+            session = p.PremiumLogin(); // Login by mojang email and password
+            //session = p.OfflineLogin(); // Login by username
 
             // log login session information
             Console.WriteLine("Success to login : {0} / {1} / {2}", session.Username, session.UUID, session.AccessToken);
 
             // Launch
-            //p.Start(session);
-            p.StartAsync(session).GetAwaiter().GetResult();
+            p.Start(session);
+            //p.StartAsync(session).GetAwaiter().GetResult();
         }
 
         MSession PremiumLogin()
