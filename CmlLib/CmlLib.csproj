@@ -12,7 +12,7 @@ see github to learn how to use
         <Copyright>Copyright (c) 2020 AlphaBs</Copyright>
         <PackageProjectUrl>https://github.com/AlphaBs/CmlLib.Core</PackageProjectUrl>
         <RepositoryUrl>https://github.com/AlphaBs/CmlLib.Core</RepositoryUrl>
-        <iconUrl>icon.png</iconUrl>
+        <PackageIcon>icon.png</PackageIcon>
         <RepositoryType>git</RepositoryType>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageTags>Minecraft Launcher forge optifine mojang Crossplatform C#</PackageTags>
