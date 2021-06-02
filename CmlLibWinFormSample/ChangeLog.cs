@@ -23,9 +23,12 @@ namespace CmlLibWinFormSample
         
         private async void btnLoad_Click(object sender, EventArgs e)
         {
-            btnLoad.Enabled = false;
+            var version = listBox1.SelectedItem?.ToString();
+            if (string.IsNullOrEmpty(version))
+                return;
             
-            var version = listBox1.SelectedItem.ToString();
+            btnLoad.Enabled = false;
+
             var body = await changelogs.GetChangelogHtml(version);
             webBrowser1.DocumentText = body;
 
