@@ -166,7 +166,7 @@ namespace CmlLib.Core
         public async Task DownloadGameFiles(DownloadFile[] files)
         {
             if (this.FileDownloader == null)
-                throw new ArgumentNullException(nameof(this.FileDownloader));
+                return;
 
             await FileDownloader.DownloadFiles(files, pFileChanged, pProgressChanged)
                 .ConfigureAwait(false);
