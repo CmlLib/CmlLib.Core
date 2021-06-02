@@ -37,8 +37,8 @@ namespace CmlLib.Core.Downloader
         }
 
         public async Task DownloadFiles(DownloadFile[] files, 
-            IProgress<DownloadFileChangedEventArgs> fileProgress,
-            IProgress<ProgressChangedEventArgs> downloadProgress)
+            IProgress<DownloadFileChangedEventArgs>? fileProgress,
+            IProgress<ProgressChangedEventArgs>? downloadProgress)
         {
             if (files.Length == 0)
                 return;
