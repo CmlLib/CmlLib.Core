@@ -67,13 +67,17 @@ namespace CmlLib.Core.Files
                 if (downloadRequire)
                 {
                     string libPath = Path.Combine(path.Library, library.Path!); // cannot be null
-                    string libUrl = createDownloadUrl(library);
-                    files.Add(new DownloadFile(libPath, libUrl)
+                    string? libUrl = createDownloadUrl(library);
+
+                    if (!string.IsNullOrEmpty(libUrl))
                     {
-                        Type = MFile.Library,
-                        Name = library.Name,
-                        Size = library.Size
-                    });
+                        files.Add(new DownloadFile(libPath, libUrl)
+                        {
+                            Type = MFile.Library,
+                            Name = library.Name,
+                            Size = library.Size
+                        });
+                    }
                 }
 
                 progressed++;
@@ -83,7 +87,7 @@ namespace CmlLib.Core.Files
             return files.Distinct().ToArray();
         }
 
-        private string createDownloadUrl(MLibrary lib)
+        private string? createDownloadUrl(MLibrary lib)
         {
             string? url = lib.Url;
 
@@ -94,7 +98,7 @@ namespace CmlLib.Core.Files
             else if (url.Split('/').Last() == "")
                 url += lib.Path?.Replace("\\", "/");
 
-            return url ?? "";
+            return url;
         }
 
         private bool checkDownloadRequire(MinecraftPath path, MLibrary lib)

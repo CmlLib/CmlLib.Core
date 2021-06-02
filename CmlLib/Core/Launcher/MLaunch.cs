@@ -82,13 +82,16 @@ namespace CmlLib.Core
                 args.Add("-Xdock:icon=" + handleEmpty(LaunchOption.DockIcon));
 
             // Version-specific JVM Arguments
-            var classpath = new List<string>(version.Libraries?.Length ?? 0);
+            var classpath = new List<string>(version.Libraries?.Length ?? 1);
 
-            var libraries = version.Libraries?
-                .Where(lib => lib.IsRequire && !lib.IsNative && !string.IsNullOrEmpty(lib.Path))
-                .Select(lib => Path.GetFullPath(Path.Combine(minecraftPath.Library, lib.Path!)));
-            if (libraries != null)
+            if (version.Libraries != null)
+            {
+                var libraries = version.Libraries
+                    .Where(lib => lib.IsRequire && !lib.IsNative && !string.IsNullOrEmpty(lib.Path))
+                    .Select(lib => Path.GetFullPath(Path.Combine(minecraftPath.Library, lib.Path!)));
                 classpath.AddRange(libraries);
+            }
+
             if (!string.IsNullOrEmpty(version.Jar))
                 classpath.Add(minecraftPath.GetVersionJarPath(version.Jar));
 
