@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace CmlLib.Core.Mojang
 {
@@ -8,22 +6,22 @@ namespace CmlLib.Core.Mojang
 
     public class Skin
     {
-        public Skin() 
+        public Skin()
         {
-            
+
         }
 
-        public Skin(string url, SkinType type)
+        public Skin(string? url, SkinType type)
         {
             this.Url = url;
             this.Model = type;
         }
 
-        public Skin(string url, string type)
+        public Skin(string? url, string? type)
         {
             this.Url = url;
 
-            var lowerType = type?.ToLower();
+            string? lowerType = type?.ToLower();
             if (lowerType == "alex" || lowerType == "slim")
                 Model = SkinType.Alex;
             else
@@ -37,7 +35,7 @@ namespace CmlLib.Core.Mojang
                 return Convert.ToInt32(input.ToString(), 16);
             }
 
-            var lsbsEven =
+            int lsbsEven =
                 hex2int(userUUID[7]) ^
                 hex2int(userUUID[15]) ^
                 hex2int(userUUID[23]) ^
@@ -46,7 +44,7 @@ namespace CmlLib.Core.Mojang
             return (lsbsEven == 0) ? SkinType.Steve : SkinType.Alex;
         }
 
-        public string Url { get; set; }
+        public string? Url { get; set; }
         public SkinType Model { get; set; }
     }
 }

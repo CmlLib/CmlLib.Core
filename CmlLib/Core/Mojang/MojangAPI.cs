@@ -1,13 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Net;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.IO;
-using Newtonsoft.Json.Linq;
+using System.Net;
+using System.Text;
 
 namespace CmlLib.Core.Mojang
 {
-    public class MojangAPI
+    // use MojangAPI library!
+    // https://github.com/CmlLib/MojangAPI
+
+    [Obsolete("use MojangAPI library: https://github.com/CmlLib/MojangAPI")]
+    public static class MojangAPI
     {
         private static void writeReq(WebRequest req, string data)
         {
@@ -21,7 +24,7 @@ namespace CmlLib.Core.Mojang
         private static string readRes(WebResponse res)
         {
             using (var resStream = res.GetResponseStream())
-            using (var sr = new StreamReader(resStream))
+            using (var sr = new StreamReader(resStream!))
             {
                 return sr.ReadToEnd();
             }
@@ -78,7 +81,7 @@ namespace CmlLib.Core.Mojang
             var resBody = readRes(res);
             var job = JObject.Parse(resBody);
 
-            JObject propObj = null;
+            JObject? propObj = null;
             var propValue = job["properties"]?[0]?["value"];
             if (propValue != null)
             {
@@ -86,7 +89,7 @@ namespace CmlLib.Core.Mojang
                 propObj = JObject.Parse(Encoding.UTF8.GetString(decoded));
             }
 
-            var skinObj = propObj["textures"]?["SKIN"];
+            var skinObj = propObj?["textures"]?["SKIN"];
 
             Skin skin;
             if (skinObj == null)
@@ -100,8 +103,8 @@ namespace CmlLib.Core.Mojang
 
             return new UserProfile
             {
-                UUID = propObj["profileId"]?.ToString(),
-                Name = propObj["profileName"]?.ToString(),
+                UUID = propObj?["profileId"]?.ToString(),
+                Name = propObj?["profileName"]?.ToString(),
                 Skin = skin
             };
         }

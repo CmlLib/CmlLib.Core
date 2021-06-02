@@ -1,8 +1,8 @@
 ﻿namespace CmlLib.Core
 {
-    public class MojangServer
+    public static class MojangServer
     {
-        public const string
+        public static readonly string
 
             Auth             = "https://authserver.mojang.com/",
             Version          = "https://launchermeta.mojang.com/mc/game/version_manifest.json",

@@ -23,7 +23,7 @@ namespace CmlLibWinFormSample
                 {
                     foreach (var item in properties)
                     {
-                        listView1.Items.Add(new ListViewItem(new string[]
+                        listView1.Items.Add(new ListViewItem(new []
                         {
                             item.Name,
                             item.GetValue(status).ToString()

@@ -1,9 +1,7 @@
-﻿using CmlLib.Core;
+﻿#pragma warning disable
+// ReSharper disable All
+
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CmlLib
 {
@@ -12,3 +10,5 @@ namespace CmlLib
         public static string tstr = "462,31";
     }
 }
+
+#pragma warning restore

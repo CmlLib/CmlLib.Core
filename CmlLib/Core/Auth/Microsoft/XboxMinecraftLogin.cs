@@ -1,22 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Net;
-using System.IO;
+﻿using CmlLib.Core.Mojang;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using CmlLib.Core.Mojang;
+using System;
+using System.IO;
+using System.Net;
 
 namespace CmlLib.Core.Auth.Microsoft
 {
     public class XboxMinecraftLogin
     {
-        public const string RelyingParty = "rp://api.minecraftservices.com/";
+        public static readonly string RelyingParty = "rp://api.minecraftservices.com/";
 
         private void writeReq(WebRequest req, string data)
         {
-            using(var reqStream = req.GetRequestStream())
-            using(var sw = new StreamWriter(reqStream))
+            using (var reqStream = req.GetRequestStream())
+            using (var sw = new StreamWriter(reqStream))
             {
                 sw.Write(data);
             }
@@ -25,7 +22,7 @@ namespace CmlLib.Core.Auth.Microsoft
         private string readRes(WebResponse res)
         {
             using (var resStream = res.GetResponseStream())
-            using (var sr = new StreamReader(resStream))
+            using (var sr = new StreamReader(resStream!))
             {
                 return sr.ReadToEnd();
             }

@@ -1,5 +1,6 @@
 ﻿using CmlLib.Core;
 using CmlLib.Core.Downloader;
+using CmlLib.Core.Installer;
 using System;
 using System.Collections.Concurrent;
 using System.Threading;

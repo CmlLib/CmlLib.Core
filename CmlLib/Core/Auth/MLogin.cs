@@ -5,6 +5,9 @@ using System.IO;
 using System.Net;
 using System.Text;
 
+// use new library:
+// https://github.com/CmlLib/MojangAPI
+
 namespace CmlLib.Core.Auth
 {
     public enum MLoginResult { Success, BadRequest, WrongAccount, NeedLogin, UnknownError, NoProfile }
@@ -28,21 +31,23 @@ namespace CmlLib.Core.Auth
             return Guid.NewGuid().ToString().Replace("-", "");
         }
 
-        private MSession CreateNewSession()
+        private MSession createNewSession()
         {
             var session = new MSession();
             if (SaveSession)
             {
                 session.ClientToken = CreateNewClientToken();
-                WriteSessionCache(session);
+                writeSessionCache(session);
             }
             return session;
         }
 
-        private void WriteSessionCache(MSession session)
+        private void writeSessionCache(MSession session)
         {
             if (!SaveSession) return;
-            Directory.CreateDirectory(Path.GetDirectoryName(SessionCacheFilePath));
+            var directoryPath = Path.GetDirectoryName(SessionCacheFilePath);
+            if (!string.IsNullOrEmpty(directoryPath))
+                Directory.CreateDirectory(directoryPath);
 
             var json = JsonConvert.SerializeObject(session);
             File.WriteAllText(SessionCacheFilePath, json, Encoding.UTF8);
@@ -52,13 +57,13 @@ namespace CmlLib.Core.Auth
         {
             if (File.Exists(SessionCacheFilePath))
             {
-                var filedata = File.ReadAllText(SessionCacheFilePath, Encoding.UTF8);
+                var fileData = File.ReadAllText(SessionCacheFilePath, Encoding.UTF8);
                 try
                 {
-                    var session = JsonConvert.DeserializeObject<MSession>(filedata, new JsonSerializerSettings()
+                    var session = JsonConvert.DeserializeObject<MSession>(fileData, new JsonSerializerSettings
                     {
                         NullValueHandling = NullValueHandling.Ignore
-                    });
+                    }) ?? new MSession();
 
                     if (SaveSession && string.IsNullOrEmpty(session.ClientToken))
                         session.ClientToken = CreateNewClientToken();
@@ -67,31 +72,31 @@ namespace CmlLib.Core.Auth
                 }
                 catch (JsonReaderException) // invalid json
                 {
-                    return CreateNewSession();
+                    return createNewSession();
                 }
             }
             else
             {
-                return CreateNewSession();
+                return createNewSession();
             }
         }
 
         private HttpWebResponse mojangRequest(string endpoint, string postdata)
         {
-            var http = WebRequest.CreateHttp(MojangServer.Auth + endpoint);
+            HttpWebRequest http = WebRequest.CreateHttp(MojangServer.Auth + endpoint);
             http.ContentType = "application/json";
             http.Method = "POST";
-            using (var req = new StreamWriter(http.GetRequestStream()))
+            using (StreamWriter req = new StreamWriter(http.GetRequestStream()))
             {
                 req.Write(postdata);
                 req.Flush();
             }
 
-            var res = http.GetResponseNoException();
+            HttpWebResponse res = http.GetResponseNoException();
             return res;
         }
 
-        private MLoginResponse parseSession(string json, string clientToken)
+        private MLoginResponse parseSession(string json, string? clientToken)
         {
             var job = JObject.Parse(json); //json parse
 
@@ -100,7 +105,7 @@ namespace CmlLib.Core.Auth
                 return new MLoginResponse(MLoginResult.NoProfile, null, null, json);
             else
             {
-                var session = new MSession()
+                var session = new MSession
                 {
                     AccessToken = job["accessToken"]?.ToString(),
                     UUID = profile["id"]?.ToString(),
@@ -108,7 +113,7 @@ namespace CmlLib.Core.Auth
                     ClientToken = clientToken
                 };
 
-                WriteSessionCache(session);
+                writeSessionCache(session);
                 return new MLoginResponse(MLoginResult.Success, session, null, null);
             }
         }
@@ -117,10 +122,10 @@ namespace CmlLib.Core.Auth
         {
             try
             {
-                var job = JObject.Parse(json);
+                JObject job = JObject.Parse(json);
 
-                var error = job["error"]?.ToString(); // error type
-                var errormsg = job["message"]?.ToString() ?? ""; // detail error message
+                string error = job["error"]?.ToString() ?? ""; // error type
+                string errorMessage = job["message"]?.ToString() ?? ""; // detail error message
                 MLoginResult result;
 
                 switch (error)
@@ -139,7 +144,7 @@ namespace CmlLib.Core.Auth
                         break;
                 }
 
-                return new MLoginResponse(result, null, errormsg, json);
+                return new MLoginResponse(result, null, errorMessage, json);
             }
             catch (Exception ex)
             {
@@ -149,13 +154,13 @@ namespace CmlLib.Core.Auth
 
         public MLoginResponse Authenticate(string id, string pw)
         {
-            var clientToken = ReadSessionCache().ClientToken;
+            string? clientToken = ReadSessionCache().ClientToken;
             return Authenticate(id, pw, clientToken);
         }
 
-        public MLoginResponse Authenticate(string id, string pw, string clientToken)
+        public MLoginResponse Authenticate(string id, string pw, string? clientToken)
         {
-            var req = new JObject
+            JObject req = new JObject
             {
                 { "username", id },
                 { "password", pw },
@@ -168,11 +173,11 @@ namespace CmlLib.Core.Auth
                 }
             };
 
-            var resHeader = mojangRequest("authenticate", req.ToString());
+            HttpWebResponse resHeader = mojangRequest("authenticate", req.ToString());
 
-            using (var res = new StreamReader(resHeader.GetResponseStream()))
+            using (StreamReader res = new StreamReader(resHeader.GetResponseStream()!))
             {
-                var rawResponse = res.ReadToEnd();
+                string rawResponse = res.ReadToEnd();
                 if (resHeader.StatusCode == HttpStatusCode.OK) // ResultCode == 200
                     return parseSession(rawResponse, clientToken);
                 else // fail to login
@@ -182,7 +187,7 @@ namespace CmlLib.Core.Auth
 
         public MLoginResponse TryAutoLogin()
         {
-            var session = ReadSessionCache();
+            MSession session = ReadSessionCache();
             return TryAutoLogin(session);
         }
 
@@ -190,7 +195,7 @@ namespace CmlLib.Core.Auth
         {
             try
             {
-                var result = Validate(session);
+                MLoginResponse result = Validate(session);
                 if (result.Result != MLoginResult.Success)
                     result = Refresh(session);
                 return result;
@@ -206,6 +211,9 @@ namespace CmlLib.Core.Auth
             var mojangAccounts = MojangLauncher.MojangLauncherAccounts.FromDefaultPath();
             var activeAccount = mojangAccounts.GetActiveAccount();
 
+            if (activeAccount == null)
+                return new MLoginResponse(MLoginResult.NeedLogin, null, null, null);
+            
             return TryAutoLogin(activeAccount.ToSession());
         }
 
@@ -214,22 +222,25 @@ namespace CmlLib.Core.Auth
             var mojangAccounts = MojangLauncher.MojangLauncherAccounts.FromFile(accountFilePath);
             var activeAccount = mojangAccounts.GetActiveAccount();
 
+            if (activeAccount == null)
+                return new MLoginResponse(MLoginResult.NeedLogin, null, null, null);
+            
             return TryAutoLogin(activeAccount.ToSession());
         }
 
         public MLoginResponse Refresh()
         {
-            var session = ReadSessionCache();
+            MSession session = ReadSessionCache();
             return Refresh(session);
         }
 
         public MLoginResponse Refresh(MSession session)
         {
-            var req = new JObject
+            JObject req = new JObject
                 {
                     { "accessToken", session.AccessToken },
                     { "clientToken", session.ClientToken },
-                    { "selectedProfile", new JObject()
+                    { "selectedProfile", new JObject
                         {
                             { "id", session.UUID },
                             { "name", session.Username }
@@ -237,10 +248,10 @@ namespace CmlLib.Core.Auth
                     }
                 };
 
-            var resHeader = mojangRequest("refresh", req.ToString());
-            using (var res = new StreamReader(resHeader.GetResponseStream()))
+            HttpWebResponse resHeader = mojangRequest("refresh", req.ToString());
+            using (StreamReader res = new StreamReader(resHeader.GetResponseStream()!))
             {
-                var rawResponse = res.ReadToEnd();
+                string rawResponse = res.ReadToEnd();
 
                 if ((int)resHeader.StatusCode / 100 == 2)
                     return parseSession(rawResponse, session.ClientToken);
@@ -251,7 +262,7 @@ namespace CmlLib.Core.Auth
 
         public MLoginResponse Validate()
         {
-            var session = ReadSessionCache();
+            MSession session = ReadSessionCache();
             return Validate(session);
         }
 
@@ -263,14 +274,11 @@ namespace CmlLib.Core.Auth
                     { "clientToken", session.ClientToken }
                 };
 
-            var resHeader = mojangRequest("validate", req.ToString());
-            using (var res = new StreamReader(resHeader.GetResponseStream()))
-            {
-                if (resHeader.StatusCode == HttpStatusCode.NoContent) // StatusCode == 204
-                    return new MLoginResponse(MLoginResult.Success, session, null, null);
-                else
-                    return new MLoginResponse(MLoginResult.NeedLogin, null, null, null);
-            }
+            HttpWebResponse resHeader = mojangRequest("validate", req.ToString());
+            if (resHeader.StatusCode == HttpStatusCode.NoContent) // StatusCode == 204
+                return new MLoginResponse(MLoginResult.Success, session, null, null);
+            else
+                return new MLoginResponse(MLoginResult.NeedLogin, null, null, null);
         }
 
         public void DeleteTokenFile()
@@ -281,31 +289,31 @@ namespace CmlLib.Core.Auth
 
         public bool Invalidate()
         {
-            var session = ReadSessionCache();
+            MSession session = ReadSessionCache();
             return Invalidate(session);
         }
 
         public bool Invalidate(MSession session)
         {
-            var job = new JObject
+            JObject job = new JObject
             {
                 { "accessToken", session.AccessToken },
                 { "clientToken", session.ClientToken }
             };
 
-            var res = mojangRequest("invalidate", job.ToString());
+            HttpWebResponse res = mojangRequest("invalidate", job.ToString());
             return res.StatusCode == HttpStatusCode.NoContent; // 204
         }
 
         public bool Signout(string id, string pw)
         {
-            var job = new JObject
+            JObject job = new JObject
             {
                 { "username", id },
                 { "password", pw }
             };
 
-            var res = mojangRequest("signout", job.ToString());
+            HttpWebResponse res = mojangRequest("signout", job.ToString());
             return res.StatusCode == HttpStatusCode.NoContent; // 204
         }
     }
@@ -320,7 +328,7 @@ namespace CmlLib.Core.Auth
             }
             catch (WebException we)
             {
-                var resp = we.Response as HttpWebResponse;
+                HttpWebResponse? resp = we.Response as HttpWebResponse;
                 if (resp == null)
                     throw;
                 return resp;

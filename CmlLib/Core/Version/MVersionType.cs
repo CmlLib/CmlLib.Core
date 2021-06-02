@@ -2,7 +2,7 @@
 {
     public static class MVersionTypeConverter
     {
-        public static MVersionType FromString(string str)
+        public static MVersionType FromString(string? str)
         {
             MVersionType e;
 
@@ -30,7 +30,7 @@
 
         public static string ToString(MVersionType type)
         {
-            var c = "";
+            string c;
 
             switch (type)
             {
@@ -46,7 +46,6 @@
                 case MVersionType.Release:
                     c = "release";
                     break;
-                case MVersionType.Custom:
                 default:
                     c = "unknown";
                     break;

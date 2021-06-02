@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
+using CmlLib.Core.Auth;
+using CmlLib.Core.Version;
 
 namespace CmlLib.Core
 {
@@ -12,8 +12,8 @@ namespace CmlLib.Core
     {
         private const int DefaultServerPort = 25565;
 
-        public const string SupportVersion = "1.16.1";
-        public readonly static string[] DefaultJavaParameter = new string[]
+        public static readonly string SupportVersion = "1.16.6";
+        public readonly static string[] DefaultJavaParameter = 
             {
                 "-XX:+UnlockExperimentalVMOptions",
                 "-XX:+UseG1GC",
@@ -27,10 +27,10 @@ namespace CmlLib.Core
         {
             option.CheckValid();
             LaunchOption = option;
-            this.MinecraftPath = option.Path;
+            this.minecraftPath = option.GetMinecraftPath();
         }
 
-        MinecraftPath MinecraftPath;
+        private readonly MinecraftPath minecraftPath;
         public MLaunchOption LaunchOption { get; private set; }
 
         /// <summary>
@@ -48,16 +48,17 @@ namespace CmlLib.Core
         {
             string arg = string.Join(" ", CreateArg());
             Process mc = new Process();
-            mc.StartInfo.FileName = LaunchOption.JavaPath;
+            mc.StartInfo.FileName = LaunchOption.GetJavaPath();
             mc.StartInfo.Arguments = arg;
-            mc.StartInfo.WorkingDirectory = MinecraftPath.BasePath;
+            mc.StartInfo.WorkingDirectory = minecraftPath.BasePath;
 
             return mc;
         }
 
+        [MethodTimer.Time]
         public string[] CreateArg()
         {
-            var version = LaunchOption.StartVersion;
+            MVersion version = LaunchOption.GetStartVersion();
 
             var args = new List<string>();
 
@@ -81,21 +82,26 @@ namespace CmlLib.Core
                 args.Add("-Xdock:icon=" + handleEmpty(LaunchOption.DockIcon));
 
             // Version-specific JVM Arguments
-            var classpath = new List<string>(version.Libraries.Length);
+            var classpath = new List<string>(version.Libraries?.Length ?? 1);
 
-            var libraries = version.Libraries
-                .Where(lib => lib.IsRequire && !lib.IsNative)
-                .Select(lib => Path.GetFullPath(Path.Combine(MinecraftPath.Library, lib.Path)));
-            classpath.AddRange(libraries);
-            classpath.Add(MinecraftPath.GetVersionJarPath(version.Jar));
+            if (version.Libraries != null)
+            {
+                var libraries = version.Libraries
+                    .Where(lib => lib.IsRequire && !lib.IsNative && !string.IsNullOrEmpty(lib.Path))
+                    .Select(lib => Path.GetFullPath(Path.Combine(minecraftPath.Library, lib.Path!)));
+                classpath.AddRange(libraries);
+            }
+
+            if (!string.IsNullOrEmpty(version.Jar))
+                classpath.Add(minecraftPath.GetVersionJarPath(version.Jar));
 
             var classpathStr = IOUtil.CombinePath(classpath.ToArray());
 
-            var native = new MNative(MinecraftPath, LaunchOption.StartVersion);
+            var native = new MNative(minecraftPath, version);
             native.CleanNatives();
             var nativePath = native.ExtractNatives();
 
-            var jvmdict = new Dictionary<string, string>()
+            var jvmdict = new Dictionary<string, string?>
             {
                 { "natives_directory", nativePath },
                 { "launcher_name", useNotNull(LaunchOption.GameLauncherName, "minecraft-launcher") },
@@ -111,28 +117,30 @@ namespace CmlLib.Core
                 args.Add("-cp " + classpathStr);
             }
 
-            args.Add(version.MainClass);
+            if (!string.IsNullOrEmpty(version.MainClass))
+                args.Add(version.MainClass);
 
             // Game Arguments
-            var gameDict = new Dictionary<string, string>()
+            MSession session = LaunchOption.GetSession();
+            var gameDict = new Dictionary<string, string?>
             {
-                { "auth_player_name" , LaunchOption.Session.Username },
-                { "version_name"     , LaunchOption.StartVersion.Id },
-                { "game_directory"   , MinecraftPath.BasePath },
-                { "assets_root"      , MinecraftPath.Assets },
-                { "assets_index_name", version.AssetId },
-                { "auth_uuid"        , LaunchOption.Session.UUID },
-                { "auth_access_token", LaunchOption.Session.AccessToken },
+                { "auth_player_name" , session.Username },
+                { "version_name"     , version.Id },
+                { "game_directory"   , minecraftPath.BasePath },
+                { "assets_root"      , minecraftPath.Assets },
+                { "assets_index_name", version.AssetId ?? "legacy" },
+                { "auth_uuid"        , session.UUID },
+                { "auth_access_token", session.AccessToken },
                 { "user_properties"  , "{}" },
                 { "user_type"        , "Mojang" },
-                { "game_assets"      , MinecraftPath.GetAssetLegacyPath() },
-                { "auth_session"     , LaunchOption.Session.AccessToken },
+                { "game_assets"      , minecraftPath.GetAssetLegacyPath(version.AssetId ?? "legacy") },
+                { "auth_session"     , session.AccessToken },
                 { "version_type"     , useNotNull(LaunchOption.VersionType, version.TypeStr) }
             };
 
             if (version.GameArguments != null)
                 args.AddRange(Mapper.MapInterpolation(version.GameArguments, gameDict));
-            else
+            else if (!string.IsNullOrEmpty(version.MinecraftArguments))
                 args.AddRange(Mapper.MapInterpolation(version.MinecraftArguments.Split(' '), gameDict));
 
             // Options
@@ -157,7 +165,7 @@ namespace CmlLib.Core
         }
 
         // if input1 is null, return input2
-        string useNotNull(string input1, string input2)
+        private string? useNotNull(string? input1, string? input2)
         {
             if (string.IsNullOrEmpty(input1))
                 return input2;
@@ -165,8 +173,11 @@ namespace CmlLib.Core
                 return input1;
         }
 
-        string handleEmpty(string input)
+        private string? handleEmpty(string? input)
         {
+            if (input == null)
+                return null;
+            
             if (input.Contains(" "))
                 return "\"" + input + "\"";
             else

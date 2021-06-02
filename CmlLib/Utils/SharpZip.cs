@@ -1,19 +1,17 @@
 ﻿using ICSharpCode.SharpZipLib.Zip;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace CmlLib.Utils
 {
-    public class SharpZip
+    internal class SharpZip
     {
         public SharpZip(string path)
         {
             this.ZipPath = path;
         }
 
-        public event EventHandler<int> ProgressEvent;
+        public event EventHandler<int>? ProgressEvent;
         public string ZipPath { get; private set; }
 
         public void Unzip(string path)
@@ -41,19 +39,19 @@ namespace CmlLib.Utils
                         }
                     }
 
-                    //Console.WriteLine(zfile);
                     ev(s.Position, length);
                 }
             }
         }
 
-        int previousPerc = 0;
-        void ev(long curr, long total)
+        private int previousPerc;
+
+        private void ev(long curr, long total)
         {
             if (ProgressEvent == null)
                 return;
 
-            var progress = (int)((double)curr / (double)total * 100);
+            int progress = (int)(curr / (double)total * 100);
             if (previousPerc != progress)
             {
                 previousPerc = progress;

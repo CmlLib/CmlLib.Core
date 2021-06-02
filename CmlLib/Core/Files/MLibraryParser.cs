@@ -1,16 +1,14 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
-namespace CmlLib.Core.Version
+namespace CmlLib.Core.Files
 {
     public class MLibraryParser
     {
-        public static bool CheckOSRules = true;
+        public bool CheckOSRules { get; set; } = true;
 
-        public static MLibrary[] ParseJsonObject(JObject item)
+        public MLibrary[]? ParseJsonObject(JObject item)
         {
             try
             {
@@ -37,12 +35,13 @@ namespace CmlLib.Core.Version
                 // NATIVE library
                 if (natives != null)
                 {
-                    var nativeId = natives[MRule.OSName]?.ToString()?.Replace("${arch}", MRule.Arch);
+                    var nativeId = natives[MRule.OSName]?.ToString().Replace("${arch}", MRule.Arch);
 
                     if (classifiers != null && nativeId != null)
                     {
-                        var nativeLibraryObj = classifiers[nativeId] ?? classifiers[MRule.OSName];
-                        list.Add(createMLibrary(name, nativeId, isRequire, (JObject)nativeLibraryObj));
+                        JToken? lObj = classifiers[nativeId] ?? classifiers[MRule.OSName];
+                        if (lObj != null)
+                            list.Add(createMLibrary(name, nativeId, isRequire, (JObject)lObj));
                     }
                     else
                         list.Add(createMLibrary(name, nativeId, isRequire, new JObject()));
@@ -51,14 +50,14 @@ namespace CmlLib.Core.Version
                 // COMMON library
                 if (artifact != null)
                 {
-                    var obj = createMLibrary(name, "", isRequire, (JObject)artifact);
+                    MLibrary obj = createMLibrary(name, "", isRequire, (JObject)artifact);
                     list.Add(obj);
                 }
 
                 // library
                 if (artifact == null && natives == null)
                 {
-                    var obj = createMLibrary(name, "", isRequire, item);
+                    MLibrary obj = createMLibrary(name, "", isRequire, item);
                     list.Add(obj);
                 }
 
@@ -66,36 +65,34 @@ namespace CmlLib.Core.Version
             }
             catch (Exception ex)
             {
-                //System.Diagnostics.Debug.WriteLine(ex);
+                System.Diagnostics.Debug.WriteLine(ex);
                 return null;
             }
         }
 
-        private static MLibrary createMLibrary(string name, string nativeId, bool require, JObject job)
+        private MLibrary createMLibrary(string? name, string? nativeId, bool require, JObject job)
         {
-            var path = job["path"]?.ToString();
-            if (string.IsNullOrEmpty(path))
+            string? path = job["path"]?.ToString();
+            if (string.IsNullOrEmpty(path) && !string.IsNullOrEmpty(name))
                 path = PackageName.Parse(name).GetPath(nativeId);
-
-            var url = job["url"]?.ToString();
-            if (url == null)
-                url = MojangServer.Library + path;
-            else if (url == "")
-                url = null;
-            else if (url.Split('/').Last() == "")
-                url += path;
 
             var hash = job["sha1"] ?? job["checksums"]?[0];
 
-            var library = new MLibrary();
-            library.Hash = hash?.ToString() ?? "";
-            library.IsNative = !string.IsNullOrEmpty(nativeId);
-            library.Name = name;
-            library.Path = path;
-            library.Url = url;
-            library.IsRequire = require;
+            long size = 0;
+            string? sizeStr = job["size"]?.ToString();
+            if (!string.IsNullOrEmpty(sizeStr))
+                long.TryParse(sizeStr, out size);
 
-            return library;
+            return new MLibrary
+            {
+                Hash = hash?.ToString(),
+                IsNative = !string.IsNullOrEmpty(nativeId),
+                Name = name,
+                Path = path,
+                Size = size,
+                Url = job["url"]?.ToString(),
+                IsRequire = require
+            };
         }
     }
 }

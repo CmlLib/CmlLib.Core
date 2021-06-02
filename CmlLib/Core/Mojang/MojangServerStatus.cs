@@ -1,8 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
-using System.Text;
 using System.Net;
-using Newtonsoft.Json.Linq;
 
 namespace CmlLib.Core.Mojang
 {
@@ -13,7 +11,7 @@ namespace CmlLib.Core.Mojang
         public static MojangServerStatus GetStatus()
         {
             // request
-            var response = "";
+            string response;
             using (var wc = new WebClient())
             {
                 response = wc.DownloadString("https://status.mojang.com/check");
@@ -22,15 +20,19 @@ namespace CmlLib.Core.Mojang
             // to dict
             var jarr = JArray.Parse(response);
             var dict = new Dictionary<string, ServerStatusColor>();
-            foreach (JObject item in jarr)
+            foreach (var token in jarr)
             {
-                var property = item.First as JProperty;
-                var color = ToStatusColor(property.Value.ToString());
-                dict.Add(property.Name, (ServerStatusColor)color);
+                var item = token as JObject;
+                var property = item?.First as JProperty;
+                if (property == null)
+                    continue;
+                
+                ServerStatusColor color = toStatusColor(property.Value.ToString());
+                dict.Add(property.Name, color);
             }
 
             // to object
-            return new MojangServerStatus()
+            return new MojangServerStatus
             {
                 Minecraft = getColorFromDict(dict, "minecraft.net"),
                 Session = getColorFromDict(dict, "session.minecraft.net"),
@@ -47,15 +49,14 @@ namespace CmlLib.Core.Mojang
 
         private static ServerStatusColor getColorFromDict(Dictionary<string, ServerStatusColor> dict, string key)
         {
-            ServerStatusColor color;
-            var result = dict.TryGetValue(key, out color);
+            var result = dict.TryGetValue(key, out var color);
             if (result)
                 return color;
             else
                 return ServerStatusColor.Unknown;
         }
 
-        private static ServerStatusColor ToStatusColor(string str)
+        private static ServerStatusColor toStatusColor(string str)
         {
             switch (str)
             {

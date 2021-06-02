@@ -9,8 +9,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CmlLibWinFormSample", "CmlL
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CmlLib", "CmlLib\CmlLib.csproj", "{AF1C09F9-C4BD-420A-85B9-9EB454F55FCD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XboxLoginTest", "XboxLoginTest\XboxLoginTest.csproj", "{734E181F-9954-4F9C-93A0-A646FF96AEC1}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,10 +27,6 @@ Global
 		{AF1C09F9-C4BD-420A-85B9-9EB454F55FCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF1C09F9-C4BD-420A-85B9-9EB454F55FCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AF1C09F9-C4BD-420A-85B9-9EB454F55FCD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{734E181F-9954-4F9C-93A0-A646FF96AEC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{734E181F-9954-4F9C-93A0-A646FF96AEC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{734E181F-9954-4F9C-93A0-A646FF96AEC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{734E181F-9954-4F9C-93A0-A646FF96AEC1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,34 +1,35 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using CmlLib.Core.Files;
 using System.Linq;
-using System.Net;
 
 namespace CmlLib.Core.Version
 {
     public class MVersion
     {
-        public bool IsInherited { get; set; } = false;
-        public string ParentVersionId { get; set; } = "";
+        public MVersion(string id)
+        {
+            this.Id = id;
+        }
+        
+        public bool IsInherited { get; set; }
+        public string? ParentVersionId { get; set; }
 
-        public string Id { get; set; } = "";
+        public string Id { get; set; }
 
-        public string AssetId { get; set; } = "";
-        public string AssetUrl { get; set; } = "";
-        public string AssetHash { get; set; } = "";
+        public string? AssetId { get; set; } = "";
+        public string? AssetUrl { get; set; } = "";
+        public string? AssetHash { get; set; } = "";
 
-        public string Jar { get; set; } = "";
-        public string ClientDownloadUrl { get; set; } = "";
-        public string ClientHash { get; set; } = "";
-        public MLibrary[] Libraries { get; set; }
-        public string MainClass { get; set; } = "";
-        public string MinecraftArguments { get; set; } = "";
-        public string[] GameArguments { get; set; }
-        public string[] JvmArguments { get; set; }
-        public string ReleaseTime { get; set; } = "";
+        public string? Jar { get; set; } = "";
+        public string? ClientDownloadUrl { get; set; } = "";
+        public string? ClientHash { get; set; } = "";
+        public MLibrary[]? Libraries { get; set; }
+        public string? MainClass { get; set; } = "";
+        public string? MinecraftArguments { get; set; } = "";
+        public string[]? GameArguments { get; set; }
+        public string[]? JvmArguments { get; set; }
+        public string? ReleaseTime { get; set; } = "";
         public MVersionType Type { get; set; } = MVersionType.Custom;
-        public string TypeStr { get; set; } = "";
+        public string? TypeStr { get; set; } = "";
 
         public void InheritFrom(MVersion parentVersion)
         {
@@ -88,9 +89,14 @@ namespace CmlLib.Core.Version
             }
         }
 
-        static bool nc(string t) // check null string
+        private static bool nc(string? t) // check null string
         {
-            return t == null || t == "";
+            return string.IsNullOrEmpty(t);
+        }
+
+        public override string ToString()
+        {
+            return this.Id;
         }
     }
 }

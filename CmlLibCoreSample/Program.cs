@@ -1,10 +1,8 @@
 ﻿using CmlLib.Core;
 using CmlLib.Core.Auth;
-using CmlLib.Core.Auth.Microsoft;
 using CmlLib.Core.Downloader;
-using CmlLib.Core.Version;
 using System;
-using System.IO;
+using System.Threading.Tasks;
 
 namespace CmlLibCoreSample
 {
@@ -22,14 +20,13 @@ namespace CmlLibCoreSample
             // Choose one which you want.
             session = p.PremiumLogin(); // Login by mojang email and password
             //session = p.OfflineLogin(); // Login by username
-            //session = p.XboxLogin();
 
             // log login session information
             Console.WriteLine("Success to login : {0} / {1} / {2}", session.Username, session.UUID, session.AccessToken);
 
             // Launch
             p.Start(session);
-            //p.StartWithAdvancedOptions(session);
+            //p.StartAsync(session).GetAwaiter().GetResult();
         }
 
         MSession PremiumLogin()
@@ -81,19 +78,24 @@ namespace CmlLibCoreSample
             // https://github.com/AlphaBs/CmlLib.Core/blob/master/CmlLib/Core/MinecraftPath.cs
 
             // You can set this path to what you want like this :
-            // var path = Environment.GetEnvironmentVariable("APPDATA") + "\\.mylauncher";
+            //var path = "./testdir";
             var path = MinecraftPath.GetOSDefaultPath();
             var game = new MinecraftPath(path);
 
             // Create CMLauncher instance
             var launcher = new CMLauncher(game);
+
+            // if you want to download with parallel downloader, add below code :
+            System.Net.ServicePointManager.DefaultConnectionLimit = 256;
+
             launcher.ProgressChanged += Downloader_ChangeProgress;
             launcher.FileChanged += Downloader_ChangeFile;
-            launcher.LogOutput += (s, e) => Console.WriteLine(e); // forge installer log
 
             Console.WriteLine($"Initialized in {launcher.MinecraftPath.BasePath}");
 
-            var versions = launcher.GetAllVersions(); // Get all installed profiles and load all profiles from mojang server
+            // Get all installed profiles and load all profiles from mojang server
+            var versions = launcher.GetAllVersions(); 
+
             foreach (var item in versions) // Display all profiles 
             {
                 // You can filter snapshots and old versions to add if statement : 
@@ -106,24 +108,23 @@ namespace CmlLibCoreSample
                 MaximumRamMb = 1024,
                 Session = session,
 
+                //ScreenWidth = 1600,
+                //ScreenHeight = 900,
+                //ServerIp = "mc.hypixel.net",
+                //MinimumRamMb = 102,
+                //FullScreen = true,
+
                 // More options:
                 // https://github.com/AlphaBs/CmlLib.Core/wiki/MLaunchOption
             };
 
-            // (A) checks forge installation and install forge if it was not installed.
-            // (B) just launch any versions without installing forge, but it can still launch forge already installed.
-            // Both methods automatically download essential files (ex: vanilla libraries) and create game process.
+            // download essential files (ex: vanilla libraries) and create game process.
 
-            // (A) download forge and launch
-            // var process = launcher.CreateProcess("1.12.2", "14.23.5.2768", launchOption);
+            // var process = await launcher.CreateProcessAsync("1.15.2", launchOption); // vanilla
+            // var process = await launcher.CreateProcessAsync("1.12.2-forge1.12.2-14.23.5.2838", launchOption); // forge
+            // var process = await launcher.CreateProcessAsync("1.12.2-LiteLoader1.12.2"); // liteloader
+            // var process = await launcher.CreateProcessAsync("fabric-loader-0.11.3-1.16.5") // fabric-loader
 
-            // (B) launch vanilla version
-            // var process = launcher.CreateProcess("1.15.2", launchOption);
-
-            // If you have already installed forge, you can launch it directly like this.
-            // var process = launcher.CreateProcess("1.12.2-forge1.12.2-14.23.5.2838", launchOption);
-
-            // launch by user input
             Console.WriteLine("input version (example: 1.12.2) : ");
             var process = launcher.CreateProcess(Console.ReadLine(), launchOption);
 
@@ -140,128 +141,41 @@ namespace CmlLibCoreSample
             // process.Start();
 
             Console.ReadLine();
-
-            return;
         }
 
-        #region Advance Launch
-
-        void StartWithAdvancedOptions(MSession session)
+        async Task StartAsync(MSession session) // async version
         {
-            // game directory
-            var defaultPath = MinecraftPath.GetOSDefaultPath();
-            var path = Path.Combine(Environment.CurrentDirectory, "game dir");
+            var path = new MinecraftPath();
+            var launcher = new CMLauncher(path);
 
-            // create minecraft path instance
-            var minecraft = new MinecraftPath(path)
-            {
-                Assets = Path.Combine(defaultPath, "assets") // this speed up asset downloads
-            };
+            System.Net.ServicePointManager.DefaultConnectionLimit = 256;
 
-            // get all version metadatas
-            // you can also use MVersionLoader.GetVersionMetadatasFromLocal and GetVersionMetadatasFromWeb
-            var versionMetadatas = new MVersionLoader().GetVersionMetadatas(minecraft);
-            foreach (var item in versionMetadatas)
+            var versions = await launcher.GetAllVersionsAsync();
+            foreach (var item in versions)
             {
-                Console.WriteLine("Name : {0}", item.Name);
-                Console.WriteLine("Type : {0}", item.Type);
-                Console.WriteLine("Path : {0}", item.Path);
-                Console.WriteLine("IsLocalVersion : {0}", item.IsLocalVersion);
-                Console.WriteLine("============================================");
+                Console.WriteLine(item.Type + " " + item.Name);
             }
-            Console.WriteLine("");
-            Console.WriteLine("LatestRelease : {0}", versionMetadatas.LatestReleaseVersion?.Name);
-            Console.WriteLine("LatestSnapshot : {0}", versionMetadatas.LatestSnapshotVersion?.Name);
 
-            Console.WriteLine("Input Version Name (ex: 1.15.2) : ");
+            launcher.FileChanged += Downloader_ChangeFile;
+            launcher.ProgressChanged += Downloader_ChangeProgress;
+            
+            Console.WriteLine("input version (example: 1.12.2) : ");
             var versionName = Console.ReadLine();
-
-            // get MVersion from MVersionMetadata
-            var version = versionMetadatas.GetVersion(versionName);
-            if (version == null)
+            var process = await launcher.CreateProcessAsync(versionName, new MLaunchOption
             {
-                Console.WriteLine("{0} is not exist", versionName);
-                return;
-            }
-
-            Console.WriteLine("\n\nVersion Information : ");
-            Console.WriteLine("Id : {0}", version.Id);
-            Console.WriteLine("Type : {0}", version.TypeStr);
-            Console.WriteLine("ReleaseTime : {0}", version.ReleaseTime);
-            Console.WriteLine("AssetId : {0}", version.AssetId);
-            Console.WriteLine("JAR : {0}", version.Jar);
-            Console.WriteLine("Libraries : {0}", version.Libraries.Length);
-
-            if (version.IsInherited)
-                Console.WriteLine("Inherited Profile from {0}", version.ParentVersionId);
-
-            // Download mode
-            Console.WriteLine("\nSelect download mode : ");
-            Console.WriteLine("(1) Sequence Download");
-            Console.WriteLine("(2) Parallel Download");
-            var downloadModeInput = Console.ReadLine();
-
-            MDownloader downloader;
-            if (downloadModeInput == "1")
-                downloader = new MDownloader(minecraft, version); // Sequence Download
-            else if (downloadModeInput == "2")
-                downloader = new MAsyncDownloader(minecraft, version); // Parallel Download (note: Parallel Download is not stable yet)
-            else
-            {
-                Console.WriteLine("Input 1 or 2");
-                Console.ReadLine();
-                return;
-            }
-
-            downloader.ChangeFile += Downloader_ChangeFile;
-            downloader.ChangeProgress += Downloader_ChangeProgress;
-
-            // Start download
-            downloader.DownloadAll();
-
-            Console.WriteLine("Download Completed.\n");
-
-            // Set java
-            Console.WriteLine("Input java path (empty input will download java) : ");
-            var javaInput = Console.ReadLine();
-
-            if (javaInput == "")
-            {
-                var java = new MJava();
-                java.ProgressChanged += Downloader_ChangeProgress;
-                javaInput = java.CheckJava();
-            }
-
-            // LaunchOption
-            var option = new MLaunchOption()
-            {
-                JavaPath = javaInput,
                 Session = session,
-                StartVersion = version,
-                Path = minecraft,
-
-                MaximumRamMb = 4096,
-                ScreenWidth = 1600,
-                ScreenHeight = 900,
-            };
-
-            // Launch
-            var launch = new MLaunch(option);
-            var process = launch.GetProcess();
+                MaximumRamMb = 1024
+            });
 
             Console.WriteLine(process.StartInfo.Arguments);
             process.Start();
-            Console.WriteLine("Started");
-            Console.ReadLine();
         }
-
-        #endregion
 
         #region QuickStart
 
         // this code is from README.md
 
-        void QuickStart()
+        async Task QuickStart()
         {
             //var path = new MinecraftPath("game_directory_path");
             var path = new MinecraftPath(); // use default directory
@@ -276,7 +190,8 @@ namespace CmlLibCoreSample
                 Console.WriteLine("{0}%", e.ProgressPercentage);
             };
 
-            foreach (var item in launcher.GetAllVersions())
+            var versions = await launcher.GetAllVersionsAsync();
+            foreach (var item in versions)
             {
                 Console.WriteLine(item.Name);
             }
@@ -292,7 +207,7 @@ namespace CmlLibCoreSample
             };
 
             // launch vanila
-            var process = launcher.CreateProcess("1.15.2", launchOption);
+            var process = await launcher.CreateProcessAsync("1.15.2", launchOption);
 
             process.Start();
         }
@@ -302,21 +217,20 @@ namespace CmlLibCoreSample
         // Event Handling
 
         // The code below has some tricks to display logs prettier.
-        // You can use a simpler event handler
+        // You can also use a simpler event handler
 
         #region Pretty event handler
 
-        int nextline = -1;
+        int endTop = -1;
 
         private void Downloader_ChangeProgress(object sender, System.ComponentModel.ProgressChangedEventArgs e)
         {
-            if (nextline < 0)
-                return;
-
-            Console.SetCursorPosition(0, nextline);
+            Console.SetCursorPosition(0, endTop);
 
             // e.ProgressPercentage: 0~100
-            Console.WriteLine("{0}%", e.ProgressPercentage);
+            Console.Write("{0}%       ", e.ProgressPercentage);
+
+            Console.SetCursorPosition(0, endTop);
         }
 
         private void Downloader_ChangeFile(DownloadFileChangedEventArgs e)
@@ -324,10 +238,9 @@ namespace CmlLibCoreSample
             // More information about DownloadFileChangedEventArgs
             // https://github.com/AlphaBs/CmlLib.Core/wiki/Handling-Events#downloadfilechangedeventargs
 
-            Console.WriteLine("[{0}] {1} - {2}/{3}           ", e.FileKind.ToString(), e.FileName, e.ProgressedFileCount, e.TotalFileCount);
-            if (e.FileKind == MFile.Resource && string.IsNullOrEmpty(e.FileName))
-                Console.SetCursorPosition(0, Console.CursorTop - 1);
-            nextline = Console.CursorTop;
+            Console.WriteLine("[{0}] ({2}/{3}) {1}   ", e.FileKind.ToString(), e.FileName, e.ProgressedFileCount, e.TotalFileCount);
+
+            endTop = Console.CursorTop;
         }
 
         #endregion

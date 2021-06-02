@@ -1,4 +1,5 @@
-﻿using CmlLib.Core.Version;
+﻿using CmlLib.Core.Downloader;
+using CmlLib.Core.Files;
 using CmlLib.Utils;
 using ICSharpCode.SharpZipLib.Zip;
 using Newtonsoft.Json.Linq;
@@ -10,11 +11,11 @@ using System.Linq;
 using System.Net;
 using System.Text;
 
-namespace CmlLib.Core.Downloader
+namespace CmlLib.Core.Installer
 {
     public class MForge
     {
-        const string MavenServer = "https://files.minecraftforge.net/maven/net/minecraftforge/forge/";
+        private const string MavenServer = "https://files.minecraftforge.net/maven/net/minecraftforge/forge/";
 
         public static string GetOldForgeName(string mcVersion, string forgeVersion)
         {
@@ -30,10 +31,12 @@ namespace CmlLib.Core.Downloader
         {
             this.Minecraft = mc;
             JavaPath = java;
+            Downloader = new SequenceDownloader();
         }
 
         public string JavaPath { get; private set; }
-        MinecraftPath Minecraft;
+        private readonly MinecraftPath Minecraft;
+        private readonly IDownloader Downloader;
         public event DownloadFileChangedHandler FileChanged;
         public event EventHandler<string> InstallerOutput;
 
@@ -86,7 +89,6 @@ namespace CmlLib.Core.Downloader
                 $"forge-{mcversion}-{forgeversion}-installer.jar";
 
             return WebRequest.Create(url).GetResponse().GetResponseStream();
-            //return File.OpenRead(@"C:\temp\forge-1.16.2-33.0.5-installer.jar");
         }
 
         private Tuple<JToken, JToken> extractInstaller(Stream stream, string extractPath)
@@ -244,15 +246,20 @@ namespace CmlLib.Core.Downloader
                 return;
 
             var libs = new List<MLibrary>();
+            var parser = new MLibraryParser();
             foreach (var item in jarr)
             {
-                var parsedLib = MLibraryParser.ParseJsonObject((JObject)item);
+                var parsedLib = parser.ParseJsonObject((JObject)item);
                 libs.AddRange(parsedLib);
             }
 
-            var downloader = new MDownloader(Minecraft);
-            downloader.ChangeFile += (e) => FileChanged?.Invoke(e);
-            downloader.DownloadLibraries(libs.ToArray());
+            var fileProgress = new Progress<DownloadFileChangedEventArgs>(
+                e => FileChanged?.Invoke(e));
+            
+            var libraryChecker = new LibraryChecker();
+            var lostLibrary = libraryChecker.CheckFiles(Minecraft, libs.ToArray(), fileProgress);
+            
+            Downloader.DownloadFiles(lostLibrary, fileProgress, null);
         }
 
         private void process(JArray processors, Dictionary<string, string> mapData)

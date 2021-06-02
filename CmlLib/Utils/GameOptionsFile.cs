@@ -1,32 +1,34 @@
-﻿using System;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Text;
+using System.Globalization;
 using System.IO;
+using System.Linq;
+using System.Text;
 
 namespace CmlLib.Utils
 {
-    public class GameOptionsFile
+    public class GameOptionsFile : IEnumerable<KeyValuePair<string, string>>
     {
-        public const int MaxOptionFileLength = 1024 * 1024; // 1MB
+        public static readonly int MaxOptionFileLength = 1024 * 1024; // 1MB
 
-        public static Dictionary<string, string> ReadFile(string filepath)
+        public static GameOptionsFile ReadFile(string filepath)
         {
             // Default Encoding : OS 
             return ReadFile(filepath, Encoding.Default);
         }
 
-        public static Dictionary<string, string> ReadFile(string filepath, Encoding encoding)
+        public static GameOptionsFile ReadFile(string filepath, Encoding encoding)
         {
             var fileinfo = new FileInfo(filepath);
             if (fileinfo.Length > MaxOptionFileLength)
                 throw new IOException("File is too big");
 
-            var options = new Dictionary<string, string>();
+            var options = new Dictionary<string, string?>();
 
             using (var fs = fileinfo.OpenRead())
             using (var reader = new StreamReader(fs, encoding))
             {
-                string line = "";
+                string? line;
                 while ((line = reader.ReadLine()) != null)
                 {
                     if (!line.Contains(":"))
@@ -39,21 +41,150 @@ namespace CmlLib.Utils
                 }
             }
 
-            return options;
+            return new GameOptionsFile(options, filepath);
+        }
+        
+        public static KeyValuePair<string, string> FromKeyValueString(string keyvalue)
+        {
+            var spliter = ':';
+            var spliterIndex = keyvalue.IndexOf(spliter);
+
+            var key = keyvalue.Substring(0, spliterIndex);
+            var value = keyvalue.Substring(spliterIndex + 1);
+
+            return new KeyValuePair<string, string>(key, value);
         }
 
-        public static void WriteFile(string filepath, Dictionary<string, string> options)
+        public string? this[string key] => GetRawValue(key);
+        public string FilePath { get; private set; }
+        private readonly Dictionary<string, string?> options;
+
+        private GameOptionsFile(Dictionary<string, string?> options, string path)
         {
-            var encoding = Encoding.Default;
-            WriteFile(filepath, options, encoding);
+            this.options = options;
+            this.FilePath = path;
         }
 
-        public static void WriteFile(string filepath, Dictionary<string, string> options, Encoding encoding)
+        public bool ContainsKey(string key)
         {
-            using (var fs = File.OpenWrite(filepath))
+            return options.ContainsKey(key);
+        }
+
+        public string? GetRawValue(string key)
+        {
+            return options[key];
+        }
+
+        public string? GetValueAsString(string key)
+        {
+            string? value = GetRawValue(key);
+            if (value == null)
+                return null;
+            return value.Trim().Trim('\"');
+        }
+
+        public string[]? GetValueAsArray(string key)
+        {
+            string? value = GetRawValue(key);
+            if (value == null)
+                return null;
+            
+            return value
+                .Trim()
+                .TrimStart('[')
+                .TrimEnd(']')
+                .Split(',')
+                .Select(x => x.Trim().Trim('\"'))
+                .ToArray();
+        }
+
+        public int GetValueAsInt(string key)
+        {
+            string? value = GetRawValue(key);
+            if (value == null)
+                return 0;
+            
+            return int.Parse(value);
+        }
+
+        public double GetValueAsDouble(string key)
+        {
+            string? value = GetRawValue(key);
+            if (value == null)
+                return 0;
+            
+            return double.Parse(value);
+        }
+
+        public bool GetValueAsBool(string key)
+        {
+            string? value = GetRawValue(key);
+            if (value == null)
+                return false;
+             
+            return bool.Parse(value);
+        }
+
+        public void SetRawValue(string key, string value)
+        {
+            options[key] = value;
+        }
+
+        public void SetValue(string key, string value)
+        {
+            SetRawValue(key, handleEmpty(value));
+        }
+
+        public void SetValue(string key, int value)
+        {
+            SetRawValue(key, value.ToString());
+        }
+
+        public void SetValue(string key, double value)
+        {
+            SetRawValue(key, value.ToString(CultureInfo.InvariantCulture));
+        }
+
+        public void SetValue(string key, bool value)
+        {
+            SetRawValue(key, value.ToString().ToLowerInvariant());
+        }
+
+        public void SetValue(string key, string[] array)
+        {
+            var arrayNotation = string.Join(",", array.Select(x => $"\"{x}\""));
+            SetRawValue(key, $"[{arrayNotation}]");
+        }
+
+        public void SetValue(string key, object obj)
+        {
+            var str = obj.ToString();
+            if (str == null)
+                return;
+            SetValue(key, str);
+        }
+
+        public void Save()
+        {
+            Save(FilePath);
+        }
+
+        public void Save(string path)
+        {
+            Save(path, Encoding.UTF8);
+        }
+
+        public void Save(Encoding encoding)
+        {
+            Save(FilePath, encoding);
+        }
+
+        public void Save(string path, Encoding encoding)
+        {
+            using (var fs = File.OpenWrite(path))
             using (var writer = new StreamWriter(fs, encoding))
             {
-                foreach (KeyValuePair<string, string> keyvalue in options)
+                foreach (KeyValuePair<string, string?> keyvalue in options)
                 {
                     if (keyvalue.Value == null)
                         writer.WriteLine(keyvalue.Key);
@@ -66,6 +197,14 @@ namespace CmlLib.Utils
             }
         }
 
+        private string ToKeyValueString(string key, string value, bool useHandleEmpty = true)
+        {
+            if (useHandleEmpty)
+                value = handleEmpty(value);
+
+            return key + ":" + value;
+        }
+        
         private static string handleEmpty(string value)
         {
             if (value.Contains(" "))
@@ -73,68 +212,14 @@ namespace CmlLib.Utils
             return value;
         }
 
-        public static string ToKeyValueString(string key, string value, bool useHandleEmpty=true)
+        public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
         {
-            if (useHandleEmpty)
-                value = handleEmpty(value);
-
-            return key + ":" + value;
+            return options.GetEnumerator();
         }
 
-        public static string ToKeyValueString(string key, string[] arrs)
+        IEnumerator IEnumerable.GetEnumerator()
         {
-            var sb = new StringBuilder();
-            sb.Append('[');
-            for (int i = 0; i < arrs.Length; i++)
-            {
-                sb.Append('\"');
-                sb.Append(arrs[i]);
-                sb.Append('\"');
-
-                if (i != arrs.Length - 1) // not last element
-                    sb.Append(',');
-            }
-            sb.Append(']');
-
-            return ToKeyValueString(key, sb.ToString(), false);
-        }
-
-        public static string ToKeyValueString(string key, bool value)
-        {
-            var str = value.ToString().ToLower();
-            return ToKeyValueString(key, str, false);
-        }
-
-        public static KeyValuePair<string, string> FromKeyValueString(string keyvalue)
-        {
-            var spliter = ':';
-            var spliterIndex = keyvalue.IndexOf(spliter);
-
-            var key = keyvalue.Substring(0, spliterIndex);
-            var value = keyvalue.Substring(spliterIndex + 1);
-
-            return new KeyValuePair<string, string>(key, value);
-        }
-
-        public static KeyValuePair<string, string[]> FromKeyValueStringToArray(string keyvalue)
-        {
-            var kv = FromKeyValueString(keyvalue);
-            var value = kv.Value;
-            if (!value.StartsWith("[") || !value.EndsWith("]"))
-                return new KeyValuePair<string, string[]>(kv.Key, new string[] { value });
-
-            var innerStr = value.Substring(1, value.Length - 2);
-            if (!innerStr.Contains(","))
-                return new KeyValuePair<string, string[]>(kv.Key, new string[] { innerStr });
-
-            var arrStr = innerStr.Split(',');
-            var arr = new List<string>(arrStr.Length);
-            foreach (var item in arrStr)
-            {
-                arr.Add(item.Trim('\"'));
-            }
-
-            return new KeyValuePair<string, string[]>(kv.Key, arr.ToArray());
+            return GetEnumerator();
         }
     }
 }

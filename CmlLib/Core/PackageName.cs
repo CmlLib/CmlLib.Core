@@ -14,13 +14,13 @@ namespace CmlLib.Core
             if (spliter.Length < 3)
                 throw new ArgumentException("invalid name");
 
-            var pn = new PackageName();
-            pn.names = spliter;
-
-            return pn;
+            return new PackageName(spliter);
         }
 
-        private PackageName() { }
+        private PackageName(string[] names)
+        {
+            this.names = names;
+        }
 
         private string[] names;
 
@@ -35,7 +35,12 @@ namespace CmlLib.Core
             return GetPath("");
         }
 
-        public string GetPath(string nativeId, string extension = "jar")
+        public string GetPath(string? nativeId)
+        {
+            return GetPath(nativeId, "jar");
+        }
+
+        public string GetPath(string? nativeId, string extension)
         {
             // de.oceanlabs.mcp : mcp_config : 1.16.2-20200812.004259 : mappings
             // de\oceanlabs\mcp \ mcp_config \ 1.16.2-20200812.004259 \ mcp_config-1.16.2-20200812.004259.zip
@@ -46,7 +51,7 @@ namespace CmlLib.Core
             // [net.minecraft:client:1.16.2-20200812.004259:slim]
             // /libraries\net\minecraft\client\1.16.2-20200812.004259\client-1.16.2-20200812.004259-slim.jar
 
-            var filename = string.Join("-", names, 1, names.Length - 1);
+            string filename = string.Join("-", names, 1, names.Length - 1);
 
             if (!string.IsNullOrEmpty(nativeId))
                 filename += "-" + nativeId;
@@ -57,7 +62,7 @@ namespace CmlLib.Core
 
         public string GetDirectory()
         {
-            var dir = Package.Replace(".", "/");
+            string dir = Package.Replace(".", "/");
             return Path.Combine(dir, Name, Version);
         }
 

@@ -5,9 +5,9 @@ namespace CmlLibWinFormSample
 {
     public partial class JavaForm : Form
     {
-        public bool UseMJava;
-        public string MJavaDirectory;
-        public string JavaBinaryPath;
+        public bool UseMJava { get; set; }
+        public string MJavaDirectory { get; set; }
+        public string JavaBinaryPath { get; set; }
 
         public JavaForm(bool useMJava, string mjavaDir, string javaPath)
         {

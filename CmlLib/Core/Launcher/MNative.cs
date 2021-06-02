@@ -1,37 +1,46 @@
 ﻿using CmlLib.Core.Version;
 using CmlLib.Utils;
-using System;
 using System.IO;
 
 namespace CmlLib.Core
 {
     public class MNative
     {
-        public MNative(MinecraftPath _path, MVersion _version)
+        public MNative(MinecraftPath gamePath, MVersion version)
         {
-            version = _version;
-            gamePath = _path;
+            this.version = version;
+            this.gamePath = gamePath;
         }
 
-        MVersion version;
-        MinecraftPath gamePath;
+        private readonly MVersion version;
+        private readonly MinecraftPath gamePath;
 
+        [MethodTimer.Time]
         public string ExtractNatives()
         {
-            var path = gamePath.GetNativePath(version.Id);
+            string path = gamePath.GetNativePath(version.Id);
             Directory.CreateDirectory(path);
 
+            if (version.Libraries == null) return path;
+            
             foreach (var item in version.Libraries)
             {
                 try
                 {
-                    if (item.IsRequire && item.IsNative)
+                    if (item.IsRequire && item.IsNative && !string.IsNullOrEmpty(item.Path))
                     {
-                        var z = new SharpZip(Path.Combine(gamePath.Library, item.Path));
-                        z.Unzip(path);
+                        string zPath = Path.Combine(gamePath.Library, item.Path);
+                        if (File.Exists(zPath))
+                        {
+                            var z = new SharpZip(zPath);
+                            z.Unzip(path);
+                        }
                     }
                 }
-                catch { }
+                catch
+                {
+                    // ignore invalid native library file
+                }
             }
 
             return path;
@@ -39,9 +48,10 @@ namespace CmlLib.Core
 
         public void CleanNatives()
         {
+
             try
             {
-                var path = gamePath.GetNativePath(version.Id);
+                string path = gamePath.GetNativePath(version.Id);
                 DirectoryInfo di = new DirectoryInfo(path);
 
                 if (!di.Exists)
@@ -52,7 +62,11 @@ namespace CmlLib.Core
                     item.Delete();
                 }
             }
-            catch { }
+            catch
+            {
+                // ignore exception
+                // will be overwriten to new file
+            }
         }
     }
 }

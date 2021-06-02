@@ -1,5 +1,4 @@
 ﻿using ICSharpCode.SharpZipLib.Zip;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -15,9 +14,9 @@ namespace CmlLib.Utils
 
         public string Path { get; private set; }
 
-        public Dictionary<string, string> GetManifest()
+        public Dictionary<string, string?>? GetManifest()
         {
-            string manifest = null;
+            string? manifest = null;
 
             using (var fs = File.OpenRead(Path))
             using (var s = new ZipInputStream(fs))
@@ -36,7 +35,7 @@ namespace CmlLib.Utils
             if (string.IsNullOrEmpty(manifest))
                 return null;
 
-            var dict = new Dictionary<string, string>();
+            var dict = new Dictionary<string, string?>();
             foreach (var item in manifest.Split('\n'))
             {
                 if (string.IsNullOrWhiteSpace(item))
