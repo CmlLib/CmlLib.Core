@@ -6,32 +6,37 @@ namespace CmlLib.Core
 {
     public class MLaunchOption
     {
-        public MinecraftPath Path { get; set; }
-        public MVersion StartVersion { get; set; }
-        public MSession Session { get; set; }
+        public MinecraftPath? Path { get; set; }
+        public MVersion? StartVersion { get; set; }
+        public MSession? Session { get; set; }
 
-        public string JavaPath { get; set; }
+        public string? JavaPath { get; set; }
         public int MaximumRamMb { get; set; } = 1024;
         public int MinimumRamMb { get; set; }
-        public string[] JVMArguments { get; set; }
+        public string[]? JVMArguments { get; set; }
 
-        public string DockName { get; set; }
-        public string DockIcon { get; set; }
+        public string? DockName { get; set; }
+        public string? DockIcon { get; set; }
 
-        public string ServerIp { get; set; }
+        public string? ServerIp { get; set; }
         public int ServerPort { get; set; } = 25565;
 
         public int ScreenWidth { get; set; }
         public int ScreenHeight { get; set; }
         public bool FullScreen { get; set; }
 
-        public string VersionType { get; set; }
-        public string GameLauncherName { get; set; }
-        public string GameLauncherVersion { get; set; }
+        public string? VersionType { get; set; }
+        public string? GameLauncherName { get; set; }
+        public string? GameLauncherVersion { get; set; }
+
+        internal MinecraftPath GetMinecraftPath() => Path!;
+        internal MVersion GetStartVersion() => StartVersion!;
+        internal MSession GetSession() => Session!;
+        internal string GetJavaPath() => JavaPath!;
 
         internal void CheckValid()
         {
-            string exMsg = null; // error message
+            string? exMsg = null; // error message
 
             if (Path == null)
                 exMsg = nameof(Path) + " is null";

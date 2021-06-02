@@ -8,7 +8,7 @@ namespace CmlLib.Core.Files
     {
         public bool CheckOSRules { get; set; } = true;
 
-        public MLibrary[] ParseJsonObject(JObject item)
+        public MLibrary[]? ParseJsonObject(JObject item)
         {
             try
             {
@@ -35,11 +35,11 @@ namespace CmlLib.Core.Files
                 // NATIVE library
                 if (natives != null)
                 {
-                    var nativeId = natives[MRule.OSName]?.ToString()?.Replace("${arch}", MRule.Arch);
+                    var nativeId = natives[MRule.OSName]?.ToString().Replace("${arch}", MRule.Arch);
 
                     if (classifiers != null && nativeId != null)
                     {
-                        JToken lObj = classifiers[nativeId] ?? classifiers[MRule.OSName];
+                        JToken? lObj = classifiers[nativeId] ?? classifiers[MRule.OSName];
                         if (lObj != null)
                             list.Add(createMLibrary(name, nativeId, isRequire, (JObject)lObj));
                     }
@@ -70,16 +70,18 @@ namespace CmlLib.Core.Files
             }
         }
 
-        private MLibrary createMLibrary(string name, string nativeId, bool require, JObject job)
+        private MLibrary createMLibrary(string? name, string? nativeId, bool require, JObject job)
         {
-            string path = job["path"]?.ToString();
-            if (string.IsNullOrEmpty(path))
+            string? path = job["path"]?.ToString();
+            if (string.IsNullOrEmpty(path) && !string.IsNullOrEmpty(name))
                 path = PackageName.Parse(name).GetPath(nativeId);
 
             var hash = job["sha1"] ?? job["checksums"]?[0];
 
-            string sizestr = job["size"]?.ToString();
-            long.TryParse(sizestr, out long size);
+            long size = 0;
+            string? sizeStr = job["size"]?.ToString();
+            if (!string.IsNullOrEmpty(sizeStr))
+                long.TryParse(sizeStr, out size);
 
             return new MLibrary
             {

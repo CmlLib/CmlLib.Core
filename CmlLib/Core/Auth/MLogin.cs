@@ -45,7 +45,9 @@ namespace CmlLib.Core.Auth
         private void writeSessionCache(MSession session)
         {
             if (!SaveSession) return;
-            Directory.CreateDirectory(Path.GetDirectoryName(SessionCacheFilePath));
+            var directoryPath = Path.GetDirectoryName(SessionCacheFilePath);
+            if (!string.IsNullOrEmpty(directoryPath))
+                Directory.CreateDirectory(directoryPath);
 
             var json = JsonConvert.SerializeObject(session);
             File.WriteAllText(SessionCacheFilePath, json, Encoding.UTF8);
@@ -94,7 +96,7 @@ namespace CmlLib.Core.Auth
             return res;
         }
 
-        private MLoginResponse parseSession(string json, string clientToken)
+        private MLoginResponse parseSession(string json, string? clientToken)
         {
             var job = JObject.Parse(json); //json parse
 
@@ -122,8 +124,8 @@ namespace CmlLib.Core.Auth
             {
                 JObject job = JObject.Parse(json);
 
-                string error = job["error"]?.ToString(); // error type
-                string errormsg = job["message"]?.ToString() ?? ""; // detail error message
+                string error = job["error"]?.ToString() ?? ""; // error type
+                string errorMessage = job["message"]?.ToString() ?? ""; // detail error message
                 MLoginResult result;
 
                 switch (error)
@@ -142,7 +144,7 @@ namespace CmlLib.Core.Auth
                         break;
                 }
 
-                return new MLoginResponse(result, null, errormsg, json);
+                return new MLoginResponse(result, null, errorMessage, json);
             }
             catch (Exception ex)
             {
@@ -152,11 +154,11 @@ namespace CmlLib.Core.Auth
 
         public MLoginResponse Authenticate(string id, string pw)
         {
-            string clientToken = ReadSessionCache().ClientToken;
+            string? clientToken = ReadSessionCache().ClientToken;
             return Authenticate(id, pw, clientToken);
         }
 
-        public MLoginResponse Authenticate(string id, string pw, string clientToken)
+        public MLoginResponse Authenticate(string id, string pw, string? clientToken)
         {
             JObject req = new JObject
             {
@@ -173,7 +175,7 @@ namespace CmlLib.Core.Auth
 
             HttpWebResponse resHeader = mojangRequest("authenticate", req.ToString());
 
-            using (StreamReader res = new StreamReader(resHeader.GetResponseStream()))
+            using (StreamReader res = new StreamReader(resHeader.GetResponseStream()!))
             {
                 string rawResponse = res.ReadToEnd();
                 if (resHeader.StatusCode == HttpStatusCode.OK) // ResultCode == 200
@@ -209,6 +211,9 @@ namespace CmlLib.Core.Auth
             var mojangAccounts = MojangLauncher.MojangLauncherAccounts.FromDefaultPath();
             var activeAccount = mojangAccounts.GetActiveAccount();
 
+            if (activeAccount == null)
+                return new MLoginResponse(MLoginResult.NeedLogin, null, null, null);
+            
             return TryAutoLogin(activeAccount.ToSession());
         }
 
@@ -217,6 +222,9 @@ namespace CmlLib.Core.Auth
             var mojangAccounts = MojangLauncher.MojangLauncherAccounts.FromFile(accountFilePath);
             var activeAccount = mojangAccounts.GetActiveAccount();
 
+            if (activeAccount == null)
+                return new MLoginResponse(MLoginResult.NeedLogin, null, null, null);
+            
             return TryAutoLogin(activeAccount.ToSession());
         }
 
@@ -241,7 +249,7 @@ namespace CmlLib.Core.Auth
                 };
 
             HttpWebResponse resHeader = mojangRequest("refresh", req.ToString());
-            using (StreamReader res = new StreamReader(resHeader.GetResponseStream()))
+            using (StreamReader res = new StreamReader(resHeader.GetResponseStream()!))
             {
                 string rawResponse = res.ReadToEnd();
 
@@ -320,7 +328,7 @@ namespace CmlLib.Core.Auth
             }
             catch (WebException we)
             {
-                HttpWebResponse resp = we.Response as HttpWebResponse;
+                HttpWebResponse? resp = we.Response as HttpWebResponse;
                 if (resp == null)
                     throw;
                 return resp;

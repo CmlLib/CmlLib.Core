@@ -9,7 +9,7 @@ namespace CmlLib.Core
     {
         private static Regex argBracket = new Regex(@"\$?\{(.*?)}");
 
-        public static string[] Map(string[] arg, Dictionary<string, string> dicts, string prepath)
+        public static string[] Map(string[] arg, Dictionary<string, string?> dicts, string prepath)
         {
             var checkPath = !string.IsNullOrEmpty(prepath);
 
@@ -25,7 +25,7 @@ namespace CmlLib.Core
             return args.ToArray();
         }
 
-        public static string[] MapInterpolation(string[] arg, Dictionary<string, string> dicts)
+        public static string[] MapInterpolation(string[] arg, Dictionary<string, string?> dicts)
         {
             var args = new List<string>(arg.Length);
             foreach (string item in arg)
@@ -49,21 +49,27 @@ namespace CmlLib.Core
             return args.ToArray();
         }
 
-        public static string Interpolation(string str, Dictionary<string, string> dicts)
+        public static string Interpolation(string str, Dictionary<string, string?> dicts)
         {
             var sb = new StringBuilder(str);
 
             var offset = 0;
             var m = argBracket.Matches(str);
-            foreach (Match item in m)
+            foreach (Match? item in m)
             {
+                if (item == null || item.Groups.Count < 2)
+                    continue;
+                
                 var outGroup = item.Groups[0];
 
                 string key = item.Groups[1].Value;
-                string value;
+                string? value;
 
                 if (dicts.TryGetValue(key, out value))
                 {
+                    if (value == null)
+                        value = ""; 
+                        
                     replaceByPos(sb, value, outGroup.Index + offset, outGroup.Length);
 
                     if (outGroup.Length != value.Length)

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using CmlLib.Core.Auth;
+using CmlLib.Core.Version;
 
 namespace CmlLib.Core
 {
@@ -25,7 +27,7 @@ namespace CmlLib.Core
         {
             option.CheckValid();
             LaunchOption = option;
-            this.minecraftPath = option.Path;
+            this.minecraftPath = option.GetMinecraftPath();
         }
 
         private readonly MinecraftPath minecraftPath;
@@ -46,7 +48,7 @@ namespace CmlLib.Core
         {
             string arg = string.Join(" ", CreateArg());
             Process mc = new Process();
-            mc.StartInfo.FileName = LaunchOption.JavaPath;
+            mc.StartInfo.FileName = LaunchOption.GetJavaPath();
             mc.StartInfo.Arguments = arg;
             mc.StartInfo.WorkingDirectory = minecraftPath.BasePath;
 
@@ -56,7 +58,7 @@ namespace CmlLib.Core
         [MethodTimer.Time]
         public string[] CreateArg()
         {
-            var version = LaunchOption.StartVersion;
+            MVersion version = LaunchOption.GetStartVersion();
 
             var args = new List<string>();
 
@@ -80,21 +82,23 @@ namespace CmlLib.Core
                 args.Add("-Xdock:icon=" + handleEmpty(LaunchOption.DockIcon));
 
             // Version-specific JVM Arguments
-            var classpath = new List<string>(version.Libraries.Length);
+            var classpath = new List<string>(version.Libraries?.Length ?? 0);
 
-            var libraries = version.Libraries
-                .Where(lib => lib.IsRequire && !lib.IsNative)
-                .Select(lib => Path.GetFullPath(Path.Combine(minecraftPath.Library, lib.Path)));
-            classpath.AddRange(libraries);
-            classpath.Add(minecraftPath.GetVersionJarPath(version.Jar));
+            var libraries = version.Libraries?
+                .Where(lib => lib.IsRequire && !lib.IsNative && !string.IsNullOrEmpty(lib.Path))
+                .Select(lib => Path.GetFullPath(Path.Combine(minecraftPath.Library, lib.Path!)));
+            if (libraries != null)
+                classpath.AddRange(libraries);
+            if (!string.IsNullOrEmpty(version.Jar))
+                classpath.Add(minecraftPath.GetVersionJarPath(version.Jar));
 
             var classpathStr = IOUtil.CombinePath(classpath.ToArray());
 
-            var native = new MNative(minecraftPath, LaunchOption.StartVersion);
+            var native = new MNative(minecraftPath, version);
             native.CleanNatives();
             var nativePath = native.ExtractNatives();
 
-            var jvmdict = new Dictionary<string, string>
+            var jvmdict = new Dictionary<string, string?>
             {
                 { "natives_directory", nativePath },
                 { "launcher_name", useNotNull(LaunchOption.GameLauncherName, "minecraft-launcher") },
@@ -110,28 +114,30 @@ namespace CmlLib.Core
                 args.Add("-cp " + classpathStr);
             }
 
-            args.Add(version.MainClass);
+            if (!string.IsNullOrEmpty(version.MainClass))
+                args.Add(version.MainClass);
 
             // Game Arguments
-            var gameDict = new Dictionary<string, string>
+            MSession session = LaunchOption.GetSession();
+            var gameDict = new Dictionary<string, string?>
             {
-                { "auth_player_name" , LaunchOption.Session.Username },
-                { "version_name"     , LaunchOption.StartVersion.Id },
+                { "auth_player_name" , session.Username },
+                { "version_name"     , version.Id },
                 { "game_directory"   , minecraftPath.BasePath },
                 { "assets_root"      , minecraftPath.Assets },
-                { "assets_index_name", version.AssetId },
-                { "auth_uuid"        , LaunchOption.Session.UUID },
-                { "auth_access_token", LaunchOption.Session.AccessToken },
+                { "assets_index_name", version.AssetId ?? "legacy" },
+                { "auth_uuid"        , session.UUID },
+                { "auth_access_token", session.AccessToken },
                 { "user_properties"  , "{}" },
                 { "user_type"        , "Mojang" },
-                { "game_assets"      , minecraftPath.GetAssetLegacyPath(version.AssetId) },
-                { "auth_session"     , LaunchOption.Session.AccessToken },
+                { "game_assets"      , minecraftPath.GetAssetLegacyPath(version.AssetId ?? "legacy") },
+                { "auth_session"     , session.AccessToken },
                 { "version_type"     , useNotNull(LaunchOption.VersionType, version.TypeStr) }
             };
 
             if (version.GameArguments != null)
                 args.AddRange(Mapper.MapInterpolation(version.GameArguments, gameDict));
-            else
+            else if (!string.IsNullOrEmpty(version.MinecraftArguments))
                 args.AddRange(Mapper.MapInterpolation(version.MinecraftArguments.Split(' '), gameDict));
 
             // Options
@@ -156,7 +162,7 @@ namespace CmlLib.Core
         }
 
         // if input1 is null, return input2
-        private string useNotNull(string input1, string input2)
+        private string? useNotNull(string? input1, string? input2)
         {
             if (string.IsNullOrEmpty(input1))
                 return input2;
@@ -164,8 +170,11 @@ namespace CmlLib.Core
                 return input1;
         }
 
-        private string handleEmpty(string input)
+        private string? handleEmpty(string? input)
         {
+            if (input == null)
+                return null;
+            
             if (input.Contains(" "))
                 return "\"" + input + "\"";
             else

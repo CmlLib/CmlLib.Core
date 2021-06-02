@@ -25,11 +25,11 @@ namespace CmlLib.Core.VersionLoader
         [MethodTimer.Time]
         private MVersionCollection parseList(string res)
         {
-            string latestReleaseId = null;
-            string latestSnapshotId = null;
+            string? latestReleaseId = null;
+            string? latestSnapshotId = null;
 
-            MVersionMetadata latestRelease = null;
-            MVersionMetadata latestSnapshot = null;
+            MVersionMetadata? latestRelease = null;
+            MVersionMetadata? latestSnapshot = null;
             
             var jobj = JObject.Parse(res);
             var jarr = jobj["versions"] as JArray;

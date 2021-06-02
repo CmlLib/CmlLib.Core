@@ -11,7 +11,7 @@ namespace CmlLib.Utils
             this.ZipPath = path;
         }
 
-        public event EventHandler<int> ProgressEvent;
+        public event EventHandler<int>? ProgressEvent;
         public string ZipPath { get; private set; }
 
         public void Unzip(string path)

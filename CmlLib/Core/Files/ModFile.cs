@@ -2,11 +2,6 @@
 {
     public class ModFile
     {
-        public ModFile()
-        {
-
-        }
-
         public ModFile(string filename, string url)
         {
             this.Name = filename;
@@ -19,8 +14,8 @@
             this.Hash = hash;
         }
 
-        public string Name { get; set; }
-        public string Hash { get; set; }
+        public string? Name { get; set; }
+        public string? Hash { get; set; }
         public string Path { get; set; }
         public string Url { get; set; }
     }

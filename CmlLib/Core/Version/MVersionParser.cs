@@ -11,14 +11,16 @@ namespace CmlLib.Core.Version
     {
         public static MVersion Parse(MVersionMetadata info)
         {
+            if (string.IsNullOrEmpty(info.Path))
+                throw new NullReferenceException("info.Path was null");
+            
             try
             {
-                string json;
                 if (!info.IsLocalVersion)
                 {
                     using (var wc = new WebClient())
                     {
-                        json = wc.DownloadString(info.Path);
+                        var json = wc.DownloadString(info.Path);
                         return ParseFromJson(json);
                     }
                 }
@@ -34,19 +36,25 @@ namespace CmlLib.Core.Version
 
         public static MVersion ParseAndSave(MVersionMetadata info, MinecraftPath savePath)
         {
+            if (string.IsNullOrEmpty(info.Path))
+                throw new NullReferenceException("info.Path was null");
+            
             try
             {
-                string json;
                 if (!info.IsLocalVersion)
                 {
                     using (var wc = new WebClient())
                     {
-                        json = wc.DownloadString(info.Path);
-                        string path = savePath.GetVersionJsonPath(info.Name);
-                        var directoryName = Path.GetDirectoryName(path);
-                        if (!string.IsNullOrEmpty((directoryName)))
-                            Directory.CreateDirectory(directoryName);
-                        File.WriteAllText(path, json);
+                        var json = wc.DownloadString(info.Path);
+
+                        if (!string.IsNullOrEmpty(info.Name))
+                        {
+                            string path = savePath.GetVersionJsonPath(info.Name);
+                            var directoryName = Path.GetDirectoryName(path);
+                            if (!string.IsNullOrEmpty((directoryName)))
+                                Directory.CreateDirectory(directoryName);
+                            File.WriteAllText(path, json);
+                        }
 
                         return ParseFromJson(json);
                     }
@@ -71,22 +79,23 @@ namespace CmlLib.Core.Version
         {
             try
             {
-                var version = new MVersion();
                 var job = JObject.Parse(json);
 
                 // id
-                version.Id = job["id"]?.ToString();
-                if (string.IsNullOrEmpty(version.Id))
+                var id = job["id"]?.ToString();
+                if (string.IsNullOrEmpty(id))
                     throw new MVersionParseException("Empty version id");
+                
+                var version = new MVersion(id);
 
                 // assets
-                var assetindex = (JObject)job["assetIndex"];
+                var assetindex = job["assetIndex"];
                 var assets = job["assets"];
                 if (assetindex != null)
                 {
-                    version.AssetId = n(assetindex["id"]?.ToString());
-                    version.AssetUrl = n(assetindex["url"]?.ToString());
-                    version.AssetHash = n(assetindex["sha1"]?.ToString());
+                    version.AssetId = assetindex["id"]?.ToString();
+                    version.AssetUrl = assetindex["url"]?.ToString();
+                    version.AssetHash = assetindex["sha1"]?.ToString();
                 }
                 else if (assets != null)
                     version.AssetId = assets.ToString();
@@ -100,22 +109,22 @@ namespace CmlLib.Core.Version
                 }
 
                 // libraries
-                var libJArr = job["libraries"] as JArray;
-                if (libJArr != null)
+                if (job["libraries"] is JArray libJArr)
                 {
-                var libList = new List<MLibrary>(libJArr.Count);
-                var libParser = new MLibraryParser();
-                foreach (var item in libJArr)
-                {
-                    var libs = libParser.ParseJsonObject((JObject)item);
-                    if (libs != null)
-                        libList.AddRange(libs);
-                }
-                version.Libraries = libList.ToArray();
+                    var libList = new List<MLibrary>(libJArr.Count);
+                    var libParser = new MLibraryParser();
+                    foreach (var item in libJArr)
+                    {
+                        var libs = libParser.ParseJsonObject((JObject) item);
+                        if (libs != null)
+                            libList.AddRange(libs);
+                    }
+
+                    version.Libraries = libList.ToArray();
                 }
 
                 // mainClass
-                version.MainClass = n(job["mainClass"]?.ToString());
+                version.MainClass = job["mainClass"]?.ToString();
 
                 // argument
                 var ma = job["minecraftArguments"]?.ToString();
@@ -125,10 +134,10 @@ namespace CmlLib.Core.Version
                 var ag = job["arguments"];
                 if (ag != null)
                 {
-                    if (ag["game"] != null)
-                        version.GameArguments = argParse((JArray)ag["game"]);
-                    if (ag["jvm"] != null)
-                        version.JvmArguments = argParse((JArray)ag["jvm"]);
+                    if (ag["game"] is JArray gameArg)
+                        version.GameArguments = argParse(gameArg);
+                    if (ag["jvm"] is JArray jvmArg)
+                        version.JvmArguments = argParse(jvmArg);
                 }
 
                 // metadata
@@ -142,7 +151,7 @@ namespace CmlLib.Core.Version
                 if (job["inheritsFrom"] != null)
                 {
                     version.IsInherited = true;
-                    version.ParentVersionId = job["inheritsFrom"].ToString();
+                    version.ParentVersionId = job["inheritsFrom"]?.ToString();
                 }
                 else
                     version.Jar = version.Id;
@@ -169,8 +178,8 @@ namespace CmlLib.Core.Version
                 {
                     bool allow = true;
 
-                    if (item["rules"] != null)
-                        allow = MRule.CheckOSRequire((JArray)item["rules"]);
+                    if (item["rules"] is JArray rules)
+                        allow = MRule.CheckOSRequire(rules);
 
                     var value = item["value"] ?? item["values"];
 
@@ -192,11 +201,6 @@ namespace CmlLib.Core.Version
             }
 
             return strList.ToArray();
-        }
-
-        private static string n(string t) // handle null string
-        {
-            return t ?? "";
         }
     }
 }

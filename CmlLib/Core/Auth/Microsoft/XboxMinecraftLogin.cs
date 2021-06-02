@@ -22,7 +22,7 @@ namespace CmlLib.Core.Auth.Microsoft
         private string readRes(WebResponse res)
         {
             using (var resStream = res.GetResponseStream())
-            using (var sr = new StreamReader(resStream))
+            using (var sr = new StreamReader(resStream!))
             {
                 return sr.ReadToEnd();
             }

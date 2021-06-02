@@ -123,13 +123,13 @@ namespace CmlLib.Utils
             }
         }
 
-        public static bool CheckSHA1(string path, string compareHash)
+        public static bool CheckSHA1(string path, string? compareHash)
         {
+            if (string.IsNullOrEmpty(compareHash))
+                return true;
+            
             try
             {
-                if (string.IsNullOrEmpty(compareHash))
-                    return true;
-
                 string fileHash;
 
                 using (var file = File.OpenRead(path))
@@ -147,7 +147,7 @@ namespace CmlLib.Utils
             }
         }
 
-        public static bool CheckFileValidation(string path, string hash, bool checkHash)
+        public static bool CheckFileValidation(string path, string? hash, bool checkHash)
         {
             if (!File.Exists(path))
                 return false;
@@ -158,7 +158,7 @@ namespace CmlLib.Utils
                 return CheckSHA1(path, hash);
         }
 
-        public static async Task<bool> CheckFileValidationAsync(string path, string hash, bool checkHash)
+        public static async Task<bool> CheckFileValidationAsync(string path, string? hash, bool checkHash)
         {
             if (!File.Exists(path))
                 return false;

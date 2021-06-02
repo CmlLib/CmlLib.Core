@@ -9,13 +9,13 @@ namespace CmlLib.Core.Downloader
     public class SequenceDownloader : IDownloader
     {
         public bool IgnoreInvalidFiles { get; set; } = true;
-        private IProgress<ProgressChangedEventArgs> pChangeProgress;
+        private IProgress<ProgressChangedEventArgs>? pChangeProgress;
 
         public async Task DownloadFiles(DownloadFile[] files, 
             IProgress<DownloadFileChangedEventArgs> fileProgress,
             IProgress<ProgressChangedEventArgs> downloadProgress)
         {
-            if (files == null || files.Length == 0)
+            if (files.Length == 0)
                 return;
 
             pChangeProgress = downloadProgress;
@@ -32,7 +32,10 @@ namespace CmlLib.Core.Downloader
 
                 try
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(file.Path));
+                    var directoryPath = Path.GetDirectoryName(file.Path);
+                    if (!string.IsNullOrEmpty(directoryPath))
+                        Directory.CreateDirectory(directoryPath);
+                    
                     await downloader.DownloadFileAsync(file).ConfigureAwait(false);
 
                     if (file.AfterDownload != null)
@@ -56,7 +59,7 @@ namespace CmlLib.Core.Downloader
             }
         }
 
-        private void Downloader_FileDownloadProgressChanged(object sender, FileDownloadProgress e)
+        private void Downloader_FileDownloadProgressChanged(object? sender, FileDownloadProgress e)
         {
             pChangeProgress?.Report(new ProgressChangedEventArgs(e.ProgressPercentage, null));
         }

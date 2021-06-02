@@ -10,13 +10,15 @@ namespace CmlLib.Core.Files
 
         private readonly List<IFileChecker> checkers;
 
-        private AssetChecker asset = new AssetChecker();
-        public AssetChecker AssetFileChecker
+        private AssetChecker? asset;
+        public AssetChecker? AssetFileChecker
         {
             get => asset;
             set
             {
-                checkers.Remove(asset);
+                if (asset != null)
+                    checkers.Remove(asset);
+                
                 asset = value;
 
                 if (asset != null)
@@ -24,13 +26,15 @@ namespace CmlLib.Core.Files
             }
         }
 
-        private ClientChecker client = new ClientChecker();
-        public ClientChecker ClientFileChecker
+        private ClientChecker? client;
+        public ClientChecker? ClientFileChecker
         {
             get => client;
             set
             {
-                checkers.Remove(client);
+                if (client != null)
+                    checkers.Remove(client);
+                
                 client = value;
 
                 if (client != null)
@@ -38,13 +42,15 @@ namespace CmlLib.Core.Files
             }
         }
 
-        private LibraryChecker library = new LibraryChecker();
-        public LibraryChecker LibraryFileChecker
+        private LibraryChecker? library;
+        public LibraryChecker? LibraryFileChecker
         {
             get => library;
             set
             {
-                checkers.Remove(library);
+                if (library != null)
+                    checkers.Remove(library);
+                
                 library = value;
 
                 if (library != null)
@@ -56,9 +62,13 @@ namespace CmlLib.Core.Files
         {
             checkers = new List<IFileChecker>(3);
 
+            library = new LibraryChecker();
+            asset = new AssetChecker();
+            client = new ClientChecker();
+            
             checkers.AddRange(new IFileChecker[]
             {
-                LibraryFileChecker, AssetFileChecker, ClientFileChecker
+                library, asset, client
             });
         }
 

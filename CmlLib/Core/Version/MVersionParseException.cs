@@ -14,6 +14,6 @@ namespace CmlLib.Core.Version
 
         }
 
-        public string VersionName { get; internal set; }
+        public string? VersionName { get; internal set; }
     }
 }

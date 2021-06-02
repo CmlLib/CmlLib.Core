@@ -14,13 +14,13 @@ namespace CmlLib.Core
             if (spliter.Length < 3)
                 throw new ArgumentException("invalid name");
 
-            PackageName pn = new PackageName();
-            pn.names = spliter;
-
-            return pn;
+            return new PackageName(spliter);
         }
 
-        private PackageName() { }
+        private PackageName(string[] names)
+        {
+            this.names = names;
+        }
 
         private string[] names;
 
@@ -35,12 +35,12 @@ namespace CmlLib.Core
             return GetPath("");
         }
 
-        public string GetPath(string nativeId)
+        public string GetPath(string? nativeId)
         {
             return GetPath(nativeId, "jar");
         }
 
-        public string GetPath(string nativeId, string extension)
+        public string GetPath(string? nativeId, string extension)
         {
             // de.oceanlabs.mcp : mcp_config : 1.16.2-20200812.004259 : mappings
             // de\oceanlabs\mcp \ mcp_config \ 1.16.2-20200812.004259 \ mcp_config-1.16.2-20200812.004259.zip

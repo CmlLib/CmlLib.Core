@@ -31,20 +31,20 @@ namespace CmlLib.Core
                 e => ProgressChanged?.Invoke(this, e));
         }
 
-        public event DownloadFileChangedHandler FileChanged;
-        public event ProgressChangedEventHandler ProgressChanged;
+        public event DownloadFileChangedHandler? FileChanged;
+        public event ProgressChangedEventHandler? ProgressChanged;
+        public event EventHandler<string>? LogOutput;
         
         private readonly IProgress<DownloadFileChangedEventArgs> pFileChanged;
         private readonly IProgress<ProgressChangedEventArgs> pProgressChanged;
-        public event EventHandler<string> LogOutput;
 
         public MinecraftPath MinecraftPath { get; private set; }
-        public MVersionCollection Versions { get; private set; }
+        public MVersionCollection? Versions { get; private set; }
 
         public IVersionLoader VersionLoader { get; set; }
         public FileCheckerCollection GameFileCheckers { get; private set; }
 
-        public IDownloader FileDownloader { get; set; }
+        public IDownloader? FileDownloader { get; set; }
 
         public MVersionCollection GetAllVersions()
         {
@@ -79,28 +79,28 @@ namespace CmlLib.Core
 
         public string CheckJRE()
         {
-            pFileChanged?.Report(
+            pFileChanged.Report(
                 new DownloadFileChangedEventArgs(MFile.Runtime, "java", 1, 0));
 
             var mjava = new MJava();
-            mjava.ProgressChanged += (sender, e) => pProgressChanged?.Report(e);
+            mjava.ProgressChanged += (sender, e) => pProgressChanged.Report(e);
             var j = mjava.CheckJava();
 
-            pFileChanged?.Report(
+            pFileChanged.Report(
                 new DownloadFileChangedEventArgs(MFile.Runtime, "java", 1, 1));
             return j;
         }
 
         public async Task<string> CheckJREAsync()
         {
-            pFileChanged?.Report(
+            pFileChanged.Report(
                 new DownloadFileChangedEventArgs(MFile.Runtime, "java", 1, 0));
             
             var mjava = new MJava();
             var j = await mjava.CheckJavaAsync(pProgressChanged)
                 .ConfigureAwait(false);
             
-            pFileChanged?.Report(
+            pFileChanged.Report(
                 new DownloadFileChangedEventArgs(MFile.Runtime, "java", 1, 1));
             return j;
         }
@@ -154,7 +154,7 @@ namespace CmlLib.Core
             var lostFiles = new List<DownloadFile>();
             foreach (IFileChecker checker in this.GameFileCheckers)
             {
-                DownloadFile[] files = await checker.CheckFilesTaskAsync(MinecraftPath, version, pFileChanged)
+                DownloadFile[]? files = await checker.CheckFilesTaskAsync(MinecraftPath, version, pFileChanged)
                     .ConfigureAwait(false);
                 if (files != null)
                     lostFiles.AddRange(files);
@@ -181,7 +181,7 @@ namespace CmlLib.Core
         {
             foreach (var checker in this.GameFileCheckers)
             {
-                DownloadFile[] files = await checker.CheckFilesTaskAsync(MinecraftPath, version, pFileChanged)
+                DownloadFile[]? files = await checker.CheckFilesTaskAsync(MinecraftPath, version, pFileChanged)
                     .ConfigureAwait(false);
 
                 if (files == null || files.Length == 0)

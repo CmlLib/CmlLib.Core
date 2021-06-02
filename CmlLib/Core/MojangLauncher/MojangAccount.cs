@@ -9,13 +9,13 @@ namespace CmlLib.Core.MojangLauncher
     public class MojangAccount
     {
         [JsonProperty("accessToken")]
-        public string AccessToken { get; set; }
+        public string? AccessToken { get; set; }
 
         [JsonProperty("accessTokenExpiresAt")]
-        public DateTime AccessTokenExpiresAt { get; set; }
+        public DateTime? AccessTokenExpiresAt { get; set; }
 
         [JsonProperty("avatar")]
-        public string Avatar { get; set; }
+        public string? Avatar { get; set; }
 
         [JsonProperty("eligibleForMigration")]
         public bool EligibleForMigration { get; set; }
@@ -27,31 +27,31 @@ namespace CmlLib.Core.MojangLauncher
         public bool Legacy { get; set; }
 
         [JsonProperty("localId")]
-        public string LocalId { get; set; }
+        public string? LocalId { get; set; }
 
         [JsonProperty("minecraftProfile")]
-        public JObject MinecraftProfile { get; set; }
+        public JObject? MinecraftProfile { get; set; }
 
-        public string MinecraftProfileId
+        public string? MinecraftProfileId
             => MinecraftProfile?["id"]?.ToString();
 
-        public string MinecraftProfileName
+        public string? MinecraftProfileName
             => MinecraftProfile?["name"]?.ToString();
 
         [JsonProperty("persistent")]
         public bool Persistent { get; set; }
 
         [JsonProperty("remoteId")]
-        public string RemoteId { get; set; }
+        public string? RemoteId { get; set; }
 
         [JsonProperty("type")]
-        public string Type { get; set; }
+        public string? Type { get; set; }
 
         [JsonProperty("userProperites")]
-        public List<object> UserProperites { get; set; }
+        public List<object>? UserProperites { get; set; }
 
         [JsonProperty("username")]
-        public string Username { get; set; }
+        public string? Username { get; set; }
 
         public MSession ToSession()
         {

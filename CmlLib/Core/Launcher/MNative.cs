@@ -21,11 +21,13 @@ namespace CmlLib.Core
             string path = gamePath.GetNativePath(version.Id);
             Directory.CreateDirectory(path);
 
+            if (version.Libraries == null) return path;
+            
             foreach (var item in version.Libraries)
             {
                 try
                 {
-                    if (item.IsRequire && item.IsNative)
+                    if (item.IsRequire && item.IsNative && !string.IsNullOrEmpty(item.Path))
                     {
                         string zPath = Path.Combine(gamePath.Library, item.Path);
                         if (File.Exists(zPath))

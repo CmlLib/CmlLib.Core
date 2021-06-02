@@ -28,18 +28,17 @@ namespace CmlLib.Utils
             }
 
             var obj = JObject.Parse(response);
-            var versions = new Dictionary<string, string>();
-            var array = obj?["entries"] as JArray;
+            var versions = new Dictionary<string, string?>();
+            var array = obj["entries"] as JArray;
             if (array != null)
             {
                 foreach (var item in array)
                 {
                     var version = item["version"]?.ToString();
-                    var body = item["body"]?.ToString();
-
                     if (string.IsNullOrEmpty(version))
                         continue;
-
+                    
+                    var body = item["body"]?.ToString();
                     versions[version] = body;
                 }
             }
@@ -47,12 +46,12 @@ namespace CmlLib.Utils
             return new Changelogs(versions);
         }
         
-        private Changelogs(Dictionary<string, string> versions)
+        private Changelogs(Dictionary<string, string?> versions)
         {
             this.versions = versions;
         }
 
-        private readonly Dictionary<string, string> versions;
+        private readonly Dictionary<string, string?> versions;
 
         public string[] GetAvailableVersions()
         {
@@ -68,9 +67,9 @@ namespace CmlLib.Utils
             return list.ToArray();
         }
 
-        public async Task<string> GetChangelogHtml(string version)
+        public async Task<string?> GetChangelogHtml(string version)
         {
-            if (versions.TryGetValue(version, out string body))
+            if (versions.TryGetValue(version, out string? body))
                 return body;
             if (changelogUrls.TryGetValue(version, out string url))
                 return await GetChangelogFromUrl(url).ConfigureAwait(false);

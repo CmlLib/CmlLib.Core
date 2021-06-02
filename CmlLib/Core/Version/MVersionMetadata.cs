@@ -4,35 +4,39 @@ namespace CmlLib.Core.Version
 {
     public class MVersionMetadata
     {
+        public MVersionMetadata(string id)
+        {
+            this.Name = id;
+        }
+        
         public bool IsLocalVersion { get; set; }
 
         [JsonProperty("id")]
         public string Name { get; set; }
 
         [JsonProperty("type")]
-        public string Type { get; set; }
+        public string? Type { get; set; }
 
         public MVersionType MType { get; set; }
 
         [JsonProperty("releaseTime")]
-        public string ReleaseTime { get; set; }
+        public string? ReleaseTime { get; set; }
 
         [JsonProperty("url")]
-        public string Path { get; set; }
+        public string? Path { get; set; }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj == null)
                 return false;
 
             var info = obj as MVersionMetadata;
 
-            if (info != null) // obj is MVersionMetadata
+            if (info?.Name != null) // obj is MVersionMetadata
                 return info.Name.Equals(Name);
             if (obj is string)
                 return Name.Equals(obj.ToString());
             
-
             return false;
         }
 

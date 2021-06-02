@@ -9,11 +9,11 @@ namespace CmlLib.Core.VersionLoader.FabricMC
     public class FabricVersionLoader : IVersionLoader
     {
         public string ApiServer { get; } = "https://meta.fabricmc.net";
-        public string LoaderVersion { get; set; }
+        public string? LoaderVersion { get; set; }
 
         protected string GetVersionName(string version, string loaderVersion)
         {
-            return $"fabric-loader-{LoaderVersion}-{version}";
+            return $"fabric-loader-{loaderVersion}-{version}";
         }
 
         public MVersionCollection GetVersionMetadatas()
@@ -22,6 +22,8 @@ namespace CmlLib.Core.VersionLoader.FabricMC
             {
                 var loaders = GetFabricLoaders().GetAwaiter().GetResult();
                 LoaderVersion = loaders[0].Version;
+                if (loaders.Length == 0 || string.IsNullOrEmpty(LoaderVersion))
+                    throw new KeyNotFoundException("can't find loaders");
             }
 
             string url = "https://meta.fabricmc.net/v2/versions/game/intermediary";
@@ -39,8 +41,10 @@ namespace CmlLib.Core.VersionLoader.FabricMC
         {
             if (string.IsNullOrEmpty(LoaderVersion))
             {
-                var loaders = await GetFabricLoaders().ConfigureAwait(false);
+                var loaders = GetFabricLoaders().GetAwaiter().GetResult();
                 LoaderVersion = loaders[0].Version;
+                if (loaders.Length == 0 || string.IsNullOrEmpty(LoaderVersion))
+                    throw new KeyNotFoundException("can't find loaders");
             }
 
             string url = "https://meta.fabricmc.net/v2/versions/game/intermediary";
@@ -50,7 +54,7 @@ namespace CmlLib.Core.VersionLoader.FabricMC
                 res = await wc.DownloadStringTaskAsync(url).ConfigureAwait(false);
             }
 
-            var versions = parseVersions(res, LoaderVersion);
+            var versions = parseVersions(res, LoaderVersion!);
             return new MVersionCollection(versions.ToArray());
         }
 
@@ -61,14 +65,17 @@ namespace CmlLib.Core.VersionLoader.FabricMC
 
             foreach (var item in jarr)
             {
-                string versionName = item["version"]?.ToString();
+                string? versionName = item["version"]?.ToString();
+                if (string.IsNullOrEmpty(versionName))
+                    continue;
+
                 string jsonUrl = $"{ApiServer}/v2/versions/loader/{versionName}/{loader}/profile/json";
 
-                var versionMetadata = new MVersionMetadata
+                string id = GetVersionName(versionName, loader);
+                var versionMetadata = new MVersionMetadata(id)
                 {
                     IsLocalVersion = false,
                     MType = MVersionType.Custom,
-                    Name = GetVersionName(versionName, loader),
                     Path = jsonUrl,
                     Type = "fabric"
                 };
@@ -91,7 +98,9 @@ namespace CmlLib.Core.VersionLoader.FabricMC
             var loaderList = new List<FabricLoader>(jarr.Count);
             foreach (var item in jarr)
             {
-                loaderList.Add(item.ToObject<FabricLoader>());
+                var obj = item.ToObject<FabricLoader>();
+                if (obj != null)
+                    loaderList.Add(obj);
             }
 
             return loaderList.ToArray();

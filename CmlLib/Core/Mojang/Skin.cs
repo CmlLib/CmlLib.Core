@@ -11,17 +11,17 @@ namespace CmlLib.Core.Mojang
 
         }
 
-        public Skin(string url, SkinType type)
+        public Skin(string? url, SkinType type)
         {
             this.Url = url;
             this.Model = type;
         }
 
-        public Skin(string url, string type)
+        public Skin(string? url, string? type)
         {
             this.Url = url;
 
-            string lowerType = type?.ToLower();
+            string? lowerType = type?.ToLower();
             if (lowerType == "alex" || lowerType == "slim")
                 Model = SkinType.Alex;
             else
@@ -44,7 +44,7 @@ namespace CmlLib.Core.Mojang
             return (lsbsEven == 0) ? SkinType.Steve : SkinType.Alex;
         }
 
-        public string Url { get; set; }
+        public string? Url { get; set; }
         public SkinType Model { get; set; }
     }
 }

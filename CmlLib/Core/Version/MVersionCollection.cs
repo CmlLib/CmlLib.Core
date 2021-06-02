@@ -22,15 +22,15 @@ namespace CmlLib.Core.Version
 
         public MVersionCollection(
             MVersionMetadata[] datas,
-            MinecraftPath originalPath,
-            MVersionMetadata latestRelease,
-            MVersionMetadata latestSnapshot)
+            MinecraftPath? originalPath,
+            MVersionMetadata? latestRelease,
+            MVersionMetadata? latestSnapshot)
         {
             if (datas == null)
                 throw new ArgumentNullException(nameof(datas));
 
             Versions = new OrderedDictionary();
-            foreach (var item in datas)
+            foreach (MVersionMetadata? item in datas)
             {
                 Versions.Add(item.Name, item);
             }
@@ -40,15 +40,12 @@ namespace CmlLib.Core.Version
             LatestSnapshotVersion = latestSnapshot;
         }
 
-        public MVersionMetadata LatestReleaseVersion { get; private set; }
-        public MVersionMetadata LatestSnapshotVersion { get; private set; }
-        public MinecraftPath MinecraftPath { get; private set; }
+        public MVersionMetadata? LatestReleaseVersion { get; private set; }
+        public MVersionMetadata? LatestSnapshotVersion { get; private set; }
+        public MinecraftPath? MinecraftPath { get; private set; }
         protected OrderedDictionary Versions;
 
-        public MVersionMetadata this[int index]
-        {
-            get => (MVersionMetadata)Versions[index];
-        }
+        public MVersionMetadata this[int index] => (MVersionMetadata)Versions[index]!;
 
         [MethodTimer.Time]
         public virtual MVersion GetVersion(string name)
@@ -56,7 +53,7 @@ namespace CmlLib.Core.Version
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
 
-            MVersionMetadata versionMetadata = (MVersionMetadata)Versions[name];
+            MVersionMetadata versionMetadata = (MVersionMetadata)Versions[name]!;
             if (versionMetadata == null)
                 throw new KeyNotFoundException("Cannot find " + name);
 
@@ -74,7 +71,7 @@ namespace CmlLib.Core.Version
             else
                 startVersion = MVersionParser.ParseAndSave(versionMetadata, MinecraftPath);
 
-            if (startVersion.IsInherited)
+            if (startVersion.IsInherited && !string.IsNullOrEmpty(startVersion.ParentVersionId))
             {
                 if (startVersion.ParentVersionId == startVersion.Id) // prevent StackOverFlowException
                     throw new InvalidDataException("Invalid version json file : inheritFrom property is equal to id property.");
@@ -108,7 +105,7 @@ namespace CmlLib.Core.Version
         {
             foreach (DictionaryEntry item in Versions)
             {
-                var version = (MVersionMetadata)item.Value;
+                var version = (MVersionMetadata)item.Value!;
                 yield return version;
             }
         }

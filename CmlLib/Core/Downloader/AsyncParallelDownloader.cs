@@ -23,8 +23,8 @@ namespace CmlLib.Core.Downloader
 
         private bool isRunning;
 
-        private IProgress<FileProgressChangedEventArgs> pChangeProgress;
-        private IProgress<DownloadFileChangedEventArgs> pChangeFile;
+        private IProgress<FileProgressChangedEventArgs>? pChangeProgress;
+        private IProgress<DownloadFileChangedEventArgs>? pChangeFile;
 
         public AsyncParallelDownloader() : this(10)
         {
@@ -121,8 +121,7 @@ namespace CmlLib.Core.Downloader
                 {
                     foreach (var item in file.AfterDownload)
                     {
-                        if (item != null)
-                            await item.Invoke().ConfigureAwait(false);
+                        await item.Invoke().ConfigureAwait(false);
                     }
                 }
 
@@ -142,7 +141,7 @@ namespace CmlLib.Core.Downloader
             }
         }
 
-        private void Downloader_FileDownloadProgressChanged(object sender, FileDownloadProgress e)
+        private void Downloader_FileDownloadProgressChanged(object? sender, FileDownloadProgress e)
         {
             lock (progressEventLock)
             {

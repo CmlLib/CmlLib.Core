@@ -4,20 +4,21 @@ namespace CmlLib.Core.Files
 {
     public class ModFileFactory
     {
-        public ModFile GetCurseForgeModFile(string modname, string fileid)
+        public ModFile GetCurseForgeModFile(string modName, string fileId)
         {
-            return new ModFile
+            string path = Path.Combine("mods", modName + ".jar");
+            string url = $"https://www.curseforge.com/minecraft/mc-mods/{modName}/download/{fileId}/file";
+            
+            return new ModFile(path, url)
             {
-                Name = modname,
-                Path = Path.Combine("mods", modname + ".jar"),
-                Url = $"https://www.curseforge.com/minecraft/mc-mods/{modname}/download/{fileid}/file"
+                Name = modName
             };
         }
 
-        public ModFile GetCurseForgeModFile(string modname, string fileid, string filehash)
+        public ModFile GetCurseForgeModFile(string modName, string fileId, string fileHash)
         {
-            ModFile mod = GetCurseForgeModFile(modname, fileid);
-            mod.Hash = filehash;
+            ModFile mod = GetCurseForgeModFile(modName, fileId);
+            mod.Hash = fileHash;
             return mod;
         }
     }

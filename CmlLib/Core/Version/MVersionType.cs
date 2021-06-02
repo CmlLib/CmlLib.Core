@@ -2,7 +2,7 @@
 {
     public static class MVersionTypeConverter
     {
-        public static MVersionType FromString(string str)
+        public static MVersionType FromString(string? str)
         {
             MVersionType e;
 

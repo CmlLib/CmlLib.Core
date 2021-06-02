@@ -34,32 +34,35 @@ namespace CmlLib.Core.MojangLauncher
 
             var auths = job["authenticationDatabase"];
             var sessionList = new List<MSession>();
-            foreach (var item in auths)
+            if (auths != null)
             {
-                var innerObj = item.Children().First();
-
-                var session = new MSession();
-                session.AccessToken = innerObj["accessToken"]?.ToString();
-                session.ClientToken = clientToken;
-
-                var profiles = innerObj["profiles"] as JObject;
-                var firstProfileProperty = profiles?.Properties()?.First();
-
-                if (firstProfileProperty != null)
+                foreach (var item in auths)
                 {
-                    session.UUID = firstProfileProperty.Name;
-                    session.Username = firstProfileProperty.Value["displayName"]?.ToString();
-                }
+                    var innerObj = item.Children().First();
 
-                sessionList.Add(session);
+                    var session = new MSession();
+                    session.AccessToken = innerObj["accessToken"]?.ToString();
+                    session.ClientToken = clientToken;
+
+                    var profiles = innerObj["profiles"] as JObject;
+                    var firstProfileProperty = profiles?.Properties().First();
+
+                    if (firstProfileProperty != null)
+                    {
+                        session.UUID = firstProfileProperty.Name;
+                        session.Username = firstProfileProperty.Value["displayName"]?.ToString();
+                    }
+
+                    sessionList.Add(session);
+                }
             }
 
             profile.Sessions = sessionList.ToArray();
             return profile;
         }
 
-        public string LauncherVersion { get; private set; }
-        public string ClientToken { get; private set; }
-        public MSession[] Sessions { get; private set; }
+        public string? LauncherVersion { get; private set; }
+        public string? ClientToken { get; private set; }
+        public MSession[]? Sessions { get; private set; }
     }
 }
