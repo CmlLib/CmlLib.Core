@@ -6,26 +6,26 @@
 
 [![Nuget Badge](https://img.shields.io/nuget/v/CmlLib.Core)](https://www.nuget.org/packages/CmlLib.Core)
 [![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://github.com/CmlLib/CmlLib.Core/blob/master/LICENSE)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/3f55a130ec3f4bccb55e7def97cfa2ce)](https://www.codacy.com/gh/CmlLib/CmlLib.Core/dashboard?utm_source=github.com&utm_medium=referral&utm_content=CmlLib/CmlLib.Core&utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/3f55a130ec3f4bccb55e7def97cfa2ce)](https://www.codacy.com/gh/CmlLib/CmlLib.Core/dashboard?utm_source=github.com\&utm_medium=referral\&utm_content=CmlLib/CmlLib.Core\&utm_campaign=Badge_Grade)
 
-[![Discord](https://img.shields.io/discord/795952027443527690?label=discord&logo=discord&style=for-the-badge)](https://discord.gg/cDW2pvwHSc)
+[![Discord](https://img.shields.io/discord/795952027443527690?label=discord\&logo=discord\&style=for-the-badge)](https://discord.gg/cDW2pvwHSc)
 
-CmlLib.Core is minecraft launcher library for .NET 5.0 / .NET Core 3.1 / .NET Framework 4.6.2  
+CmlLib.Core is minecraft launcher library for .NET 5.0 / .NET Core 3.1 / .NET Framework 4.6.2\
 Support all version, with Forge
 
 [한국어 README](https://github.com/AlphaBs/CmlLib.Core/blob/master/docs/README-kr.md)
 
 ## Features
 
-- Asynchronous APIs
-- Mojang Authentication
-- Microsoft Xbox Live Login
-- Download the game files from the Mojang file server
-- Launch any version (tested up to 1.16.5)
-- Launch Forge, Optifine, FabricMC, LiteLoader or any other custom version
-- Install Java runtime
-- Launch with options (direct server connecting, screen resolution)
-- Supports cross-platform (windows, ubuntu, macOS)
+*   Asynchronous APIs
+*   Mojang Authentication
+*   Microsoft Xbox Live Login
+*   Download the game files from the Mojang file server
+*   Launch any version (tested up to 1.16.5)
+*   Launch Forge, Optifine, FabricMC, LiteLoader or any other custom version
+*   Install Java runtime
+*   Launch with options (direct server connecting, screen resolution)
+*   Supports cross-platform (windows, ubuntu, macOS)
 
 ## Install
 
@@ -40,7 +40,7 @@ using CmlLib.Core.Auth;
 
 ## Documentation
 
-Many features are available for custom launchers. See wiki to use all features!  
+Many features are available for custom launchers. See wiki to use all features!\
 **Official documentation: [wiki](https://github.com/CmlLib/CmlLib.Core/wiki)**
 
 ## QuickStart

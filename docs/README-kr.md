@@ -6,25 +6,25 @@
 
 [![Nuget Badge](https://img.shields.io/nuget/v/CmlLib.Core)](https://www.nuget.org/packages/CmlLib.Core)
 [![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://github.com/CmlLib/CmlLib.Core/blob/master/LICENSE)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/3f55a130ec3f4bccb55e7def97cfa2ce)](https://www.codacy.com/gh/CmlLib/CmlLib.Core/dashboard?utm_source=github.com&utm_medium=referral&utm_content=CmlLib/CmlLib.Core&utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/3f55a130ec3f4bccb55e7def97cfa2ce)](https://www.codacy.com/gh/CmlLib/CmlLib.Core/dashboard?utm_source=github.com\&utm_medium=referral\&utm_content=CmlLib/CmlLib.Core\&utm_campaign=Badge_Grade)
 
-[![Discord](https://img.shields.io/discord/795952027443527690?label=discord&logo=discord&style=for-the-badge)](https://discord.gg/cDW2pvwHSc)
+[![Discord](https://img.shields.io/discord/795952027443527690?label=discord\&logo=discord\&style=for-the-badge)](https://discord.gg/cDW2pvwHSc)
 
-CmlLib.Core 는 마인크래프트 커스텀 런처 제작을 위한 C# 라이브러리입니다.  
-포지를 포함한 모든 버전을 실행 가능합니다.  
-.NET 5.0 / .NET Core 3.1 / .NET Framework 4.6.2 지원  
+CmlLib.Core 는 마인크래프트 커스텀 런처 제작을 위한 C# 라이브러리입니다.\
+포지를 포함한 모든 버전을 실행 가능합니다.\
+.NET 5.0 / .NET Core 3.1 / .NET Framework 4.6.2 지원
 
 ## 기능
 
-- 비동기 APIs
-- 모장 인증(로그인)
-- 마이크로소프트 엑스박스 계정으로 로그인
-- 모장 파일 서버에서 게임 파일 다운로드
-- 모든 버전 실행(1.16.5 까지 테스트 완료)
-- 모든 커스텀 버전(포지, 옵티파인, Fabric, 라이트로더 등등) 실행 가능
-- 자바 런타임 자동 설치
-- 다양한 실행 옵션 (서버 바로 접속, 화면 크기 조정 등)
-- 크로스플랫폼 (windows, ubuntu, macOS)
+*   비동기 APIs
+*   모장 인증(로그인)
+*   마이크로소프트 엑스박스 계정으로 로그인
+*   모장 파일 서버에서 게임 파일 다운로드
+*   모든 버전 실행(1.16.5 까지 테스트 완료)
+*   모든 커스텀 버전(포지, 옵티파인, Fabric, 라이트로더 등등) 실행 가능
+*   자바 런타임 자동 설치
+*   다양한 실행 옵션 (서버 바로 접속, 화면 크기 조정 등)
+*   크로스플랫폼 (windows, ubuntu, macOS)
 
 ## 설치
 
@@ -39,7 +39,7 @@ using CmlLib.Core.Auth;
 
 ## 문서
 
-커스텀 런처를 위한 많은 기능들이 있습니다. 위키에서 모든 기능 목록을 확인하세요.  
+커스텀 런처를 위한 많은 기능들이 있습니다. 위키에서 모든 기능 목록을 확인하세요.\
 **공식 문서: [wiki](https://github.com/CmlLib/CmlLib.Core/wiki)**
 
 ## QuickStart
