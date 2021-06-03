@@ -64,7 +64,7 @@ if (!response.IsSuccess) // failed to automatically log in
     response = login.Authenticate(email, pw);
 
     if (!response.IsSuccess)
-         throw new Exception(session.Result.ToString()) // failed to log in
+         throw new Exception(response.Result.ToString()); // failed to log in
 }
 
 // This session variable is the result of logging in and is used in MLaunchOption, in the Launch part below.
