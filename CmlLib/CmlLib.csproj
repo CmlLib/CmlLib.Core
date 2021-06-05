@@ -10,15 +10,15 @@ Support All versions, forge, optifine
 see github to learn how to use
         </Description>
         <Copyright>Copyright (c) 2020 AlphaBs</Copyright>
-        <PackageProjectUrl>https://github.com/AlphaBs/CmlLib.Core</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/AlphaBs/CmlLib.Core</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/CmlLib/CmlLib.Core</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/CmlLib/CmlLib.Core</RepositoryUrl>
         <PackageIcon>icon.png</PackageIcon>
         <RepositoryType>git</RepositoryType>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageTags>Minecraft Launcher forge optifine mojang Crossplatform C#</PackageTags>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <Authors>AlphaBs</Authors>
-        <PackageReleaseNotes/>
+        <PackageReleaseNotes />
         <PackageId>CmlLib.Core</PackageId>
     </PropertyGroup>
 
@@ -27,13 +27,13 @@ see github to learn how to use
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="LZMA-SDK" Version="19.0.0"/>
+        <PackageReference Include="LZMA-SDK" Version="19.0.0" />
         <PackageReference Include="MethodTimer.Fody" Version="3.2.0">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Newtonsoft.Json" Version="12.0.3"/>
-        <PackageReference Include="SharpZipLib" Version="1.2.0"/>
-        <None Include="../icon.png" Pack="true" Visible="false" PackagePath=""/>
+        <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+        <PackageReference Include="SharpZipLib" Version="1.2.0" />
+        <None Include="../icon.png" Pack="true" Visible="false" PackagePath="" />
     </ItemGroup>
 
 </Project>

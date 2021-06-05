@@ -45,11 +45,11 @@ Many features are available for custom launchers. See wiki to use all features!\
 
 ## QuickStart
 
-**Microsoft Xbox Login**
+#### Microsoft Xbox Login
 
 [Wiki](https://github.com/CmlLib/CmlLib.Core/wiki/Microsoft-Xbox-Live-Login)
 
-**Mojang Login**
+#### Mojang Login
 
 [Login Process](https://github.com/AlphaBs/CmlLib.Core/wiki/Login-and-Sessions)
 
@@ -71,14 +71,14 @@ if (!response.IsSuccess) // failed to automatically log in
 var session = response.Session;
 ```
 
-**Offline Login**
+#### Offline Login
 
 ```csharp
 // This session variable is the result of logging in and is used in MLaunchOption, in the Launch part below.
 var session = MSession.GetOfflineSession("USERNAME");
 ```
 
-**Launch**
+#### Launch
 
 ```csharp
 // increase connection limit to fast download
