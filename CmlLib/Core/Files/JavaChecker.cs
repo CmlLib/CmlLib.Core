@@ -14,36 +14,49 @@ namespace CmlLib.Core.Files
 {
     public class JavaChecker : IFileChecker
     {
+        public string JavaManifestServer { get; set; } = MojangServer.JavaManifest;
+        public string JavaBinaryName { get; set; } = MJava.GetDefaultBinaryName();
         public bool CheckHash { get; set; }
         
         public DownloadFile[]? CheckFiles(MinecraftPath path, MVersion version,
             IProgress<DownloadFileChangedEventArgs>? downloadProgress)
         {
+            if (!string.IsNullOrEmpty(version.JavaBinaryPath) && File.Exists(version.JavaBinaryPath))
+                return null;
+            
             var javaVersion = version.JavaVersion;
             if (string.IsNullOrEmpty(javaVersion))
                 javaVersion = "jre-legacy";
 
-            version.JavaBinaryPath = Path.Combine(path.Runtime, javaVersion, "bin", getDefaultBinaryName());
+            version.JavaBinaryPath = Path.Combine(path.Runtime, javaVersion, "bin", JavaBinaryName);
 
-            var osName = getJavaOSName();
-            var javaVersions = getJavaVersionsForOS(osName);
-            if (javaVersions != null)
+            try
             {
-                var javaManifest = getJavaVersionManifest(javaVersions, javaVersion);
+                var osName = getJavaOSName(); // safe
+                var javaVersions = getJavaVersionsForOs(osName); // Net, JsonParse Exception
+                if (javaVersions != null)
+                {
+                    var javaManifest = getJavaVersionManifest(javaVersions, javaVersion); // Net, JsonParse
 
-                if (javaManifest == null)
-                    javaManifest = getJavaVersionManifest(javaVersions, "jre-legacy");
-                if (javaManifest == null)
+                    if (javaManifest == null)
+                        javaManifest = getJavaVersionManifest(javaVersions, "jre-legacy");
+                    if (javaManifest == null)
+                        return legacyJavaChecker(path);
+
+                    var files = javaManifest["files"] as JObject;
+                    if (files == null)
+                        return legacyJavaChecker(path);
+
+                    return toDownloadFiles(javaVersion, files, path, downloadProgress);
+                }
+                else
                     return legacyJavaChecker(path);
-
-                var files = javaManifest?["files"] as JObject;
-                if (files == null)
-                    return legacyJavaChecker(path);
-
-                return toDownloadFiles(javaVersion, files, path, downloadProgress);
             }
-            else
-                return legacyJavaChecker(path);
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+                return null;
+            }
         }
 
         public Task<DownloadFile[]?> CheckFilesTaskAsync(MinecraftPath path, MVersion version, 
@@ -78,26 +91,16 @@ namespace CmlLib.Core.Files
             return osName;
         }
         
-        private string getDefaultBinaryName()
+        private JObject? getJavaVersionsForOs(string osName)
         {
-            string binaryName = "java";
-            if (MRule.OSName == MRule.Windows)
-                binaryName = "javaw.exe";
-            return binaryName;
-        }
-        
-        private JObject? getJavaVersionsForOS(string osName)
-        {
-            var url =
-                "https://launchermeta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json";
             string response;
             
             using (var wc = new WebClient())
             {
-                response = wc.DownloadString(url);
+                response = wc.DownloadString(JavaManifestServer); // ex
             }
 
-            var job = JObject.Parse(response);
+            var job = JObject.Parse(response); // ex
             return job[osName] as JObject;
         }
 
@@ -107,25 +110,24 @@ namespace CmlLib.Core.Files
             if (versionArr == null || versionArr.Count == 0)
                 return null;
             
-            var manifestUrl = versionArr[0]?["manifest"]?["url"]?.ToString();
+            var manifestUrl = versionArr[0]["manifest"]?["url"]?.ToString();
             if (string.IsNullOrEmpty(manifestUrl))
                 return null;
 
             string response;
             using (var wc = new WebClient())
             {
-                response = wc.DownloadString(manifestUrl);
+                response = wc.DownloadString(manifestUrl); // ex
             }
 
-            return JObject.Parse(response);
+            return JObject.Parse(response); // ex
         }
 
-        private DownloadFile[]? toDownloadFiles(string javaVersionName, JObject manifest, MinecraftPath path,
+        private DownloadFile[] toDownloadFiles(string javaVersionName, JObject manifest, MinecraftPath path,
             IProgress<DownloadFileChangedEventArgs>? progress)
         {
             var progressed = 0;
             var files = new List<DownloadFile>(manifest.Count);
-            string? exeFileName = null;
             foreach (var prop in manifest)
             {
                 var name = prop.Key;
@@ -143,6 +145,11 @@ namespace CmlLib.Core.Files
                     if (file != null)
                     {
                         file.Name = name;
+                        if (executable)
+                            file.AfterDownload = new Func<Task>[]
+                            {
+                                () => Task.Run(() => TryChmod755(filePath))
+                            };
                         files.Add(file);
                     }
                 }
@@ -182,7 +189,7 @@ namespace CmlLib.Core.Files
             };
         }
 
-        private DownloadFile[]? legacyJavaChecker(MinecraftPath path)
+        private DownloadFile[] legacyJavaChecker(MinecraftPath path)
         {
             string legacyJavaPath = Path.Combine(path.Runtime, "m-legacy");
             MJava mJava = new MJava(legacyJavaPath);
@@ -206,11 +213,26 @@ namespace CmlLib.Core.Files
 
                         var z = new SharpZip(zipPath);
                         z.Unzip(legacyJavaPath);
+
+                        TryChmod755(mJava.GetBinaryPath());
                     })
                 }
             };
 
             return new[] {file};
+        }
+
+        private void TryChmod755(string path)
+        {
+            try
+            {
+                if (MRule.OSName != MRule.Windows)
+                    IOUtil.Chmod(path, IOUtil.Chmod755);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+            }
         }
     }
 }

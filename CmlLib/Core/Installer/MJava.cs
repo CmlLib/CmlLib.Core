@@ -25,7 +25,7 @@ namespace CmlLib.Core.Installer
             RuntimeDirectory = runtimePath;
         }
 
-        public string GetDefaultBinaryName()
+        public static string GetDefaultBinaryName()
         {
             string binaryName = "java";
             if (MRule.OSName == MRule.Windows)

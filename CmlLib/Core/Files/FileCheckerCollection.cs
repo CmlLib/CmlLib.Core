@@ -60,6 +60,21 @@ namespace CmlLib.Core.Files
 
         private JavaChecker? java;
 
+        public JavaChecker? JavaFileChecker
+        {
+            get => java;
+            set
+            {
+                if (java != null)
+                    checkers.Remove(java);
+
+                java = value;
+                
+                if (java != null)
+                    checkers.Add(java);
+            }
+        }
+
         public FileCheckerCollection()
         {
             checkers = new List<IFileChecker>(3);
@@ -81,11 +96,12 @@ namespace CmlLib.Core.Files
             checkers.Add(item);
         }
 
-        public void AddRange(IEnumerable<IFileChecker> items)
+        public void AddRange(IEnumerable<IFileChecker?> items)
         {
-            foreach (IFileChecker item in items)
+            foreach (IFileChecker? item in items)
             {
-                Add(item);
+                if (item != null)
+                    Add(item);
             }
         }
 
@@ -118,6 +134,8 @@ namespace CmlLib.Core.Files
                 throw new ArgumentException($"Set {nameof(AssetFileChecker)} property.");
             if (item is ClientChecker)
                 throw new ArgumentException($"Set {nameof(ClientFileChecker)} property.");
+            if (item is JavaChecker)
+                throw new ArgumentException($"Set {nameof(JavaFileChecker)} property.");
         }
 
         public IEnumerator<IFileChecker> GetEnumerator()
