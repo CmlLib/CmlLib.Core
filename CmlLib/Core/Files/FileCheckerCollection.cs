@@ -58,6 +58,8 @@ namespace CmlLib.Core.Files
             }
         }
 
+        private JavaChecker? java;
+
         public FileCheckerCollection()
         {
             checkers = new List<IFileChecker>(3);
@@ -65,10 +67,11 @@ namespace CmlLib.Core.Files
             library = new LibraryChecker();
             asset = new AssetChecker();
             client = new ClientChecker();
-            
+            java = new JavaChecker();
+
             checkers.AddRange(new IFileChecker[]
             {
-                library, asset, client
+                library, asset, client, java
             });
         }
 

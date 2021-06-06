@@ -13,10 +13,10 @@ namespace CmlLib.Core.Installer
         public static readonly string DefaultRuntimeDirectory
             = Path.Combine(MinecraftPath.GetOSDefaultPath(), "runtime");
 
-        public event ProgressChangedEventHandler ProgressChanged;
+        public event ProgressChangedEventHandler? ProgressChanged;
         public string RuntimeDirectory { get; private set; }
 
-        private IProgress<ProgressChangedEventArgs> pProgressChanged;
+        private IProgress<ProgressChangedEventArgs>? pProgressChanged;
 
         public MJava() : this(DefaultRuntimeDirectory) { }
 
@@ -33,22 +33,35 @@ namespace CmlLib.Core.Installer
             return binaryName;
         }
 
+        public string GetBinaryPath()
+            => GetBinaryPath(GetDefaultBinaryName());
+        
+        public string GetBinaryPath(string binaryName)
+            => Path.Combine(RuntimeDirectory, "bin", binaryName);
+
         public string CheckJava()
         {
             string binaryName = GetDefaultBinaryName();
             return CheckJava(binaryName);
         }
 
+        public bool CheckJavaExistence()
+            => CheckJavaExistence(GetDefaultBinaryName());
+
+        public bool CheckJavaExistence(string binaryName)
+            => File.Exists(GetBinaryPath(binaryName));
+        
+
         public string CheckJava(string binaryName)
         {
             pProgressChanged = new Progress<ProgressChangedEventArgs>(
                 (e) => ProgressChanged?.Invoke(this, e));
 
-            string javapath = Path.Combine(RuntimeDirectory, "bin", binaryName);
+            string javapath = GetBinaryPath(binaryName);
 
-            if (!File.Exists(javapath))
+            if (!CheckJavaExistence(binaryName))
             {
-                string javaUrl = getJavaUrl();
+                string javaUrl = GetJavaUrl();
                 string lzmaPath = downloadJavaLzma(javaUrl);
 
                 decompressJavaFile(lzmaPath);
@@ -66,17 +79,17 @@ namespace CmlLib.Core.Installer
         public Task<string> CheckJavaAsync()
             => CheckJavaAsync(null);
 
-        public Task<string> CheckJavaAsync(IProgress<ProgressChangedEventArgs> progress)
+        public Task<string> CheckJavaAsync(IProgress<ProgressChangedEventArgs>? progress)
         {
             string binaryName = GetDefaultBinaryName();
             return CheckJavaAsync(binaryName, progress);
         }
 
-        public async Task<string> CheckJavaAsync(string binaryName, IProgress<ProgressChangedEventArgs> progress)
+        public async Task<string> CheckJavaAsync(string binaryName, IProgress<ProgressChangedEventArgs>? progress)
         {
-            string javapath = Path.Combine(RuntimeDirectory, "bin", binaryName);
+            string javapath = GetBinaryPath(binaryName);
 
-            if (!File.Exists(javapath))
+            if (!CheckJavaExistence(binaryName))
             {
                 if (progress == null)
                 {
@@ -88,7 +101,7 @@ namespace CmlLib.Core.Installer
                     pProgressChanged = progress;
                 }
                 
-                string javaUrl = await getJavaUrlAsync().ConfigureAwait(false);
+                string javaUrl = await GetJavaUrlAsync().ConfigureAwait(false);
                 string lzmaPath = await downloadJavaLzmaAsync(javaUrl).ConfigureAwait(false);
 
                 Task decompressTask = Task.Run(() => decompressJavaFile(lzmaPath));
@@ -104,7 +117,7 @@ namespace CmlLib.Core.Installer
             return javapath;
         }
 
-        private string getJavaUrl()
+        public string GetJavaUrl()
         {
             using (var wc = new WebClient())
             {
@@ -113,7 +126,7 @@ namespace CmlLib.Core.Installer
             }
         }
 
-        private async Task<string> getJavaUrlAsync()
+        public async Task<string> GetJavaUrlAsync()
         {
             using (var wc = new WebClient())
             {
@@ -174,14 +187,14 @@ namespace CmlLib.Core.Installer
             z.Unzip(RuntimeDirectory);
         }
 
-        private void Z_ProgressEvent(object sender, int e)
+        private void Z_ProgressEvent(object? sender, int e)
         {
-            pProgressChanged.Report(new ProgressChangedEventArgs(50 + e / 2, null));
+            pProgressChanged?.Report(new ProgressChangedEventArgs(50 + e / 2, null));
         }
 
         private void Downloader_DownloadProgressChangedEvent(object sender, ProgressChangedEventArgs e)
         { 
-            pProgressChanged.Report(new ProgressChangedEventArgs(e.ProgressPercentage / 2, null));
+            pProgressChanged?.Report(new ProgressChangedEventArgs(e.ProgressPercentage / 2, null));
         }
     }
 }

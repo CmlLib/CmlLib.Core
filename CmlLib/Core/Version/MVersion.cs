@@ -20,6 +20,7 @@ namespace CmlLib.Core.Version
         public string? AssetHash { get; set; }
 
         public string? JavaVersion { get; set; }
+        public string? JavaBinaryPath { get; set; }
         public string? Jar { get; set; }
         public string? ClientDownloadUrl { get; set; }
         public string? ClientHash { get; set; }

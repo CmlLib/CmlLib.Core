@@ -76,35 +76,7 @@ namespace CmlLib.Core
                 .ConfigureAwait(false);
             return version;
         }
-
-        public string CheckJRE()
-        {
-            pFileChanged.Report(
-                new DownloadFileChangedEventArgs(MFile.Runtime, true, "java", 1, 0));
-
-            var mjava = new MJava();
-            mjava.ProgressChanged += (sender, e) => pProgressChanged.Report(e);
-            var j = mjava.CheckJava();
-
-            pFileChanged.Report(
-                new DownloadFileChangedEventArgs(MFile.Runtime, true, "java", 1, 1));
-            return j;
-        }
-
-        public async Task<string> CheckJREAsync()
-        {
-            pFileChanged.Report(
-                new DownloadFileChangedEventArgs(MFile.Runtime, true, "java", 1, 0));
-            
-            var mjava = new MJava();
-            var j = await mjava.CheckJavaAsync(pProgressChanged)
-                .ConfigureAwait(false);
-            
-            pFileChanged.Report(
-                new DownloadFileChangedEventArgs(MFile.Runtime, true, "java", 1, 1));
-            return j;
-        }
-
+        
         public string CheckForge(string mcversion, string forgeversion, string java)
         {
             if (Versions == null)
@@ -193,9 +165,6 @@ namespace CmlLib.Core
 
         public Process CreateProcess(string mcversion, string forgeversion, MLaunchOption option)
         {
-            if (string.IsNullOrEmpty(option.JavaPath))
-                option.JavaPath = CheckJRE();
-
             CheckAndDownload(GetVersion(mcversion));
 
             var versionName = CheckForge(mcversion, forgeversion, option.JavaPath);
@@ -229,10 +198,6 @@ namespace CmlLib.Core
         {
             if (option.Path == null)
                 option.Path = MinecraftPath;
-
-            if (string.IsNullOrEmpty(option.JavaPath))
-                option.JavaPath = CheckJRE();
-
             var launch = new MLaunch(option);
             return launch.GetProcess();
         }
@@ -241,9 +206,6 @@ namespace CmlLib.Core
         {
             if (option.Path == null)
                 option.Path = MinecraftPath;
-
-            if (string.IsNullOrEmpty(option.JavaPath))
-                option.JavaPath = await CheckJREAsync().ConfigureAwait(false);
 
             var launch = new MLaunch(option);
             return await Task.Run(launch.GetProcess).ConfigureAwait(false);
