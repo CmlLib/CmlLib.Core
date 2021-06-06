@@ -15,6 +15,8 @@ namespace CmlLib.Utils
             {
                 WebRequest w = base.GetWebRequest(uri);
                 w.Timeout = 20 * 1000;
+                w.Proxy = null;
+                this.Proxy = null;
                 return w;
             }
         }
