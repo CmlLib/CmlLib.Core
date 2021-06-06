@@ -116,7 +116,7 @@ namespace CmlLib.Core.Files
                 
                 if (progressed % 50 == 0) // prevent ui freezing
                     progress?.Report(
-                        new DownloadFileChangedEventArgs(MFile.Resource, "", total, progressed));
+                        new DownloadFileChangedEventArgs(MFile.Resource, false, "", total, progressed));
             }
 
             return downloadRequiredFiles.Distinct().ToArray(); // 10ms

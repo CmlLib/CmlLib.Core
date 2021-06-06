@@ -64,7 +64,7 @@ namespace CmlLib.Core.Downloader
             }
 
             fileProgress?.Report(
-                new DownloadFileChangedEventArgs(files[0].Type, null, files.Length, 0));
+                new DownloadFileChangedEventArgs(files[0].Type, true, null, files.Length, 0));
             await ForEachAsyncSemaphore(files, MaxThread, doDownload).ConfigureAwait(false);
             
             isRunning = false;
@@ -127,7 +127,7 @@ namespace CmlLib.Core.Downloader
 
                 Interlocked.Increment(ref progressedFiles);
                 pChangeFile?.Report(
-                    new DownloadFileChangedEventArgs(file.Type, file.Name, totalFiles, progressedFiles));
+                    new DownloadFileChangedEventArgs(file.Type, true, file.Name, totalFiles, progressedFiles));
             }
             catch (Exception ex)
             {

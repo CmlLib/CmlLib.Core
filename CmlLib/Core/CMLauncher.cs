@@ -80,28 +80,28 @@ namespace CmlLib.Core
         public string CheckJRE()
         {
             pFileChanged.Report(
-                new DownloadFileChangedEventArgs(MFile.Runtime, "java", 1, 0));
+                new DownloadFileChangedEventArgs(MFile.Runtime, true, "java", 1, 0));
 
             var mjava = new MJava();
             mjava.ProgressChanged += (sender, e) => pProgressChanged.Report(e);
             var j = mjava.CheckJava();
 
             pFileChanged.Report(
-                new DownloadFileChangedEventArgs(MFile.Runtime, "java", 1, 1));
+                new DownloadFileChangedEventArgs(MFile.Runtime, true, "java", 1, 1));
             return j;
         }
 
         public async Task<string> CheckJREAsync()
         {
             pFileChanged.Report(
-                new DownloadFileChangedEventArgs(MFile.Runtime, "java", 1, 0));
+                new DownloadFileChangedEventArgs(MFile.Runtime, true, "java", 1, 0));
             
             var mjava = new MJava();
             var j = await mjava.CheckJavaAsync(pProgressChanged)
                 .ConfigureAwait(false);
             
             pFileChanged.Report(
-                new DownloadFileChangedEventArgs(MFile.Runtime, "java", 1, 1));
+                new DownloadFileChangedEventArgs(MFile.Runtime, true, "java", 1, 1));
             return j;
         }
 

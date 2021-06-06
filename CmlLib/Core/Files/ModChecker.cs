@@ -50,11 +50,11 @@ namespace CmlLib.Core.Files
 
                 progressed++;
                 progress?.Report(new DownloadFileChangedEventArgs(
-                    MFile.Others, mod.Name, Mods.Length, progressed));
+                    MFile.Others, false, mod.Name, Mods.Length, progressed));
             }
 
             progress?.Report(new DownloadFileChangedEventArgs(
-    MFile.Others, lastModName, Mods.Length, Mods.Length));
+    MFile.Others, false, lastModName, Mods.Length, Mods.Length));
 
             return files.Distinct().ToArray();
         }
