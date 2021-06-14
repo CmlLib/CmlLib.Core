@@ -2,7 +2,7 @@
 
 ## Minecraft Launcher Library
 
-<img src='https://raw.githubusercontent.com/CmlLib/CmlLib.Core/master/logo.png' width=150>
+<img src='https://raw.githubusercontent.com/CmlLib/CmlLib.Core/master/icon.png' width=150>
 
 [![Nuget Badge](https://img.shields.io/nuget/v/CmlLib.Core)](https://www.nuget.org/packages/CmlLib.Core)
 [![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://github.com/CmlLib/CmlLib.Core/blob/master/LICENSE)
@@ -64,7 +64,7 @@ if (!response.IsSuccess) // failed to automatically log in
     response = login.Authenticate(email, pw);
 
     if (!response.IsSuccess)
-         throw new Exception(session.Result.ToString()) // failed to log in
+         throw new Exception(response.Result.ToString()); // failed to log in
 }
 
 // This session variable is the result of logging in and is used in MLaunchOption, in the Launch part below.
