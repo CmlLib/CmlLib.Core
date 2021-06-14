@@ -171,11 +171,14 @@ namespace CmlLib.Core
 
             return CreateProcess(versionName, option);
         }
+        
+        public Process CreateProcess(string versionName, MLaunchOption option)
+            => CreateProcess(GetVersion(versionName), option);
 
         [MethodTimer.Time]
-        public Process CreateProcess(string versionname, MLaunchOption option)
+        public Process CreateProcess(MVersion version, MLaunchOption option)
         {
-            option.StartVersion = GetVersion(versionname);
+            option.StartVersion = version;
 
             if (this.FileDownloader != null)
                 CheckAndDownload(option.StartVersion);
@@ -183,10 +186,15 @@ namespace CmlLib.Core
             return CreateProcess(option);
         }
 
-        [MethodTimer.Time]
-        public async Task<Process> CreateProcessAsync(string versionname, MLaunchOption option)
+        public async Task<Process> CreateProcessAsync(string versionName, MLaunchOption option)
         {
-            option.StartVersion = await GetVersionAsync(versionname).ConfigureAwait(false);
+            var version = await GetVersionAsync(versionName).ConfigureAwait(false);
+            return await CreateProcessAsync(version, option).ConfigureAwait(false);
+        }
+
+        public async Task<Process> CreateProcessAsync(MVersion version, MLaunchOption option)
+        {
+            option.StartVersion = version;
 
             if (this.FileDownloader != null)
                 await CheckAndDownloadAsync(option.StartVersion).ConfigureAwait(false);
@@ -196,34 +204,39 @@ namespace CmlLib.Core
         
         public Process CreateProcess(MLaunchOption option)
         {
-            if (option.Path == null)
-                option.Path = MinecraftPath;
+            checkLaunchOption(option);
             var launch = new MLaunch(option);
             return launch.GetProcess();
         }
         
         public async Task<Process> CreateProcessAsync(MLaunchOption option)
         {
-            if (option.Path == null)
-                option.Path = MinecraftPath;
-
+            checkLaunchOption(option);
             var launch = new MLaunch(option);
             return await Task.Run(launch.GetProcess).ConfigureAwait(false);
         }
 
-        public Process Launch(string versionname, MLaunchOption option)
+        public Process Launch(string versionName, MLaunchOption option)
         {
-            Process process = CreateProcess(versionname, option);
+            Process process = CreateProcess(versionName, option);
             process.Start();
             return process;
         }
 
-        public async Task<Process> LaunchAsync(string versionname, MLaunchOption option)
+        public async Task<Process> LaunchAsync(string versionName, MLaunchOption option)
         {
-            Process process = await CreateProcessAsync(versionname, option)
+            Process process = await CreateProcessAsync(versionName, option)
                 .ConfigureAwait(false);
             process.Start();
             return process;
+        }
+
+        private void checkLaunchOption(MLaunchOption option)
+        {
+            if (option.Path == null)
+                option.Path = MinecraftPath;
+            if (!string.IsNullOrEmpty(option.JavaPath) && option.StartVersion != null)
+                option.StartVersion.JavaBinaryPath = option.JavaPath;
         }
     }
 }
