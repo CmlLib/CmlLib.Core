@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -59,7 +60,17 @@ namespace CmlLib.Utils
         public string FilePath { get; private set; }
         private readonly Dictionary<string, string?> options;
 
-        private GameOptionsFile(Dictionary<string, string?> options, string path)
+        public GameOptionsFile()
+        {
+            this.options = new Dictionary<string, string?>();
+        }
+        
+        public GameOptionsFile(Dictionary<string, string?> options)
+        {
+            this.options = options;
+        }
+        
+        public GameOptionsFile(Dictionary<string, string?> options, string path)
         {
             this.options = options;
             this.FilePath = path;
@@ -166,6 +177,8 @@ namespace CmlLib.Utils
 
         public void Save()
         {
+            if (string.IsNullOrEmpty(FilePath))
+                throw new ArgumentNullException("this.FilePath was null");
             Save(FilePath);
         }
 

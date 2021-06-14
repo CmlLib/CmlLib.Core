@@ -24,7 +24,7 @@ namespace CmlLib.Core.Downloader
             downloader.FileDownloadProgressChanged += Downloader_FileDownloadProgressChanged;
 
             fileProgress?.Report(
-                new DownloadFileChangedEventArgs(files[0].Type, null, files.Length, 0));
+                new DownloadFileChangedEventArgs(files[0].Type, true, null, files.Length, 0));
 
             for (int i = 0; i < files.Length; i++)
             {
@@ -47,7 +47,7 @@ namespace CmlLib.Core.Downloader
                     }
                     
                     fileProgress?.Report(
-                        new DownloadFileChangedEventArgs(file.Type, file.Name, files.Length, i));
+                        new DownloadFileChangedEventArgs(file.Type, true, file.Name, files.Length, i));
                 }
                 catch (Exception ex)
                 {

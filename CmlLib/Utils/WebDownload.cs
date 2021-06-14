@@ -7,14 +7,24 @@ using System.Threading.Tasks;
 
 namespace CmlLib.Utils
 {
-    internal class WebDownload
+    public class WebDownload
     {
+        public static bool IgnoreProxy = true;
+        public static int DefaultWebRequestTimeout = 20 * 1000;
+        
         private class TimeoutWebClient : WebClient
         {
             protected override WebRequest GetWebRequest(Uri uri)
             {
                 WebRequest w = base.GetWebRequest(uri);
-                w.Timeout = 20 * 1000;
+                w.Timeout = DefaultWebRequestTimeout;
+
+                if (IgnoreProxy)
+                {
+                    w.Proxy = null;
+                    this.Proxy = null;
+                }
+
                 return w;
             }
         }
@@ -22,10 +32,10 @@ namespace CmlLib.Utils
         private static readonly int DefaultBufferSize = 1024 * 64; // 64kb
         private readonly object locker = new object();
         
-        public event EventHandler<FileDownloadProgress>? FileDownloadProgressChanged;
-        public event ProgressChangedEventHandler? DownloadProgressChangedEvent;
+        internal event EventHandler<FileDownloadProgress>? FileDownloadProgressChanged;
+        internal event ProgressChangedEventHandler? DownloadProgressChangedEvent;
 
-        public void DownloadFile(string url, string path)
+        internal void DownloadFile(string url, string path)
         {
             var req = WebRequest.CreateHttp(url); // Request
             var response = req.GetResponse();
@@ -60,7 +70,7 @@ namespace CmlLib.Utils
             fileStream.Dispose();
         }
 
-        public async Task DownloadFileAsync(DownloadFile file)
+        internal async Task DownloadFileAsync(DownloadFile file)
         {
             string? directoryName = Path.GetDirectoryName(file.Path);
             if (!string.IsNullOrEmpty(directoryName))
@@ -90,7 +100,7 @@ namespace CmlLib.Utils
             }
         }
 
-        public void DownloadFileLimit(string url, string path)
+        internal void DownloadFileLimit(string url, string path)
         {
             string? directoryName = Path.GetDirectoryName(path);
             if (!string.IsNullOrEmpty(directoryName))

@@ -27,7 +27,11 @@ namespace CmlLib.Core.VersionLoader
 
         private List<MVersionMetadata> getFromLocal(MinecraftPath path)
         {
-            var dirs = new DirectoryInfo(path.Versions).GetDirectories();
+            var versionDirectory = new DirectoryInfo(path.Versions);
+            if (!versionDirectory.Exists)
+                return new List<MVersionMetadata>();
+            
+            var dirs = versionDirectory.GetDirectories();
             var arr = new List<MVersionMetadata>(dirs.Length);
 
             for (int i = 0; i < dirs.Length; i++)

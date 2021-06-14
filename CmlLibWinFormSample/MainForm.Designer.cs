@@ -85,6 +85,7 @@
             this.btnSetLastVersion = new System.Windows.Forms.Button();
             this.btnMojangServer = new System.Windows.Forms.Button();
             this.btnOptions = new System.Windows.Forms.Button();
+            this.lbLibraryVersion = new System.Windows.Forms.Label();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -507,7 +508,7 @@
             // label12
             // 
             this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(485, 565);
+            this.label12.Location = new System.Drawing.Point(485, 559);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(242, 15);
             this.label12.TabIndex = 23;
@@ -679,11 +680,20 @@
             this.btnOptions.UseVisualStyleBackColor = true;
             this.btnOptions.Click += new System.EventHandler(this.btnOptions_Click);
             // 
+            // lbLibraryVersion
+            // 
+            this.lbLibraryVersion.Location = new System.Drawing.Point(485, 576);
+            this.lbLibraryVersion.Name = "lbLibraryVersion";
+            this.lbLibraryVersion.Size = new System.Drawing.Size(234, 23);
+            this.lbLibraryVersion.TabIndex = 31;
+            this.lbLibraryVersion.Text = "CmlLib.Core";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(918, 608);
+            this.Controls.Add(this.lbLibraryVersion);
             this.Controls.Add(this.btnOptions);
             this.Controls.Add(this.btnMojangServer);
             this.Controls.Add(this.groupBox4);
@@ -712,6 +722,8 @@
             this.ResumeLayout(false);
             this.PerformLayout();
         }
+
+        private System.Windows.Forms.Label lbLibraryVersion;
 
         #endregion
         private System.Windows.Forms.GroupBox groupBox2;

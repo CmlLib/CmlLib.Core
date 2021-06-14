@@ -368,7 +368,7 @@ namespace CmlLib.Core.Installer
 
         private void fireEvent(MFile kind, string name, int total, int progressed)
         {
-            FileChanged?.Invoke(new DownloadFileChangedEventArgs(kind, name, total, progressed));
+            FileChanged?.Invoke(new DownloadFileChangedEventArgs(kind, false, name, total, progressed));
         }
     }
 }

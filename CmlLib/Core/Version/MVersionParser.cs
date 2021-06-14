@@ -85,9 +85,12 @@ namespace CmlLib.Core.Version
                 var id = job["id"]?.ToString();
                 if (string.IsNullOrEmpty(id))
                     throw new MVersionParseException("Empty version id");
-                
+
                 var version = new MVersion(id);
 
+                // javaVersion
+                version.JavaVersion = job["javaVersion"]?["component"]?.ToString();
+                
                 // assets
                 var assetindex = job["assetIndex"];
                 var assets = job["assets"];
@@ -127,9 +130,7 @@ namespace CmlLib.Core.Version
                 version.MainClass = job["mainClass"]?.ToString();
 
                 // argument
-                var ma = job["minecraftArguments"]?.ToString();
-                if (ma != null)
-                    version.MinecraftArguments = ma;
+                version.MinecraftArguments = job["minecraftArguments"]?.ToString();
 
                 var ag = job["arguments"];
                 if (ag != null)

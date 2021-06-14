@@ -12,6 +12,13 @@ namespace CmlLib.Utils
     {
         private const int DefaultBufferSize = 4096;
 
+        public static string NormalizePath(string path)
+        {
+            return Path.GetFullPath(path)
+                .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
+                .TrimEnd(Path.DirectorySeparatorChar);
+        }
+        
         public static void DeleteDirectory(string target_dir)
         {
             try

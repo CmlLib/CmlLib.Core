@@ -82,7 +82,7 @@ namespace CmlLib.Core.Files
 
                 progressed++;
                 progress?.Report(new DownloadFileChangedEventArgs(
-                    MFile.Library, library.Name, libs.Length, progressed));
+                    MFile.Library, false, library.Name, libs.Length, progressed));
             }
             return files.Distinct().ToArray();
         }

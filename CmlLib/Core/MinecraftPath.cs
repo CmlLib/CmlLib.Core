@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using CmlLib.Utils;
 
 namespace CmlLib.Core
 {
@@ -100,9 +101,7 @@ namespace CmlLib.Core
 
         protected static string NormalizePath(string path)
         {
-            return Path.GetFullPath(path)
-                .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
-                .TrimEnd(Path.DirectorySeparatorChar);
+            return IOUtil.NormalizePath(path);
         }
     }
 }

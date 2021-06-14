@@ -34,21 +34,14 @@ namespace CmlLib.Core
         public MLaunchOption LaunchOption { get; private set; }
 
         /// <summary>
-        /// Start Game
-        /// </summary>
-        public void Start()
-        {
-            GetProcess().Start();
-        }
-
-        /// <summary>
         /// Build game process and return it
         /// </summary>
         public Process GetProcess()
         {
             string arg = string.Join(" ", CreateArg());
             Process mc = new Process();
-            mc.StartInfo.FileName = LaunchOption.GetJavaPath();
+            mc.StartInfo.FileName = 
+                useNotNull(LaunchOption.GetJavaPath(), LaunchOption.GetStartVersion().JavaBinaryPath);
             mc.StartInfo.Arguments = arg;
             mc.StartInfo.WorkingDirectory = minecraftPath.BasePath;
 

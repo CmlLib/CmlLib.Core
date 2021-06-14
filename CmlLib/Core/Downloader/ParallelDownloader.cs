@@ -99,7 +99,7 @@ namespace CmlLib.Core.Downloader
 
         private void fireDownloadFileChangedEvent(MFile file, string name, int totalFiles, int progressedFiles)
         {
-            var e = new DownloadFileChangedEventArgs(file, name, totalFiles, progressedFiles);
+            var e = new DownloadFileChangedEventArgs(file, true, name, totalFiles, progressedFiles);
             fireDownloadFileChangedEvent(e);
         }
 
