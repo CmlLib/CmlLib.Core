@@ -28,7 +28,23 @@ namespace CmlLib.Core.Files
             if (string.IsNullOrEmpty(javaVersion))
                 javaVersion = "jre-legacy";
 
-            version.JavaBinaryPath = Path.Combine(path.Runtime, javaVersion, "bin", JavaBinaryName);
+            var files = internalCheckFile(
+                javaVersion, path, downloadProgress, out string binPath);
+
+            version.JavaBinaryPath = binPath;
+            return files;
+        }
+
+        public Task<DownloadFile[]?> CheckFilesTaskAsync(MinecraftPath path, MVersion version,
+            IProgress<DownloadFileChangedEventArgs>? downloadProgress)
+        {
+            return Task.Run(() => CheckFiles(path, version, downloadProgress));
+        }
+
+        private DownloadFile[]? internalCheckFile(string javaVersion, MinecraftPath path,
+            IProgress<DownloadFileChangedEventArgs>? downloadProgress, out string binPath)
+        {
+            binPath = Path.Combine(path.Runtime, javaVersion, "bin", JavaBinaryName);
 
             try
             {
@@ -41,28 +57,22 @@ namespace CmlLib.Core.Files
                     if (javaManifest == null)
                         javaManifest = getJavaVersionManifest(javaVersions, "jre-legacy");
                     if (javaManifest == null)
-                        return legacyJavaChecker(path);
+                        return legacyJavaChecker(path, out binPath);
 
                     var files = javaManifest["files"] as JObject;
                     if (files == null)
-                        return legacyJavaChecker(path);
+                        return legacyJavaChecker(path, out binPath);
 
                     return toDownloadFiles(javaVersion, files, path, downloadProgress);
                 }
                 else
-                    return legacyJavaChecker(path);
+                    return legacyJavaChecker(path, out binPath);
             }
             catch (Exception e)
             {
                 Debug.WriteLine(e);
-                return null;
+                return legacyJavaChecker(path, out binPath);
             }
-        }
-
-        public Task<DownloadFile[]?> CheckFilesTaskAsync(MinecraftPath path, MVersion version, 
-            IProgress<DownloadFileChangedEventArgs>? downloadProgress)
-        {
-            return Task.Run(() => CheckFiles(path, version, downloadProgress));
         }
 
         private string getJavaOSName()
@@ -148,7 +158,7 @@ namespace CmlLib.Core.Files
                         if (executable)
                             file.AfterDownload = new Func<Task>[]
                             {
-                                () => Task.Run(() => TryChmod755(filePath))
+                                () => Task.Run(() => tryChmod755(filePath))
                             };
                         files.Add(file);
                     }
@@ -189,10 +199,11 @@ namespace CmlLib.Core.Files
             };
         }
 
-        private DownloadFile[] legacyJavaChecker(MinecraftPath path)
+        private DownloadFile[] legacyJavaChecker(MinecraftPath path, out string binPath)
         {
             string legacyJavaPath = Path.Combine(path.Runtime, "m-legacy");
             MJava mJava = new MJava(legacyJavaPath);
+            binPath = mJava.GetBinaryPath();
             
             if (mJava.CheckJavaExistence())
                 return new DownloadFile[] {};
@@ -214,7 +225,7 @@ namespace CmlLib.Core.Files
                         var z = new SharpZip(zipPath);
                         z.Unzip(legacyJavaPath);
 
-                        TryChmod755(mJava.GetBinaryPath());
+                        tryChmod755(mJava.GetBinaryPath());
                     })
                 }
             };
@@ -222,7 +233,7 @@ namespace CmlLib.Core.Files
             return new[] {file};
         }
 
-        private void TryChmod755(string path)
+        private void tryChmod755(string path)
         {
             try
             {
