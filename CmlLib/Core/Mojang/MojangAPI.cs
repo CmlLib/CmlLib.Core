@@ -12,15 +12,6 @@ namespace CmlLib.Core.Mojang
     [Obsolete("use MojangAPI library: https://github.com/CmlLib/MojangAPI")]
     public static class MojangAPI
     {
-        private static void writeReq(WebRequest req, string data)
-        {
-            using (var reqStream = req.GetRequestStream())
-            using (var sw = new StreamWriter(reqStream))
-            {
-                sw.Write(data);
-            }
-        }
-
         private static string readRes(WebResponse res)
         {
             using (var resStream = res.GetResponseStream())
@@ -63,49 +54,6 @@ namespace CmlLib.Core.Mojang
             {
                 UUID = job["id"]?.ToString(),
                 Name = job["name"]?.ToString(),
-                Skin = new Skin
-                (
-                    url: skinObj?["url"]?.ToString(),
-                    type: skinObj?["alias"]?.ToString()
-                )
-            };
-        }
-
-        public static UserProfile GetProfileUsingUUID(string uuid)
-        {
-            var url = "https://sessionserver.mojang.com/session/minecraft/profile/" + uuid;
-            var req = WebRequest.CreateHttp(url);
-            req.Method = "GET";
-
-            var res = req.GetResponse();
-            var resBody = readRes(res);
-            var job = JObject.Parse(resBody);
-
-            JObject? propObj = null;
-            var propValue = job["properties"]?[0]?["value"];
-            if (propValue != null)
-            {
-                var decoded = Convert.FromBase64String(propValue.ToString());
-                propObj = JObject.Parse(Encoding.UTF8.GetString(decoded));
-            }
-
-            var skinObj = propObj?["textures"]?["SKIN"];
-
-            Skin skin;
-            if (skinObj == null)
-                skin = new Skin(null, Skin.GetDefaultSkinType(uuid));
-            else
-                skin = new Skin
-                (
-                    url: skinObj["url"]?.ToString(),
-                    type: skinObj["metadata"]?["model"]?.ToString()
-                );
-
-            return new UserProfile
-            {
-                UUID = propObj?["profileId"]?.ToString(),
-                Name = propObj?["profileName"]?.ToString(),
-                Skin = skin
             };
         }
     }
