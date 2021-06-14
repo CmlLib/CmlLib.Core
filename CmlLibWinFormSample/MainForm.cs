@@ -6,6 +6,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -23,18 +24,16 @@ namespace CmlLibWinFormSample
 
         CMLauncher launcher;
         readonly MSession session;
-        MinecraftPath gamePath;
-
-        bool useMJava = true;
-        string javaPath = "java.exe";
+        MinecraftPath gamePath; 
+        string javaPath;
         
         GameLog logForm;
 
         private async void MainForm_Shown(object sender, EventArgs e)
         {
+            lbLibraryVersion.Text = "CmlLib.Core " + getLibraryVersion();
+            
             // Initialize launcher
-            this.Refresh();
-
             var defaultPath = new MinecraftPath(MinecraftPath.GetOSDefaultPath());
             await initializeLauncher(defaultPath);
         }
@@ -43,10 +42,7 @@ namespace CmlLibWinFormSample
         {
             txtPath.Text = path.BasePath;
             this.gamePath = path;
-
-            if (useMJava)
-                lbJavaPath.Text = path.Runtime;
-
+            
             launcher = new CMLauncher(path);
             launcher.FileChanged += Launcher_FileChanged;
             launcher.ProgressChanged += Launcher_ProgressChanged;
@@ -121,9 +117,9 @@ namespace CmlLibWinFormSample
                     DockIcon = Txt_DockIcon.Text
                 };
 
-                if (!useMJava)
+                if (!string.IsNullOrEmpty(javaPath))
                     launchOption.JavaPath = javaPath;
-
+                
                 if (!string.IsNullOrEmpty(txtXms.Text))
                     launchOption.MinimumRamMb = int.Parse(txtXms.Text);
 
@@ -229,17 +225,14 @@ namespace CmlLibWinFormSample
 
         private void btnChangeJava_Click(object sender, EventArgs e)
         {
-            var form = new JavaForm(useMJava, this.gamePath.Runtime, javaPath);
+            var form = new JavaForm(javaPath);
             form.ShowDialog();
-
-            useMJava = form.UseMJava;
-            this.gamePath.Runtime = form.MJavaDirectory;
             javaPath = form.JavaBinaryPath;
-
-            if (useMJava)
-                lbJavaPath.Text = form.MJavaDirectory;
+            
+            if (string.IsNullOrEmpty(javaPath))
+                lbJavaPath.Text = "Use default java";
             else
-                lbJavaPath.Text = form.JavaBinaryPath;
+                lbJavaPath.Text = javaPath;
         }
 
         private void btnAutoRamSet_Click(object sender, EventArgs e)
@@ -278,15 +271,9 @@ namespace CmlLibWinFormSample
             new Thread(() =>
             {
                 var forgeJava = "";
-
-                if (useMJava)
-                {
-                    var java = new MJava();
-                    java.ProgressChanged += Launcher_ProgressChanged;
-                    forgeJava = java.CheckJava();
-                }
-                else
-                    forgeJava = javaPath;
+                var java = new MJava();
+                java.ProgressChanged += Launcher_ProgressChanged;
+                forgeJava = java.CheckJava();
 
                 Invoke(new Action(async () =>
                 {
@@ -373,6 +360,19 @@ namespace CmlLibWinFormSample
             catch (Exception ex)
             {
                 MessageBox.Show(ex.ToString());
+            }
+        }
+
+        private string getLibraryVersion()
+        {
+            try
+            {
+                return Assembly.GetAssembly(typeof(CMLauncher)).GetName().Version.ToString();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return null;
             }
         }
     }
