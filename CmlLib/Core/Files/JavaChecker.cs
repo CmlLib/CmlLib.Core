@@ -16,7 +16,7 @@ namespace CmlLib.Core.Files
     {
         public string JavaManifestServer { get; set; } = MojangServer.JavaManifest;
         public string JavaBinaryName { get; set; } = MJava.GetDefaultBinaryName();
-        public bool CheckHash { get; set; }
+        public bool CheckHash { get; set; } = true;
         
         public DownloadFile[]? CheckFiles(MinecraftPath path, MVersion version,
             IProgress<DownloadFileChangedEventArgs>? downloadProgress)

@@ -2,7 +2,7 @@
 
 ## Minecraft Launcher Library
 
-<img src='https://raw.githubusercontent.com/CmlLib/CmlLib.Core/master/logo.png' width=150>
+<img src='https://raw.githubusercontent.com/CmlLib/CmlLib.Core/master/icon.png' width=128>
 
 [![Nuget Badge](https://img.shields.io/nuget/v/CmlLib.Core)](https://www.nuget.org/packages/CmlLib.Core)
 [![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://github.com/CmlLib/CmlLib.Core/blob/master/LICENSE)
@@ -27,6 +27,8 @@ Support all version, with Forge
 *   Launch with options (direct server connecting, screen resolution)
 *   Supports cross-platform (windows, ubuntu, macOS)
 
+[Go to wiki and see all features](https://github.com/CmlLib/CmlLib.Core/wiki)
+
 ## Install
 
 Install the 'CmlLib.Core' [Nuget package](https://www.nuget.org/packages/CmlLib.Core) or download the dll files in [Releases](https://github.com/AlphaBs/CmlLib.Core/releases) and add references to them in your project.
@@ -40,7 +42,7 @@ using CmlLib.Core.Auth;
 
 ## Documentation
 
-Many features are available for custom launchers. See wiki to use all features!\
+There are many features for custom launcher. See wiki to use all features!\
 **Official documentation: [wiki](https://github.com/CmlLib/CmlLib.Core/wiki)**
 
 ## QuickStart
@@ -64,7 +66,7 @@ if (!response.IsSuccess) // failed to automatically log in
     response = login.Authenticate(email, pw);
 
     if (!response.IsSuccess)
-         throw new Exception(session.Result.ToString()) // failed to log in
+         throw new Exception(response.Result.ToString()); // failed to log in
 }
 
 // This session variable is the result of logging in and is used in MLaunchOption, in the Launch part below.

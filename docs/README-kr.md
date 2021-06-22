@@ -2,7 +2,7 @@
 
 ## Minecraft Launcher Library
 
-<img src='https://raw.githubusercontent.com/CmlLib/CmlLib.Core/master/logo.png' width=150>
+<img src='https://raw.githubusercontent.com/CmlLib/CmlLib.Core/master/icon.png' width=150>
 
 [![Nuget Badge](https://img.shields.io/nuget/v/CmlLib.Core)](https://www.nuget.org/packages/CmlLib.Core)
 [![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://github.com/CmlLib/CmlLib.Core/blob/master/LICENSE)
@@ -13,6 +13,11 @@
 CmlLib.Core 는 마인크래프트 커스텀 런처 제작을 위한 C# 라이브러리입니다.\
 포지를 포함한 모든 버전을 실행 가능합니다.\
 .NET 5.0 / .NET Core 3.1 / .NET Framework 4.6.2 지원
+
+## [AD - 주문제작]
+**커스텀 런처 주문제작을 받고 있습니다!**  
+라이브러리에는 없는 다양한 추가 기능들이 포함되어 있습니다.  
+ksi123456ab#3719 디스코드로 연락주세요.
 
 ## 기능
 
