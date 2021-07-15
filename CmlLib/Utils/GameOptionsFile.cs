@@ -184,7 +184,7 @@ namespace CmlLib.Utils
 
         public void Save(string path)
         {
-            Save(path, Encoding.UTF8);
+            Save(path, new UTF8Encoding(false));
         }
 
         public void Save(Encoding encoding)
