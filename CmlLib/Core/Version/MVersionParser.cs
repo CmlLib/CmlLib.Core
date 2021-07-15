@@ -179,7 +179,8 @@ namespace CmlLib.Core.Version
                 {
                     bool allow = true;
 
-                    if (item["rules"] is JArray rules)
+                    var rules = item["rules"] as JArray ?? item["compatibilityRules"] as JArray;
+                    if (rules != null)
                         allow = MRule.CheckOSRequire(rules);
 
                     var value = item["value"] ?? item["values"];
