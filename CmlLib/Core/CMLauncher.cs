@@ -192,10 +192,7 @@ namespace CmlLib.Core
         public async Task<Process> CreateProcessAsync(MVersion version, MLaunchOption option)
         {
             option.StartVersion = version;
-
-            if (this.FileDownloader != null)
-                await CheckAndDownloadAsync(option.StartVersion).ConfigureAwait(false);
-
+            await CheckAndDownloadAsync(option.StartVersion).ConfigureAwait(false);
             return await CreateProcessAsync(option).ConfigureAwait(false);
         }
         
