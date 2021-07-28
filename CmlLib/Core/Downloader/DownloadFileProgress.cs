@@ -1,8 +1,8 @@
 ﻿namespace CmlLib.Core.Downloader
 {
-    public class FileDownloadProgress
+    public class DownloadFileProgress
     {
-        public FileDownloadProgress(DownloadFile file, long total, long progressed, long received, int percent)
+        public DownloadFileProgress(DownloadFile file, long total, long progressed, long received, int percent)
         {
             this.File = file;
             this.TotalBytes = total;

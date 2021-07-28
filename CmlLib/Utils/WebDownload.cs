@@ -32,7 +32,7 @@ namespace CmlLib.Utils
         private static readonly int DefaultBufferSize = 1024 * 64; // 64kb
         private readonly object locker = new object();
         
-        internal event EventHandler<FileDownloadProgress>? FileDownloadProgressChanged;
+        internal event EventHandler<DownloadFileProgress>? FileDownloadProgressChanged;
         internal event ProgressChangedEventHandler? DownloadProgressChangedEvent;
 
         internal void DownloadFile(string url, string path)
@@ -90,7 +90,7 @@ namespace CmlLib.Utils
 
                         lastBytes = e.BytesReceived;
 
-                        var progress = new FileDownloadProgress(
+                        var progress = new DownloadFileProgress(
                             file, e.TotalBytesToReceive, progressedBytes, e.BytesReceived, e.ProgressPercentage);
                         FileDownloadProgressChanged?.Invoke(this, progress);
                     }
