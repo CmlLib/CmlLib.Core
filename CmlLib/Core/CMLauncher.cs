@@ -179,10 +179,7 @@ namespace CmlLib.Core
         public Process CreateProcess(MVersion version, MLaunchOption option)
         {
             option.StartVersion = version;
-
-            if (this.FileDownloader != null)
-                CheckAndDownload(option.StartVersion);
-
+            CheckAndDownload(option.StartVersion);
             return CreateProcess(option);
         }
 
@@ -235,8 +232,13 @@ namespace CmlLib.Core
         {
             if (option.Path == null)
                 option.Path = MinecraftPath;
-            if (!string.IsNullOrEmpty(option.JavaPath) && option.StartVersion != null)
-                option.StartVersion.JavaBinaryPath = option.JavaPath;
+            if (option.StartVersion != null)
+            {
+                if (!string.IsNullOrEmpty(option.JavaPath))
+                    option.StartVersion.JavaBinaryPath = option.JavaPath;
+                else if (!string.IsNullOrEmpty(option.JavaVersion))
+                    option.StartVersion.JavaVersion = option.JavaVersion;
+            }
         }
     }
 }

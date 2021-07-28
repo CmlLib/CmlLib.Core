@@ -10,6 +10,7 @@ namespace CmlLib.Core
         public MVersion? StartVersion { get; set; }
         public MSession? Session { get; set; }
 
+        public string? JavaVersion { get; set; }
         public string? JavaPath { get; set; }
         public int MaximumRamMb { get; set; } = 1024;
         public int MinimumRamMb { get; set; }
