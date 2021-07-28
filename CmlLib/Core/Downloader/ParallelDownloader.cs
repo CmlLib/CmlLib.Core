@@ -99,23 +99,13 @@ namespace CmlLib.Core.Downloader
 
         private void fireDownloadFileChangedEvent(MFile file, string name, int totalFiles, int progressedFiles)
         {
-            var e = new DownloadFileChangedEventArgs(file, true, name, totalFiles, progressedFiles);
+            var e = new DownloadFileChangedEventArgs(file, this, name, totalFiles, progressedFiles);
             fireDownloadFileChangedEvent(e);
-        }
-
-        private void fireDownloadFileChangedEvent(DownloadFile file, int totalFiles, int progressedFiles)
-        {
-            fireDownloadFileChangedEvent(file.Type, file.Name, totalFiles, progressedFiles);
         }
 
         private void fireDownloadFileChangedEvent(DownloadFileChangedEventArgs e)
         {
             ChangeFile?.Invoke(e);
-        }
-
-        private void fireDownloadProgressChangedEvent(object sender, ProgressChangedEventArgs e)
-        {
-            ChangeProgress?.Invoke(this, e);
         }
     }
 }

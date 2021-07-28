@@ -171,7 +171,7 @@ namespace CmlLib.Core.Files
                 
                 progressed++;
                 progress?.Report(new DownloadFileChangedEventArgs(
-                    MFile.Runtime, false, name, manifest.Count, progressed));
+                    MFile.Runtime, this, name, manifest.Count, progressed));
             }
             return files.ToArray();
         }
