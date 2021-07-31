@@ -44,16 +44,15 @@ namespace CmlLib.Core.VersionLoader
             bool checkLatestRelease = !string.IsNullOrEmpty(latestReleaseId);
             bool checkLatestSnapshot = !string.IsNullOrEmpty(latestSnapshotId);
 
-            var arr = new List<MVersionMetadata>(jarr?.Count ?? 0);
+            var arr = new List<WebVersionMetadata>(jarr?.Count ?? 0);
             if (jarr != null)
             {
                 foreach (var t in jarr)
                 {
-                    var obj = t.ToObject<MVersionMetadata>();
+                    var obj = t.ToObject<WebVersionMetadata>();
                     if (obj == null)
                         continue;
                     
-                    obj.IsLocalVersion = false;
                     obj.MType = MVersionTypeConverter.FromString(obj.Type);
                     arr.Add(obj);
 

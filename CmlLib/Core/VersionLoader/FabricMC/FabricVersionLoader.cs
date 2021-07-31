@@ -72,9 +72,8 @@ namespace CmlLib.Core.VersionLoader.FabricMC
                 string jsonUrl = $"{ApiServer}/v2/versions/loader/{versionName}/{loader}/profile/json";
 
                 string id = GetVersionName(versionName, loader);
-                var versionMetadata = new MVersionMetadata(id)
+                var versionMetadata = new WebVersionMetadata(id)
                 {
-                    IsLocalVersion = false,
                     MType = MVersionType.Custom,
                     Path = jsonUrl,
                     Type = "fabric"
