@@ -44,19 +44,30 @@ namespace CmlLib.Core.Version
         public MVersionMetadata? LatestSnapshotVersion { get; private set; }
         public MinecraftPath? MinecraftPath { get; private set; }
         protected OrderedDictionary Versions;
-
+        
         public MVersionMetadata this[int index] => (MVersionMetadata)Versions[index]!;
 
+        public MVersionMetadata GetVersionMetadata(string name)
+        {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+            
+            // Versions[name] will return null if index does not exists
+            // Casting from null to MVersionMetadata does not throw NullReferenceException
+            MVersionMetadata? versionMetadata = (MVersionMetadata?)Versions[name];
+            if (versionMetadata == null)
+                throw new KeyNotFoundException("Cannot find " + name);
+
+            return versionMetadata;
+        }
+        
         [MethodTimer.Time]
         public virtual MVersion GetVersion(string name)
         {
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
 
-            MVersionMetadata versionMetadata = (MVersionMetadata)Versions[name]!;
-            if (versionMetadata == null)
-                throw new KeyNotFoundException("Cannot find " + name);
-
+            var versionMetadata = GetVersionMetadata(name);
             return GetVersion(versionMetadata);
         }
 
@@ -67,9 +78,9 @@ namespace CmlLib.Core.Version
 
             MVersion startVersion;
             if (MinecraftPath == null)
-                startVersion = MVersionParser.Parse(versionMetadata);
+                startVersion = versionMetadata.GetVersion();
             else
-                startVersion = MVersionParser.ParseAndSave(versionMetadata, MinecraftPath);
+                startVersion = versionMetadata.GetVersion(MinecraftPath);
 
             if (startVersion.IsInherited && !string.IsNullOrEmpty(startVersion.ParentVersionId))
             {
@@ -82,6 +93,9 @@ namespace CmlLib.Core.Version
 
             return startVersion;
         }
+
+        public bool Contains(string? versionName)
+            => !string.IsNullOrEmpty(versionName) && Versions.Contains(versionName);
 
         public virtual void Merge(MVersionCollection from)
         {
