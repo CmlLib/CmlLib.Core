@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 
 namespace CmlLib.Core.Installer
 {
+    // legacy java installer
+    // new java installer: CmlLib.Core.Files.JavaChecker
     public class MJava
     {
         public static readonly string DefaultRuntimeDirectory

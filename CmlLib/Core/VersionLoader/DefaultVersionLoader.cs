@@ -20,6 +20,14 @@ namespace CmlLib.Core.VersionLoader
             var mojangVersions = mojangVersionLoader.GetVersionMetadatas();
             var localVersions = localVersionLoader.GetVersionMetadatas();
 
+            //below code could break the order of version list
+            //mojangVersions.Merge(localVersions);
+            
+            // normal order: local versions before mojang versions
+            // local 1.16.~~
+            // local 1.15.~~
+            // mojang 1.14.~~
+            
             localVersions.Merge(mojangVersions);
             return localVersions;
         }
