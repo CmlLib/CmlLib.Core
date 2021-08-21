@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace CmlLib.Core.Version
 {
@@ -48,6 +49,9 @@ namespace CmlLib.Core.Version
 
         public abstract MVersion GetVersion();
         public abstract MVersion GetVersion(MinecraftPath savePath);
+        public abstract Task<MVersion> GetVersionAsync();
+        public abstract Task<MVersion> GetVersionAsync(MinecraftPath savePath);
         public abstract void Save(MinecraftPath path);
+        public abstract Task SaveAsync(MinecraftPath path);
     }
 }
