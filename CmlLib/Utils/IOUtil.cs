@@ -90,46 +90,6 @@ namespace CmlLib.Utils
             }
         }
 
-        // If we use the path-taking constructors we will not have FileOptions.Asynchronous set and
-        // we will have asynchronous file access faked by the thread pool. We want the real thing.
-        public static StreamReader AsyncStreamReader(string path, Encoding encoding)
-        {
-            FileStream stream = AsyncReadStream(path);
-            return new StreamReader(stream, encoding, detectEncodingFromByteOrderMarks: false);
-        }
-
-        public static FileStream AsyncReadStream(string path)
-        {
-            FileStream stream = new FileStream(
-    path, FileMode.Open, FileAccess.Read, FileShare.Read, DefaultBufferSize,
-    FileOptions.Asynchronous | FileOptions.SequentialScan);
-
-            return stream;
-        }
-
-        private static StreamWriter AsyncStreamWriter(string path, Encoding encoding, bool append)
-        {
-            FileStream stream = AsyncWriteStream(path, append);
-            return new StreamWriter(stream, encoding);
-        }
-
-        public static FileStream AsyncWriteStream(string path, bool append)
-        {
-            FileStream stream = new FileStream(
-    path, append ? FileMode.Append : FileMode.Create, FileAccess.Write, FileShare.Read, DefaultBufferSize,
-    FileOptions.Asynchronous | FileOptions.SequentialScan);
-
-            return stream;
-        }
-
-        public static async Task<string> ReadFileAsync(string path)
-        {
-            using (var reader = AsyncStreamReader(path, Encoding.UTF8))
-            {
-                return await reader.ReadToEndAsync().ConfigureAwait(false);
-            }
-        }
-
         public static bool CheckSHA1(string path, string? compareHash)
         {
             if (string.IsNullOrEmpty(compareHash))
@@ -182,13 +142,69 @@ namespace CmlLib.Utils
             return file.Exists && file.Length == size && CheckSHA1(path, hash);
         }
 
+        #region Async File IO
+        
+        // from .NET Framework reference source code
+        // If we use the path-taking constructors we will not have FileOptions.Asynchronous set and
+        // we will have asynchronous file access faked by the thread pool. We want the real thing.
+        public static StreamReader AsyncStreamReader(string path, Encoding encoding)
+        {
+            FileStream stream = AsyncReadStream(path);
+            return new StreamReader(stream, encoding, detectEncodingFromByteOrderMarks: false);
+        }
+
+        public static FileStream AsyncReadStream(string path)
+        {
+            FileStream stream = new FileStream(
+    path, FileMode.Open, FileAccess.Read, FileShare.Read, DefaultBufferSize,
+    FileOptions.Asynchronous | FileOptions.SequentialScan);
+
+            return stream;
+        }
+
+        private static StreamWriter AsyncStreamWriter(string path, Encoding encoding, bool append)
+        {
+            FileStream stream = AsyncWriteStream(path, append);
+            return new StreamWriter(stream, encoding);
+        }
+
+        public static FileStream AsyncWriteStream(string path, bool append)
+        {
+            FileStream stream = new FileStream(
+    path, append ? FileMode.Append : FileMode.Create, FileAccess.Write, FileShare.Read, DefaultBufferSize,
+    FileOptions.Asynchronous | FileOptions.SequentialScan);
+
+            return stream;
+        }
+
+        // In .NET Framework 4.6.2, There is no File.ReadFileTextAsync. so I copied it from .NET Core source code
+        public static Task<string> ReadFileAsync(string path)
+        {
+            using var reader = AsyncStreamReader(path, Encoding.UTF8);
+            return reader.ReadToEndAsync();
+            
+        }
+        
+        // In .NET Framework 4.6.2, There is no File.WriteFileTextAsync. so I copied it from .NET Core source code
+        public static  Task WriteFileAsync(string path, string content)
+        {
+            // UTF8 with BOM might not be recognized by minecraft. not tested
+            var encoder = new UTF8Encoding(false);
+            using var writer = AsyncStreamWriter(path, encoder, false);
+            return writer.WriteAsync(content);
+        }
+        
         public static async Task CopyFileAsync(string sourceFile, string destinationFile)
         {
             using (var sourceStream = AsyncReadStream(sourceFile))
             using (var destinationStream = AsyncWriteStream(destinationFile, false))
                 await sourceStream.CopyToAsync(destinationStream).ConfigureAwait(false);
         }
-
+        
+        #endregion
+        
+        #region Unix/Linux native methods
+        
         [DllImport("libc", SetLastError = true)]
         private static extern int chmod(string pathname, int mode);
 
@@ -215,5 +231,7 @@ namespace CmlLib.Utils
         {
             chmod(path, mode);
         }
+        
+        #endregion
     }
 }
