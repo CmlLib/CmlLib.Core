@@ -72,7 +72,7 @@ namespace CmlLib.Core.Installer
                     throw new WebException("failed to download");
 
                 if (MRule.OSName != MRule.Windows)
-                    IOUtil.Chmod(javapath, IOUtil.Chmod755);
+                    NativeMethods.Chmod(javapath, NativeMethods.Chmod755);
             }
 
             return javapath;
@@ -113,7 +113,7 @@ namespace CmlLib.Core.Installer
                     throw new WebException("failed to download");
 
                 if (MRule.OSName != MRule.Windows)
-                    IOUtil.Chmod(javapath, IOUtil.Chmod755);
+                    NativeMethods.Chmod(javapath, NativeMethods.Chmod755);
             }
 
             return javapath;

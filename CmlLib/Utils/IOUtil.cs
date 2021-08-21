@@ -1,10 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-// ReSharper disable InconsistentNaming
 
 namespace CmlLib.Utils
 {
@@ -19,12 +17,12 @@ namespace CmlLib.Utils
                 .TrimEnd(Path.DirectorySeparatorChar);
         }
         
-        public static void DeleteDirectory(string target_dir)
+        public static void DeleteDirectory(string targetDir)
         {
             try
             {
-                string[] files = Directory.GetFiles(target_dir);
-                string[] dirs = Directory.GetDirectories(target_dir);
+                string[] files = Directory.GetFiles(targetDir);
+                string[] dirs = Directory.GetDirectories(targetDir);
 
                 foreach (string file in files)
                 {
@@ -36,7 +34,7 @@ namespace CmlLib.Utils
                     DeleteDirectory(dir);
                 }
 
-                Directory.Delete(target_dir, true);
+                Directory.Delete(targetDir, true);
             }
             catch (Exception ex)
             {
@@ -63,10 +61,10 @@ namespace CmlLib.Utils
             if (!dir.Exists)
                 return;
 
-            CopyDirectoryFiles(org, des, "", overwrite);
+            copyDirectoryFiles(org, des, "", overwrite);
         }
 
-        private static void CopyDirectoryFiles(string org, string des, string path, bool overwrite)
+        private static void copyDirectoryFiles(string org, string des, string path, bool overwrite)
         {
             var orgpath = Path.Combine(org, path);
             var orgdir = new DirectoryInfo(orgpath);
@@ -78,7 +76,7 @@ namespace CmlLib.Utils
             foreach (var dir in orgdir.GetDirectories("*", SearchOption.TopDirectoryOnly))
             {
                 var innerpath = Path.Combine(path, dir.Name);
-                CopyDirectoryFiles(org, des, innerpath, overwrite);
+                copyDirectoryFiles(org, des, innerpath, overwrite);
             }
 
             foreach (var file in orgdir.GetFiles("*", SearchOption.TopDirectoryOnly))
@@ -162,7 +160,7 @@ namespace CmlLib.Utils
             return stream;
         }
 
-        private static StreamWriter AsyncStreamWriter(string path, Encoding encoding, bool append)
+        public static StreamWriter AsyncStreamWriter(string path, Encoding encoding, bool append)
         {
             FileStream stream = AsyncWriteStream(path, append);
             return new StreamWriter(stream, encoding);
@@ -199,37 +197,6 @@ namespace CmlLib.Utils
             using (var sourceStream = AsyncReadStream(sourceFile))
             using (var destinationStream = AsyncWriteStream(destinationFile, false))
                 await sourceStream.CopyToAsync(destinationStream).ConfigureAwait(false);
-        }
-        
-        #endregion
-        
-        #region Unix/Linux native methods
-        
-        [DllImport("libc", SetLastError = true)]
-        private static extern int chmod(string pathname, int mode);
-
-        // user permissions
-        private const int S_IRUSR = 0x100;
-        private const int S_IWUSR = 0x80;
-        private const int S_IXUSR = 0x40;
-
-        // group permission
-        private const int S_IRGRP = 0x20;
-        private const int S_IWGRP = 0x10;
-        private const int S_IXGRP = 0x8;
-
-        // other permissions
-        private const int S_IROTH = 0x4;
-        private const int S_IWOTH = 0x2;
-        private const int S_IXOTH = 0x1;
-
-        public const int Chmod755 = S_IRUSR | S_IXUSR | S_IWUSR
-                            | S_IRGRP | S_IXGRP
-                            | S_IROTH | S_IXOTH;
-
-        public static void Chmod(string path, int mode)
-        {
-            chmod(path, mode);
         }
         
         #endregion

@@ -238,7 +238,7 @@ namespace CmlLib.Core.Files
             try
             {
                 if (MRule.OSName != MRule.Windows)
-                    IOUtil.Chmod(path, IOUtil.Chmod755);
+                    NativeMethods.Chmod(path, NativeMethods.Chmod755);
             }
             catch (Exception e)
             {
