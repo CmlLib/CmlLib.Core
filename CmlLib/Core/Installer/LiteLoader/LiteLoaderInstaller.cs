@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CmlLib.Core.Version;
 using CmlLib.Core.VersionLoader;
-using CmlLib.Core.VersionLoader.LiteLoader;
 
-namespace CmlLib.Core.Installer
+namespace CmlLib.Core.Installer.LiteLoader
 {
+    // 1.8.9 freezing
     public class LiteLoaderInstaller
     {
         public LiteLoaderInstaller(MinecraftPath path)
@@ -16,7 +15,7 @@ namespace CmlLib.Core.Installer
         }
 
         private MinecraftPath minecraftPath;
-        private MVersionCollection? liteLoaderVersions = null;
+        private MVersionCollection? liteLoaderVersions;
 
         public static string GetVersionName(string loaderVersion, string baseVersion)
         {
@@ -24,24 +23,40 @@ namespace CmlLib.Core.Installer
             return $"{loaderVersion}-LiteLoader{baseVersion}";
         }
 
-        public async Task<string[]> GetAllLiteLoaderVersions()
+        public async Task<LiteLoaderVersionMetadata[]> GetAllLiteLoaderVersions()
         {
             var llVersionLoader = new LiteLoaderVersionLoader();
             liteLoaderVersions = await llVersionLoader.GetVersionMetadatasAsync()
                 .ConfigureAwait(false);
 
-            return liteLoaderVersions.Select(x => x.Name).ToArray();
+            return liteLoaderVersions
+                .Select(x => x as LiteLoaderVersionMetadata)
+                .Where(x => x != null)
+                .ToArray()!;
         }
 
         // vanilla
         public async Task<string> Install(string liteLoaderVersion)
         {
             var localVersionLoader = new LocalVersionLoader(minecraftPath);
-            var versions = await localVersionLoader.GetVersionMetadatasAsync()
+            var localVersions = await localVersionLoader.GetVersionMetadatasAsync()
+                .ConfigureAwait(false);
+            
+            liteLoaderVersions = await localVersionLoader.GetVersionMetadatasAsync()
                 .ConfigureAwait(false);
 
-            var vanilla = versions.GetVersionMetadata("");
-            return await Install(liteLoaderVersion, vanilla).ConfigureAwait(false);
+            var liteLoader = liteLoaderVersions?.GetVersionMetadata(liteLoaderVersion) as LiteLoaderVersionMetadata;
+            if (liteLoader == null)
+                throw new KeyNotFoundException(liteLoaderVersion);
+
+            var vanillaVersionName = liteLoader.VanillaVersionName;
+            var vanillaVersion = await localVersions.GetVersionAsync(vanillaVersionName)
+                .ConfigureAwait(false);
+
+            if (vanillaVersion == null)
+                throw new KeyNotFoundException(vanillaVersionName);
+
+            return liteLoader.Install(minecraftPath, vanillaVersion);
         }
         
         public Task<string> Install(string liteLoaderVersion, MVersionMetadata target)

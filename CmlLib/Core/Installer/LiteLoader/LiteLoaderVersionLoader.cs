@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using CmlLib.Core.Version;
+using CmlLib.Core.VersionLoader;
 using Newtonsoft.Json.Linq;
 
-namespace CmlLib.Core.VersionLoader.LiteLoader
+namespace CmlLib.Core.Installer.LiteLoader
 {
     public class LiteLoaderVersionLoader : IVersionLoader
     {
@@ -53,6 +53,17 @@ namespace CmlLib.Core.VersionLoader.LiteLoader
                     var tweakClass = latestLLN["tweakClass"]?.ToString();
                     var libraries = latestLLN["libraries"] as JArray;
                     var llVersion = latestLLN["version"]?.ToString();
+
+                    if (libraries != null)
+                    {
+                        foreach (var lib in libraries)
+                        {
+                            // asm-all:5.2 is only available on LiteLoader server
+                            var libName = lib["name"]?.ToString();
+                            if (libName == "org.ow2.asm:asm-all:5.2")
+                                lib["url"] = "http://repo.liteloader.com/";
+                        }
+                    }
 
                     var llName = $"{LiteLoaderLibName}:{llVersion}";
                     var versionName = $"LiteLoader{vanillaVersion}";
