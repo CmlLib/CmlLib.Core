@@ -187,23 +187,27 @@ namespace CmlLib.Utils
         {
             // UTF8 with BOM might not be recognized by minecraft. not tested
             var encoder = new UTF8Encoding(false);
-            
+            var stream = AsyncStreamWriter(path, encoder, false);
+
 #if NETFRAMEWORK
-            using var writer = AsyncStreamWriter(path, encoder, false);
+            using var temp = stream;
 #elif NETCOREAPP
-            await using var writer = AsyncStreamWriter(path, encoder, false);
+            await using var temp = stream.ConfigureAwait(false);
 #endif
-            await writer.WriteAsync(content).ConfigureAwait(false); // **MUST be awaited in this scope**
+            await stream.WriteAsync(content).ConfigureAwait(false); // **MUST be awaited in this scope**
         }
         
         public static async Task CopyFileAsync(string sourceFile, string destinationFile)
         {
+            var sourceStream = AsyncReadStream(sourceFile);
+            var destinationStream = AsyncWriteStream(destinationFile, false);
+            
 #if NETFRAMEWORK
-            using var sourceStream = AsyncReadStream(sourceFile);
-            using var destinationStream = AsyncWriteStream(destinationFile, false);
+            using var tempR = AsyncReadStream(sourceFile);
+            using var tempW = AsyncWriteStream(destinationFile, false);
 #elif NETCOREAPP
-            await using var sourceStream = AsyncReadStream(sourceFile);
-            await using var destinationStream = AsyncWriteStream(destinationFile, false);
+            await using var tempR = sourceStream.ConfigureAwait(false);
+            await using var tempW = destinationStream.ConfigureAwait(false);
 #endif
             await sourceStream.CopyToAsync(destinationStream).ConfigureAwait(false);
         }

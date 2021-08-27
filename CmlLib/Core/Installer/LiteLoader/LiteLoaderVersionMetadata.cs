@@ -73,7 +73,7 @@ namespace CmlLib.Core.Installer.LiteLoader
             return job;
         }
 
-        private Task writeMetadata(string json, MinecraftPath path, string name, bool async)
+        private string prepareWriteMetadata(MinecraftPath path, string name)
         {
             var metadataPath = path.GetVersionJsonPath(name);
             
@@ -81,11 +81,19 @@ namespace CmlLib.Core.Installer.LiteLoader
             if (!string.IsNullOrEmpty(directoryPath))
                 Directory.CreateDirectory(directoryPath);
 
-            if (async)
-                return IOUtil.WriteFileAsync(metadataPath, json);
-            
+            return metadataPath;
+        }
+
+        private void writeMetadata(string json, MinecraftPath path, string name)
+        {
+            var metadataPath = prepareWriteMetadata(path, name);
             File.WriteAllText(metadataPath, json);
-            return Task.CompletedTask;
+        }
+        
+        private Task writeMetadataAsync(string json, MinecraftPath path, string name)
+        {
+            var metadataPath = prepareWriteMetadata(path, name);
+            return IOUtil.WriteFileAsync(metadataPath, json);
         }
 
         public string Install(MinecraftPath path, MVersion baseVersion)
@@ -97,7 +105,7 @@ namespace CmlLib.Core.Installer.LiteLoader
                 // com.mumfrey.liteloader.launch.LiteLoaderTweaker
                 var newArguments = $"--tweakClass {tweakClass} {baseVersion.MinecraftArguments}";
                 var json = createVersion(versionName, baseVersion.Id, newArguments, null).ToString();
-                writeMetadata(json, path, versionName, false).GetAwaiter().GetResult();
+                writeMetadata(json, path, versionName);
             }
             else if (baseVersion.GameArguments != null)
             {
@@ -109,7 +117,7 @@ namespace CmlLib.Core.Installer.LiteLoader
 
                 var newArguments = tweakArg.Concat(baseVersion.GameArguments).ToArray();
                 var json = createVersion(versionName, baseVersion.Id, null, newArguments).ToString();
-                writeMetadata(json, path, versionName, false).GetAwaiter().GetResult();
+                writeMetadata(json, path, versionName);
             }
 
             return versionName;
@@ -124,7 +132,7 @@ namespace CmlLib.Core.Installer.LiteLoader
         public override MVersion GetVersion(MinecraftPath savePath)
         {
             var json = createVersion(Name, VanillaVersionName, null, null).ToString();
-            writeMetadata(json, savePath, Name, false).GetAwaiter().GetResult();
+            writeMetadata(json, savePath, Name);
             return MVersionParser.ParseFromJson(json);
         }
 
@@ -136,20 +144,20 @@ namespace CmlLib.Core.Installer.LiteLoader
         public override async Task<MVersion> GetVersionAsync(MinecraftPath savePath)
         {
             var json = createVersion(Name, VanillaVersionName, null, null).ToString();
-            await writeMetadata(json, savePath, Name, true);
+            await writeMetadataAsync(json, savePath, Name).ConfigureAwait(false);
             return MVersionParser.ParseFromJson(json);
         }
 
         public override void Save(MinecraftPath path)
         {
             var json = createVersion(Name, VanillaVersionName, null, null).ToString();
-            writeMetadata(json, path, Name, false).GetAwaiter().GetResult();
+            writeMetadata(json, path, Name);
         }
 
         public override async Task SaveAsync(MinecraftPath path)
         {
             var json = createVersion(Name, VanillaVersionName, null, null).ToString();
-            await writeMetadata(json, path, Name, true);
+            await writeMetadataAsync(json, path, Name).ConfigureAwait(false);
         }
     }
 }

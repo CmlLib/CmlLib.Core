@@ -24,7 +24,7 @@ namespace CmlLib.Utils
             if (fileinfo.Length > MaxOptionFileLength)
                 throw new IOException("File is too big");
 
-            var options = new Dictionary<string, string?>();
+            var optionDict = new Dictionary<string, string?>();
 
             using (var fs = fileinfo.OpenRead())
             using (var reader = new StreamReader(fs, encoding))
@@ -33,16 +33,16 @@ namespace CmlLib.Utils
                 while ((line = reader.ReadLine()) != null)
                 {
                     if (!line.Contains(":"))
-                        options[line] = null;
+                        optionDict[line] = null;
                     else
                     {
                         var keyvalue = FromKeyValueString(line);
-                        options[keyvalue.Key] = keyvalue.Value;
+                        optionDict[keyvalue.Key] = keyvalue.Value;
                     }
                 }
             }
 
-            return new GameOptionsFile(options, filepath);
+            return new GameOptionsFile(optionDict, filepath);
         }
         
         public static KeyValuePair<string, string> FromKeyValueString(string keyvalue)

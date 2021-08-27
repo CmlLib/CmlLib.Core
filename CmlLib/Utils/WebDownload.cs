@@ -9,9 +9,10 @@ namespace CmlLib.Utils
 {
     public class WebDownload
     {
-        public static bool IgnoreProxy = true;
-        public static int DefaultWebRequestTimeout = 20 * 1000;
-        
+        public static bool IgnoreProxy { get; set; } = true;
+
+        public static int DefaultWebRequestTimeout { get; set; } = 20 * 1000;
+
         private class TimeoutWebClient : WebClient
         {
             protected override WebRequest GetWebRequest(Uri uri)

@@ -7,7 +7,7 @@ namespace CmlLib.Core.Version
 {
     public abstract class StringVersionMetadata : MVersionMetadata
     {
-        public StringVersionMetadata(string id) : base(id)
+        protected StringVersionMetadata(string id) : base(id)
         {
             
         }

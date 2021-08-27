@@ -82,7 +82,7 @@ namespace CmlLib.Utils
 
         private async Task<string> GetChangelogFromUrl(string url)
         {
-            string html = "";
+            string html;
             using (var wc = new WebClient())
             {
                 var data = await wc.DownloadDataTaskAsync(url).ConfigureAwait(false);

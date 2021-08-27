@@ -28,7 +28,8 @@ namespace CmlLib.Core.Version
             
             // below code will throw ArgumentNullException when Path is null
             using var wc = new WebClient();
-            return await wc.DownloadStringTaskAsync(Path);
+            return await wc.DownloadStringTaskAsync(Path)
+                .ConfigureAwait(false);
         }
     }
 }

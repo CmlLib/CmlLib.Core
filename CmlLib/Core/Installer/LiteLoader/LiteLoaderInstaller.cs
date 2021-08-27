@@ -14,7 +14,7 @@ namespace CmlLib.Core.Installer.LiteLoader
             this.minecraftPath = path;
         }
 
-        private MinecraftPath minecraftPath;
+        private readonly MinecraftPath minecraftPath;
         private MVersionCollection? liteLoaderVersions;
 
         public static string GetVersionName(string loaderVersion, string baseVersion)

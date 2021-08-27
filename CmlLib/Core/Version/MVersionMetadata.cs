@@ -5,7 +5,7 @@ namespace CmlLib.Core.Version
 {
     public abstract class MVersionMetadata
     {
-        public MVersionMetadata(string id)
+        protected MVersionMetadata(string id)
         {
             this.Name = id;
         }

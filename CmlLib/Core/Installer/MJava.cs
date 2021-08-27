@@ -194,7 +194,7 @@ namespace CmlLib.Core.Installer
             pProgressChanged?.Report(new ProgressChangedEventArgs(50 + e / 2, null));
         }
 
-        private void Downloader_DownloadProgressChangedEvent(object sender, ProgressChangedEventArgs e)
+        private void Downloader_DownloadProgressChangedEvent(object? sender, ProgressChangedEventArgs e)
         { 
             pProgressChanged?.Report(new ProgressChangedEventArgs(e.ProgressPercentage / 2, null));
         }

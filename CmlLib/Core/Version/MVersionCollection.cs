@@ -31,7 +31,7 @@ namespace CmlLib.Core.Version
                 throw new ArgumentNullException(nameof(datas));
 
             Versions = new OrderedDictionary();
-            foreach (MVersionMetadata? item in datas)
+            foreach (var item in datas)
             {
                 Versions.Add(item.Name, item);
             }
@@ -124,7 +124,8 @@ namespace CmlLib.Core.Version
                     throw new InvalidDataException(
                         "Invalid version json file : inheritFrom property is equal to id property.");
 
-                var baseVersion = await GetVersionAsync(startVersion.ParentVersionId);
+                var baseVersion = await GetVersionAsync(startVersion.ParentVersionId)
+                    .ConfigureAwait(false);
                 startVersion.InheritFrom(baseVersion);
             }
 
