@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace CmlLib.Core.VersionLoader.FabricMC
+namespace CmlLib.Core.Installer.FabricMC
 {
     public class FabricLoader
     {
