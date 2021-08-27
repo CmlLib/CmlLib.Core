@@ -72,8 +72,7 @@ namespace CmlLib.Core
             if (Versions == null)
                 await GetAllVersionsAsync().ConfigureAwait(false);
 
-            var version = await Task.Run(() => Versions!.GetVersion(versionname))
-                .ConfigureAwait(false);
+            var version = await Versions!.GetVersionAsync(versionname);
             return version;
         }
         

@@ -10,16 +10,16 @@ namespace CmlLib.Core.VersionLoader
     {
         public MVersionCollection GetVersionMetadatas()
         {
-            using (var wc = new WebClient())
-            {
-                var res = wc.DownloadString(MojangServer.Version);
-                return parseList(res);
-            }
+            using var wc = new WebClient();
+            var res = wc.DownloadString(MojangServer.Version);
+            return parseList(res);
         }
 
-        public Task<MVersionCollection> GetVersionMetadatasAsync()
+        public async Task<MVersionCollection> GetVersionMetadatasAsync()
         {
-            return Task.Run(GetVersionMetadatas);
+            using var wc = new WebClient();
+            var res = await wc.DownloadStringTaskAsync(MojangServer.Version);
+            return parseList(res);
         }
 
         [MethodTimer.Time]
