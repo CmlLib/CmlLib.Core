@@ -71,7 +71,7 @@ namespace CmlLib.Utils
         {
             if (versions.TryGetValue(version, out string? body))
                 return body;
-            if (changelogUrls.TryGetValue(version, out string url))
+            if (changelogUrls.TryGetValue(version, out string? url))
                 return await GetChangelogFromUrl(url).ConfigureAwait(false);
 
             return null;

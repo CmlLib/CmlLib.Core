@@ -1,5 +1,4 @@
 ﻿using System;
-using CmlLib.Core.Files;
 
 namespace CmlLib.Core.Downloader
 {

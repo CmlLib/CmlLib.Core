@@ -64,7 +64,7 @@ namespace CmlLib.Core
             if (Versions == null)
                 GetAllVersions();
 
-            return Versions.GetVersion(versionname);
+            return Versions!.GetVersion(versionname);
         }
 
         public async Task<MVersion> GetVersionAsync(string versionname)
@@ -72,7 +72,7 @@ namespace CmlLib.Core
             if (Versions == null)
                 await GetAllVersionsAsync().ConfigureAwait(false);
 
-            var version = await Task.Run(() => Versions.GetVersion(versionname))
+            var version = await Task.Run(() => Versions!.GetVersion(versionname))
                 .ConfigureAwait(false);
             return version;
         }
@@ -87,7 +87,7 @@ namespace CmlLib.Core
 
             var exist = false;
             var name = "";
-            foreach (var item in Versions)
+            foreach (var item in Versions!)
             {
                 if (item.Name == forgeName)
                 {

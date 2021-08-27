@@ -41,7 +41,7 @@ namespace CmlLib.Core.Files
             return Task.Run(() => CheckFiles(path, version, downloadProgress));
         }
 
-        private DownloadFile[]? internalCheckFile(string javaVersion, MinecraftPath path,
+        private DownloadFile[] internalCheckFile(string javaVersion, MinecraftPath path,
             IProgress<DownloadFileChangedEventArgs>? downloadProgress, out string binPath)
         {
             binPath = Path.Combine(path.Runtime, javaVersion, "bin", JavaBinaryName);

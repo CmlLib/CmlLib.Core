@@ -12,7 +12,7 @@ namespace CmlLib.Core.Version
 
         public bool IsLocalVersion { get; set; }
 
-        [JsonProperty("id")] public string Name { get; set; }
+        [JsonProperty("id")] public string Name { get; private set; }
 
         [JsonProperty("type")] public string? Type { get; set; }
 

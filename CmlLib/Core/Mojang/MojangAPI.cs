@@ -2,7 +2,6 @@
 using System;
 using System.IO;
 using System.Net;
-using System.Text;
 
 namespace CmlLib.Core.Mojang
 {
@@ -47,8 +46,6 @@ namespace CmlLib.Core.Mojang
             var res = req.GetResponse();
             var resBody = readRes(res);
             var job = JObject.Parse(resBody);
-
-            var skinObj = job["skins"]?[0];
 
             return new UserProfile
             {

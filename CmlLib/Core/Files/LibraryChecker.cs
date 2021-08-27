@@ -107,13 +107,5 @@ namespace CmlLib.Core.Files
                    && !string.IsNullOrEmpty(lib.Path)
                    && !IOUtil.CheckFileValidation(Path.Combine(path.Library, lib.Path), lib.Hash, CheckHash);
         }
-        
-        private async Task<bool> checkDownloadRequireAsync(MinecraftPath path, MLibrary lib)
-        {
-            return lib.IsRequire
-                && !string.IsNullOrEmpty(lib.Path)
-                && !await IOUtil.CheckFileValidationAsync(Path.Combine(path.Library, lib.Path), lib.Hash, CheckHash)
-                    .ConfigureAwait(false);
-        }
     }
 }
