@@ -176,27 +176,36 @@ namespace CmlLib.Utils
         }
 
         // In .NET Framework 4.6.2, There is no File.ReadFileTextAsync. so I copied it from .NET Core source code
-        public static Task<string> ReadFileAsync(string path)
+        public static async Task<string> ReadFileAsync(string path)
         {
             using var reader = AsyncStreamReader(path, Encoding.UTF8);
-            return reader.ReadToEndAsync();
-            
+            return await reader.ReadToEndAsync().ConfigureAwait(false); // **MUST be awaited in this scope**
         }
         
         // In .NET Framework 4.6.2, There is no File.WriteFileTextAsync. so I copied it from .NET Core source code
-        public static  Task WriteFileAsync(string path, string content)
+        public static async Task WriteFileAsync(string path, string content)
         {
             // UTF8 with BOM might not be recognized by minecraft. not tested
             var encoder = new UTF8Encoding(false);
+            
+#if NETFRAMEWORK
             using var writer = AsyncStreamWriter(path, encoder, false);
-            return writer.WriteAsync(content);
+#elif NETCOREAPP
+            await using var writer = AsyncStreamWriter(path, encoder, false);
+#endif
+            await writer.WriteAsync(content).ConfigureAwait(false); // **MUST be awaited in this scope**
         }
         
         public static async Task CopyFileAsync(string sourceFile, string destinationFile)
         {
-            using (var sourceStream = AsyncReadStream(sourceFile))
-            using (var destinationStream = AsyncWriteStream(destinationFile, false))
-                await sourceStream.CopyToAsync(destinationStream).ConfigureAwait(false);
+#if NETFRAMEWORK
+            using var sourceStream = AsyncReadStream(sourceFile);
+            using var destinationStream = AsyncWriteStream(destinationFile, false);
+#elif NETCOREAPP
+            await using var sourceStream = AsyncReadStream(sourceFile);
+            await using var destinationStream = AsyncWriteStream(destinationFile, false);
+#endif
+            await sourceStream.CopyToAsync(destinationStream).ConfigureAwait(false);
         }
         
         #endregion
