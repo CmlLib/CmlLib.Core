@@ -19,17 +19,21 @@ namespace CmlLib.Core.Downloader
 
         public Func<Task>[]? AfterDownload { get; set; }
 
-        bool IEquatable<DownloadFile>.Equals(DownloadFile? other)
-        {
-            if (other == null)
-                return false;
-
-            return Path == other.Path;
-        }
-
         public override int GetHashCode()
         {
             return Path.GetHashCode();
+        }
+
+        public bool Equals(DownloadFile? other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return Name == other.Name && Path == other.Path && Url == other.Url;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return ReferenceEquals(this, obj) || obj is DownloadFile other && Equals(other);
         }
     }
 }
