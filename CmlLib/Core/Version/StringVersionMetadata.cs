@@ -27,9 +27,9 @@ namespace CmlLib.Core.Version
             {
                 var result = string.Compare(IOUtil.NormalizePath(Path), metadataPath,
                     StringComparison.InvariantCultureIgnoreCase);
-                
-                if (result != 0) // same path
-                    return;
+
+                if (result == 0) // same path
+                    return null;
             }
             
             var directoryPath = System.IO.Path.GetDirectoryName(metadataPath);
