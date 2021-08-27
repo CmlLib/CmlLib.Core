@@ -65,46 +65,32 @@ namespace CmlLib.Core.Version
         
         public virtual MVersion GetVersion(string name)
         {
-            return internalGetVersion(name, false).GetAwaiter().GetResult();
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+
+            var versionMetadata = GetVersionMetadata(name);
+            return GetVersion(versionMetadata);
         }
 
         public virtual Task<MVersion> GetVersionAsync(string name)
         {
-            return internalGetVersion(name, true);
-        }
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
 
+            var versionMetadata = GetVersionMetadata(name);
+            return GetVersionAsync(versionMetadata);
+        }
+        
         public virtual MVersion GetVersion(MVersionMetadata versionMetadata)
-        {
-            return internalGetVersion(versionMetadata, false).GetAwaiter().GetResult();
-        }
-
-        public virtual Task<MVersion> GetVersionAsync(MVersionMetadata versionMetadata)
-        {
-            return internalGetVersion(versionMetadata, true);
-        }
-
-        private async Task<MVersion> internalGetVersion(MVersionMetadata versionMetadata, bool async)
         {
             if (versionMetadata == null)
                 throw new ArgumentNullException(nameof(versionMetadata));
 
             MVersion startVersion;
-            if (async)
-            {
-                if (MinecraftPath == null)
-                    startVersion = versionMetadata.GetVersion();
-                else
-                    startVersion = versionMetadata.GetVersion(MinecraftPath);
-            }
+            if (MinecraftPath == null)
+                startVersion = versionMetadata.GetVersion();
             else
-            {
-                if (MinecraftPath == null)
-                    startVersion = await versionMetadata.GetVersionAsync()
-                        .ConfigureAwait(false);
-                else
-                    startVersion = await versionMetadata.GetVersionAsync(MinecraftPath)
-                        .ConfigureAwait(false);
-            }
+                startVersion = versionMetadata.GetVersion(MinecraftPath);
 
             if (startVersion.IsInherited && !string.IsNullOrEmpty(startVersion.ParentVersionId))
             {
@@ -112,26 +98,39 @@ namespace CmlLib.Core.Version
                     throw new InvalidDataException(
                         "Invalid version json file : inheritFrom property is equal to id property.");
 
-                var baseVersion = await internalGetVersion(startVersion.ParentVersionId, async)
-                    .ConfigureAwait(false);
+                var baseVersion = GetVersion(startVersion.ParentVersionId);
                 startVersion.InheritFrom(baseVersion);
             }
 
             return startVersion;
         }
-        
-        private Task<MVersion> internalGetVersion(string name, bool async)
-        {
-            if (name == null)
-                throw new ArgumentNullException(nameof(name));
 
-            var versionMetadata = GetVersionMetadata(name);
-            if (async)
-                return GetVersionAsync(versionMetadata);
+        public virtual async Task<MVersion> GetVersionAsync(MVersionMetadata versionMetadata)
+        {
+            if (versionMetadata == null)
+                throw new ArgumentNullException(nameof(versionMetadata));
+
+            MVersion startVersion;
+            if (MinecraftPath == null)
+                startVersion = await versionMetadata.GetVersionAsync()
+                    .ConfigureAwait(false);
             else
-                return Task.FromResult(GetVersion(versionMetadata));
+                startVersion = await versionMetadata.GetVersionAsync(MinecraftPath)
+                    .ConfigureAwait(false);
+
+            if (startVersion.IsInherited && !string.IsNullOrEmpty(startVersion.ParentVersionId))
+            {
+                if (startVersion.ParentVersionId == startVersion.Id) // prevent StackOverFlowException
+                    throw new InvalidDataException(
+                        "Invalid version json file : inheritFrom property is equal to id property.");
+
+                var baseVersion = await GetVersionAsync(startVersion.ParentVersionId);
+                startVersion.InheritFrom(baseVersion);
+            }
+
+            return startVersion;
         }
-        
+
         public bool Contains(string? versionName)
             => !string.IsNullOrEmpty(versionName) && Versions.Contains(versionName);
 
@@ -155,19 +154,26 @@ namespace CmlLib.Core.Version
 
         public IEnumerator<MVersionMetadata> GetEnumerator()
         {
-            foreach (DictionaryEntry item in Versions)
+            foreach (DictionaryEntry? item in Versions)
             {
-                var version = (MVersionMetadata)item.Value!;
+                if (!item.HasValue)
+                    continue;
+
+                var entry = item.Value;
+                
+                var version = (MVersionMetadata)entry.Value!;
                 yield return version;
             }
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            foreach (DictionaryEntry item in Versions)
+            foreach (DictionaryEntry? item in Versions)
             {
-                var version = item.Value;
-                yield return version;
+                if (!item.HasValue)
+                    continue;
+
+                yield return item.Value;
             }
         }
     }

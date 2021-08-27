@@ -12,12 +12,13 @@ namespace CmlLib.Core.Version
             
         }
         
-        protected abstract Task<string> ReadMetadata(bool async);
+        protected abstract string ReadMetadata();
+        protected abstract Task<string> ReadMetadataAsync();
 
-        protected virtual async Task SaveMetadata(string metadata, MinecraftPath path, bool async)
+        private string? prepareSaveMetadata(MinecraftPath path)
         {
             if (string.IsNullOrEmpty(Name))
-                return;
+                return null;
 
             var metadataPath = path.GetVersionJsonPath(Name);
 
@@ -34,50 +35,64 @@ namespace CmlLib.Core.Version
             var directoryPath = System.IO.Path.GetDirectoryName(metadataPath);
             if (!string.IsNullOrEmpty(directoryPath))
                 Directory.CreateDirectory(directoryPath);
-    
-            // note: File.WriteAllText is faster than File.Copy
-            if (async)
-                await IOUtil.WriteFileAsync(metadataPath, metadata).ConfigureAwait(false);
-            else
+
+            return metadataPath;
+        }
+
+        protected virtual void SaveMetadata(string metadata, MinecraftPath path)
+        {
+            var metadataPath = prepareSaveMetadata(path);
+            if (!string.IsNullOrEmpty(metadataPath))
                 File.WriteAllText(metadataPath, metadata);
         }
         
-        private async Task<MVersion?> get(MinecraftPath? savePath, bool parse, bool async)
+        protected virtual Task SaveMetadataAsync(string metadata, MinecraftPath path)
+        {
+            var metadataPath = prepareSaveMetadata(path);
+            if (!string.IsNullOrEmpty(metadataPath))
+                return IOUtil.WriteFileAsync(metadataPath, metadata);
+            else
+                return Task.CompletedTask;
+        }
+        
+        // note: sync flag
+        // https://docs.microsoft.com/en-us/archive/msdn-magazine/2015/july/async-programming-brownfield-async-development#the-flag-argument-hack
+        private async Task<MVersion?> getAsync(MinecraftPath? savePath, bool parse, bool sync)
         {
             string metadataJson;
-            if (async)
-                metadataJson = await ReadMetadata(true).ConfigureAwait(false);
+            if (sync)
+                metadataJson = ReadMetadata();
             else
-                metadataJson = ReadMetadata(false).GetAwaiter().GetResult();
+                metadataJson = await ReadMetadataAsync().ConfigureAwait(false);
 
             if (savePath != null)
             {
-                if (async)
-                    await SaveMetadata(metadataJson, savePath, true).ConfigureAwait(false);
+                if (sync)
+                    SaveMetadata(metadataJson, savePath);
                 else
-                    SaveMetadata(metadataJson, savePath, false).GetAwaiter().GetResult();
+                    await SaveMetadataAsync(metadataJson, savePath).ConfigureAwait(false);
             }
 
             return parse ? MVersionParser.ParseFromJson(metadataJson) : null;
         }
         
         public override MVersion GetVersion()
-            => get(null, true, false).GetAwaiter().GetResult()!;
+            => getAsync(null, true, true).GetAwaiter().GetResult()!;
         
 
         public override MVersion GetVersion(MinecraftPath savePath)
-            => get(savePath, true, false).GetAwaiter().GetResult()!;
+            => getAsync(savePath, true, true).GetAwaiter().GetResult()!;
 
         public override Task<MVersion> GetVersionAsync()
-            => get(null, true, true)!;
+            => getAsync(null, true, false)!;
 
         public override Task<MVersion> GetVersionAsync(MinecraftPath savePath)
-            => get(savePath, true, true)!;
+            => getAsync(savePath, true, false)!;
 
         public override void Save(MinecraftPath path)
-            => get(path, false, false).GetAwaiter().GetResult();
+            => getAsync(path, false, true).GetAwaiter().GetResult();
 
         public override Task SaveAsync(MinecraftPath path)
-            => get(path, false, true);
+            => getAsync(path, false, false);
     }
 }

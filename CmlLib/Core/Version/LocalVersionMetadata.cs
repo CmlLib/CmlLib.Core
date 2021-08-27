@@ -12,16 +12,22 @@ namespace CmlLib.Core.Version
             IsLocalVersion = true;
         }
 
-        protected override Task<string> ReadMetadata(bool async)
+        protected override string ReadMetadata()
         {
             if (string.IsNullOrEmpty(Path))
                 throw new InvalidOperationException("Path property was null");
             
             // FileNotFoundException will be thrown if Path does not exist.
-            if (async)
-                return IOUtil.ReadFileAsync(Path);
-            else
-                return Task.FromResult(File.ReadAllText(Path));
+            return File.ReadAllText(Path);
+        }
+
+        protected override Task<string> ReadMetadataAsync()
+        {
+            if (string.IsNullOrEmpty(Path))
+                throw new InvalidOperationException("Path property was null");
+            
+            // FileNotFoundException will be thrown if Path does not exist.
+            return IOUtil.ReadFileAsync(Path);
         }
     }
 }
