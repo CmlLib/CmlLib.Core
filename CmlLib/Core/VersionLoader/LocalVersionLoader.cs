@@ -22,7 +22,7 @@ namespace CmlLib.Core.VersionLoader
 
         public Task<MVersionCollection> GetVersionMetadatasAsync()
         {
-            return Task.Run(GetVersionMetadatas);
+            return Task.FromResult(GetVersionMetadatas());
         }
 
         private List<MVersionMetadata> getFromLocal(MinecraftPath path)
