@@ -150,11 +150,11 @@ namespace CmlLibWinFormSample
                 
                 // check file hash or don't check
                 if (launcher.GameFileCheckers.AssetFileChecker != null)
-                    launcher.GameFileCheckers.AssetFileChecker.CheckHash = cbSkipHashCheck.Checked;
+                    launcher.GameFileCheckers.AssetFileChecker.CheckHash = !cbSkipHashCheck.Checked;
                 if (launcher.GameFileCheckers.ClientFileChecker != null)
-                    launcher.GameFileCheckers.ClientFileChecker.CheckHash = cbSkipHashCheck.Checked;
+                    launcher.GameFileCheckers.ClientFileChecker.CheckHash = !cbSkipHashCheck.Checked;
                 if (launcher.GameFileCheckers.LibraryFileChecker != null)
-                    launcher.GameFileCheckers.LibraryFileChecker.CheckHash = cbSkipHashCheck.Checked;
+                    launcher.GameFileCheckers.LibraryFileChecker.CheckHash = !cbSkipHashCheck.Checked;
 
                 var process = await launcher.CreateProcessAsync(cbVersion.Text, launchOption); // Create Arguments and Process
 

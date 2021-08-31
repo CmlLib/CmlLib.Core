@@ -3,6 +3,7 @@ using CmlLib.Core.Auth;
 using CmlLib.Core.Downloader;
 using System;
 using System.Threading.Tasks;
+using CmlLib.Core.VersionLoader;
 
 namespace CmlLibCoreSample
 {
@@ -88,6 +89,9 @@ namespace CmlLibCoreSample
             // if you want to download with parallel downloader, add below code :
             System.Net.ServicePointManager.DefaultConnectionLimit = 256;
 
+            //launcher.VersionLoader = new LocalVersionLoader(launcher.MinecraftPath);
+            //launcher.FileDownloader = null;
+            
             launcher.ProgressChanged += Downloader_ChangeProgress;
             launcher.FileChanged += Downloader_ChangeFile;
 
