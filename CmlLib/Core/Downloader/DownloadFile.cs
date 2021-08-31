@@ -28,7 +28,7 @@ namespace CmlLib.Core.Downloader
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return Name == other.Name && Path == other.Path && Url == other.Url;
+            return Path == other.Path;
         }
 
         public override bool Equals(object? obj)
