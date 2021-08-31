@@ -1,10 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-// ReSharper disable InconsistentNaming
 
 namespace CmlLib.Utils
 {
@@ -19,12 +17,12 @@ namespace CmlLib.Utils
                 .TrimEnd(Path.DirectorySeparatorChar);
         }
         
-        public static void DeleteDirectory(string target_dir)
+        public static void DeleteDirectory(string targetDir)
         {
             try
             {
-                string[] files = Directory.GetFiles(target_dir);
-                string[] dirs = Directory.GetDirectories(target_dir);
+                string[] files = Directory.GetFiles(targetDir);
+                string[] dirs = Directory.GetDirectories(targetDir);
 
                 foreach (string file in files)
                 {
@@ -36,7 +34,7 @@ namespace CmlLib.Utils
                     DeleteDirectory(dir);
                 }
 
-                Directory.Delete(target_dir, true);
+                Directory.Delete(targetDir, true);
             }
             catch (Exception ex)
             {
@@ -63,10 +61,10 @@ namespace CmlLib.Utils
             if (!dir.Exists)
                 return;
 
-            CopyDirectoryFiles(org, des, "", overwrite);
+            copyDirectoryFiles(org, des, "", overwrite);
         }
 
-        private static void CopyDirectoryFiles(string org, string des, string path, bool overwrite)
+        private static void copyDirectoryFiles(string org, string des, string path, bool overwrite)
         {
             var orgpath = Path.Combine(org, path);
             var orgdir = new DirectoryInfo(orgpath);
@@ -78,7 +76,7 @@ namespace CmlLib.Utils
             foreach (var dir in orgdir.GetDirectories("*", SearchOption.TopDirectoryOnly))
             {
                 var innerpath = Path.Combine(path, dir.Name);
-                CopyDirectoryFiles(org, des, innerpath, overwrite);
+                copyDirectoryFiles(org, des, innerpath, overwrite);
             }
 
             foreach (var file in orgdir.GetFiles("*", SearchOption.TopDirectoryOnly))
@@ -87,46 +85,6 @@ namespace CmlLib.Utils
                 var desfile = Path.Combine(des, innerpath);
 
                 file.CopyTo(desfile, overwrite);
-            }
-        }
-
-        // If we use the path-taking constructors we will not have FileOptions.Asynchronous set and
-        // we will have asynchronous file access faked by the thread pool. We want the real thing.
-        public static StreamReader AsyncStreamReader(string path, Encoding encoding)
-        {
-            FileStream stream = AsyncReadStream(path);
-            return new StreamReader(stream, encoding, detectEncodingFromByteOrderMarks: false);
-        }
-
-        public static FileStream AsyncReadStream(string path)
-        {
-            FileStream stream = new FileStream(
-    path, FileMode.Open, FileAccess.Read, FileShare.Read, DefaultBufferSize,
-    FileOptions.Asynchronous | FileOptions.SequentialScan);
-
-            return stream;
-        }
-
-        private static StreamWriter AsyncStreamWriter(string path, Encoding encoding, bool append)
-        {
-            FileStream stream = AsyncWriteStream(path, append);
-            return new StreamWriter(stream, encoding);
-        }
-
-        public static FileStream AsyncWriteStream(string path, bool append)
-        {
-            FileStream stream = new FileStream(
-    path, append ? FileMode.Append : FileMode.Create, FileAccess.Write, FileShare.Read, DefaultBufferSize,
-    FileOptions.Asynchronous | FileOptions.SequentialScan);
-
-            return stream;
-        }
-
-        public static async Task<string> ReadFileAsync(string path)
-        {
-            using (var reader = AsyncStreamReader(path, Encoding.UTF8))
-            {
-                return await reader.ReadToEndAsync().ConfigureAwait(false);
             }
         }
 
@@ -182,38 +140,88 @@ namespace CmlLib.Utils
             return file.Exists && file.Length == size && CheckSHA1(path, hash);
         }
 
+        #region Async File IO
+        
+        // from .NET Framework reference source code
+        // If we use the path-taking constructors we will not have FileOptions.Asynchronous set and
+        // we will have asynchronous file access faked by the thread pool. We want the real thing.
+        public static FileStream AsyncReadStream(string path)
+        {
+            FileStream stream = new FileStream(
+                path, FileMode.Open, FileAccess.Read, FileShare.Read, DefaultBufferSize,
+                FileOptions.Asynchronous | FileOptions.SequentialScan);
+
+            return stream;
+        }
+        
+        public static FileStream AsyncWriteStream(string path, bool append)
+        {
+            FileStream stream = new FileStream(
+                path, append ? FileMode.Append : FileMode.Create, FileAccess.Write, FileShare.Read, DefaultBufferSize,
+                FileOptions.Asynchronous | FileOptions.SequentialScan);
+
+            return stream;
+        }
+        
+        public static StreamReader AsyncStreamReader(string path, Encoding encoding)
+        {
+            FileStream stream = AsyncReadStream(path);
+            return new StreamReader(stream, encoding, detectEncodingFromByteOrderMarks: false);
+        }
+
+        public static StreamWriter AsyncStreamWriter(string path, Encoding encoding, bool append)
+        {
+            FileStream stream = AsyncWriteStream(path, append);
+            return new StreamWriter(stream, encoding);
+        }
+
+        // In .NET Framework 4.6.2, There is no File.ReadFileTextAsync. so I copied it from .NET Core source code
+        public static async Task<string> ReadFileAsync(string path)
+        {
+            using var reader = AsyncStreamReader(path, Encoding.UTF8);
+            var content = await reader.ReadToEndAsync()
+                .ConfigureAwait(false); // **MUST be awaited in this scope**
+            await disposeStreamAsync(reader.BaseStream).ConfigureAwait(false);
+            return content;
+        }
+        
+        // In .NET Framework 4.6.2, There is no File.WriteFileTextAsync. so I copied it from .NET Core source code
+        public static async Task WriteFileAsync(string path, string content)
+        {
+            // UTF8 with BOM might not be recognized by minecraft. not tested
+            var encoder = new UTF8Encoding(false);
+            var writer = AsyncStreamWriter(path, encoder, false);
+            await writer.WriteAsync(content).ConfigureAwait(false); // **MUST be awaited in this scope**
+
+#if NETFRAMEWORK
+            writer.Dispose();
+#elif NETCOREAPP
+            await writer.DisposeAsync().ConfigureAwait(false);
+#endif
+        }
+        
         public static async Task CopyFileAsync(string sourceFile, string destinationFile)
         {
-            using (var sourceStream = AsyncReadStream(sourceFile))
-            using (var destinationStream = AsyncWriteStream(destinationFile, false))
-                await sourceStream.CopyToAsync(destinationStream).ConfigureAwait(false);
+            var sourceStream = AsyncReadStream(sourceFile);
+            var destinationStream = AsyncWriteStream(destinationFile, false);
+            
+            await sourceStream.CopyToAsync(destinationStream).ConfigureAwait(false);
+            await destinationStream.FlushAsync();
+
+            await disposeStreamAsync(sourceStream).ConfigureAwait(false);
+            await disposeStreamAsync(destinationStream).ConfigureAwait(false);
         }
 
-        [DllImport("libc", SetLastError = true)]
-        private static extern int chmod(string pathname, int mode);
-
-        // user permissions
-        private const int S_IRUSR = 0x100;
-        private const int S_IWUSR = 0x80;
-        private const int S_IXUSR = 0x40;
-
-        // group permission
-        private const int S_IRGRP = 0x20;
-        private const int S_IWGRP = 0x10;
-        private const int S_IXGRP = 0x8;
-
-        // other permissions
-        private const int S_IROTH = 0x4;
-        private const int S_IWOTH = 0x2;
-        private const int S_IXOTH = 0x1;
-
-        public const int Chmod755 = S_IRUSR | S_IXUSR | S_IWUSR
-                            | S_IRGRP | S_IXGRP
-                            | S_IROTH | S_IXOTH;
-
-        public static void Chmod(string path, int mode)
+        private static Task disposeStreamAsync(Stream stream)
         {
-            chmod(path, mode);
+#if NETFRAMEWORK
+            stream.Dispose();
+            return Task.CompletedTask;
+#elif NETCOREAPP
+            return stream.DisposeAsync().AsTask();
+#endif
         }
+
+        #endregion
     }
 }

@@ -77,17 +77,17 @@ namespace CmlLib.Core.Files
 
         public FileCheckerCollection()
         {
-            checkers = new List<IFileChecker>(3);
+            checkers = new List<IFileChecker>(4);
 
             library = new LibraryChecker();
             asset = new AssetChecker();
             client = new ClientChecker();
             java = new JavaChecker();
 
-            checkers.AddRange(new IFileChecker[]
-            {
-                library, asset, client, java
-            });
+            checkers.Add(library);
+            checkers.Add(asset);
+            checkers.Add(client);
+            checkers.Add(java);
         }
 
         public void Add(IFileChecker item)

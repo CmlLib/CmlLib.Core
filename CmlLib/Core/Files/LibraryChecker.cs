@@ -82,7 +82,7 @@ namespace CmlLib.Core.Files
 
                 progressed++;
                 progress?.Report(new DownloadFileChangedEventArgs(
-                    MFile.Library, false, library.Name, libs.Length, progressed));
+                    MFile.Library, this, library.Name, libs.Length, progressed));
             }
             return files.Distinct().ToArray();
         }
@@ -106,14 +106,6 @@ namespace CmlLib.Core.Files
             return lib.IsRequire
                    && !string.IsNullOrEmpty(lib.Path)
                    && !IOUtil.CheckFileValidation(Path.Combine(path.Library, lib.Path), lib.Hash, CheckHash);
-        }
-        
-        private async Task<bool> checkDownloadRequireAsync(MinecraftPath path, MLibrary lib)
-        {
-            return lib.IsRequire
-                && !string.IsNullOrEmpty(lib.Path)
-                && !await IOUtil.CheckFileValidationAsync(Path.Combine(path.Library, lib.Path), lib.Hash, CheckHash)
-                    .ConfigureAwait(false);
         }
     }
 }

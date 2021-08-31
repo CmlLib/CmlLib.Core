@@ -41,7 +41,7 @@ namespace CmlLib.Core.Files
             return Task.Run(() => CheckFiles(path, version, downloadProgress));
         }
 
-        private DownloadFile[]? internalCheckFile(string javaVersion, MinecraftPath path,
+        private DownloadFile[] internalCheckFile(string javaVersion, MinecraftPath path,
             IProgress<DownloadFileChangedEventArgs>? downloadProgress, out string binPath)
         {
             binPath = Path.Combine(path.Runtime, javaVersion, "bin", JavaBinaryName);
@@ -171,7 +171,7 @@ namespace CmlLib.Core.Files
                 
                 progressed++;
                 progress?.Report(new DownloadFileChangedEventArgs(
-                    MFile.Runtime, false, name, manifest.Count, progressed));
+                    MFile.Runtime, this, name, manifest.Count, progressed));
             }
             return files.ToArray();
         }
@@ -238,7 +238,7 @@ namespace CmlLib.Core.Files
             try
             {
                 if (MRule.OSName != MRule.Windows)
-                    IOUtil.Chmod(path, IOUtil.Chmod755);
+                    NativeMethods.Chmod(path, NativeMethods.Chmod755);
             }
             catch (Exception e)
             {

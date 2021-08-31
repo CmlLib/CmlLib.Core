@@ -71,7 +71,7 @@ namespace CmlLib.Utils
         {
             if (versions.TryGetValue(version, out string? body))
                 return body;
-            if (changelogUrls.TryGetValue(version, out string url))
+            if (changelogUrls.TryGetValue(version, out string? url))
                 return await GetChangelogFromUrl(url).ConfigureAwait(false);
 
             return null;
@@ -82,7 +82,7 @@ namespace CmlLib.Utils
 
         private async Task<string> GetChangelogFromUrl(string url)
         {
-            string html = "";
+            string html;
             using (var wc = new WebClient())
             {
                 var data = await wc.DownloadDataTaskAsync(url).ConfigureAwait(false);

@@ -3,78 +3,17 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
 
 namespace CmlLib.Core.Version
 {
     public static class MVersionParser
     {
-        public static MVersion Parse(MVersionMetadata info)
-        {
-            if (string.IsNullOrEmpty(info.Path))
-                throw new NullReferenceException("info.Path was null");
-            
-            try
-            {
-                if (!info.IsLocalVersion)
-                {
-                    using (var wc = new WebClient())
-                    {
-                        var json = wc.DownloadString(info.Path);
-                        return ParseFromJson(json);
-                    }
-                }
-                else
-                    return ParseFromFile(info.Path);
-            }
-            catch (MVersionParseException ex)
-            {
-                ex.VersionName = info.Name;
-                throw;
-            }
-        }
-
-        public static MVersion ParseAndSave(MVersionMetadata info, MinecraftPath savePath)
-        {
-            if (string.IsNullOrEmpty(info.Path))
-                throw new NullReferenceException("info.Path was null");
-            
-            try
-            {
-                if (!info.IsLocalVersion)
-                {
-                    using (var wc = new WebClient())
-                    {
-                        var json = wc.DownloadString(info.Path);
-
-                        if (!string.IsNullOrEmpty(info.Name))
-                        {
-                            string path = savePath.GetVersionJsonPath(info.Name);
-                            var directoryName = Path.GetDirectoryName(path);
-                            if (!string.IsNullOrEmpty((directoryName)))
-                                Directory.CreateDirectory(directoryName);
-                            File.WriteAllText(path, json);
-                        }
-
-                        return ParseFromJson(json);
-                    }
-                }
-                else
-                    return ParseFromFile(info.Path);
-            }
-            catch (MVersionParseException ex)
-            {
-                ex.VersionName = info.Name;
-                throw;
-            }
-        }
-
         public static MVersion ParseFromFile(string path)
         {
             string json = File.ReadAllText(path);
             return ParseFromJson(json);
         }
-
+        
         public static MVersion ParseFromJson(string json)
         {
             try
@@ -169,6 +108,7 @@ namespace CmlLib.Core.Version
             }
         }
 
+        // TODO: create argument object
         private static string[] argParse(JArray arr)
         {
             var strList = new List<string>(arr.Count);
@@ -179,7 +119,8 @@ namespace CmlLib.Core.Version
                 {
                     bool allow = true;
 
-                    if (item["rules"] is JArray rules)
+                    var rules = item["rules"] as JArray ?? item["compatibilityRules"] as JArray;
+                    if (rules != null)
                         allow = MRule.CheckOSRequire(rules);
 
                     var value = item["value"] ?? item["values"];

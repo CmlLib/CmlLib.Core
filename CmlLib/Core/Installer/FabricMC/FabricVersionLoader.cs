@@ -3,12 +3,15 @@ using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using CmlLib.Core.VersionLoader;
 
-namespace CmlLib.Core.VersionLoader.FabricMC
+namespace CmlLib.Core.Installer.FabricMC
 {
     public class FabricVersionLoader : IVersionLoader
     {
-        public string ApiServer { get; } = "https://meta.fabricmc.net";
+        public static readonly string ApiServer = "https://meta.fabricmc.net";
+        private static readonly string LoaderUrl = ApiServer + "/v2/versions/loader";
+        
         public string? LoaderVersion { get; set; }
 
         protected string GetVersionName(string version, string loaderVersion)
@@ -17,10 +20,21 @@ namespace CmlLib.Core.VersionLoader.FabricMC
         }
 
         public MVersionCollection GetVersionMetadatas()
+            => internalGetVersionMetadatasAsync(sync: true).GetAwaiter().GetResult();
+
+        public Task<MVersionCollection> GetVersionMetadatasAsync()
+            => internalGetVersionMetadatasAsync(sync: false);
+
+        private async Task<MVersionCollection> internalGetVersionMetadatasAsync(bool sync)
         {
             if (string.IsNullOrEmpty(LoaderVersion))
             {
-                var loaders = GetFabricLoaders().GetAwaiter().GetResult();
+                FabricLoader[] loaders;
+                if (sync)
+                    loaders = GetFabricLoaders();
+                else
+                    loaders = await GetFabricLoadersAsync().ConfigureAwait(false);
+                
                 LoaderVersion = loaders[0].Version;
                 if (loaders.Length == 0 || string.IsNullOrEmpty(LoaderVersion))
                     throw new KeyNotFoundException("can't find loaders");
@@ -30,28 +44,10 @@ namespace CmlLib.Core.VersionLoader.FabricMC
             string res;
             using (var wc = new WebClient())
             {
-                res = wc.DownloadString(url);
-            }
-
-            var versions = parseVersions(res, LoaderVersion);
-            return new MVersionCollection(versions.ToArray());
-        }
-
-        public async Task<MVersionCollection> GetVersionMetadatasAsync()
-        {
-            if (string.IsNullOrEmpty(LoaderVersion))
-            {
-                var loaders = GetFabricLoaders().GetAwaiter().GetResult();
-                LoaderVersion = loaders[0].Version;
-                if (loaders.Length == 0 || string.IsNullOrEmpty(LoaderVersion))
-                    throw new KeyNotFoundException("can't find loaders");
-            }
-
-            string url = "https://meta.fabricmc.net/v2/versions/game/intermediary";
-            string res;
-            using (var wc = new WebClient())
-            {
-                res = await wc.DownloadStringTaskAsync(url).ConfigureAwait(false);
+                if (sync)
+                    res = wc.DownloadString(url);
+                else
+                    res = await wc.DownloadStringTaskAsync(url).ConfigureAwait(false);
             }
 
             var versions = parseVersions(res, LoaderVersion!);
@@ -72,9 +68,8 @@ namespace CmlLib.Core.VersionLoader.FabricMC
                 string jsonUrl = $"{ApiServer}/v2/versions/loader/{versionName}/{loader}/profile/json";
 
                 string id = GetVersionName(versionName, loader);
-                var versionMetadata = new MVersionMetadata(id)
+                var versionMetadata = new WebVersionMetadata(id)
                 {
-                    IsLocalVersion = false,
                     MType = MVersionType.Custom,
                     Path = jsonUrl,
                     Type = "fabric"
@@ -85,15 +80,25 @@ namespace CmlLib.Core.VersionLoader.FabricMC
             return versionList;
         }
 
-        public async Task<FabricLoader[]> GetFabricLoaders()
+        public FabricLoader[] GetFabricLoaders()
         {
-            string res;
-            using (var wc = new WebClient())
-            {
-                res = await wc.DownloadStringTaskAsync(ApiServer + "/v2/versions/loader")
-                    .ConfigureAwait(false);
-            }
+            using var wc = new WebClient();
+            var res = wc.DownloadString(LoaderUrl);
 
+            return parseLoaders(res);
+        }
+
+        public async Task<FabricLoader[]> GetFabricLoadersAsync()
+        {
+            using var wc = new WebClient();
+            var res = await wc.DownloadStringTaskAsync(LoaderUrl)
+                .ConfigureAwait(false);
+
+            return parseLoaders(res);
+        }
+
+        private FabricLoader[] parseLoaders(string res)
+        {
             var jarr = JArray.Parse(res);
             var loaderList = new List<FabricLoader>(jarr.Count);
             foreach (var item in jarr)

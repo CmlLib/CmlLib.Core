@@ -41,7 +41,7 @@ namespace CmlLib.Core
             string arg = string.Join(" ", CreateArg());
             Process mc = new Process();
             mc.StartInfo.FileName = 
-                useNotNull(LaunchOption.GetJavaPath(), LaunchOption.GetStartVersion().JavaBinaryPath);
+                useNotNull(LaunchOption.GetJavaPath(), LaunchOption.GetStartVersion().JavaBinaryPath) ?? "";
             mc.StartInfo.Arguments = arg;
             mc.StartInfo.WorkingDirectory = minecraftPath.BasePath;
 

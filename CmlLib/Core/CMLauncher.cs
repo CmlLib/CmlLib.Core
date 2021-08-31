@@ -64,7 +64,7 @@ namespace CmlLib.Core
             if (Versions == null)
                 GetAllVersions();
 
-            return Versions.GetVersion(versionname);
+            return Versions!.GetVersion(versionname);
         }
 
         public async Task<MVersion> GetVersionAsync(string versionname)
@@ -72,7 +72,7 @@ namespace CmlLib.Core
             if (Versions == null)
                 await GetAllVersionsAsync().ConfigureAwait(false);
 
-            var version = await Task.Run(() => Versions.GetVersion(versionname))
+            var version = await Versions!.GetVersionAsync(versionname)
                 .ConfigureAwait(false);
             return version;
         }
@@ -87,7 +87,7 @@ namespace CmlLib.Core
 
             var exist = false;
             var name = "";
-            foreach (var item in Versions)
+            foreach (var item in Versions!)
             {
                 if (item.Name == forgeName)
                 {
@@ -118,7 +118,15 @@ namespace CmlLib.Core
 
         public DownloadFile[] CheckLostGameFiles(MVersion version)
         {
-            return CheckLostGameFilesTaskAsync(version).GetAwaiter().GetResult();
+            var lostFiles = new List<DownloadFile>();
+            foreach (IFileChecker checker in this.GameFileCheckers)
+            {
+                DownloadFile[]? files = checker.CheckFiles(MinecraftPath, version, pFileChanged);
+                if (files != null)
+                    lostFiles.AddRange(files);
+            }
+
+            return lostFiles.ToArray();
         }
 
         public async Task<DownloadFile[]> CheckLostGameFilesTaskAsync(MVersion version)
@@ -146,7 +154,15 @@ namespace CmlLib.Core
 
         public void CheckAndDownload(MVersion version)
         {
-            CheckAndDownloadAsync(version).GetAwaiter().GetResult();
+            foreach (var checker in this.GameFileCheckers)
+            {
+                DownloadFile[]? files = checker.CheckFiles(MinecraftPath, version, pFileChanged);
+
+                if (files == null || files.Length == 0)
+                    continue;
+
+                DownloadGameFiles(files).GetAwaiter().GetResult();
+            }
         }
 
         public async Task CheckAndDownloadAsync(MVersion version)
@@ -179,10 +195,7 @@ namespace CmlLib.Core
         public Process CreateProcess(MVersion version, MLaunchOption option)
         {
             option.StartVersion = version;
-
-            if (this.FileDownloader != null)
-                CheckAndDownload(option.StartVersion);
-
+            CheckAndDownload(option.StartVersion);
             return CreateProcess(option);
         }
 
@@ -195,10 +208,7 @@ namespace CmlLib.Core
         public async Task<Process> CreateProcessAsync(MVersion version, MLaunchOption option)
         {
             option.StartVersion = version;
-
-            if (this.FileDownloader != null)
-                await CheckAndDownloadAsync(option.StartVersion).ConfigureAwait(false);
-
+            await CheckAndDownloadAsync(option.StartVersion).ConfigureAwait(false);
             return await CreateProcessAsync(option).ConfigureAwait(false);
         }
         
@@ -235,8 +245,13 @@ namespace CmlLib.Core
         {
             if (option.Path == null)
                 option.Path = MinecraftPath;
-            if (!string.IsNullOrEmpty(option.JavaPath) && option.StartVersion != null)
-                option.StartVersion.JavaBinaryPath = option.JavaPath;
+            if (option.StartVersion != null)
+            {
+                if (!string.IsNullOrEmpty(option.JavaPath))
+                    option.StartVersion.JavaBinaryPath = option.JavaPath;
+                else if (!string.IsNullOrEmpty(option.JavaVersion))
+                    option.StartVersion.JavaVersion = option.JavaVersion;
+            }
         }
     }
 }

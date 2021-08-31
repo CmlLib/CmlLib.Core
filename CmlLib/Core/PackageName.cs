@@ -22,7 +22,7 @@ namespace CmlLib.Core
             this.names = names;
         }
 
-        private string[] names;
+        private readonly string[] names;
 
         public string this[int index] => names[index];
 

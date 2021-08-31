@@ -22,7 +22,7 @@ namespace CmlLib.Core.VersionLoader
 
         public Task<MVersionCollection> GetVersionMetadatasAsync()
         {
-            return Task.Run(GetVersionMetadatas);
+            return Task.FromResult(GetVersionMetadatas());
         }
 
         private List<MVersionMetadata> getFromLocal(MinecraftPath path)
@@ -40,8 +40,7 @@ namespace CmlLib.Core.VersionLoader
                 var filepath = Path.Combine(dir.FullName, dir.Name + ".json");
                 if (File.Exists(filepath))
                 {
-                    var info = new MVersionMetadata(dir.Name);
-                    info.IsLocalVersion = true;
+                    var info = new LocalVersionMetadata(dir.Name);
                     info.Path = filepath;
                     info.Type = "local";
                     info.MType = MVersionType.Custom;

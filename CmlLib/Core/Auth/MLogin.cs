@@ -86,11 +86,10 @@ namespace CmlLib.Core.Auth
             HttpWebRequest http = WebRequest.CreateHttp(MojangServer.Auth + endpoint);
             http.ContentType = "application/json";
             http.Method = "POST";
-            using (StreamWriter req = new StreamWriter(http.GetRequestStream()))
-            {
-                req.Write(postdata);
-                req.Flush();
-            }
+            
+            using StreamWriter req = new StreamWriter(http.GetRequestStream());
+            req.Write(postdata);
+            req.Flush();
 
             HttpWebResponse res = http.GetResponseNoException();
             return res;
@@ -175,14 +174,12 @@ namespace CmlLib.Core.Auth
 
             HttpWebResponse resHeader = mojangRequest("authenticate", req.ToString());
 
-            using (StreamReader res = new StreamReader(resHeader.GetResponseStream()!))
-            {
-                string rawResponse = res.ReadToEnd();
-                if (resHeader.StatusCode == HttpStatusCode.OK) // ResultCode == 200
-                    return parseSession(rawResponse, clientToken);
-                else // fail to login
-                    return errorHandle(rawResponse);
-            }
+            using StreamReader res = new StreamReader(resHeader.GetResponseStream());
+            string rawResponse = res.ReadToEnd();
+            if (resHeader.StatusCode == HttpStatusCode.OK) // ResultCode == 200
+                return parseSession(rawResponse, clientToken);
+            else // fail to login
+                return errorHandle(rawResponse);
         }
 
         public MLoginResponse TryAutoLogin()
@@ -249,15 +246,13 @@ namespace CmlLib.Core.Auth
                 };
 
             HttpWebResponse resHeader = mojangRequest("refresh", req.ToString());
-            using (StreamReader res = new StreamReader(resHeader.GetResponseStream()!))
-            {
-                string rawResponse = res.ReadToEnd();
+            using StreamReader res = new StreamReader(resHeader.GetResponseStream());
+            string rawResponse = res.ReadToEnd();
 
-                if ((int)resHeader.StatusCode / 100 == 2)
-                    return parseSession(rawResponse, session.ClientToken);
-                else
-                    return errorHandle(rawResponse);
-            }
+            if ((int)resHeader.StatusCode / 100 == 2)
+                return parseSession(rawResponse, session.ClientToken);
+            else
+                return errorHandle(rawResponse);
         }
 
         public MLoginResponse Validate()

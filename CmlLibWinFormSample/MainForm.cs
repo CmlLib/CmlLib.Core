@@ -76,7 +76,7 @@ namespace CmlLibWinFormSample
 
         private void btnSetLastVersion_Click(object sender, EventArgs e)
         {
-            cbVersion.Text = launcher.Versions.LatestReleaseVersion?.Name;
+            cbVersion.Text = launcher.Versions?.LatestReleaseVersion?.Name;
         }
 
         // Start Game
@@ -143,13 +143,18 @@ namespace CmlLibWinFormSample
                 else
                     launcher.FileDownloader = new SequenceDownloader();
 
-                // check file hash or don't check
-                launcher.GameFileCheckers.AssetFileChecker.CheckHash = cbSkipHashCheck.Checked;
-                launcher.GameFileCheckers.ClientFileChecker.CheckHash = cbSkipHashCheck.Checked;
-                launcher.GameFileCheckers.LibraryFileChecker.CheckHash = cbSkipHashCheck.Checked;
-
                 if (cbSkipAssetsDownload.Checked)
                     launcher.GameFileCheckers.AssetFileChecker = null;
+                else if (launcher.GameFileCheckers.AssetFileChecker == null)
+                    launcher.GameFileCheckers.AssetFileChecker = new AssetChecker();
+                
+                // check file hash or don't check
+                if (launcher.GameFileCheckers.AssetFileChecker != null)
+                    launcher.GameFileCheckers.AssetFileChecker.CheckHash = !cbSkipHashCheck.Checked;
+                if (launcher.GameFileCheckers.ClientFileChecker != null)
+                    launcher.GameFileCheckers.ClientFileChecker.CheckHash = !cbSkipHashCheck.Checked;
+                if (launcher.GameFileCheckers.LibraryFileChecker != null)
+                    launcher.GameFileCheckers.LibraryFileChecker.CheckHash = !cbSkipHashCheck.Checked;
 
                 var process = await launcher.CreateProcessAsync(cbVersion.Text, launchOption); // Create Arguments and Process
 

@@ -64,7 +64,7 @@ namespace CmlLib.Core.Downloader
             }
 
             fileProgress?.Report(
-                new DownloadFileChangedEventArgs(files[0].Type, true, null, files.Length, 0));
+                new DownloadFileChangedEventArgs(files[0].Type, this, null, files.Length, 0));
             await ForEachAsyncSemaphore(files, MaxThread, doDownload).ConfigureAwait(false);
             
             isRunning = false;
@@ -74,25 +74,26 @@ namespace CmlLib.Core.Downloader
     int degreeOfParallelism, Func<T, Task> body)
         {
             List<Task> tasks = new List<Task>();
-            using (SemaphoreSlim throttler = new SemaphoreSlim(degreeOfParallelism))
+            using SemaphoreSlim throttler = new SemaphoreSlim(degreeOfParallelism);
+            foreach (var element in source)
             {
-                foreach (var element in source)
+                await throttler.WaitAsync().ConfigureAwait(false);
+
+                async Task work(T item)
                 {
-                    await throttler.WaitAsync().ConfigureAwait(false);
-                    tasks.Add(Task.Run(async () =>
+                    try
                     {
-                        try
-                        {
-                            await body(element).ConfigureAwait(false);
-                        }
-                        finally
-                        {
-                            throttler.Release();
-                        }
-                    }));
+                        await body(item).ConfigureAwait(false);
+                    }
+                    finally
+                    {
+                        throttler.Release();
+                    }
                 }
-                await Task.WhenAll(tasks).ConfigureAwait(false);
+                
+                tasks.Add(work(element));
             }
+            await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
         private async Task doDownload(DownloadFile file)
@@ -127,7 +128,7 @@ namespace CmlLib.Core.Downloader
 
                 Interlocked.Increment(ref progressedFiles);
                 pChangeFile?.Report(
-                    new DownloadFileChangedEventArgs(file.Type, true, file.Name, totalFiles, progressedFiles));
+                    new DownloadFileChangedEventArgs(file.Type, this, file.Name, totalFiles, progressedFiles));
             }
             catch (Exception ex)
             {
@@ -141,7 +142,7 @@ namespace CmlLib.Core.Downloader
             }
         }
 
-        private void Downloader_FileDownloadProgressChanged(object? sender, FileDownloadProgress e)
+        private void Downloader_FileDownloadProgressChanged(object? sender, DownloadFileProgress e)
         {
             lock (progressEventLock)
             {

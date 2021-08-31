@@ -9,9 +9,10 @@ namespace CmlLib.Utils
 {
     public class WebDownload
     {
-        public static bool IgnoreProxy = true;
-        public static int DefaultWebRequestTimeout = 20 * 1000;
-        
+        public static bool IgnoreProxy { get; set; } = true;
+
+        public static int DefaultWebRequestTimeout { get; set; } = 20 * 1000;
+
         private class TimeoutWebClient : WebClient
         {
             protected override WebRequest GetWebRequest(Uri uri)
@@ -32,7 +33,7 @@ namespace CmlLib.Utils
         private static readonly int DefaultBufferSize = 1024 * 64; // 64kb
         private readonly object locker = new object();
         
-        internal event EventHandler<FileDownloadProgress>? FileDownloadProgressChanged;
+        internal event EventHandler<DownloadFileProgress>? FileDownloadProgressChanged;
         internal event ProgressChangedEventHandler? DownloadProgressChangedEvent;
 
         internal void DownloadFile(string url, string path)
@@ -90,7 +91,7 @@ namespace CmlLib.Utils
 
                         lastBytes = e.BytesReceived;
 
-                        var progress = new FileDownloadProgress(
+                        var progress = new DownloadFileProgress(
                             file, e.TotalBytesToReceive, progressedBytes, e.BytesReceived, e.ProgressPercentage);
                         FileDownloadProgressChanged?.Invoke(this, progress);
                     }

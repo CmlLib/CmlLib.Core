@@ -24,7 +24,7 @@ namespace CmlLib.Utils
             if (fileinfo.Length > MaxOptionFileLength)
                 throw new IOException("File is too big");
 
-            var options = new Dictionary<string, string?>();
+            var optionDict = new Dictionary<string, string?>();
 
             using (var fs = fileinfo.OpenRead())
             using (var reader = new StreamReader(fs, encoding))
@@ -33,16 +33,16 @@ namespace CmlLib.Utils
                 while ((line = reader.ReadLine()) != null)
                 {
                     if (!line.Contains(":"))
-                        options[line] = null;
+                        optionDict[line] = null;
                     else
                     {
                         var keyvalue = FromKeyValueString(line);
-                        options[keyvalue.Key] = keyvalue.Value;
+                        optionDict[keyvalue.Key] = keyvalue.Value;
                     }
                 }
             }
 
-            return new GameOptionsFile(options, filepath);
+            return new GameOptionsFile(optionDict, filepath);
         }
         
         public static KeyValuePair<string, string> FromKeyValueString(string keyvalue)
@@ -57,7 +57,7 @@ namespace CmlLib.Utils
         }
 
         public string? this[string key] => GetRawValue(key);
-        public string FilePath { get; private set; }
+        public string? FilePath { get; private set; }
         private readonly Dictionary<string, string?> options;
 
         public GameOptionsFile()
@@ -178,17 +178,22 @@ namespace CmlLib.Utils
         public void Save()
         {
             if (string.IsNullOrEmpty(FilePath))
-                throw new ArgumentNullException("this.FilePath was null");
+                throw new InvalidOperationException("FilePath was null");
+            
             Save(FilePath);
         }
 
         public void Save(string path)
         {
-            Save(path, Encoding.UTF8);
+            // IMPORTANT: UTF8 with BOM could not be recognized by minecraft
+            Save(path, new UTF8Encoding(false));
         }
 
         public void Save(Encoding encoding)
         {
+            if (string.IsNullOrEmpty(FilePath))
+                throw new InvalidOperationException("FilePath was null");
+            
             Save(FilePath, encoding);
         }
 

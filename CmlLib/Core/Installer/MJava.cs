@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 
 namespace CmlLib.Core.Installer
 {
+    // legacy java installer
+    // new java installer: CmlLib.Core.Files.JavaChecker
     public class MJava
     {
         public static readonly string DefaultRuntimeDirectory
@@ -70,7 +72,7 @@ namespace CmlLib.Core.Installer
                     throw new WebException("failed to download");
 
                 if (MRule.OSName != MRule.Windows)
-                    IOUtil.Chmod(javapath, IOUtil.Chmod755);
+                    NativeMethods.Chmod(javapath, NativeMethods.Chmod755);
             }
 
             return javapath;
@@ -111,7 +113,7 @@ namespace CmlLib.Core.Installer
                     throw new WebException("failed to download");
 
                 if (MRule.OSName != MRule.Windows)
-                    IOUtil.Chmod(javapath, IOUtil.Chmod755);
+                    NativeMethods.Chmod(javapath, NativeMethods.Chmod755);
             }
 
             return javapath;
@@ -192,7 +194,7 @@ namespace CmlLib.Core.Installer
             pProgressChanged?.Report(new ProgressChangedEventArgs(50 + e / 2, null));
         }
 
-        private void Downloader_DownloadProgressChangedEvent(object sender, ProgressChangedEventArgs e)
+        private void Downloader_DownloadProgressChangedEvent(object? sender, ProgressChangedEventArgs e)
         { 
             pProgressChanged?.Report(new ProgressChangedEventArgs(e.ProgressPercentage / 2, null));
         }

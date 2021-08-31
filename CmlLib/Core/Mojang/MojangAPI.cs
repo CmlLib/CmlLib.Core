@@ -2,7 +2,6 @@
 using System;
 using System.IO;
 using System.Net;
-using System.Text;
 
 namespace CmlLib.Core.Mojang
 {
@@ -14,11 +13,9 @@ namespace CmlLib.Core.Mojang
     {
         private static string readRes(WebResponse res)
         {
-            using (var resStream = res.GetResponseStream())
-            using (var sr = new StreamReader(resStream!))
-            {
-                return sr.ReadToEnd();
-            }
+            using var resStream = res.GetResponseStream();
+            using var sr = new StreamReader(resStream);
+            return sr.ReadToEnd();
         }
 
         // entitlements
@@ -47,8 +44,6 @@ namespace CmlLib.Core.Mojang
             var res = req.GetResponse();
             var resBody = readRes(res);
             var job = JObject.Parse(resBody);
-
-            var skinObj = job["skins"]?[0];
 
             return new UserProfile
             {
