@@ -4,6 +4,7 @@ using CmlLib.Utils;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -73,10 +74,10 @@ namespace CmlLib.Core.Files
             if (string.IsNullOrEmpty(version.AssetId))
                 return null;
             
-            string indexpath = path.GetIndexFilePath(version.AssetId);
-            if (!File.Exists(indexpath)) return null;
+            string indexPath = path.GetIndexFilePath(version.AssetId);
+            if (!File.Exists(indexPath)) return null;
 
-            string json = File.ReadAllText(indexpath);
+            string json = File.ReadAllText(indexPath);
             var index = JObject.Parse(json); // 100ms
 
             return index;
@@ -125,18 +126,16 @@ namespace CmlLib.Core.Files
         private DownloadFile? checkAssetFile(string key, JToken job, MinecraftPath path, MVersion version, 
             bool isVirtual, bool mapResource)
         {
+            if (string.IsNullOrEmpty(version.AssetId))
+                return null;
+            
             // download hash resource
             string? hash = job["hash"]?.ToString();
             if (hash == null)
                 return null;
 
-            string hashName = hash.Substring(0, 2) + "/" + hash;
-            string hashPath;
-
-            if (string.IsNullOrEmpty(version.AssetId))
-                hashPath = hashName;
-            else
-                hashPath = Path.Combine(path.GetAssetObjectPath(version.AssetId), hashName);
+            var hashName = hash.Substring(0, 2) + "/" + hash;
+            var hashPath = Path.Combine(path.GetAssetObjectPath(version.AssetId), hashName);
 
             long size = 0;
             string? sizeStr = job["size"]?.ToString();
@@ -147,25 +146,14 @@ namespace CmlLib.Core.Files
 
             if (isVirtual)
             {
-                afterDownload.Add(async () =>
-                {
-                    string resPath = Path.Combine(path.GetAssetLegacyPath(version.AssetId ?? "legacy"), key);
-                    bool isValid = await IOUtil.CheckFileValidationAsync(resPath, hash, CheckHash)
-                        .ConfigureAwait(false);
-                    
-                    if (!isValid)
-                        await safeCopy(hashPath, resPath).ConfigureAwait(false);
-                });
+                var resPath = Path.Combine(path.GetAssetLegacyPath(version.AssetId), key);
+                afterDownload.Add(() => assetCopy(hashPath, resPath));
             }
 
             if (mapResource)
             {
-                afterDownload.Add(async () =>
-                {
-                    string resPath = Path.Combine(path.Resource, key);
-                    if (!await IOUtil.CheckFileValidationAsync(resPath, hash, CheckHash).ConfigureAwait(false))
-                        await safeCopy(hashPath, resPath).ConfigureAwait(false);
-                });
+                var desPath = Path.Combine(path.Resource, key);
+                afterDownload.Add(() => assetCopy(hashPath, desPath));
             }
 
             if (!IOUtil.CheckFileValidation(hashPath, hash, CheckHash))
@@ -190,27 +178,32 @@ namespace CmlLib.Core.Files
             }
         }
 
+        private async Task assetCopy(string org, string des)
+        {
+            try
+            {
+                var orgFile = new FileInfo(org);
+                var desFile = new FileInfo(des);
+
+                if (!desFile.Exists || orgFile.Length != desFile.Length)
+                {
+                    var directoryName = Path.GetDirectoryName(des);
+                    if (!string.IsNullOrEmpty(directoryName))
+                        Directory.CreateDirectory(directoryName);
+
+                    await IOUtil.CopyFileAsync(org, des);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+        }
+
         private bool checkJsonTrue(JToken? j)
         {
             string? str = j?.ToString().ToLowerInvariant();
             return str is "true";
-        }
-
-        private async Task safeCopy(string org, string des)
-        {
-            try
-            {
-                var directoryName = Path.GetDirectoryName(des);
-                if (!string.IsNullOrEmpty(directoryName))
-                    Directory.CreateDirectory(directoryName);
-                
-                await IOUtil.CopyFileAsync(org, des)
-                    .ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.Print(ex.ToString());
-            }
         }
     }
 }
