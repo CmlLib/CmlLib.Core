@@ -179,6 +179,7 @@ namespace CmlLib.Core
             }
         }
 
+        // not stable
         public Process CreateProcess(string mcversion, string forgeversion, MLaunchOption option)
         {
             CheckAndDownload(GetVersion(mcversion));
@@ -188,27 +189,35 @@ namespace CmlLib.Core
             return CreateProcess(versionName, option);
         }
         
-        public Process CreateProcess(string versionName, MLaunchOption option)
-            => CreateProcess(GetVersion(versionName), option);
+        public Process CreateProcess(string versionName, MLaunchOption option, bool checkAndDownload=true)
+            => CreateProcess(GetVersion(versionName), option, checkAndDownload);
 
         [MethodTimer.Time]
-        public Process CreateProcess(MVersion version, MLaunchOption option)
+        public Process CreateProcess(MVersion version, MLaunchOption option, bool checkAndDownload=true)
         {
             option.StartVersion = version;
-            CheckAndDownload(option.StartVersion);
+            
+            if (checkAndDownload)
+                CheckAndDownload(option.StartVersion);
+            
             return CreateProcess(option);
         }
 
-        public async Task<Process> CreateProcessAsync(string versionName, MLaunchOption option)
+        public async Task<Process> CreateProcessAsync(string versionName, MLaunchOption option, 
+            bool checkAndDownload=true)
         {
             var version = await GetVersionAsync(versionName).ConfigureAwait(false);
-            return await CreateProcessAsync(version, option).ConfigureAwait(false);
+            return await CreateProcessAsync(version, option, checkAndDownload).ConfigureAwait(false);
         }
 
-        public async Task<Process> CreateProcessAsync(MVersion version, MLaunchOption option)
+        public async Task<Process> CreateProcessAsync(MVersion version, MLaunchOption option, 
+            bool checkAndDownload=true)
         {
             option.StartVersion = version;
-            await CheckAndDownloadAsync(option.StartVersion).ConfigureAwait(false);
+            
+            if (checkAndDownload)
+                await CheckAndDownloadAsync(option.StartVersion).ConfigureAwait(false);
+            
             return await CreateProcessAsync(option).ConfigureAwait(false);
         }
         
