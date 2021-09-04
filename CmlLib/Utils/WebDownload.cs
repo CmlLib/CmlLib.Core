@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CmlLib.Utils
 {
-    public class WebDownload
+    internal class WebDownload
     {
         public static bool IgnoreProxy { get; set; } = true;
 

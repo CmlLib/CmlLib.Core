@@ -313,7 +313,7 @@ namespace CmlLib.Core.Auth
         }
     }
 
-    public static class HttpWebResponseExt
+    internal static class HttpWebResponseExt
     {
         public static HttpWebResponse GetResponseNoException(this HttpWebRequest req)
         {

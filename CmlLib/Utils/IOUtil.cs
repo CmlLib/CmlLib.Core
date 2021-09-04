@@ -206,7 +206,7 @@ namespace CmlLib.Utils
             var destinationStream = AsyncWriteStream(destinationFile, false);
             
             await sourceStream.CopyToAsync(destinationStream).ConfigureAwait(false);
-            await destinationStream.FlushAsync();
+            await destinationStream.FlushAsync().ConfigureAwait(false);
 
             await disposeStreamAsync(sourceStream).ConfigureAwait(false);
             await disposeStreamAsync(destinationStream).ConfigureAwait(false);
@@ -214,6 +214,7 @@ namespace CmlLib.Utils
 
         private static Task disposeStreamAsync(Stream stream)
         {
+            // .NET Framework does not support DisposeAsync
 #if NETFRAMEWORK
             stream.Dispose();
             return Task.CompletedTask;

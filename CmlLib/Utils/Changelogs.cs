@@ -28,7 +28,7 @@ namespace CmlLib.Utils
             }
 
             var obj = JObject.Parse(response);
-            var versions = new Dictionary<string, string?>();
+            var versionDict = new Dictionary<string, string?>();
             var array = obj["entries"] as JArray;
             if (array != null)
             {
@@ -39,11 +39,11 @@ namespace CmlLib.Utils
                         continue;
                     
                     var body = item["body"]?.ToString();
-                    versions[version] = body;
+                    versionDict[version] = body;
                 }
             }
 
-            return new Changelogs(versions);
+            return new Changelogs(versionDict);
         }
         
         private Changelogs(Dictionary<string, string?> versions)

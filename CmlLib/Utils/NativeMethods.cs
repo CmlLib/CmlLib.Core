@@ -4,7 +4,7 @@
 
 namespace CmlLib.Utils
 {
-    static class NativeMethods
+    internal static class NativeMethods
     {
         [DllImport("libc", SetLastError = true)]
         private static extern int chmod(string pathname, int mode);
