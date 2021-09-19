@@ -71,7 +71,11 @@ namespace CmlLib.Core.Files
             catch (Exception e)
             {
                 Debug.WriteLine(e);
-                return legacyJavaChecker(path, out binPath);
+
+                if (string.IsNullOrEmpty(binPath))
+                    return legacyJavaChecker(path, out binPath);
+                else
+                    return new DownloadFile[] { };
             }
         }
 
@@ -205,32 +209,40 @@ namespace CmlLib.Core.Files
             MJava mJava = new MJava(legacyJavaPath);
             binPath = mJava.GetBinaryPath();
             
-            if (mJava.CheckJavaExistence())
-                return new DownloadFile[] {};
-
-            string javaUrl = mJava.GetJavaUrl(); 
-            string lzmaPath = Path.Combine(Path.GetTempPath(), "jre.lzma");
-            string zipPath = Path.Combine(Path.GetTempPath(), "jre.zip");
-                            
-            DownloadFile file = new DownloadFile(lzmaPath, javaUrl)
+            try
             {
-                Name = "jre.lzma",
-                Type = MFile.Runtime,
-                AfterDownload = new Func<Task>[]
+                if (mJava.CheckJavaExistence())
+                    return new DownloadFile[] {};
+
+                string javaUrl = mJava.GetJavaUrl(); 
+                string lzmaPath = Path.Combine(Path.GetTempPath(), "jre.lzma");
+                string zipPath = Path.Combine(Path.GetTempPath(), "jre.zip");
+                            
+                DownloadFile file = new DownloadFile(lzmaPath, javaUrl)
                 {
-                    () => Task.Run(() =>
+                    Name = "jre.lzma",
+                    Type = MFile.Runtime,
+                    AfterDownload = new Func<Task>[]
                     {
-                        SevenZipWrapper.DecompressFileLZMA(lzmaPath, zipPath);
+                        () => Task.Run(() =>
+                        {
+                            SevenZipWrapper.DecompressFileLZMA(lzmaPath, zipPath);
 
-                        var z = new SharpZip(zipPath);
-                        z.Unzip(legacyJavaPath);
+                            var z = new SharpZip(zipPath);
+                            z.Unzip(legacyJavaPath);
 
-                        tryChmod755(mJava.GetBinaryPath());
-                    })
-                }
-            };
+                            tryChmod755(mJava.GetBinaryPath());
+                        })
+                    }
+                };
 
-            return new[] {file};
+                return new[] {file};
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+                return new DownloadFile[] {};
+            }
         }
 
         private void tryChmod755(string path)
