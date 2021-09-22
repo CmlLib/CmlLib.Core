@@ -193,11 +193,8 @@ namespace CmlLib.Utils
             var writer = AsyncStreamWriter(path, encoder, false);
             await writer.WriteAsync(content).ConfigureAwait(false); // **MUST be awaited in this scope**
 
-#if NETFRAMEWORK
+            await writer.FlushAsync().ConfigureAwait(false);
             writer.Dispose();
-#elif NETCOREAPP
-            await writer.DisposeAsync().ConfigureAwait(false);
-#endif
         }
         
         public static async Task CopyFileAsync(string sourceFile, string destinationFile)
@@ -212,15 +209,10 @@ namespace CmlLib.Utils
             await disposeStreamAsync(destinationStream).ConfigureAwait(false);
         }
 
-        private static Task disposeStreamAsync(Stream stream)
+        private static async Task disposeStreamAsync(Stream stream)
         {
-            // .NET Framework does not support DisposeAsync
-#if NETFRAMEWORK
+            await stream.FlushAsync().ConfigureAwait(false);
             stream.Dispose();
-            return Task.CompletedTask;
-#elif NETCOREAPP
-            return stream.DisposeAsync().AsTask();
-#endif
         }
 
         #endregion
