@@ -25,24 +25,13 @@ namespace CmlLib.Core
 
         private static string getOSName()
         {
-            // Environment.OSVersion.Platform does not work in NET Core   
-#if NETCOREAPP
+
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 return OSX;
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 return Windows;
             else
                 return Linux;
-#elif NETFRAMEWORK
-            var osType = Environment.OSVersion.Platform;
-
-            if (osType == PlatformID.MacOSX)
-                return OSX;
-            else if (osType == PlatformID.Unix)
-                return Linux;
-            else
-                return Windows;
-#endif
         }
 
         public static bool CheckOSRequire(JArray arr)

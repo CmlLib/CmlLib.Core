@@ -175,7 +175,7 @@ namespace CmlLib.Utils
             return new StreamWriter(stream, encoding);
         }
 
-        // In .NET Framework 4.6.2, There is no File.ReadFileTextAsync. so I copied it from .NET Core source code
+        // In .NET Standard 2.0, There is no File.ReadFileTextAsync. so I copied it from .NET Core source code
         public static async Task<string> ReadFileAsync(string path)
         {
             using var reader = AsyncStreamReader(path, Encoding.UTF8);
@@ -184,20 +184,15 @@ namespace CmlLib.Utils
             await disposeStreamAsync(reader.BaseStream).ConfigureAwait(false);
             return content;
         }
-        
-        // In .NET Framework 4.6.2, There is no File.WriteFileTextAsync. so I copied it from .NET Core source code
+
+        // In .NET Standard 2.0, There is no File.WriteFileTextAsync. so I copied it from .NET Core source code
         public static async Task WriteFileAsync(string path, string content)
         {
             // UTF8 with BOM might not be recognized by minecraft. not tested
             var encoder = new UTF8Encoding(false);
             var writer = AsyncStreamWriter(path, encoder, false);
             await writer.WriteAsync(content).ConfigureAwait(false); // **MUST be awaited in this scope**
-
-#if NETFRAMEWORK
             writer.Dispose();
-#elif NETCOREAPP
-            await writer.DisposeAsync().ConfigureAwait(false);
-#endif
         }
         
         public static async Task CopyFileAsync(string sourceFile, string destinationFile)
@@ -214,13 +209,8 @@ namespace CmlLib.Utils
 
         private static Task disposeStreamAsync(Stream stream)
         {
-            // .NET Framework does not support DisposeAsync
-#if NETFRAMEWORK
             stream.Dispose();
             return Task.CompletedTask;
-#elif NETCOREAPP
-            return stream.DisposeAsync().AsTask();
-#endif
         }
 
         #endregion
