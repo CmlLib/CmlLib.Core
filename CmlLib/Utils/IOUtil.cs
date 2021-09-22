@@ -192,6 +192,7 @@ namespace CmlLib.Utils
             var encoder = new UTF8Encoding(false);
             var writer = AsyncStreamWriter(path, encoder, false);
             await writer.WriteAsync(content).ConfigureAwait(false); // **MUST be awaited in this scope**
+            await writer.FlushAsync().ConfigureAwait(false);
             writer.Dispose();
         }
         
@@ -207,10 +208,12 @@ namespace CmlLib.Utils
             await disposeStreamAsync(destinationStream).ConfigureAwait(false);
         }
 
-        private static Task disposeStreamAsync(Stream stream)
+        private static async Task disposeStreamAsync(Stream stream)
         {
             stream.Dispose();
             return Task.CompletedTask;
+            await stream.FlushAsync().ConfigureAwait(false);
+            stream.Dispose();
         }
 
         #endregion

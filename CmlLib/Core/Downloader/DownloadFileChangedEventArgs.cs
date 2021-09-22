@@ -8,15 +8,18 @@ namespace CmlLib.Core.Downloader
 
     public class DownloadFileChangedEventArgs : EventArgs
     {
-        public DownloadFileChangedEventArgs(MFile kind, object source, string? filename, int total, int progressed)
+        public DownloadFileChangedEventArgs(MFile type, object source, string? filename, int total, int progressed)
         {
-            FileKind = kind;
+            FileKind = type;
+            FileType = type;
             FileName = filename;
             TotalFileCount = total;
             ProgressedFileCount = progressed;
             Source = source;
         }
 
+        // FileType and FileKind is exactly same.
+        public MFile FileType { get; private set; }
         public MFile FileKind { get; private set; }
         public string? FileName { get; private set; }
         public int TotalFileCount { get; private set; }

@@ -25,7 +25,6 @@ namespace CmlLib.Core
 
         private static string getOSName()
         {
-
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 return OSX;
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
