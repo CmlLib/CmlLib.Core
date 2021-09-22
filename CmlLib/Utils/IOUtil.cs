@@ -181,7 +181,7 @@ namespace CmlLib.Utils
             using var reader = AsyncStreamReader(path, Encoding.UTF8);
             var content = await reader.ReadToEndAsync()
                 .ConfigureAwait(false); // **MUST be awaited in this scope**
-            await disposeStreamAsync(reader.BaseStream).ConfigureAwait(false);
+            await reader.BaseStream.FlushAsync().ConfigureAwait(false);
             return content;
         }
         
@@ -190,29 +190,19 @@ namespace CmlLib.Utils
         {
             // UTF8 with BOM might not be recognized by minecraft. not tested
             var encoder = new UTF8Encoding(false);
-            var writer = AsyncStreamWriter(path, encoder, false);
+            using var writer = AsyncStreamWriter(path, encoder, false);
             await writer.WriteAsync(content).ConfigureAwait(false); // **MUST be awaited in this scope**
-
             await writer.FlushAsync().ConfigureAwait(false);
-            writer.Dispose();
         }
         
         public static async Task CopyFileAsync(string sourceFile, string destinationFile)
         {
-            var sourceStream = AsyncReadStream(sourceFile);
-            var destinationStream = AsyncWriteStream(destinationFile, false);
+            using var sourceStream = AsyncReadStream(sourceFile);
+            using var destinationStream = AsyncWriteStream(destinationFile, false);
             
             await sourceStream.CopyToAsync(destinationStream).ConfigureAwait(false);
+
             await destinationStream.FlushAsync().ConfigureAwait(false);
-
-            await disposeStreamAsync(sourceStream).ConfigureAwait(false);
-            await disposeStreamAsync(destinationStream).ConfigureAwait(false);
-        }
-
-        private static async Task disposeStreamAsync(Stream stream)
-        {
-            await stream.FlushAsync().ConfigureAwait(false);
-            stream.Dispose();
         }
 
         #endregion
