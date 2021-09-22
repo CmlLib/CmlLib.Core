@@ -12,7 +12,7 @@ namespace CmlLib.Core
     {
         private const int DefaultServerPort = 25565;
 
-        public static readonly string SupportVersion = "1.16.6";
+        public static readonly string SupportVersion = "1.17.1";
         public readonly static string[] DefaultJavaParameter = 
             {
                 "-XX:+UnlockExperimentalVMOptions",
@@ -48,33 +48,8 @@ namespace CmlLib.Core
             return mc;
         }
 
-        [MethodTimer.Time]
-        public string[] CreateArg()
+        private string createClassPath(MVersion version)
         {
-            MVersion version = LaunchOption.GetStartVersion();
-
-            var args = new List<string>();
-
-            // Common JVM Arguments
-            if (LaunchOption.JVMArguments != null)
-                args.AddRange(LaunchOption.JVMArguments);
-            else
-            {
-                args.AddRange(DefaultJavaParameter);
-
-                if (LaunchOption.MaximumRamMb > 0)
-                    args.Add("-Xmx" + LaunchOption.MaximumRamMb + "m");
-
-                if (LaunchOption.MinimumRamMb > 0)
-                    args.Add("-Xms" + LaunchOption.MinimumRamMb + "m");
-            }
-
-            if (!string.IsNullOrEmpty(LaunchOption.DockName))
-                args.Add("-Xdock:name=" + handleEmpty(LaunchOption.DockName));
-            if (!string.IsNullOrEmpty(LaunchOption.DockIcon))
-                args.Add("-Xdock:icon=" + handleEmpty(LaunchOption.DockIcon));
-
-            // Version-specific JVM Arguments
             var classpath = new List<string>(version.Libraries?.Length ?? 1);
 
             if (version.Libraries != null)
@@ -89,34 +64,36 @@ namespace CmlLib.Core
                 classpath.Add(minecraftPath.GetVersionJarPath(version.Jar));
 
             var classpathStr = IOUtil.CombinePath(classpath.ToArray());
+            return classpathStr;
+        }
 
+        private string createNativePath(MVersion version)
+        {
             var native = new MNative(minecraftPath, version);
             native.CleanNatives();
             var nativePath = native.ExtractNatives();
+            return nativePath;
+        }
 
-            var jvmdict = new Dictionary<string, string?>
+        [MethodTimer.Time]
+        public string[] CreateArg()
+        {
+            MVersion version = LaunchOption.GetStartVersion();
+            var args = new List<string>();
+            
+            var classpath = createClassPath(version);
+            var nativePath = createNativePath(version);
+            var session = LaunchOption.GetSession();
+            
+            var argDict = new Dictionary<string, string?>
             {
+                { "library_directory", minecraftPath.Library },
                 { "natives_directory", nativePath },
                 { "launcher_name", useNotNull(LaunchOption.GameLauncherName, "minecraft-launcher") },
                 { "launcher_version", useNotNull(LaunchOption.GameLauncherVersion, "2") },
-                { "classpath", classpathStr }
-            };
-
-            if (version.JvmArguments != null)
-                args.AddRange(Mapper.MapInterpolation(version.JvmArguments, jvmdict));
-            else
-            {
-                args.Add("-Djava.library.path=" + handleEmpty(nativePath));
-                args.Add("-cp " + classpathStr);
-            }
-
-            if (!string.IsNullOrEmpty(version.MainClass))
-                args.Add(version.MainClass);
-
-            // Game Arguments
-            MSession session = LaunchOption.GetSession();
-            var gameDict = new Dictionary<string, string?>
-            {
+                { "classpath_separator", Path.PathSeparator.ToString() },
+                { "classpath", classpath },
+                
                 { "auth_player_name" , session.Username },
                 { "version_name"     , version.Id },
                 { "game_directory"   , minecraftPath.BasePath },
@@ -131,12 +108,55 @@ namespace CmlLib.Core
                 { "version_type"     , useNotNull(LaunchOption.VersionType, version.TypeStr) }
             };
 
-            if (version.GameArguments != null)
-                args.AddRange(Mapper.MapInterpolation(version.GameArguments, gameDict));
-            else if (!string.IsNullOrEmpty(version.MinecraftArguments))
-                args.AddRange(Mapper.MapInterpolation(version.MinecraftArguments.Split(' '), gameDict));
+            // JVM argument
+            var requireMemoryArgs = false;
+                
+            // default jvm arguments
+            if (LaunchOption.JVMArguments != null)
+                args.AddRange(LaunchOption.JVMArguments);
+            else
+            {
+                args.AddRange(DefaultJavaParameter);
+                requireMemoryArgs = true;
+            }
 
-            // Options
+            // version-specific jvm arguments
+            if (version.JvmArguments != null)
+                args.AddRange(Mapper.MapInterpolation(version.JvmArguments, argDict));
+
+            // Xmx, Xms
+            if (requireMemoryArgs)
+            {
+                if (LaunchOption.MaximumRamMb > 0)
+                    args.Add("-Xmx" + LaunchOption.MaximumRamMb + "m");
+
+                if (LaunchOption.MinimumRamMb > 0)
+                    args.Add("-Xms" + LaunchOption.MinimumRamMb + "m");
+            }
+
+            if (version.JvmArguments == null)
+            {
+                args.Add("-Djava.library.path=" + handleEmpty(nativePath));
+                args.Add("-cp " + classpath);
+            }
+
+            // for macOS
+            if (!string.IsNullOrEmpty(LaunchOption.DockName))
+                args.Add("-Xdock:name=" + handleEmpty(LaunchOption.DockName));
+            if (!string.IsNullOrEmpty(LaunchOption.DockIcon))
+                args.Add("-Xdock:icon=" + handleEmpty(LaunchOption.DockIcon));
+
+            // main class
+            if (!string.IsNullOrEmpty(version.MainClass))
+                args.Add(version.MainClass);
+
+            // game arguments
+            if (version.GameArguments != null)
+                args.AddRange(Mapper.MapInterpolation(version.GameArguments, argDict));
+            else if (!string.IsNullOrEmpty(version.MinecraftArguments))
+                args.AddRange(Mapper.MapInterpolation(version.MinecraftArguments.Split(' '), argDict));
+
+            // options
             if (!string.IsNullOrEmpty(LaunchOption.ServerIp))
             {
                 args.Add("--server " + handleEmpty(LaunchOption.ServerIp));
