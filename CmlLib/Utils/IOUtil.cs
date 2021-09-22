@@ -175,7 +175,7 @@ namespace CmlLib.Utils
             return new StreamWriter(stream, encoding);
         }
 
-        // In .NET Framework 4.6.2, There is no File.ReadFileTextAsync. so I copied it from .NET Core source code
+        // In .NET Standard 2.0, There is no File.ReadFileTextAsync. so I copied it from .NET Core source code
         public static async Task<string> ReadFileAsync(string path)
         {
             using var reader = AsyncStreamReader(path, Encoding.UTF8);
@@ -184,8 +184,8 @@ namespace CmlLib.Utils
             await reader.BaseStream.FlushAsync().ConfigureAwait(false);
             return content;
         }
-        
-        // In .NET Framework 4.6.2, There is no File.WriteFileTextAsync. so I copied it from .NET Core source code
+
+        // In .NET Standard 2.0, There is no File.WriteFileTextAsync. so I copied it from .NET Core source code
         public static async Task WriteFileAsync(string path, string content)
         {
             // UTF8 with BOM might not be recognized by minecraft. not tested
@@ -201,7 +201,7 @@ namespace CmlLib.Utils
             using var destinationStream = AsyncWriteStream(destinationFile, false);
             
             await sourceStream.CopyToAsync(destinationStream).ConfigureAwait(false);
-
+        
             await destinationStream.FlushAsync().ConfigureAwait(false);
         }
 
