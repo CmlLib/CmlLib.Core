@@ -103,7 +103,7 @@ namespace CmlLib.Core
                 { "auth_uuid"        , session.UUID },
                 { "auth_access_token", session.AccessToken },
                 { "user_properties"  , "{}" },
-                { "user_type"        , "Mojang" },
+                { "user_type"        , session.UserType ?? "Mojang" },
                 { "game_assets"      , minecraftPath.GetAssetLegacyPath(version.AssetId ?? "legacy") },
                 { "auth_session"     , session.AccessToken },
                 { "version_type"     , useNotNull(LaunchOption.VersionType, version.TypeStr) }
