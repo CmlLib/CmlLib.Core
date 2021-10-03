@@ -19,6 +19,12 @@ Support all version, forge, optifine
         <Authors>AlphaBs</Authors>
         <PackageReleaseNotes />
         <PackageId>CmlLib.Core</PackageId>
+        
+        <WeaverConfiguration Condition="'$(Configuration)' == 'Debug'">
+            <Weavers>
+                <MethodTimer/>
+            </Weavers>
+        </WeaverConfiguration>
     </PropertyGroup>
 
     <ItemGroup>
@@ -30,7 +36,7 @@ Support all version, forge, optifine
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="LZMA-SDK" Version="19.0.0" />
-        <PackageReference Include="MethodTimer.Fody" Version="3.2.0" Condition="'$(Configuration)' == 'Debug'">
+        <PackageReference Include="MethodTimer.Fody" Version="3.2.0">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
         <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
