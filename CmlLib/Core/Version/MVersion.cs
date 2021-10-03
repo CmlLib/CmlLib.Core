@@ -70,7 +70,7 @@ namespace CmlLib.Core.Version
             if (nc(JavaVersion))
                 JavaVersion = parentVersion.JavaVersion;
 
-            Jar = parentVersion.Jar;
+            //Jar = parentVersion.Jar;
 
             // Combine
 

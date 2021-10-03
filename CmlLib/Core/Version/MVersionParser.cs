@@ -93,7 +93,9 @@ namespace CmlLib.Core.Version
                     version.IsInherited = true;
                     version.ParentVersionId = job["inheritsFrom"]?.ToString();
                 }
-                else
+
+                version.Jar = job["jar"]?.ToString();
+                if (string.IsNullOrEmpty(version.Jar))
                     version.Jar = version.Id;
 
                 return version;
