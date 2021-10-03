@@ -21,6 +21,7 @@ namespace CmlLib.Core
                 "-XX:G1ReservePercent=20",
                 "-XX:MaxGCPauseMillis=50",
                 "-XX:G1HeapRegionSize=16M"
+                // "-Xss1M"
             };
 
         public MLaunch(MLaunchOption option)
@@ -109,29 +110,23 @@ namespace CmlLib.Core
             };
 
             // JVM argument
-            var requireMemoryArgs = false;
-                
+            
+            // version-specific jvm arguments
+            if (version.JvmArguments != null)
+                args.AddRange(Mapper.MapInterpolation(version.JvmArguments, argDict));
+            
             // default jvm arguments
             if (LaunchOption.JVMArguments != null)
                 args.AddRange(LaunchOption.JVMArguments);
             else
-            {
-                args.AddRange(DefaultJavaParameter);
-                requireMemoryArgs = true;
-            }
-
-            // version-specific jvm arguments
-            if (version.JvmArguments != null)
-                args.AddRange(Mapper.MapInterpolation(version.JvmArguments, argDict));
-
-            // Xmx, Xms
-            if (requireMemoryArgs)
             {
                 if (LaunchOption.MaximumRamMb > 0)
                     args.Add("-Xmx" + LaunchOption.MaximumRamMb + "m");
 
                 if (LaunchOption.MinimumRamMb > 0)
                     args.Add("-Xms" + LaunchOption.MinimumRamMb + "m");
+                
+                args.AddRange(DefaultJavaParameter);
             }
 
             if (version.JvmArguments == null)
