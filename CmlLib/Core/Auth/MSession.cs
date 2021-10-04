@@ -6,10 +6,10 @@ namespace CmlLib.Core.Auth
     {
         public MSession() { }
 
-        public MSession(string? username, string? accesstoken, string? uuid)
+        public MSession(string? username, string? accessToken, string? uuid)
         {
             Username = username;
-            AccessToken = accesstoken;
+            AccessToken = accessToken;
             UUID = uuid;
         }
 
@@ -21,6 +21,8 @@ namespace CmlLib.Core.Auth
         public string? UUID { get; set; }
         [JsonProperty("clientToken")]
         public string? ClientToken { get; set; }
+        
+        public string? UserType { get; set; }
 
         public bool CheckIsValid()
         {
@@ -35,7 +37,8 @@ namespace CmlLib.Core.Auth
             {
                 Username = username, 
                 AccessToken = "access_token", 
-                UUID = "user_uuid", 
+                UUID = "user_uuid",
+                UserType = "Mojang",
                 ClientToken = null
             };
         }

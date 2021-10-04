@@ -1,4 +1,6 @@
-﻿using CmlLib.Core.Version;
+﻿using System;
+using System.Diagnostics;
+using CmlLib.Core.Version;
 using CmlLib.Utils;
 using System.IO;
 
@@ -25,21 +27,15 @@ namespace CmlLib.Core
             
             foreach (var item in version.Libraries)
             {
-                try
+                // do not ignore exception
+                if (item.IsRequire && item.IsNative && !string.IsNullOrEmpty(item.Path))
                 {
-                    if (item.IsRequire && item.IsNative && !string.IsNullOrEmpty(item.Path))
+                    string zPath = Path.Combine(gamePath.Library, item.Path);
+                    if (File.Exists(zPath))
                     {
-                        string zPath = Path.Combine(gamePath.Library, item.Path);
-                        if (File.Exists(zPath))
-                        {
-                            var z = new SharpZip(zPath);
-                            z.Unzip(path);
-                        }
+                        var z = new SharpZip(zPath);
+                        z.Unzip(path);
                     }
-                }
-                catch
-                {
-                    // ignore invalid native library file
                 }
             }
 

@@ -7,7 +7,7 @@ namespace CmlLib.Core
 {
     public static class Mapper
     {
-        private static Regex argBracket = new Regex(@"\$?\{(.*?)}");
+        private static readonly Regex argBracket = new Regex(@"\$?\{(.*?)}");
 
         public static string[] Map(string[] arg, Dictionary<string, string?> dicts, string prepath)
         {
@@ -51,33 +51,24 @@ namespace CmlLib.Core
 
         public static string Interpolation(string str, Dictionary<string, string?> dicts)
         {
-            var sb = new StringBuilder(str);
-
-            var offset = 0;
-            var m = argBracket.Matches(str);
-            foreach (Match? item in m)
+            str = argBracket.Replace(str, new MatchEvaluator((match =>
             {
-                if (item == null || item.Groups.Count < 2)
-                    continue;
-                
-                var outGroup = item.Groups[0];
+                if (match.Groups.Count < 2)
+                    return match.Value;
 
-                string key = item.Groups[1].Value;
-                string? value;
-
-                if (dicts.TryGetValue(key, out value))
+                var key = match.Groups[1].Value;
+                if (dicts.TryGetValue(key, out string? value))
                 {
                     if (value == null)
-                        value = ""; 
-                        
-                    replaceByPos(sb, value, outGroup.Index + offset, outGroup.Length);
+                        value = "";
 
-                    if (outGroup.Length != value.Length)
-                        offset = value.Length - outGroup.Length;
+                    return value;
                 }
-            }
 
-            return sb.ToString();
+                return match.Value;
+            })));
+
+            return str;
         }
 
         public static string ToFullPath(string str, string prepath)

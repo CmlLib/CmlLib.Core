@@ -109,6 +109,7 @@ namespace CmlLib.Core.Auth
                     AccessToken = job["accessToken"]?.ToString(),
                     UUID = profile["id"]?.ToString(),
                     Username = profile["name"]?.ToString(),
+                    UserType = "Mojang",
                     ClientToken = clientToken
                 };
 
