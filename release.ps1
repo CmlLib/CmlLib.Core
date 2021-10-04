@@ -14,6 +14,7 @@ mkdir .\release\SampleWinformLauncher$ver
 Copy-Item .\CmlLib\bin\Release\* -Destination .\release\CmlLib.Core.$ver -Recurse
 Get-ChildItem .\release\CmlLib.Core.$ver -Recurse -File | Where-Object { ($_.Extension -ne ".dll") } | Remove-Item
 Copy-Item .\CmlLibWinFormSample\bin\Release\* -Destination .\release\SampleWinformLauncher$ver -Include *.exe, *.dll, *.pdb, *.config
+Copy-Item .\CmlLibCoreSample\bin\Release\net5.0\* -Destination .\release\SampleCoreLauncher$ver -Include *.exe, *.dll, *.pdb, *.config
 
 Compress-Archive -Path .\release\CmlLib.Core.$ver -DestinationPath .\release\CmlLib.Core.$ver.zip
 Compress-Archive -Path .\release\SampleCoreLauncher$ver -DestinationPath .\release\SampleCoreLauncher$ver.zip
