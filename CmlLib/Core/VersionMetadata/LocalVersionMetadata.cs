@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using CmlLib.Utils;
 
-namespace CmlLib.Core.Version
+namespace CmlLib.Core.VersionMetadata
 {
     public class LocalVersionMetadata : StringVersionMetadata
     {

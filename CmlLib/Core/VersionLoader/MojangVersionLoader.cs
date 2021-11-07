@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using CmlLib.Core.VersionMetadata;
 
 namespace CmlLib.Core.VersionLoader
 {

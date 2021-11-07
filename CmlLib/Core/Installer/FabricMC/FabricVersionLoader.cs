@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using CmlLib.Core.VersionLoader;
+using CmlLib.Core.VersionMetadata;
 
 namespace CmlLib.Core.Installer.FabricMC
 {

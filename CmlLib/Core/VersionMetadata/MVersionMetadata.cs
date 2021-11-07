@@ -1,7 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Data.SqlTypes;
+using System.Threading.Tasks;
+using CmlLib.Core.Version;
 using Newtonsoft.Json;
 
-namespace CmlLib.Core.Version
+namespace CmlLib.Core.VersionMetadata
 {
     public abstract class MVersionMetadata
     {

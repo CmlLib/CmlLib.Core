@@ -2,7 +2,7 @@
 using System.Net;
 using System.Threading.Tasks;
 
-namespace CmlLib.Core.Version
+namespace CmlLib.Core.VersionMetadata
 {
     public class WebVersionMetadata : StringVersionMetadata
     {

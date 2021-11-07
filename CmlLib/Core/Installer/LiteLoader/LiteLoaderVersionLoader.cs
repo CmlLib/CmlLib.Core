@@ -3,6 +3,7 @@ using System.Net;
 using System.Threading.Tasks;
 using CmlLib.Core.Version;
 using CmlLib.Core.VersionLoader;
+using CmlLib.Core.VersionMetadata;
 using Newtonsoft.Json.Linq;
 
 namespace CmlLib.Core.Installer.LiteLoader

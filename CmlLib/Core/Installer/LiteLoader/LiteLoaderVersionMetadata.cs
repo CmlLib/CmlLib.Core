@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using CmlLib.Core.Version;
+using CmlLib.Core.VersionMetadata;
 using CmlLib.Utils;
 using Newtonsoft.Json.Linq;
 
