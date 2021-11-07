@@ -140,8 +140,22 @@ namespace CmlLib.Core.Version
         {
             foreach (var item in from)
             {
-                if (!Versions.Contains(item.Name))
+                var version = (MVersionMetadata?)Versions[item.Name];
+                if (version == null)
+                {
                     Versions[item.Name] = item;
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(version.Type))
+                    {
+                        version.Type = item.Type;
+                        version.MType = MVersionTypeConverter.FromString(item.Type);
+                    }
+
+                    if (string.IsNullOrEmpty(version.ReleaseTimeStr))
+                        version.ReleaseTimeStr = item.ReleaseTimeStr;
+                }
             }
 
             if (this.MinecraftPath == null && from.MinecraftPath != null)
