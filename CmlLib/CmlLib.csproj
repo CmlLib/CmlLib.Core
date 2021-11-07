@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net462;netstandard2.0</TargetFrameworks>
+        <TargetFrameworks>net462;netstandard2.1</TargetFrameworks>
         <LangVersion>8.0</LangVersion>
         <Nullable>enable</Nullable>
         <Version>3.3.3</Version>
@@ -22,7 +22,7 @@ Support all version, forge, optifine
         
         <WeaverConfiguration Condition="'$(Configuration)' == 'Debug'">
             <Weavers>
-                <MethodTimer/>
+                <MethodTimer />
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
