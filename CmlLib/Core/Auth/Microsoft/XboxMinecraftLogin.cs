@@ -38,7 +38,8 @@ namespace CmlLib.Core.Auth.Microsoft
             var res = req.GetResponse();
             var resBody = readRes(res);
 
-            var obj = JsonConvert.DeserializeObject<AuthenticationResponse>(resBody);
+            var obj = JsonConvert.DeserializeObject<AuthenticationResponse>(resBody)
+                ?? new AuthenticationResponse();
             obj.ExpiresOn = DateTime.Now.AddSeconds(obj.ExpiresIn);
             return obj;
         }

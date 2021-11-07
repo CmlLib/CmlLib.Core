@@ -49,7 +49,7 @@ namespace CmlLib.Core.MojangLauncher
             return FromJSON(content);
         }
 
-        public static MojangLauncherAccounts FromJSON(string json)
+        public static MojangLauncherAccounts? FromJSON(string json)
         {
             return JsonConvert.DeserializeObject<MojangLauncherAccounts>(json);
         }
