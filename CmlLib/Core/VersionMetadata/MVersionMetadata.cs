@@ -21,8 +21,18 @@ namespace CmlLib.Core.VersionMetadata
 
         public MVersionType MType { get; set; }
 
-        [JsonProperty("releaseTime")] public string? ReleaseTime { get; set; }
+        [JsonProperty("releaseTime")] public string? ReleaseTimeStr { get; set; }
 
+        public DateTime? ReleaseTime
+        {
+            get
+            {
+                if (DateTime.TryParse(this.ReleaseTimeStr, out DateTime dt))
+                    return dt;
+                return null;
+            }
+        }
+        
         [JsonProperty("url")] public string? Path { get; set; }
 
         public override bool Equals(object? obj)

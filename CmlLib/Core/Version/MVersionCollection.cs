@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using CmlLib.Core.VersionMetadata;
 
@@ -62,7 +63,12 @@ namespace CmlLib.Core.Version
 
             return versionMetadata;
         }
-        
+
+        public MVersionMetadata[] ToArray(MVersionSortOption option)
+        {
+            var sorter = new MVersionMetadataSorter(option);
+            return sorter.Sort(this);
+        }
         
         public virtual MVersion GetVersion(string name)
         {
@@ -129,8 +135,13 @@ namespace CmlLib.Core.Version
                     .ConfigureAwait(false);
                 startVersion.InheritFrom(baseVersion);
             }
-
+            
             return startVersion;
+        }
+
+        public void AddVersion(MVersionMetadata version)
+        {
+            Versions[version.Name] = version;
         }
 
         public bool Contains(string? versionName)
