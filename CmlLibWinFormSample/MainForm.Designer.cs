@@ -86,6 +86,7 @@
             this.btnMojangServer = new System.Windows.Forms.Button();
             this.btnOptions = new System.Windows.Forms.Button();
             this.lbLibraryVersion = new System.Windows.Forms.Label();
+            this.btnSortFilter = new System.Windows.Forms.Button();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -610,6 +611,7 @@
             // 
             // groupBox4
             // 
+            this.groupBox4.Controls.Add(this.btnSortFilter);
             this.groupBox4.Controls.Add(this.btnRefreshVersion);
             this.groupBox4.Controls.Add(this.btnForgeInstall);
             this.groupBox4.Controls.Add(this.btnSetLastVersion);
@@ -638,10 +640,10 @@
             // 
             // btnForgeInstall
             // 
-            this.btnForgeInstall.Location = new System.Drawing.Point(105, 66);
+            this.btnForgeInstall.Location = new System.Drawing.Point(32, 65);
             this.btnForgeInstall.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btnForgeInstall.Name = "btnForgeInstall";
-            this.btnForgeInstall.Size = new System.Drawing.Size(208, 29);
+            this.btnForgeInstall.Size = new System.Drawing.Size(111, 29);
             this.btnForgeInstall.TabIndex = 3;
             this.btnForgeInstall.Text = "Install Forge";
             this.btnForgeInstall.UseVisualStyleBackColor = true;
@@ -688,6 +690,17 @@
             this.lbLibraryVersion.TabIndex = 31;
             this.lbLibraryVersion.Text = "CmlLib.Core";
             // 
+            // btnSortFilter
+            // 
+            this.btnSortFilter.Location = new System.Drawing.Point(149, 65);
+            this.btnSortFilter.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.btnSortFilter.Name = "btnSortFilter";
+            this.btnSortFilter.Size = new System.Drawing.Size(163, 29);
+            this.btnSortFilter.TabIndex = 5;
+            this.btnSortFilter.Text = "Sort option";
+            this.btnSortFilter.UseVisualStyleBackColor = true;
+            this.btnSortFilter.Click += new System.EventHandler(this.btnSortFilter_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
@@ -722,6 +735,8 @@
             this.ResumeLayout(false);
             this.PerformLayout();
         }
+
+        private System.Windows.Forms.Button btnSortFilter;
 
         private System.Windows.Forms.Label lbLibraryVersion;
 
