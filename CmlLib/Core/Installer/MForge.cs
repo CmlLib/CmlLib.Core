@@ -29,26 +29,28 @@ namespace CmlLib.Core.Installer
 
         public MForge(MinecraftPath mc, string java)
         {
-            this.Minecraft = mc;
+            this.minecraftPath = mc;
             JavaPath = java;
-            Downloader = new SequenceDownloader();
+            downloader = new SequenceDownloader();
         }
 
         public string JavaPath { get; private set; }
-        private readonly MinecraftPath Minecraft;
-        private readonly IDownloader Downloader;
-        public event DownloadFileChangedHandler FileChanged;
-        public event EventHandler<string> InstallerOutput;
+        private readonly MinecraftPath minecraftPath;
+        private readonly IDownloader downloader;
+        public event DownloadFileChangedHandler? FileChanged;
+        public event EventHandler<string>? InstallerOutput;
 
-        public string InstallForge(string mcversion, string forgeversion)
+        public string InstallForge(string mcVersion, string forgeVersion)
         {
-            var minecraftJar = Minecraft.GetVersionJarPath(mcversion);
+            var minecraftJar = minecraftPath.GetVersionJarPath(mcVersion);
             if (!File.Exists(minecraftJar))
-                throw new IOException($"Install {mcversion} first");
+                throw new IOException($"Install {mcVersion} first");
 
             var installerPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
-            var installerStream = getInstallerStream(mcversion, forgeversion); // download installer
+            var installerStream = getInstallerStream(mcVersion, forgeVersion); // download installer
+            if (installerStream == null)
+                throw new InvalidOperationException("cannot open installer stream");
             var extractedFile = extractInstaller(installerStream, installerPath); // extract installer
 
             var profileObj = extractedFile.Item1; // version profile json
@@ -56,8 +58,16 @@ namespace CmlLib.Core.Installer
 
             // copy forge libraries to minecraft
             extractMaven(installerPath); // new installer
-            extractUniversal(installerPath,
-                installerObj["filePath"]?.ToString(), installerObj["path"]?.ToString()); // old installer
+
+            var universalPath = installerObj["filePath"]?.ToString();
+            if (string.IsNullOrEmpty(universalPath))
+                throw new InvalidOperationException("filePath property in installer was null");
+            
+            var destPath = installerObj["path"]?.ToString();
+            if (string.IsNullOrEmpty(destPath))
+                throw new InvalidOperationException("path property in installer was null");
+            
+            extractUniversal(installerPath, universalPath, destPath); // old installer
 
             // download libraries and processors
             checkLibraries(installerObj["libraries"] as JArray);
@@ -71,9 +81,9 @@ namespace CmlLib.Core.Installer
             // version name like 1.16.2-forge-33.0.20
             var versionName = installerObj["target"]?.ToString()
                            ?? installerObj["version"]?.ToString()
-                           ?? GetForgeName(mcversion, forgeversion);
+                           ?? GetForgeName(mcVersion, forgeVersion);
 
-            var versionPath = Minecraft.GetVersionJsonPath(versionName);
+            var versionPath = minecraftPath.GetVersionJsonPath(versionName);
 
             // write version profile json
             writeProfile(profileObj, versionPath);
@@ -81,12 +91,12 @@ namespace CmlLib.Core.Installer
             return versionName;
         }
 
-        private Stream getInstallerStream(string mcversion, string forgeversion)
+        private Stream? getInstallerStream(string mcVersion, string forgeVersion)
         {
             fireEvent(MFile.Library, "installer", 1, 0);
 
-            var url = $"{MavenServer}{mcversion}-{forgeversion}/" +
-                $"forge-{mcversion}-{forgeversion}-installer.jar";
+            var url = $"{MavenServer}{mcVersion}-{forgeVersion}/" +
+                $"forge-{mcVersion}-{forgeVersion}-installer.jar";
 
             return WebRequest.Create(url).GetResponse().GetResponseStream();
         }
@@ -94,8 +104,8 @@ namespace CmlLib.Core.Installer
         private Tuple<JToken, JToken> extractInstaller(Stream stream, string extractPath)
         {
             // extract installer
-            string install_profile = null;
-            string versions_json = null;
+            string? installProfile = null;
+            string? versionsJson = null;
 
             using (stream)
             using (var s = new ZipInputStream(stream))
@@ -111,31 +121,41 @@ namespace CmlLib.Core.Installer
                     if (e.IsFile)
                     {
                         if (e.Name == "install_profile.json")
-                            install_profile = readStreamString(s);
+                            installProfile = readStreamString(s);
                         else if (e.Name == "version.json")
-                            versions_json = readStreamString(s);
+                            versionsJson = readStreamString(s);
                         else
                         {
-                            Directory.CreateDirectory(Path.GetDirectoryName(realpath));
+                            var dirPath = Path.GetDirectoryName(realpath);
+                            if (!string.IsNullOrEmpty(dirPath))
+                                Directory.CreateDirectory(dirPath);
 
-                            using (var fs = File.OpenWrite(realpath))
-                                s.CopyTo(fs);
+                            using var fs = File.OpenWrite(realpath);
+                            s.CopyTo(fs);
                         }
                     }
                 }
             }
 
+            if (installProfile == null)
+                throw new InvalidOperationException("no install_profile.json in installer");
+            if (versionsJson == null)
+                throw new InvalidOperationException("no version.json in installer");
+            
             JToken profileObj;
-            var installObj = JObject.Parse(install_profile); // installer info
+            var installObj = JObject.Parse(installProfile); // installer info
             var versionInfo = installObj["versionInfo"]; // version profile
 
             if (versionInfo == null)
-                profileObj = JObject.Parse(versions_json);
+                profileObj = JObject.Parse(versionsJson);
             else
             {
                 installObj = installObj["install"] as JObject;
                 profileObj = versionInfo;
             }
+
+            if (installObj == null)
+                throw new InvalidOperationException("no 'install' object in install_profile.json");
 
             return new Tuple<JToken, JToken>(profileObj, installObj);
         }
@@ -164,7 +184,7 @@ namespace CmlLib.Core.Installer
             // copy all libraries in maven (include universal) to minecraft
             var org = Path.Combine(installerPath, "maven");
             if (Directory.Exists(org))
-                IOUtil.CopyDirectory(org, Minecraft.Library, true);
+                IOUtil.CopyDirectory(org, minecraftPath.Library, true);
         }
 
         // for old installer
@@ -178,60 +198,65 @@ namespace CmlLib.Core.Installer
             // copy universal library to minecraft
             var universal = Path.Combine(installerPath, universalPath);
             var desPath = PackageName.Parse(destinyName).GetPath();
-            var des = Path.Combine(Minecraft.Library, desPath);
+            var des = Path.Combine(minecraftPath.Library, desPath);
 
             if (File.Exists(universal))
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(des));
+                var dirPath = Path.GetDirectoryName(des);
+                if (!string.IsNullOrEmpty(dirPath))
+                    Directory.CreateDirectory(dirPath);
                 File.Copy(universal, des, true);
             }
         }
 
         // legacy
-        private void downloadUniversal(string mcversion, string forgeversion)
+        private void downloadUniversal(string mcVersion, string forgeVersion)
         {
             fireEvent(MFile.Library, "universal", 1, 0);
 
-            var forgeName = $"forge-{mcversion}-{forgeversion}";
-            var baseUrl = $"{MavenServer}{mcversion}-{forgeversion}";
+            var forgeName = $"forge-{mcVersion}-{forgeVersion}";
+            var baseUrl = $"{MavenServer}{mcVersion}-{forgeVersion}";
 
             var universalUrl = $"{baseUrl}/{forgeName}-universal.jar";
             var universalPath = Path.Combine(
-                Minecraft.Library,
+                minecraftPath.Library,
                 "net",
                 "minecraftforge",
                 "forge",
-                $"{mcversion}-{forgeversion}",
-                $"forge-{mcversion}-{forgeversion}.jar"
+                $"{mcVersion}-{forgeVersion}",
+                $"forge-{mcVersion}-{forgeVersion}.jar"
             );
 
-            Directory.CreateDirectory(Path.GetDirectoryName(universalPath));
-            var downloader = new WebDownload();
-            downloader.DownloadFile(universalUrl, universalPath);
+            var dirPath = Path.GetDirectoryName(universalPath);
+            if (!string.IsNullOrEmpty(dirPath))
+                Directory.CreateDirectory(dirPath);
+            
+            var dl = new WebDownload();
+            dl.DownloadFile(universalUrl, universalPath);
         }
 
-        private Dictionary<string, string> mapping(JObject data, string kind,
+        private Dictionary<string, string?> mapping(JObject data, string kind,
             string minecraftJar, string installerPath)
         {
-            if (data == null)
-                return null;
-
             // convert [path] to absolute path
 
-            var dataMapping = new Dictionary<string, string>();
+            var dataMapping = new Dictionary<string, string?>();
             foreach (var item in data)
             {
                 var key = item.Key;
-                var value = item.Value[kind]?.ToString();
+                var value = item.Value?[kind]?.ToString();
+                
+                if (string.IsNullOrEmpty(value))
+                    continue;
 
-                var fullpath = Mapper.ToFullPath(value, Minecraft.Library);
-                if (fullpath == value)
+                var fullPath = Mapper.ToFullPath(value, minecraftPath.Library);
+                if (fullPath == value)
                 {
                     value = value.Trim('/');
                     dataMapping.Add(key, Path.Combine(installerPath, value));
                 }
                 else
-                    dataMapping.Add(key, fullpath);
+                    dataMapping.Add(key, fullPath);
             }
 
             dataMapping.Add("SIDE", "CLIENT");
@@ -240,7 +265,7 @@ namespace CmlLib.Core.Installer
             return dataMapping;
         }
 
-        private void checkLibraries(JArray jarr)
+        private void checkLibraries(JArray? jarr)
         {
             if (jarr == null || jarr.Count == 0)
                 return;
@@ -250,19 +275,21 @@ namespace CmlLib.Core.Installer
             foreach (var item in jarr)
             {
                 var parsedLib = parser.ParseJsonObject((JObject)item);
-                libs.AddRange(parsedLib);
+                if (parsedLib != null)
+                    libs.AddRange(parsedLib);
             }
 
             var fileProgress = new Progress<DownloadFileChangedEventArgs>(
                 e => FileChanged?.Invoke(e));
             
             var libraryChecker = new LibraryChecker();
-            var lostLibrary = libraryChecker.CheckFiles(Minecraft, libs.ToArray(), fileProgress);
+            var lostLibrary = libraryChecker.CheckFiles(minecraftPath, libs.ToArray(), fileProgress);
             
-            Downloader.DownloadFiles(lostLibrary, fileProgress, null);
+            if (lostLibrary != null)
+                downloader.DownloadFiles(lostLibrary, fileProgress, null);
         }
 
-        private void process(JArray processors, Dictionary<string, string> mapData)
+        private void process(JArray? processors, Dictionary<string, string?> mapData)
         {
             if (processors == null || processors.Count == 0)
                 return;
@@ -281,12 +308,15 @@ namespace CmlLib.Core.Installer
             }
         }
 
-        private bool checkProcessorOutputs(JObject outputs, Dictionary<string, string> mapData)
+        private bool checkProcessorOutputs(JObject outputs, Dictionary<string, string?> mapData)
         {
-            foreach (var outitem in outputs)
+            foreach (var item in outputs)
             {
-                var key = Mapper.Interpolation(outitem.Key, mapData);
-                var value = Mapper.Interpolation(outitem.Value.ToString(), mapData);
+                if (item.Value == null)
+                    continue;
+                
+                var key = Mapper.Interpolation(item.Key, mapData);
+                var value = Mapper.Interpolation(item.Value.ToString(), mapData);
 
                 if (!File.Exists(key) || !IOUtil.CheckSHA1(key, value))
                     return false;
@@ -295,7 +325,7 @@ namespace CmlLib.Core.Installer
             return true;
         }
 
-        private void startProcessor(JToken processor, Dictionary<string, string> mapData)
+        private void startProcessor(JToken processor, Dictionary<string, string?> mapData)
         {
             var name = processor["jar"]?.ToString();
             if (name == null)
@@ -303,15 +333,15 @@ namespace CmlLib.Core.Installer
 
             // jar
             var jar = PackageName.Parse(name);
-            var jarpath = Path.Combine(Minecraft.Library, jar.GetPath());
+            var jarPath = Path.Combine(minecraftPath.Library, jar.GetPath());
 
-            var jarfile = new JarFile(jarpath);
-            var jarManifest = jarfile.GetManifest();
+            var jarFile = new JarFile(jarPath);
+            var jarManifest = jarFile.GetManifest();
 
             // mainclass
-            string mainclass = null;
-            var hasMainclass = jarManifest?.TryGetValue("Main-Class", out mainclass) ?? false;
-            if (!hasMainclass || string.IsNullOrEmpty(mainclass))
+            string? mainClass = null;
+            var hasMainclass = jarManifest?.TryGetValue("Main-Class", out mainClass) ?? false;
+            if (!hasMainclass || string.IsNullOrEmpty(mainClass))
                 return;
 
             // classpath
@@ -319,34 +349,40 @@ namespace CmlLib.Core.Installer
             var classpath = new List<string>();
             if (classpathObj != null)
             {
-                foreach (var libname in classpathObj)
+                foreach (var libName in classpathObj)
                 {
-                    var lib = Path.Combine(Minecraft.Library,
-                        PackageName.Parse(libname?.ToString()).GetPath());
+                    var libNameString = libName?.ToString();
+                    if (string.IsNullOrEmpty(libNameString))
+                        continue;
+                    
+                    var lib = Path.Combine(minecraftPath.Library,
+                        PackageName.Parse(libNameString).GetPath());
                     classpath.Add(lib);
                 }
             }
-            classpath.Add(jarpath);
+            classpath.Add(jarPath);
 
             // arg
             var argsArr = processor["args"] as JArray;
-            string[] args = null;
+            string[]? args = null;
             if (argsArr != null)
             {
                 var arrStrs = argsArr.Select(x => x.ToString()).ToArray();
-                args = Mapper.Map(arrStrs, mapData, Minecraft.Library);
+                args = Mapper.Map(arrStrs, mapData, minecraftPath.Library);
             }
 
-            startJava(classpath.ToArray(), mainclass, args);
+            startJava(classpath.ToArray(), mainClass, args);
         }
 
-        private void startJava(string[] classpath, string mainclass, string[] args)
+        private void startJava(string[] classpath, string mainClass, string[]? args)
         {
             var arg =
                 $"-cp {IOUtil.CombinePath(classpath)} " +
-                $"{mainclass} " +
-                $"{string.Join(" ", args)}";
+                $"{mainClass}";
 
+            if (args != null && args.Length > 0)
+                arg += " " + string.Join(" ", args);
+            
             var process = new Process();
             process.StartInfo = new ProcessStartInfo()
             {
@@ -362,7 +398,9 @@ namespace CmlLib.Core.Installer
 
         private void writeProfile(JToken profileObj, string versionPath)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(versionPath));
+            var dirPath = Path.GetDirectoryName(versionPath);
+            if (!string.IsNullOrEmpty(dirPath))
+                Directory.CreateDirectory(dirPath);
             File.WriteAllText(versionPath, profileObj.ToString());
         }
 
