@@ -7,7 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
+using CmlLib.Core.Java;
 
 namespace CmlLib.Core
 {
@@ -260,7 +262,44 @@ namespace CmlLib.Core
                     option.StartVersion.JavaBinaryPath = option.JavaPath;
                 else if (!string.IsNullOrEmpty(option.JavaVersion))
                     option.StartVersion.JavaVersion = option.JavaVersion;
+                else if (string.IsNullOrEmpty(option.StartVersion.JavaBinaryPath))
+                    option.StartVersion.JavaBinaryPath = 
+                        GetJavaPath(option.StartVersion) ?? GetDefaultJavaPath();
             }
+        }
+
+        public string? GetJavaPath(MVersion version)
+        {
+            var javaPathResolver = new MinecraftJavaPathResolver(MinecraftPath);
+
+            var javaPath = "";
+            if (!string.IsNullOrEmpty(version.JavaVersion))
+                javaPath = javaPathResolver.GetJavaBinaryPath(version.JavaVersion, MRule.OSName);
+            
+            return javaPath;
+        }
+
+        public string? GetDefaultJavaPath()
+            => GetDefaultJavaPath(new MinecraftJavaPathResolver(MinecraftPath));
+        
+        public string? GetDefaultJavaPath(MinecraftJavaPathResolver javaPathResolver)
+        {
+            var javaVersions = javaPathResolver.GetInstalledJavaVersions();
+            string? javaPath = null;
+            
+            if (string.IsNullOrEmpty(javaPath) &&
+                javaVersions.Contains(MinecraftJavaPathResolver.JreLegacyVersionName))
+                javaPath = javaPathResolver.GetJavaBinaryPath(MinecraftJavaPathResolver.JreLegacyVersionName, MRule.OSName);
+            
+            if (string.IsNullOrEmpty(javaPath) &&
+                javaVersions.Contains(MinecraftJavaPathResolver.CmlLegacyVersionName))
+                javaPath = javaPathResolver.GetJavaBinaryPath(MinecraftJavaPathResolver.CmlLegacyVersionName, MRule.OSName);
+
+            if (string.IsNullOrEmpty(javaPath) && 
+                javaVersions.Length > 0)
+                javaPath = javaPathResolver.GetJavaBinaryPath(javaVersions[0], MRule.OSName);
+
+            return javaPath;
         }
     }
 }
