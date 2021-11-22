@@ -30,9 +30,29 @@ namespace CmlLib.Core.Java
                 .Select(x => x.Name)
                 .ToArray();
         }
+
+        public string? GetDefaultJavaBinaryPath()
+        {
+            var javaVersions = GetInstalledJavaVersions();
+            string? javaPath = null;
+            
+            if (string.IsNullOrEmpty(javaPath) &&
+                javaVersions.Contains(MinecraftJavaPathResolver.JreLegacyVersionName))
+                javaPath = GetJavaBinaryPath(MinecraftJavaPathResolver.JreLegacyVersionName, MRule.OSName);
+            
+            if (string.IsNullOrEmpty(javaPath) &&
+                javaVersions.Contains(MinecraftJavaPathResolver.CmlLegacyVersionName))
+                javaPath = GetJavaBinaryPath(MinecraftJavaPathResolver.CmlLegacyVersionName, MRule.OSName);
+
+            if (string.IsNullOrEmpty(javaPath) && 
+                javaVersions.Length > 0)
+                javaPath = GetJavaBinaryPath(javaVersions[0], MRule.OSName);
+
+            return javaPath;
+        }
         
-        //public string GetJavaBinaryPath(string osName)
-        //    => GetJavaBinaryPath(JreLegacyVersionName, osName);
+        public string GetJavaBinaryPath(string javaVersionName)
+            => GetJavaBinaryPath(javaVersionName, MRule.OSName);
         
         public string GetJavaBinaryPath(string javaVersionName, string osName)
         {

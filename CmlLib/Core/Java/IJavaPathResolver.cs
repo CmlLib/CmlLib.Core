@@ -2,9 +2,10 @@
 {
     public interface IJavaPathResolver
     {
-        //string GetJavaBinaryPath(string osName);
+        string[] GetInstalledJavaVersions();
+        string? GetDefaultJavaBinaryPath();
+        string GetJavaBinaryPath(string javaVersionName);
         string GetJavaBinaryPath(string javaVersionName, string osName);
-        string GetJavaDirPath();
         string GetJavaDirPath(string javaVersionName);
     }
 }

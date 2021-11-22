@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
+using System.IO;
 using System.Threading.Tasks;
 using CmlLib.Core.Java;
 
@@ -31,6 +31,8 @@ namespace CmlLib.Core
                 e => FileChanged?.Invoke(e));
             pProgressChanged = new Progress<ProgressChangedEventArgs>(
                 e => ProgressChanged?.Invoke(this, e));
+
+            JavaPathResolver = new MinecraftJavaPathResolver(mc);
         }
 
         public event DownloadFileChangedHandler? FileChanged;
@@ -42,11 +44,12 @@ namespace CmlLib.Core
 
         public MinecraftPath MinecraftPath { get; private set; }
         public MVersionCollection? Versions { get; private set; }
-
         public IVersionLoader VersionLoader { get; set; }
+        
         public FileCheckerCollection GameFileCheckers { get; private set; }
-
         public IDownloader? FileDownloader { get; set; }
+        
+        public IJavaPathResolver JavaPathResolver { get; set; }
 
         public MVersionCollection GetAllVersions()
         {
@@ -61,20 +64,20 @@ namespace CmlLib.Core
             return Versions;
         }
 
-        public MVersion GetVersion(string versionname)
+        public MVersion GetVersion(string versionName)
         {
             if (Versions == null)
                 GetAllVersions();
 
-            return Versions!.GetVersion(versionname);
+            return Versions!.GetVersion(versionName);
         }
 
-        public async Task<MVersion> GetVersionAsync(string versionname)
+        public async Task<MVersion> GetVersionAsync(string versionName)
         {
             if (Versions == null)
                 await GetAllVersionsAsync().ConfigureAwait(false);
 
-            var version = await Versions!.GetVersionAsync(versionname)
+            var version = await Versions!.GetVersionAsync(versionName)
                 .ConfigureAwait(false);
             return version;
         }
@@ -186,7 +189,9 @@ namespace CmlLib.Core
         {
             CheckAndDownload(GetVersion(mcversion));
 
-            var versionName = CheckForge(mcversion, forgeversion, option.JavaPath);
+            var javaPath = option.JavaPath ?? GetDefaultJavaPath()
+                ?? throw new FileNotFoundException("Cannot find java path");
+            var versionName = CheckForge(mcversion, forgeversion, javaPath);
 
             return CreateProcess(versionName, option);
         }
@@ -270,36 +275,12 @@ namespace CmlLib.Core
 
         public string? GetJavaPath(MVersion version)
         {
-            var javaPathResolver = new MinecraftJavaPathResolver(MinecraftPath);
-
-            var javaPath = "";
-            if (!string.IsNullOrEmpty(version.JavaVersion))
-                javaPath = javaPathResolver.GetJavaBinaryPath(version.JavaVersion, MRule.OSName);
+            if (string.IsNullOrEmpty(version.JavaVersion))
+                return null;
             
-            return javaPath;
+            return JavaPathResolver.GetJavaBinaryPath(version.JavaVersion, MRule.OSName);
         }
 
-        public string? GetDefaultJavaPath()
-            => GetDefaultJavaPath(new MinecraftJavaPathResolver(MinecraftPath));
-        
-        public string? GetDefaultJavaPath(MinecraftJavaPathResolver javaPathResolver)
-        {
-            var javaVersions = javaPathResolver.GetInstalledJavaVersions();
-            string? javaPath = null;
-            
-            if (string.IsNullOrEmpty(javaPath) &&
-                javaVersions.Contains(MinecraftJavaPathResolver.JreLegacyVersionName))
-                javaPath = javaPathResolver.GetJavaBinaryPath(MinecraftJavaPathResolver.JreLegacyVersionName, MRule.OSName);
-            
-            if (string.IsNullOrEmpty(javaPath) &&
-                javaVersions.Contains(MinecraftJavaPathResolver.CmlLegacyVersionName))
-                javaPath = javaPathResolver.GetJavaBinaryPath(MinecraftJavaPathResolver.CmlLegacyVersionName, MRule.OSName);
-
-            if (string.IsNullOrEmpty(javaPath) && 
-                javaVersions.Length > 0)
-                javaPath = javaPathResolver.GetJavaBinaryPath(javaVersions[0], MRule.OSName);
-
-            return javaPath;
-        }
+        public string? GetDefaultJavaPath() => JavaPathResolver.GetDefaultJavaBinaryPath();
     }
 }
