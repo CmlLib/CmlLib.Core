@@ -20,6 +20,8 @@ namespace CmlLib.Core.Auth.Microsoft
         private string readRes(WebResponse res)
         {
             using var resStream = res.GetResponseStream();
+            if (resStream == null)
+                return "";
             using var sr = new StreamReader(resStream);
             return sr.ReadToEnd();
         }

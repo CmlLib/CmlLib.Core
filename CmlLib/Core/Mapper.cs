@@ -51,7 +51,7 @@ namespace CmlLib.Core
 
         public static string Interpolation(string str, Dictionary<string, string?> dicts)
         {
-            str = argBracket.Replace(str, new MatchEvaluator((match =>
+            str = argBracket.Replace(str, (match =>
             {
                 if (match.Groups.Count < 2)
                     return match.Value;
@@ -66,7 +66,7 @@ namespace CmlLib.Core
                 }
 
                 return match.Value;
-            })));
+            }));
 
             return str;
         }

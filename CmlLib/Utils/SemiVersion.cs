@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-namespace CmlLib.Utils
+﻿namespace CmlLib.Utils
 {
     public class SemiVersion
     {

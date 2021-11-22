@@ -73,7 +73,10 @@ namespace CmlLib.Core.Installer
             checkLibraries(installerObj["libraries"] as JArray);
 
             // mapping client data
-            var mapData = mapping(installerObj["data"] as JObject, "client", minecraftJar, installerPath);
+            var installerData = installerObj["data"] as JObject;
+            var mapData = (installerData == null) 
+                ? new Dictionary<string, string?>()
+                : mapping(installerData, "client", minecraftJar, installerPath);
 
             // process
             process(installerObj["processors"] as JArray, mapData);

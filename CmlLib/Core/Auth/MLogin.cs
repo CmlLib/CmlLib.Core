@@ -175,7 +175,15 @@ namespace CmlLib.Core.Auth
 
             HttpWebResponse resHeader = mojangRequest("authenticate", req.ToString());
 
-            using StreamReader res = new StreamReader(resHeader.GetResponseStream());
+            var stream = resHeader.GetResponseStream();
+            if (stream == null)
+                return new MLoginResponse(
+                    MLoginResult.UnknownError, 
+                    null, 
+                    "null response stream", 
+                    null);
+
+            using StreamReader res = new StreamReader(stream);
             string rawResponse = res.ReadToEnd();
             if (resHeader.StatusCode == HttpStatusCode.OK) // ResultCode == 200
                 return parseSession(rawResponse, clientToken);
@@ -207,7 +215,7 @@ namespace CmlLib.Core.Auth
         public MLoginResponse TryAutoLoginFromMojangLauncher()
         {
             var mojangAccounts = MojangLauncher.MojangLauncherAccounts.FromDefaultPath();
-            var activeAccount = mojangAccounts.GetActiveAccount();
+            var activeAccount = mojangAccounts?.GetActiveAccount();
 
             if (activeAccount == null)
                 return new MLoginResponse(MLoginResult.NeedLogin, null, null, null);
@@ -218,7 +226,7 @@ namespace CmlLib.Core.Auth
         public MLoginResponse TryAutoLoginFromMojangLauncher(string accountFilePath)
         {
             var mojangAccounts = MojangLauncher.MojangLauncherAccounts.FromFile(accountFilePath);
-            var activeAccount = mojangAccounts.GetActiveAccount();
+            var activeAccount = mojangAccounts?.GetActiveAccount();
 
             if (activeAccount == null)
                 return new MLoginResponse(MLoginResult.NeedLogin, null, null, null);
@@ -247,7 +255,15 @@ namespace CmlLib.Core.Auth
                 };
 
             HttpWebResponse resHeader = mojangRequest("refresh", req.ToString());
-            using StreamReader res = new StreamReader(resHeader.GetResponseStream());
+            var stream = resHeader.GetResponseStream();
+            if (stream == null)
+                return new MLoginResponse(
+                    MLoginResult.UnknownError,
+                    null,
+                    "null response stream",
+                    null);
+                
+            using StreamReader res = new StreamReader(stream);
             string rawResponse = res.ReadToEnd();
 
             if ((int)resHeader.StatusCode / 100 == 2)

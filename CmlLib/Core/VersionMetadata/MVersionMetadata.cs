@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data.SqlTypes;
 using System.Threading.Tasks;
 using CmlLib.Core.Version;
 using Newtonsoft.Json;

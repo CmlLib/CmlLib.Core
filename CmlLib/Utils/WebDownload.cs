@@ -15,9 +15,12 @@ namespace CmlLib.Utils
 
         private class TimeoutWebClient : WebClient
         {
-            protected override WebRequest GetWebRequest(Uri uri)
+            protected override WebRequest? GetWebRequest(Uri uri)
             {
-                WebRequest w = base.GetWebRequest(uri);
+                WebRequest? w = base.GetWebRequest(uri);
+                if (w == null)
+                    return null;
+                
                 w.Timeout = DefaultWebRequestTimeout;
 
                 if (IgnoreProxy)
@@ -114,11 +117,12 @@ namespace CmlLib.Utils
             req.ContinueTimeout = 5000;
             var res = req.GetResponse();
 
-            using (var httpStream = res.GetResponseStream())
-            using (var fs = File.OpenWrite(path))
-            {
-                httpStream.CopyTo(fs);
-            }
+            using var httpStream = res.GetResponseStream();
+            if (httpStream == null)
+                return;
+            
+            using var fs = File.OpenWrite(path);
+            httpStream.CopyTo(fs);
         }
 
         private void progressChanged(long value, long max)

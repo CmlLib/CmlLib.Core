@@ -37,19 +37,19 @@ namespace CmlLib.Core.MojangLauncher
             File.WriteAllText(path, json);
         }
 
-        public static MojangLauncherAccounts FromDefaultPath()
+        public static MojangLauncherAccounts? FromDefaultPath()
         {
             var path = Path.Combine(MinecraftPath.GetOSDefaultPath(), "launcher_accounts.json");
             return FromFile(path);
         }
 
-        public static MojangLauncherAccounts FromFile(string path)
+        public static MojangLauncherAccounts? FromFile(string path)
         {
             var content = File.ReadAllText(path);
-            return FromJSON(content);
+            return FromJson(content);
         }
 
-        public static MojangLauncherAccounts? FromJSON(string json)
+        public static MojangLauncherAccounts? FromJson(string json)
         {
             return JsonConvert.DeserializeObject<MojangLauncherAccounts>(json);
         }
