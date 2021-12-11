@@ -1,4 +1,5 @@
-﻿using CmlLib.Core.Files;
+﻿using CmlLib.Core.Downloader;
+using CmlLib.Core.Files;
 using System.Linq;
 
 namespace CmlLib.Core.Version
@@ -32,6 +33,7 @@ namespace CmlLib.Core.Version
         public string? ReleaseTime { get; set; }
         public MVersionType Type { get; set; } = MVersionType.Custom;
         public string? TypeStr { get; set; }
+        public MLogConfiguration? LoggingClient { get; set; }
 
         public void InheritFrom(MVersion parentVersion)
         {
@@ -70,6 +72,8 @@ namespace CmlLib.Core.Version
             if (nc(JavaVersion))
                 JavaVersion = parentVersion.JavaVersion;
 
+            if (LoggingClient == null)
+                LoggingClient = parentVersion.LoggingClient;
             //Jar = parentVersion.Jar;
 
             // Combine

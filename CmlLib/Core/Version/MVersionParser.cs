@@ -98,6 +98,21 @@ namespace CmlLib.Core.Version
                 if (string.IsNullOrEmpty(version.Jar))
                     version.Jar = version.Id;
 
+                // logging
+                var loggingClient = job["logging"]?["client"];
+                if (loggingClient != null)
+                {
+                    version.LoggingClient = new MLogConfiguration
+                    {
+                        Id = loggingClient["file"]?["id"]?.ToString(),
+                        Sha1 = loggingClient["file"]?["sha1"]?.ToString(),
+                        Size = loggingClient["file"]?["size"]?.ToString(),
+                        Url = loggingClient["file"]?["url"]?.ToString(),
+                        Type = loggingClient["type"]?.ToString(),
+                        Argument = loggingClient["argument"]?.ToString()
+                    };
+                }
+
                 return version;
             }
             catch (MVersionParseException)
