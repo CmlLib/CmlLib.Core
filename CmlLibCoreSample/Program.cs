@@ -89,6 +89,7 @@ namespace CmlLibCoreSample
             // if you want to download with parallel downloader, add below code :
             System.Net.ServicePointManager.DefaultConnectionLimit = 256;
 
+            // for offline mode
             //launcher.VersionLoader = new LocalVersionLoader(launcher.MinecraftPath);
             //launcher.FileDownloader = null;
             
@@ -133,6 +134,7 @@ namespace CmlLibCoreSample
             var process = launcher.CreateProcess(Console.ReadLine(), launchOption);
 
             //var process = launcher.CreateProcess("1.16.2", "33.0.5", launchOption);
+            Console.WriteLine(process.StartInfo.FileName);
             Console.WriteLine(process.StartInfo.Arguments);
 
             // Below codes are print game logs in Console.
