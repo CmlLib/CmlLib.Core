@@ -65,7 +65,7 @@ namespace CmlLib.Core.Files
                     if (files == null)
                         return legacyJavaChecker(path, out binPath);
 
-                    return toDownloadFiles(files, javaPathResolver.GetJavaDirPath(), downloadProgress);
+                    return toDownloadFiles(files, javaPathResolver.GetJavaDirPath(javaVersion), downloadProgress);
                 }
                 else
                     return legacyJavaChecker(path, out binPath);
