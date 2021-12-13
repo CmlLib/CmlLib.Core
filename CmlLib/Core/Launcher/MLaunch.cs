@@ -19,7 +19,8 @@ namespace CmlLib.Core
                 "-XX:G1NewSizePercent=20",
                 "-XX:G1ReservePercent=20",
                 "-XX:MaxGCPauseMillis=50",
-                "-XX:G1HeapRegionSize=16M"
+                "-XX:G1HeapRegionSize=16M",
+                "-Dlog4j2.formatMsgNoLookups=true"
                 // "-Xss1M"
             };
 
@@ -136,6 +137,13 @@ namespace CmlLib.Core
                 args.Add("-Xdock:name=" + handleEmpty(launchOption.DockName));
             if (!string.IsNullOrEmpty(launchOption.DockIcon))
                 args.Add("-Xdock:icon=" + handleEmpty(launchOption.DockIcon));
+
+            // logging
+            if (!string.IsNullOrEmpty(version.LoggingClient?.Argument))
+                args.Add(Mapper.Interpolation(version.LoggingClient?.Argument, new Dictionary<string, string?>()
+                {
+                    { "path", minecraftPath.GetLogConfigFilePath(version.LoggingClient?.Id ?? version.Id) }
+                }));
 
             // main class
             if (!string.IsNullOrEmpty(version.MainClass))
