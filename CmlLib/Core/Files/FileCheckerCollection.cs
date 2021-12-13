@@ -75,6 +75,22 @@ namespace CmlLib.Core.Files
             }
         }
 
+        private LogChecker? log;
+        public LogChecker? LogFileChecker
+        {
+            get => log;
+            set
+            {
+                if (log != null)
+                    checkers.Remove(log);
+
+                log = value;
+
+                if (log != null)
+                    checkers.Add(log);
+            }
+        }
+
         public FileCheckerCollection()
         {
             checkers = new List<IFileChecker>(4);
@@ -83,10 +99,12 @@ namespace CmlLib.Core.Files
             asset = new AssetChecker();
             client = new ClientChecker();
             java = new JavaChecker();
+            log = new LogChecker();
 
             checkers.Add(library);
             checkers.Add(asset);
             checkers.Add(client);
+            checkers.Add(log);
             checkers.Add(java);
         }
 
