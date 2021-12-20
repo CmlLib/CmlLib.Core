@@ -285,8 +285,8 @@ namespace CmlLib.Core.Installer
         {
             foreach (var outitem in outputs)
             {
-                var key = Mapper.Interpolation(outitem.Key, mapData);
-                var value = Mapper.Interpolation(outitem.Value.ToString(), mapData);
+                var key = Mapper.Interpolation(outitem.Key, mapData, true);
+                var value = Mapper.Interpolation(outitem.Value.ToString(), mapData, true);
 
                 if (!File.Exists(key) || !IOUtil.CheckSHA1(key, value))
                     return false;
