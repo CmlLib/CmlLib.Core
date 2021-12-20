@@ -16,10 +16,10 @@ namespace CmlLib.Core
             var args = new List<string>(arg.Length);
             foreach (string item in arg)
             {
-                var a = Interpolation(item, dicts);
+                var a = Interpolation(item, dicts, false);
                 if (checkPath)
                     a = ToFullPath(a, prepath);
-                args.Add(handleEArg(a));
+                args.Add(HandleEmptyArg(a));
             }
 
             return args.ToArray();
@@ -30,8 +30,8 @@ namespace CmlLib.Core
             var args = new List<string>(arg.Length);
             foreach (string item in arg)
             {
-                var a = Interpolation(item, dicts);
-                args.Add(handleEArg(a));
+                var a = Interpolation(item, dicts, true);
+                args.Add(a);
             }
 
             return args.ToArray();
@@ -43,15 +43,15 @@ namespace CmlLib.Core
             foreach (string item in arg)
             {
                 var a = ToFullPath(item, prepath);
-                args.Add(handleEArg(a));
+                args.Add(HandleEmptyArg(a));
             }
 
             return args.ToArray();
         }
 
-        public static string Interpolation(string str, Dictionary<string, string?> dicts)
+        public static string Interpolation(string str, Dictionary<string, string?> dicts, bool handleEmpty)
         {
-            str = argBracket.Replace(str, new MatchEvaluator((match =>
+            str = argBracket.Replace(str, (match =>
             {
                 if (match.Groups.Count < 2)
                     return match.Value;
@@ -66,9 +66,12 @@ namespace CmlLib.Core
                 }
 
                 return match.Value;
-            })));
+            }));
 
-            return str;
+            if (handleEmpty)
+                return HandleEmptyArg(str);
+            else
+                return str;
         }
 
         public static string ToFullPath(string str, string prepath)
@@ -114,7 +117,7 @@ namespace CmlLib.Core
         // key="va  l" => key="va  l"
         // va lue => "va lue"
         // "va lue" => "va lue"
-        static string handleEArg(string input)
+        public static string HandleEmptyArg(string input)
         {
             if (input.Contains("="))
             {
