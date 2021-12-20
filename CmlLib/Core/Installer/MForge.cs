@@ -318,8 +318,8 @@ namespace CmlLib.Core.Installer
                 if (item.Value == null)
                     continue;
                 
-                var key = Mapper.Interpolation(item.Key, mapData);
-                var value = Mapper.Interpolation(item.Value.ToString(), mapData);
+                var key = Mapper.Interpolation(outitem.Key, mapData, true);
+                var value = Mapper.Interpolation(outitem.Value.ToString(), mapData, true);
 
                 if (!File.Exists(key) || !IOUtil.CheckSHA1(key, value))
                     return false;

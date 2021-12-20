@@ -143,7 +143,7 @@ namespace CmlLib.Core
                 args.Add(Mapper.Interpolation(version.LoggingClient?.Argument, new Dictionary<string, string?>()
                 {
                     { "path", minecraftPath.GetLogConfigFilePath(version.LoggingClient?.Id ?? version.Id) }
-                }));
+                }, true));
 
             // main class
             if (!string.IsNullOrEmpty(version.MainClass))
