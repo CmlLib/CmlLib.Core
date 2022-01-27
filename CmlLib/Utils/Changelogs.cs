@@ -14,6 +14,15 @@ namespace CmlLib.Utils
             { "1.14.2", "https://feedback.minecraft.net/hc/en-us/articles/360028919851-Minecraft-Java-Edition-1-14-2" },
             { "1.14.3", "https://feedback.minecraft.net/hc/en-us/articles/360030771451-Minecraft-Java-Edition-1-14-3" },
             { "1.14.4", "https://feedback.minecraft.net/hc/en-us/articles/360030780172-Minecraft-Java-Edition-1-14-4" },
+            { "1.15", "https://feedback.minecraft.net/hc/en-us/articles/360037384972-Minecraft-Java-Edition-Buzzy-Bees" },
+            { "1.15.1", "https://feedback.minecraft.net/hc/en-us/articles/360038054332-Minecraft-Java-Edition-1-15-1" },
+            { "1.15.2", "https://feedback.minecraft.net/hc/en-us/articles/360038800232-Minecraft-Java-Edition-1-15-2" },
+            { "1.16", "https://feedback.minecraft.net/hc/en-us/articles/360044911972-Minecraft-Java-Edition-Nether-Release" },
+            { "1.16.5", "https://feedback.minecraft.net/hc/en-us/articles/360055096392-Minecraft-Java-Edition-1-16-5" },
+            { "1.17", "https://feedback.minecraft.net/hc/en-us/articles/4402626897165-Minecraft-Caves-Cliffs-Part-1-1-17-Java" },
+            { "1.17.1", "https://feedback.minecraft.net/hc/en-us/articles/4404449719949-Minecraft-Java-Edition-1-17-1" },
+            { "1.18", "https://feedback.minecraft.net/hc/en-us/articles/4415128577293-Minecraft-Java-Edition-1-18" },
+            { "1.18.1", "https://feedback.minecraft.net/hc/en-us/articles/4416161161101-Minecraft-Java-Edition-1-18-1" },
         };
         
         public static async Task<Changelogs> GetChangelogs()
