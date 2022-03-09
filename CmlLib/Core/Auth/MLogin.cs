@@ -1,9 +1,11 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using CmlLib.Utils;
 using System;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 // use new library:
 // https://github.com/CmlLib/MojangAPI
@@ -14,106 +16,116 @@ namespace CmlLib.Core.Auth
 
     public class MLogin
     {
-        public static readonly string DefaultLoginSessionFile = Path.Combine(MinecraftPath.GetOSDefaultPath(), "logintoken.json");
+        public static readonly string DefaultLoginSessionFile
+            = Path.Combine(MinecraftPath.GetOSDefaultPath(), "logintoken.json");
 
-        public MLogin() : this(DefaultLoginSessionFile) { }
+        public MLogin() : this(DefaultLoginSessionFile, HttpUtil.HttpClient) { }
 
-        public MLogin(string sessionCacheFilePath)
+        public MLogin(string sessionCacheFilePath, HttpClient client)
         {
             SessionCacheFilePath = sessionCacheFilePath;
+            this.httpClient = client;
         }
 
+        public readonly HttpClient httpClient;
         public string SessionCacheFilePath { get; private set; }
         public bool SaveSession { get; set; } = true;
 
-        private string CreateNewClientToken()
+        protected virtual string CreateNewClientToken()
         {
             return Guid.NewGuid().ToString().Replace("-", "");
         }
 
-        private MSession createNewSession()
+        protected async virtual Task<MSession> createNewSession()
         {
             var session = new MSession();
             if (SaveSession)
             {
                 session.ClientToken = CreateNewClientToken();
-                writeSessionCache(session);
+                await writeSessionCache(session);
             }
             return session;
         }
 
-        private void writeSessionCache(MSession session)
+        private async Task writeSessionCache(MSession session)
         {
             if (!SaveSession) return;
             var directoryPath = Path.GetDirectoryName(SessionCacheFilePath);
             if (!string.IsNullOrEmpty(directoryPath))
                 Directory.CreateDirectory(directoryPath);
 
-            var json = JsonConvert.SerializeObject(session);
-            File.WriteAllText(SessionCacheFilePath, json, Encoding.UTF8);
+            var json = JsonSerializer.Serialize(session);
+            await IOUtil.WriteFileAsync(SessionCacheFilePath, json);
         }
 
-        public MSession ReadSessionCache()
+        public async Task <MSession> ReadSessionCache()
         {
             if (File.Exists(SessionCacheFilePath))
             {
-                var fileData = File.ReadAllText(SessionCacheFilePath, Encoding.UTF8);
+                var fileData = await IOUtil.ReadFileAsync(SessionCacheFilePath);
                 try
                 {
-                    var session = JsonConvert.DeserializeObject<MSession>(fileData, new JsonSerializerSettings
-                    {
-                        NullValueHandling = NullValueHandling.Ignore
-                    }) ?? new MSession();
+                    var session = JsonSerializer.Deserialize<MSession>(fileData, JsonUtil.JsonOptions)
+                        ?? new MSession();
 
                     if (SaveSession && string.IsNullOrEmpty(session.ClientToken))
                         session.ClientToken = CreateNewClientToken();
 
                     return session;
                 }
-                catch (JsonReaderException) // invalid json
+                catch (JsonException) // invalid json
                 {
-                    return createNewSession();
+                    return await createNewSession();
                 }
             }
             else
             {
-                return createNewSession();
+                return await createNewSession();
             }
         }
 
-        private HttpWebResponse mojangRequest(string endpoint, string postdata)
+        protected async Task<HttpResponseMessage> mojangRequest(string endpoint, object postdata)
         {
-            HttpWebRequest http = WebRequest.CreateHttp(MojangServer.Auth + endpoint);
-            http.ContentType = "application/json";
-            http.Method = "POST";
-            
-            using StreamWriter req = new StreamWriter(http.GetRequestStream());
-            req.Write(postdata);
-            req.Flush();
-
-            HttpWebResponse res = http.GetResponseNoException();
+            var json = JsonSerializer.Serialize(postdata, JsonUtil.JsonOptions);
+            var res = await httpClient.SendAsync(new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                RequestUri = new Uri(MojangServer.Auth + endpoint),
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            });
             return res;
         }
 
-        private MLoginResponse parseSession(string json, string? clientToken)
+        protected async Task<MLoginResponse> mojangRequestHandle(string endpoint, object postdata, string? clientToken=null)
         {
-            var job = JObject.Parse(json); //json parse
+            var res = await mojangRequest(endpoint, postdata);
 
-            var profile = job["selectedProfile"];
-            if (profile == null)
+            var str = await res.Content.ReadAsStringAsync();
+            if (res.IsSuccessStatusCode)
+                return await parseSession(str, clientToken);
+            else
+                return errorHandle(str);
+        }
+
+        private async Task<MLoginResponse> parseSession(string json, string? clientToken)
+        {
+            using var jsonDocument = JsonDocument.Parse(json);
+            var root = jsonDocument.RootElement;
+ 
+            if (!root.TryGetProperty("selectedProfile", out var profile))
                 return new MLoginResponse(MLoginResult.NoProfile, null, null, json);
             else
             {
                 var session = new MSession
                 {
-                    AccessToken = job["accessToken"]?.ToString(),
-                    UUID = profile["id"]?.ToString(),
-                    Username = profile["name"]?.ToString(),
+                    AccessToken = root.GetProperty("accessToken").GetString(),
+                    UUID = profile.GetProperty("id").GetString(),
+                    Username = profile.GetProperty("name").GetString(),
                     UserType = "Mojang",
                     ClientToken = clientToken
                 };
 
-                writeSessionCache(session);
+                await writeSessionCache(session);
                 return new MLoginResponse(MLoginResult.Success, session, null, null);
             }
         }
@@ -122,10 +134,11 @@ namespace CmlLib.Core.Auth
         {
             try
             {
-                JObject job = JObject.Parse(json);
+                using var jsonDocument = JsonDocument.Parse(json);
+                var root = jsonDocument.RootElement;
 
-                string error = job["error"]?.ToString() ?? ""; // error type
-                string errorMessage = job["message"]?.ToString() ?? ""; // detail error message
+                string? error = root.GetProperty("error").GetString(); // error type
+                string? errorMessage = root.GetProperty("message").GetString(); // detail error message
                 MLoginResult result;
 
                 switch (error)
@@ -146,73 +159,47 @@ namespace CmlLib.Core.Auth
 
                 return new MLoginResponse(result, null, errorMessage, json);
             }
-            catch (Exception ex)
+            catch (JsonException ex)
             {
                 return new MLoginResponse(MLoginResult.UnknownError, null, ex.ToString(), json);
             }
         }
 
-        public MLoginResponse Authenticate(string id, string pw)
+        public async Task<MLoginResponse> Authenticate(string id, string pw)
         {
-            string? clientToken = ReadSessionCache().ClientToken;
-            return Authenticate(id, pw, clientToken);
+            var sessionCache = await ReadSessionCache();
+            string? clientToken = sessionCache.ClientToken;
+            return await Authenticate(id, pw, clientToken);
         }
 
-        public MLoginResponse Authenticate(string id, string pw, string? clientToken)
-        {
-            JObject req = new JObject
+        public Task<MLoginResponse> Authenticate(string id, string pw, string? clientToken)
+            => mojangRequestHandle("authenticate", new
             {
-                { "username", id },
-                { "password", pw },
-                { "clientToken", clientToken },
-                { "agent", new JObject
-                    {
-                        { "name", "Minecraft" },
-                        { "version", 1 }
-                    }
+                username = id,
+                password = pw,
+                clientToken = clientToken,
+                agent = new
+                {
+                    name = "Minecraft",
+                    version = 1
                 }
-            };
+            });
 
-            HttpWebResponse resHeader = mojangRequest("authenticate", req.ToString());
-
-            var stream = resHeader.GetResponseStream();
-            if (stream == null)
-                return new MLoginResponse(
-                    MLoginResult.UnknownError, 
-                    null, 
-                    "null response stream", 
-                    null);
-
-            using StreamReader res = new StreamReader(stream);
-            string rawResponse = res.ReadToEnd();
-            if (resHeader.StatusCode == HttpStatusCode.OK) // ResultCode == 200
-                return parseSession(rawResponse, clientToken);
-            else // fail to login
-                return errorHandle(rawResponse);
-        }
-
-        public MLoginResponse TryAutoLogin()
+        public async Task<MLoginResponse> TryAutoLogin()
         {
-            MSession session = ReadSessionCache();
-            return TryAutoLogin(session);
+            MSession session = await ReadSessionCache();
+            return await TryAutoLogin(session);
         }
 
-        public MLoginResponse TryAutoLogin(MSession session)
+        public async Task<MLoginResponse> TryAutoLogin(MSession session)
         {
-            try
-            {
-                MLoginResponse result = Validate(session);
-                if (result.Result != MLoginResult.Success)
-                    result = Refresh(session);
-                return result;
-            }
-            catch (Exception ex)
-            {
-                return new MLoginResponse(MLoginResult.UnknownError, null, ex.ToString(), null);
-            }
+            MLoginResponse result = await Validate(session);
+            if (result.Result != MLoginResult.Success)
+                result = await Refresh(session);
+            return result;
         }
 
-        public MLoginResponse TryAutoLoginFromMojangLauncher()
+        public async Task<MLoginResponse> TryAutoLoginFromMojangLauncher()
         {
             var mojangAccounts = MojangLauncher.MojangLauncherAccounts.FromDefaultPath();
             var activeAccount = mojangAccounts?.GetActiveAccount();
@@ -220,10 +207,10 @@ namespace CmlLib.Core.Auth
             if (activeAccount == null)
                 return new MLoginResponse(MLoginResult.NeedLogin, null, null, null);
             
-            return TryAutoLogin(activeAccount.ToSession());
+            return await TryAutoLogin(activeAccount.ToSession());
         }
 
-        public MLoginResponse TryAutoLoginFromMojangLauncher(string accountFilePath)
+        public async Task<MLoginResponse> TryAutoLoginFromMojangLauncher(string accountFilePath)
         {
             var mojangAccounts = MojangLauncher.MojangLauncherAccounts.FromFile(accountFilePath);
             var activeAccount = mojangAccounts?.GetActiveAccount();
@@ -231,67 +218,39 @@ namespace CmlLib.Core.Auth
             if (activeAccount == null)
                 return new MLoginResponse(MLoginResult.NeedLogin, null, null, null);
             
-            return TryAutoLogin(activeAccount.ToSession());
+            return await TryAutoLogin(activeAccount.ToSession());
         }
 
-        public MLoginResponse Refresh()
+        public async Task<MLoginResponse> Refresh()
         {
-            MSession session = ReadSessionCache();
-            return Refresh(session);
+            var session = await ReadSessionCache();
+            return await Refresh(session);
         }
 
-        public MLoginResponse Refresh(MSession session)
-        {
-            JObject req = new JObject
+        public Task<MLoginResponse> Refresh(MSession session)
+            => mojangRequestHandle("refresh", new
+            {
+                accessToken = session.AccessToken,
+                clientToken = session.ClientToken,
+                selectedProfile = new
                 {
-                    { "accessToken", session.AccessToken },
-                    { "clientToken", session.ClientToken },
-                    { "selectedProfile", new JObject
-                        {
-                            { "id", session.UUID },
-                            { "name", session.Username }
-                        }
-                    }
-                };
+                    id = session.UUID,
+                    name = session.Username
+                }
+            });
 
-            HttpWebResponse resHeader = mojangRequest("refresh", req.ToString());
-            var stream = resHeader.GetResponseStream();
-            if (stream == null)
-                return new MLoginResponse(
-                    MLoginResult.UnknownError,
-                    null,
-                    "null response stream",
-                    null);
-                
-            using StreamReader res = new StreamReader(stream);
-            string rawResponse = res.ReadToEnd();
-
-            if ((int)resHeader.StatusCode / 100 == 2)
-                return parseSession(rawResponse, session.ClientToken);
-            else
-                return errorHandle(rawResponse);
-        }
-
-        public MLoginResponse Validate()
+        public async Task<MLoginResponse> Validate()
         {
-            MSession session = ReadSessionCache();
-            return Validate(session);
+            var session = await ReadSessionCache();
+            return await Validate(session);
         }
 
-        public MLoginResponse Validate(MSession session)
-        {
-            JObject req = new JObject
-                {
-                    { "accessToken", session.AccessToken },
-                    { "clientToken", session.ClientToken }
-                };
-
-            HttpWebResponse resHeader = mojangRequest("validate", req.ToString());
-            if (resHeader.StatusCode == HttpStatusCode.NoContent) // StatusCode == 204
-                return new MLoginResponse(MLoginResult.Success, session, null, null);
-            else
-                return new MLoginResponse(MLoginResult.NeedLogin, null, null, null);
-        }
+        public Task<MLoginResponse> Validate(MSession session)
+            => mojangRequestHandle("validate", new
+            {
+                accessToken = session.AccessToken,
+                clientToken = session.ClientToken
+            });
 
         public void DeleteTokenFile()
         {
@@ -299,52 +258,32 @@ namespace CmlLib.Core.Auth
                 File.Delete(SessionCacheFilePath);
         }
 
-        public bool Invalidate()
+        public async Task<bool> Invalidate()
         {
-            MSession session = ReadSessionCache();
-            return Invalidate(session);
+            var session = await ReadSessionCache();
+            return await Invalidate(session);
         }
 
-        public bool Invalidate(MSession session)
+        public async Task<bool> Invalidate(MSession session)
         {
-            JObject job = new JObject
+            var res = await mojangRequest("invalidate", new
             {
-                { "accessToken", session.AccessToken },
-                { "clientToken", session.ClientToken }
-            };
+                accessToken = session.AccessToken,
+                clientToken = session.ClientToken
+            });
 
-            HttpWebResponse res = mojangRequest("invalidate", job.ToString());
+            return res.IsSuccessStatusCode;
+        }
+
+        public async Task<bool> Signout(string id, string pw)
+        {
+            var res = await mojangRequest("signout", new
+            {
+                username = id,
+                password = pw
+            });
+
             return res.StatusCode == HttpStatusCode.NoContent; // 204
-        }
-
-        public bool Signout(string id, string pw)
-        {
-            JObject job = new JObject
-            {
-                { "username", id },
-                { "password", pw }
-            };
-
-            HttpWebResponse res = mojangRequest("signout", job.ToString());
-            return res.StatusCode == HttpStatusCode.NoContent; // 204
-        }
-    }
-
-    internal static class HttpWebResponseExt
-    {
-        public static HttpWebResponse GetResponseNoException(this HttpWebRequest req)
-        {
-            try
-            {
-                return (HttpWebResponse)req.GetResponse();
-            }
-            catch (WebException we)
-            {
-                HttpWebResponse? resp = we.Response as HttpWebResponse;
-                if (resp == null)
-                    throw;
-                return resp;
-            }
         }
     }
 }

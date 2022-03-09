@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace CmlLib.Core.Auth
 {
@@ -13,15 +13,15 @@ namespace CmlLib.Core.Auth
             UUID = uuid;
         }
 
-        [JsonProperty("username")]
+        [JsonPropertyName("username")]
         public string? Username { get; set; }
-        [JsonProperty("session")]
+        [JsonPropertyName("session")]
         public string? AccessToken { get; set; }
-        [JsonProperty("uuid")]
+        [JsonPropertyName("uuid")]
         public string? UUID { get; set; }
-        [JsonProperty("clientToken")]
+        [JsonPropertyName("clientToken")]
         public string? ClientToken { get; set; }
-        
+        [JsonPropertyName("userType")]
         public string? UserType { get; set; }
 
         public bool CheckIsValid()
