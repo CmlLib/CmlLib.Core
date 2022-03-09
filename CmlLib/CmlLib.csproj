@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net462;netstandard2.0</TargetFrameworks>
+        <TargetFrameworks>netstandard2.0</TargetFrameworks>
         <LangVersion>8.0</LangVersion>
         <Nullable>enable</Nullable>
         <Version>3.4.0</Version>
         <Description>Minecraft Launcher Library for .NET
 Support all version, forge, optifine
         </Description>
-        <Copyright>Copyright (c) 2021 AlphaBs</Copyright>
+        <Copyright>Copyright (c) 2022 AlphaBs</Copyright>
         <PackageProjectUrl>https://github.com/CmlLib/CmlLib.Core</PackageProjectUrl>
         <RepositoryUrl>https://github.com/CmlLib/CmlLib.Core</RepositoryUrl>
         <PackageIcon>icon.png</PackageIcon>
@@ -39,8 +39,9 @@ Support all version, forge, optifine
         <PackageReference Include="MethodTimer.Fody" Version="3.2.0">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
         <PackageReference Include="SharpZipLib" Version="1.3.3" />
+        <PackageReference Include="System.Text.Json" Version="6.0.2" />
         <None Include="../icon.png" Pack="true" Visible="false" PackagePath="" />
     </ItemGroup>
 
