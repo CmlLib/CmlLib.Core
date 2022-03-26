@@ -10,8 +10,8 @@
 
 [![Discord](https://img.shields.io/discord/795952027443527690?label=discord\&logo=discord\&style=for-the-badge)](https://discord.gg/cDW2pvwHSc)
 
-CmlLib.Core is minecraft launcher library for .NET\
-Support all version, with Forge
+CmlLib.Core is a Minecraft launcher library for .NET\
+It supports all versions, including Forge
 
 [한국어 README](https://github.com/AlphaBs/CmlLib.Core/blob/master/docs/README-kr.md)
 
@@ -26,15 +26,15 @@ Support all version, with Forge
 * Install Java runtime
 * Install Forge, LiteLoader, FabricMC
 * Launch with options (direct server connecting, screen resolution)
-* Cross-platform (windows, ubuntu, macOS)
+* Cross-platform (Windows, Linux, macOS)
 
-[Go to wiki for all features](https://github.com/CmlLib/CmlLib.Core/wiki)
+[Go to the wiki for all features](https://github.com/CmlLib/CmlLib.Core/wiki)
 
 ## Install
 
 Install the [CmlLib.Core Nuget package](https://www.nuget.org/packages/CmlLib.Core)
 
-or download the dll files in [Releases](https://github.com/AlphaBs/CmlLib.Core/releases) and add references to them in your project.
+or download the DLL files in [Releases](https://github.com/AlphaBs/CmlLib.Core/releases) and add references to them in your project.
 
 Write this at the top of your source code:
 
@@ -45,10 +45,10 @@ using CmlLib.Core.Auth;
 
 ## Documentation
 
-There are many features for custom launcher. Read wiki to use all features.\
+There are many features for custom launchers. Read the wiki to see all of the features.\
 **Official documentation: [wiki](https://github.com/CmlLib/CmlLib.Core/wiki)**
 
-## QuickStart
+## Quick start
 
 ### Microsoft Xbox Login
 
