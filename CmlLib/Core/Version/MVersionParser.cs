@@ -1,8 +1,9 @@
 ﻿using CmlLib.Core.Files;
-using Newtonsoft.Json.Linq;
+using CmlLib.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 
 namespace CmlLib.Core.Version
 {
@@ -13,51 +14,50 @@ namespace CmlLib.Core.Version
             string json = File.ReadAllText(path);
             return ParseFromJson(json);
         }
-        
+
         public static MVersion ParseFromJson(string json)
+        {
+            using var jsonDocument = JsonDocument.Parse(json);
+            return ParseFromJson(jsonDocument);
+        }
+        
+        public static MVersion ParseFromJson(JsonDocument document)
         {
             try
             {
-                var job = JObject.Parse(json);
-
+                var root = document.RootElement;
+                
                 // id
-                var id = job["id"]?.ToString();
-                if (string.IsNullOrEmpty(id))
+                if (!root.TryGetProperty("id", out var idElement))
                     throw new MVersionParseException("Empty version id");
+
+                var id = idElement.GetString()
+                    ?? throw new MVersionParseException("Empty version id");
 
                 var version = new MVersion(id);
 
                 // javaVersion
-                version.JavaVersion = job["javaVersion"]?["component"]?.ToString();
-                
+                version.JavaVersion = root.SafeGetProperty("javaVersion")?.SafeGetProperty("component")?.GetString();
+
                 // assets
-                var assetindex = job["assetIndex"];
-                var assets = job["assets"];
-                if (assetindex != null)
-                {
-                    version.AssetId = assetindex["id"]?.ToString();
-                    version.AssetUrl = assetindex["url"]?.ToString();
-                    version.AssetHash = assetindex["sha1"]?.ToString();
-                }
-                else if (assets != null)
-                    version.AssetId = assets.ToString();
+                if (root.TryGetProperty("assetIndex", out var assetIndex))
+                    version.Assets = assetIndex.Deserialize<MFileMetadata>(JsonUtil.JsonOptions);
+                else if (root.TryGetProperty("assets", out var assets))
+                    version.Assets = new MFileMetadata(assets.GetString());
 
                 // client jar
-                var client = job["downloads"]?["client"];
-                if (client != null)
-                {
-                    version.ClientDownloadUrl = client["url"]?.ToString();
-                    version.ClientHash = client["sha1"]?.ToString();
-                }
+                var client = root.SafeGetProperty("downloads")?.SafeGetProperty("client");
+                if (client.HasValue)
+                    version.Client = client.Value.Deserialize<MFileMetadata>(JsonUtil.JsonOptions);
 
                 // libraries
-                if (job["libraries"] is JArray libJArr)
+                if (root.TryGetProperty("libraries", out var libProp) && libProp.ValueKind == JsonValueKind.Array)
                 {
-                    var libList = new List<MLibrary>(libJArr.Count);
+                    var libList = new List<MLibrary>();
                     var libParser = new MLibraryParser();
-                    foreach (var item in libJArr)
+                    foreach (var item in libProp.EnumerateArray())
                     {
-                        var libs = libParser.ParseJsonObject((JObject) item);
+                        var libs = libParser.ParseJsonObject(item);
                         if (libs != null)
                             libList.AddRange(libs);
                     }
@@ -66,50 +66,44 @@ namespace CmlLib.Core.Version
                 }
 
                 // mainClass
-                version.MainClass = job["mainClass"]?.ToString();
+                version.MainClass = root.GetPropertyValue("mainClass");
 
                 // argument
-                version.MinecraftArguments = job["minecraftArguments"]?.ToString();
+                version.MinecraftArguments = root.GetPropertyValue("minecraftArguments");
 
-                var ag = job["arguments"];
-                if (ag != null)
+                if (root.TryGetProperty("arguments", out var ag))
                 {
-                    if (ag["game"] is JArray gameArg)
+                    if (ag.TryGetProperty("game", out var gameArg) && gameArg.ValueKind == JsonValueKind.Array)
                         version.GameArguments = argParse(gameArg);
-                    if (ag["jvm"] is JArray jvmArg)
+                    if (ag.TryGetProperty("jvm", out var jvmArg) && jvmArg.ValueKind == JsonValueKind.Array)
                         version.JvmArguments = argParse(jvmArg);
                 }
 
                 // metadata
-                version.ReleaseTime = job["releaseTime"]?.ToString();
+                version.ReleaseTime = root.GetPropertyValue("releaseTime");;
 
-                var type = job["type"]?.ToString();
+                var type = root.GetPropertyValue("type");
                 version.TypeStr = type;
                 version.Type = MVersionTypeConverter.FromString(type);
 
                 // inherits
-                if (job["inheritsFrom"] != null)
-                {
-                    version.IsInherited = true;
-                    version.ParentVersionId = job["inheritsFrom"]?.ToString();
-                }
+                version.ParentVersionId = root.GetPropertyValue("inheritsFrom");
+                version.IsInherited = string.IsNullOrEmpty(version.ParentVersionId);
 
-                version.Jar = job["jar"]?.ToString();
+                version.Jar = root.GetPropertyValue("jar");
                 if (string.IsNullOrEmpty(version.Jar))
                     version.Jar = version.Id;
 
                 // logging
-                var loggingClient = job["logging"]?["client"];
+                var loggingClient = root.SafeGetProperty("logging")?.SafeGetProperty("client");
                 if (loggingClient != null)
                 {
+                    var logFile = loggingClient.Value.SafeGetProperty("file")?.Deserialize<MFileMetadata>(JsonUtil.JsonOptions);
                     version.LoggingClient = new MLogConfiguration
                     {
-                        Id = loggingClient["file"]?["id"]?.ToString(),
-                        Sha1 = loggingClient["file"]?["sha1"]?.ToString(),
-                        Size = loggingClient["file"]?["size"]?.ToString(),
-                        Url = loggingClient["file"]?["url"]?.ToString(),
-                        Type = loggingClient["type"]?.ToString(),
-                        Argument = loggingClient["argument"]?.ToString()
+                        LogFile = logFile,   
+                        Type = loggingClient.Value.GetPropertyValue("type"),
+                        Argument = loggingClient.Value.GetPropertyValue("argument")
                     };
                 }
 
@@ -126,37 +120,48 @@ namespace CmlLib.Core.Version
         }
 
         // TODO: create argument object
-        private static string[] argParse(JArray arr)
+        private static string[] argParse(JsonElement arr)
         {
-            var strList = new List<string>(arr.Count);
+            var strList = new List<string>();
 
-            foreach (var item in arr)
+            foreach (var item in arr.EnumerateArray())
             {
-                if (item is JObject)
+                if (item.ValueKind == JsonValueKind.Object)
                 {
                     bool allow = true;
 
-                    var rules = item["rules"] as JArray ?? item["compatibilityRules"] as JArray;
+                    var rules = item.SafeGetProperty("rules");
+                    if (rules == null || rules.Value.ValueKind != JsonValueKind.Array)
+                        rules = item.SafeGetProperty("compatibilityRules");
+
                     if (rules != null)
-                        allow = MRule.CheckOSRequire(rules);
+                        allow = MRule.CheckOSRequire(rules.Value);
 
-                    var value = item["value"] ?? item["values"];
-
-                    if (allow && value != null)
+                    if (allow)
                     {
-                        if (value is JArray)
+                        var value = item.SafeGetProperty("value") ?? item.SafeGetProperty("values");
+                        if (value != null)
                         {
-                            foreach (var str in value)
+                            if (value.Value.ValueKind == JsonValueKind.Array)
                             {
-                                strList.Add(str.ToString());
+                                foreach (var strProp in value.Value.EnumerateArray())
+                                {
+                                    var str = strProp.GetString();
+                                    if (!string.IsNullOrEmpty(str))
+                                        strList.Add(str);
+                                }
                             }
+                            else
+                                strList.Add(value.ToString());
                         }
-                        else
-                            strList.Add(value.ToString());
                     }
                 }
                 else
-                    strList.Add(item.ToString());
+                {
+                    var value = item.GetString();
+                    if (!string.IsNullOrEmpty(value))
+                        strList.Add(value);
+                }
             }
 
             return strList.ToArray();

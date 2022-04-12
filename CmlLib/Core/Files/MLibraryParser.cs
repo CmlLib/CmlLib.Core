@@ -1,6 +1,8 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
+using CmlLib.Utils;
 
 namespace CmlLib.Core.Files
 {
@@ -8,49 +10,51 @@ namespace CmlLib.Core.Files
     {
         public bool CheckOSRules { get; set; } = true;
 
-        public MLibrary[]? ParseJsonObject(JObject item)
+        public MLibrary[]? ParseJsonObject(JsonElement item)
         {
             try
             {
-                var list = new List<MLibrary>(2);
+                var list = new List<MLibrary>();
 
-                var name = item["name"]?.ToString();
+                var name = item.GetPropertyValue("name");
                 var isRequire = true;
 
                 // check rules array
-                var rules = item["rules"];
-                if (CheckOSRules && rules != null)
-                    isRequire = MRule.CheckOSRequire((JArray)rules);
+                if (CheckOSRules && item.TryGetProperty("rules", out var rules))
+                    isRequire = MRule.CheckOSRequire(rules);
 
                 // forge clientreq
-                var req = item["clientreq"]?.ToString();
+                var req = item.GetPropertyValue("clientreq");
                 if (req != null && req.ToLower() != "true")
                     isRequire = false;
 
                 // support TLauncher
-                var artifact = item["artifact"] ?? item["downloads"]?["artifact"];
-                var classifiers = item["classifies"] ?? item["downloads"]?["classifiers"];
-                var natives = item["natives"];
+                var artifact = item.SafeGetProperty("artifact")
+                               ?? item.SafeGetProperty("downloads")?.SafeGetProperty("artifact");
+                var classifiers = item.SafeGetProperty("classifies")
+                                  ?? item.SafeGetProperty("downloads")?.SafeGetProperty("classifiers");
 
                 // NATIVE library
+                var natives = item.SafeGetProperty("natives");
                 if (natives != null)
                 {
-                    var nativeId = natives[MRule.OSName]?.ToString().Replace("${arch}", MRule.Arch);
+                    var nativeId = natives?.GetPropertyValue(MRule.OSName)?
+                        .Replace("${arch}", MRule.Arch);
 
                     if (classifiers != null && nativeId != null)
                     {
-                        JToken? lObj = classifiers[nativeId] ?? classifiers[MRule.OSName];
+                        var lObj = classifiers?.SafeGetProperty(nativeId) ?? classifiers?.SafeGetProperty(MRule.OSName);
                         if (lObj != null)
-                            list.Add(createMLibrary(name, nativeId, isRequire, (JObject)lObj));
+                            list.Add(createMLibrary(name, nativeId, isRequire, lObj));
                     }
                     else
-                        list.Add(createMLibrary(name, nativeId, isRequire, new JObject()));
+                        list.Add(createMLibrary(name, nativeId, isRequire, null));
                 }
 
                 // COMMON library
                 if (artifact != null)
                 {
-                    MLibrary obj = createMLibrary(name, "", isRequire, (JObject)artifact);
+                    var obj = createMLibrary(name, "", isRequire, artifact);
                     list.Add(obj);
                 }
 
@@ -70,27 +74,30 @@ namespace CmlLib.Core.Files
             }
         }
 
-        private MLibrary createMLibrary(string? name, string? nativeId, bool require, JObject job)
+        private MLibrary createMLibrary(string? name, string? nativeId, bool require, JsonElement? element)
         {
-            string? path = job["path"]?.ToString();
+            string? path = element?.GetPropertyValue("path");
             if (string.IsNullOrEmpty(path) && !string.IsNullOrEmpty(name))
                 path = PackageName.Parse(name).GetPath(nativeId);
 
-            var hash = job["sha1"] ?? job["checksums"]?[0];
+            var hash = element?.GetPropertyValue("sha1");
+            if (string.IsNullOrEmpty(hash))
+            {
+                var checksums = element?.SafeGetProperty("checksums")?.EnumerateArray();
+                hash = checksums?.FirstOrDefault().GetString();
+            }
 
             long size = 0;
-            string? sizeStr = job["size"]?.ToString();
-            if (!string.IsNullOrEmpty(sizeStr))
-                long.TryParse(sizeStr, out size);
+            element?.SafeGetProperty("size")?.TryGetInt64(out size);
 
             return new MLibrary
             {
-                Hash = hash?.ToString(),
+                Hash = hash,
                 IsNative = !string.IsNullOrEmpty(nativeId),
                 Name = name,
                 Path = path,
                 Size = size,
-                Url = job["url"]?.ToString(),
+                Url = element?.GetPropertyValue("url"),
                 IsRequire = require
             };
         }
