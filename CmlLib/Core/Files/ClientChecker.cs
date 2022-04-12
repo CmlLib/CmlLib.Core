@@ -39,23 +39,24 @@ namespace CmlLib.Core.Files
 
         private DownloadFile? checkClientFile(MinecraftPath path, MVersion version)
         {
-            if (string.IsNullOrEmpty(version.ClientDownloadUrl) 
-                || string.IsNullOrEmpty(version.Jar))
+            var id = version.Jar;
+            var url = version.Client?.Url;
+            
+            if (string.IsNullOrEmpty(url) || string.IsNullOrEmpty(id))
                 return null;
+            
+            var clientPath = path.GetVersionJarPath(id);
 
-            string id = version.Jar;
-            string clientPath = path.GetVersionJarPath(id);
-
-            if (!IOUtil.CheckFileValidation(clientPath, version.ClientHash, CheckHash))
+            if (!IOUtil.CheckFileValidation(clientPath, version.Client?.Sha1, CheckHash))
             {
-                return new DownloadFile(clientPath, version.ClientDownloadUrl)
+                return new DownloadFile(clientPath, url)
                 {
                     Type = MFile.Minecraft,
                     Name = id
                 };
             }
-            else
-                return null;
+            
+            return null;
         }
     }
 }
