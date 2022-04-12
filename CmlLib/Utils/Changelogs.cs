@@ -1,15 +1,21 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 
 namespace CmlLib.Utils
 {
     public class Changelogs
     {
-        private static readonly Dictionary<string, string> changelogUrls = new Dictionary<string, string>
+        private static readonly string PatchNotesUrl = "https://launchercontent.mojang.com/javaPatchNotes.json";
+        
+        // The urls below will only be retrieved if the version is not found in 'PatchNotesUrl'
+        // Versions that exist in 'PatchNotesUrl' do not need to be added the list below
+        private static readonly Dictionary<string, string> AltUrls = new Dictionary<string, string>
         {
             { "1.14.2", "https://feedback.minecraft.net/hc/en-us/articles/360028919851-Minecraft-Java-Edition-1-14-2" },
             { "1.14.3", "https://feedback.minecraft.net/hc/en-us/articles/360030771451-Minecraft-Java-Edition-1-14-3" },
@@ -18,27 +24,22 @@ namespace CmlLib.Utils
         
         public static async Task<Changelogs> GetChangelogs()
         {
-            string response;
-            using (var wc = new WebClient())
-            {
-                var url = "https://launchercontent.mojang.com/javaPatchNotes.json";
-                var data = await wc.DownloadDataTaskAsync(url)
-                    .ConfigureAwait(false);
-                response = Encoding.UTF8.GetString(data);
-            }
-
-            var obj = JObject.Parse(response);
+            var response = await HttpUtil.HttpClient.GetStreamAsync(PatchNotesUrl)
+                .ConfigureAwait(false);
+            var jsonDocument = await JsonDocument.ParseAsync(response).ConfigureAwait(false);
+            var root = jsonDocument.RootElement;
+            
             var versionDict = new Dictionary<string, string?>();
-            var array = obj["entries"] as JArray;
+            var array = root.SafeGetProperty("entries")?.EnumerateArray();
             if (array != null)
             {
                 foreach (var item in array)
                 {
-                    var version = item["version"]?.ToString();
+                    var version = item.GetPropertyValue("version");
                     if (string.IsNullOrEmpty(version))
                         continue;
-                    
-                    var body = item["body"]?.ToString();
+
+                    var body = item.GetPropertyValue("body");
                     versionDict[version] = body;
                 }
             }
@@ -55,29 +56,28 @@ namespace CmlLib.Utils
 
         public string[] GetAvailableVersions()
         {
-            var list = new List<string>();
-            list.AddRange(versions.Keys);
+            var availableVersions = new HashSet<string>();
+            
+            foreach (var item in versions.Keys)
+                availableVersions.Add(item);
+            
+            foreach (var item in AltUrls)
+                availableVersions.Add(item.Key);
 
-            foreach (var item in changelogUrls)
-            {
-                if (!versions.ContainsKey(item.Key))
-                    list.Add(item.Key);
-            }
-
-            return list.ToArray();
+            return availableVersions.ToArray();
         }
 
         public async Task<string?> GetChangelogHtml(string version)
         {
             if (versions.TryGetValue(version, out string? body))
                 return body;
-            if (changelogUrls.TryGetValue(version, out string? url))
+            if (AltUrls.TryGetValue(version, out string? url))
                 return await GetChangelogFromUrl(url).ConfigureAwait(false);
 
             return null;
         }
 
-        private static readonly Regex articleRegex = new Regex(
+        private static readonly Regex ArticleRegex = new Regex(
             "<article class=\\\"article\\\">(.*)<\\/article>", RegexOptions.Singleline);
 
         private async Task<string> GetChangelogFromUrl(string url)
@@ -89,7 +89,7 @@ namespace CmlLib.Utils
                 html = Encoding.UTF8.GetString(data);
             }
 
-            var regResult = articleRegex.Match(html);
+            var regResult = ArticleRegex.Match(html);
             if (!regResult.Success)
                 return "";
 
