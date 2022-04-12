@@ -68,15 +68,6 @@ namespace CmlLib.Core.Version
             var sorter = new MVersionMetadataSorter(option);
             return sorter.Sort(this);
         }
-        
-        public virtual MVersion GetVersion(string name)
-        {
-            if (name == null)
-                throw new ArgumentNullException(nameof(name));
-
-            var versionMetadata = GetVersionMetadata(name);
-            return GetVersion(versionMetadata);
-        }
 
         public virtual Task<MVersion> GetVersionAsync(string name)
         {
@@ -85,30 +76,6 @@ namespace CmlLib.Core.Version
 
             var versionMetadata = GetVersionMetadata(name);
             return GetVersionAsync(versionMetadata);
-        }
-        
-        public virtual MVersion GetVersion(MVersionMetadata versionMetadata)
-        {
-            if (versionMetadata == null)
-                throw new ArgumentNullException(nameof(versionMetadata));
-
-            MVersion startVersion;
-            if (MinecraftPath == null)
-                startVersion = versionMetadata.GetVersion();
-            else
-                startVersion = versionMetadata.GetVersion(MinecraftPath);
-
-            if (startVersion.IsInherited && !string.IsNullOrEmpty(startVersion.ParentVersionId))
-            {
-                if (startVersion.ParentVersionId == startVersion.Id) // prevent StackOverFlowException
-                    throw new InvalidDataException(
-                        "Invalid version json file : inheritFrom property is equal to id property.");
-
-                var baseVersion = GetVersion(startVersion.ParentVersionId);
-                startVersion.InheritFrom(baseVersion);
-            }
-
-            return startVersion;
         }
 
         public virtual async Task<MVersion> GetVersionAsync(MVersionMetadata versionMetadata)
