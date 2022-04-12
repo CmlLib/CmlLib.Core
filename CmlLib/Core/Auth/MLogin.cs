@@ -27,7 +27,7 @@ namespace CmlLib.Core.Auth
             this.httpClient = client;
         }
 
-        public readonly HttpClient httpClient;
+        private readonly HttpClient httpClient;
         public string SessionCacheFilePath { get; private set; }
         public bool SaveSession { get; set; } = true;
 
@@ -36,7 +36,7 @@ namespace CmlLib.Core.Auth
             return Guid.NewGuid().ToString().Replace("-", "");
         }
 
-        protected async virtual Task<MSession> createNewSession()
+        protected virtual async Task<MSession> createNewSession()
         {
             var session = new MSession();
             if (SaveSession)
@@ -84,9 +84,9 @@ namespace CmlLib.Core.Auth
             }
         }
 
-        protected async Task<HttpResponseMessage> mojangRequest(string endpoint, object postdata)
+        protected async Task<HttpResponseMessage> mojangRequest(string endpoint, object postData)
         {
-            var json = JsonSerializer.Serialize(postdata, JsonUtil.JsonOptions);
+            var json = JsonSerializer.Serialize(postData, JsonUtil.JsonOptions);
             var res = await httpClient.SendAsync(new HttpRequestMessage
             {
                 Method = HttpMethod.Post,
@@ -118,9 +118,9 @@ namespace CmlLib.Core.Auth
             {
                 var session = new MSession
                 {
-                    AccessToken = root.GetProperty("accessToken").GetString(),
-                    UUID = profile.GetProperty("id").GetString(),
-                    Username = profile.GetProperty("name").GetString(),
+                    AccessToken = root.GetPropertyValue("accessToken"),
+                    UUID = profile.GetPropertyValue("id"),
+                    Username = profile.GetPropertyValue("name"),
                     UserType = "Mojang",
                     ClientToken = clientToken
                 };
@@ -137,8 +137,8 @@ namespace CmlLib.Core.Auth
                 using var jsonDocument = JsonDocument.Parse(json);
                 var root = jsonDocument.RootElement;
 
-                string? error = root.GetProperty("error").GetString(); // error type
-                string? errorMessage = root.GetProperty("message").GetString(); // detail error message
+                string? error = root.GetPropertyValue("error"); // error type
+                string? errorMessage = root.GetPropertyValue("message"); // detail error message
                 MLoginResult result;
 
                 switch (error)
@@ -165,25 +165,25 @@ namespace CmlLib.Core.Auth
             }
         }
 
-        public async Task<MLoginResponse> Authenticate(string id, string pw)
+        public async Task<MLoginResponse> Authenticate(string username, string password)
         {
             var sessionCache = await ReadSessionCache();
             string? clientToken = sessionCache.ClientToken;
-            return await Authenticate(id, pw, clientToken);
+            return await Authenticate(username, password, clientToken);
         }
 
-        public Task<MLoginResponse> Authenticate(string id, string pw, string? clientToken)
+        public Task<MLoginResponse> Authenticate(string username, string password, string? clientToken)
             => mojangRequestHandle("authenticate", new
             {
-                username = id,
-                password = pw,
-                clientToken = clientToken,
+                username,
+                password,
+                clientToken,
                 agent = new
                 {
                     name = "Minecraft",
                     version = 1
                 }
-            });
+            }, clientToken);
 
         public async Task<MLoginResponse> TryAutoLogin()
         {
@@ -197,28 +197,6 @@ namespace CmlLib.Core.Auth
             if (result.Result != MLoginResult.Success)
                 result = await Refresh(session);
             return result;
-        }
-
-        public async Task<MLoginResponse> TryAutoLoginFromMojangLauncher()
-        {
-            var mojangAccounts = MojangLauncher.MojangLauncherAccounts.FromDefaultPath();
-            var activeAccount = mojangAccounts?.GetActiveAccount();
-
-            if (activeAccount == null)
-                return new MLoginResponse(MLoginResult.NeedLogin, null, null, null);
-            
-            return await TryAutoLogin(activeAccount.ToSession());
-        }
-
-        public async Task<MLoginResponse> TryAutoLoginFromMojangLauncher(string accountFilePath)
-        {
-            var mojangAccounts = MojangLauncher.MojangLauncherAccounts.FromFile(accountFilePath);
-            var activeAccount = mojangAccounts?.GetActiveAccount();
-
-            if (activeAccount == null)
-                return new MLoginResponse(MLoginResult.NeedLogin, null, null, null);
-            
-            return await TryAutoLogin(activeAccount.ToSession());
         }
 
         public async Task<MLoginResponse> Refresh()
@@ -237,7 +215,7 @@ namespace CmlLib.Core.Auth
                     id = session.UUID,
                     name = session.Username
                 }
-            });
+            }, session.ClientToken);
 
         public async Task<MLoginResponse> Validate()
         {
@@ -245,12 +223,19 @@ namespace CmlLib.Core.Auth
             return await Validate(session);
         }
 
-        public Task<MLoginResponse> Validate(MSession session)
-            => mojangRequestHandle("validate", new
+        public async Task<MLoginResponse> Validate(MSession session)
+        {
+            var res = await mojangRequest("validate", new
             {
                 accessToken = session.AccessToken,
                 clientToken = session.ClientToken
             });
+
+            if (res.IsSuccessStatusCode)
+                return new MLoginResponse(MLoginResult.Success, session, null, null);
+            else
+                return new MLoginResponse(MLoginResult.NeedLogin, null, null, null);
+        }
 
         public void DeleteTokenFile()
         {
@@ -275,12 +260,12 @@ namespace CmlLib.Core.Auth
             return res.IsSuccessStatusCode;
         }
 
-        public async Task<bool> Signout(string id, string pw)
+        public async Task<bool> Signout(string username, string password)
         {
             var res = await mojangRequest("signout", new
             {
-                username = id,
-                password = pw
+                username,
+                password
             });
 
             return res.StatusCode == HttpStatusCode.NoContent; // 204
