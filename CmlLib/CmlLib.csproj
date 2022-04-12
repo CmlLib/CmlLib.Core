@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.0</TargetFrameworks>
+        <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
         <LangVersion>8.0</LangVersion>
         <Nullable>enable</Nullable>
         <Version>3.4.0</Version>
@@ -39,7 +39,6 @@ Support all version, forge, optifine
         <PackageReference Include="MethodTimer.Fody" Version="3.2.0">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
         <PackageReference Include="SharpZipLib" Version="1.3.3" />
         <PackageReference Include="System.Text.Json" Version="6.0.2" />
         <None Include="../icon.png" Pack="true" Visible="false" PackagePath="" />
