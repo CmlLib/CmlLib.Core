@@ -1,5 +1,4 @@
-﻿using CmlLib.Core.Downloader;
-using CmlLib.Core.Files;
+﻿using CmlLib.Core.Files;
 using System.Linq;
 
 namespace CmlLib.Core.Version
@@ -16,15 +15,12 @@ namespace CmlLib.Core.Version
 
         public string Id { get; set; }
 
-        public string? AssetId { get; set; }
-        public string? AssetUrl { get; set; }
-        public string? AssetHash { get; set; }
+        public MFileMetadata? Assets { get; set; }
 
         public string? JavaVersion { get; set; }
         public string? JavaBinaryPath { get; set; }
         public string? Jar { get; set; }
-        public string? ClientDownloadUrl { get; set; }
-        public string? ClientHash { get; set; }
+        public MFileMetadata? Client { get; set; }
         public MLibrary[]? Libraries { get; set; }
         public string? MainClass { get; set; }
         public string? MinecraftArguments { get; set; }
@@ -48,28 +44,38 @@ namespace CmlLib.Core.Version
 
             // Overloads
 
-            if (nc(AssetId))
-                AssetId = parentVersion.AssetId;
+            if (Assets == null)
+                Assets = parentVersion.Assets;
+            else
+            {
+                if (string.IsNullOrEmpty(Assets.Id))
+                    Assets.Id = parentVersion.Assets?.Id;
 
-            if (nc(AssetUrl))
-                AssetUrl = parentVersion.AssetUrl;
+                if (string.IsNullOrEmpty(Assets.Url))
+                    Assets.Url = parentVersion.Assets?.Url;
 
-            if (nc(AssetHash))
-                AssetHash = parentVersion.AssetHash;
+                if (string.IsNullOrEmpty(Assets.Sha1))
+                    Assets.Sha1 = parentVersion.Assets?.Sha1;
+            }
 
-            if (nc(ClientDownloadUrl))
-                ClientDownloadUrl = parentVersion.ClientDownloadUrl;
+            if (Client == null)
+                Client = parentVersion.Client;
+            else
+            {
+                if (string.IsNullOrEmpty(Client.Url))
+                    Client.Url = parentVersion.Client?.Url;
 
-            if (nc(ClientHash))
-                ClientHash = parentVersion.ClientHash;
+                if (string.IsNullOrEmpty(Client.Sha1))
+                    Client.Sha1 = parentVersion.Client?.Sha1;
+            }
 
-            if (nc(MainClass))
+            if (string.IsNullOrEmpty(MainClass))
                 MainClass = parentVersion.MainClass;
 
-            if (nc(MinecraftArguments))
+            if (string.IsNullOrEmpty(MinecraftArguments))
                 MinecraftArguments = parentVersion.MinecraftArguments;
 
-            if (nc(JavaVersion))
+            if (string.IsNullOrEmpty(JavaVersion))
                 JavaVersion = parentVersion.JavaVersion;
 
             if (LoggingClient == null)
@@ -104,11 +110,6 @@ namespace CmlLib.Core.Version
                 else
                     JvmArguments = parentVersion.JvmArguments;
             }
-        }
-
-        private static bool nc(string? t) // check null string
-        {
-            return string.IsNullOrEmpty(t);
         }
 
         public override string ToString()
