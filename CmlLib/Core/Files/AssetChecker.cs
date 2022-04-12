@@ -1,13 +1,13 @@
 ﻿using CmlLib.Core.Downloader;
 using CmlLib.Core.Version;
 using CmlLib.Utils;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace CmlLib.Core.Files
@@ -43,110 +43,109 @@ namespace CmlLib.Core.Files
         private DownloadFile[]? checkIndexAndAsset(MinecraftPath path, MVersion version,
             IProgress<DownloadFileChangedEventArgs>? progress)
         {
-            checkIndex(path, version);
-            return CheckAssetFiles(path, version, progress);
+            if (version.Assets == null)
+                return null;
+            checkIndex(path, version.Assets);
+            return CheckAssetFiles(path, version.Assets, progress);
         }
 
-        private void checkIndex(MinecraftPath path, MVersion version)
+        // Check index file validation and download
+        private void checkIndex(MinecraftPath path, MFileMetadata assets)
         {
-            if (string.IsNullOrEmpty(version.AssetId))
+            if (string.IsNullOrEmpty(assets.Id) || string.IsNullOrEmpty(assets.Url))
                 return;
 
-            string index = path.GetIndexFilePath(version.AssetId);
+            var indexFilePath = path.GetIndexFilePath(assets.Id);
 
-            if (!string.IsNullOrEmpty(version.AssetUrl))
-                if (!IOUtil.CheckFileValidation(index, version.AssetHash, CheckHash))
-                {
-                    var directoryName = Path.GetDirectoryName(index);
-                    if (!string.IsNullOrEmpty(directoryName))
-                        Directory.CreateDirectory(directoryName);
+            if (IOUtil.CheckFileValidation(indexFilePath, assets.Sha1, CheckHash))
+                return;
+            
+            var directoryName = Path.GetDirectoryName(indexFilePath);
+            if (!string.IsNullOrEmpty(directoryName))
+                Directory.CreateDirectory(directoryName);
 
-                    using (var wc = new WebClient())
-                    {
-                        wc.DownloadFile(version.AssetUrl, index);
-                    }
-                }
+            using var wc = new WebClient();
+            wc.DownloadFile(assets.Url, indexFilePath);
         }
 
+        // Read index file and return it as object
         [MethodTimer.Time]
-        public JObject? ReadIndex(MinecraftPath path, MVersion version)
+        public JsonDocument? ReadIndex(MinecraftPath path, MFileMetadata assets)
         {
-            if (string.IsNullOrEmpty(version.AssetId))
+            if (string.IsNullOrEmpty(assets.Id))
                 return null;
             
-            string indexPath = path.GetIndexFilePath(version.AssetId);
-            if (!File.Exists(indexPath)) return null;
+            var indexFilePath = path.GetIndexFilePath(assets.Id);
+            if (!File.Exists(indexFilePath)) 
+                return null;
 
-            string json = File.ReadAllText(indexPath);
-            var index = JObject.Parse(json); // 100ms
-
-            return index;
+            var indexFileContent = File.ReadAllText(indexFilePath);
+            var jsonDocument = JsonDocument.Parse(indexFileContent);
+            return jsonDocument;
         }
 
         [MethodTimer.Time]
-        public DownloadFile[]? CheckAssetFiles(MinecraftPath path, MVersion version,
+        public DownloadFile[]? CheckAssetFiles(MinecraftPath path, MFileMetadata assets,
             IProgress<DownloadFileChangedEventArgs>? progress)
         {
-            JObject? index = ReadIndex(path, version);
+            var index = ReadIndex(path, assets);
             if (index == null)
                 return null;
-
-            bool isVirtual = checkJsonTrue(index["virtual"]); // check virtual
-            bool mapResource = checkJsonTrue(index["map_to_resources"]); // check map_to_resources
-
-            var list = index["objects"] as JObject;
-            if (list == null)
-                return null;
-
-            var downloadRequiredFiles = new List<DownloadFile>(list.Count);
-
-            int total = list.Count;
-            int progressed = 0;
-
-            foreach (var item in list)
+            using (index)
             {
-                if (item.Value != null)
+                var root = index.RootElement;
+
+                var listProperty = root.SafeGetProperty("objects");
+                if (!listProperty.HasValue)
+                    return null;
+                var list = listProperty.Value;
+
+                var isVirtual = root.SafeGetProperty("virtual")?.GetBoolean() ?? false;
+                var mapResource = root.SafeGetProperty("map_to_resources")?.GetBoolean() ?? false;
+            
+                var downloadRequiredFiles = new List<DownloadFile>();
+
+                //int total = list.Count;
+                int progressed = 0;
+
+                foreach (var prop in list.EnumerateObject())
                 {
-                    var f = checkAssetFile(item.Key, item.Value, path, version, isVirtual, mapResource);
+                    var f = checkAssetFile(prop.Name, prop.Value, path, assets, isVirtual, mapResource);
 
                     if (f != null)
                         downloadRequiredFiles.Add(f);
+
+                    progressed++;
+                
+                    if (progressed % 50 == 0) // prevent ui freezing
+                        progress?.Report(
+                            new DownloadFileChangedEventArgs(MFile.Resource, this, "", progressed, progressed));
                 }
 
-                progressed++;
-                
-                if (progressed % 50 == 0) // prevent ui freezing
-                    progress?.Report(
-                        new DownloadFileChangedEventArgs(MFile.Resource, this, "", total, progressed));
+                return downloadRequiredFiles.Distinct().ToArray(); // 10ms
             }
-
-            return downloadRequiredFiles.Distinct().ToArray(); // 10ms
         }
 
-        private DownloadFile? checkAssetFile(string key, JToken job, MinecraftPath path, MVersion version, 
+        private DownloadFile? checkAssetFile(string key, JsonElement element, MinecraftPath path, MFileMetadata assets, 
             bool isVirtual, bool mapResource)
         {
-            if (string.IsNullOrEmpty(version.AssetId))
+            if (string.IsNullOrEmpty(assets.Id))
                 return null;
             
-            // download hash resource
-            string? hash = job["hash"]?.ToString();
+            var hash = element.GetPropertyValue("hash");
             if (hash == null)
                 return null;
 
             var hashName = hash.Substring(0, 2) + "/" + hash;
-            var hashPath = Path.Combine(path.GetAssetObjectPath(version.AssetId), hashName);
+            var hashPath = Path.Combine(path.GetAssetObjectPath(assets.Id), hashName);
 
-            long size = 0;
-            string? sizeStr = job["size"]?.ToString();
-            if (!string.IsNullOrEmpty(sizeStr))
-                long.TryParse(sizeStr, out size);
+            long size = element.SafeGetProperty("size")?.GetInt64() ?? 0;
 
             var afterDownload = new List<Func<Task>>(1);
 
             if (isVirtual)
             {
-                var resPath = Path.Combine(path.GetAssetLegacyPath(version.AssetId), key);
+                var resPath = Path.Combine(path.GetAssetLegacyPath(assets.Id), key);
                 afterDownload.Add(() => assetCopy(hashPath, resPath));
             }
 
@@ -198,12 +197,6 @@ namespace CmlLib.Core.Files
             {
                 Debug.WriteLine(ex);
             }
-        }
-
-        private bool checkJsonTrue(JToken? j)
-        {
-            string? str = j?.ToString().ToLowerInvariant();
-            return str is "true";
         }
     }
 }
