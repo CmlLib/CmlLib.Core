@@ -96,12 +96,12 @@ namespace CmlLib.Core
                 { "version_name"     , version.Id },
                 { "game_directory"   , minecraftPath.BasePath },
                 { "assets_root"      , minecraftPath.Assets },
-                { "assets_index_name", version.AssetId ?? "legacy" },
+                { "assets_index_name", version.Assets?.Id ?? "legacy" },
                 { "auth_uuid"        , session.UUID },
                 { "auth_access_token", session.AccessToken },
                 { "user_properties"  , "{}" },
                 { "user_type"        , session.UserType ?? "Mojang" },
-                { "game_assets"      , minecraftPath.GetAssetLegacyPath(version.AssetId ?? "legacy") },
+                { "game_assets"      , minecraftPath.GetAssetLegacyPath(version.Assets?.Id ?? "legacy") },
                 { "auth_session"     , session.AccessToken },
                 { "version_type"     , useNotNull(launchOption.VersionType, version.TypeStr) }
             };
@@ -142,7 +142,7 @@ namespace CmlLib.Core
             if (!string.IsNullOrEmpty(version.LoggingClient?.Argument))
                 args.Add(Mapper.Interpolation(version.LoggingClient?.Argument, new Dictionary<string, string?>()
                 {
-                    { "path", minecraftPath.GetLogConfigFilePath(version.LoggingClient?.Id ?? version.Id) }
+                    { "path", minecraftPath.GetLogConfigFilePath(version.LoggingClient?.LogFile?.Id ?? version.Id) }
                 }, true));
 
             // main class
