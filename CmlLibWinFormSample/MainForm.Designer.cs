@@ -80,13 +80,11 @@
             this.cbSkipHashCheck = new System.Windows.Forms.CheckBox();
             this.cbSkipAssetsDownload = new System.Windows.Forms.CheckBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.btnSortFilter = new System.Windows.Forms.Button();
             this.btnRefreshVersion = new System.Windows.Forms.Button();
-            this.btnForgeInstall = new System.Windows.Forms.Button();
             this.btnSetLastVersion = new System.Windows.Forms.Button();
-            this.btnMojangServer = new System.Windows.Forms.Button();
             this.btnOptions = new System.Windows.Forms.Button();
             this.lbLibraryVersion = new System.Windows.Forms.Label();
-            this.btnSortFilter = new System.Windows.Forms.Button();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -613,7 +611,6 @@
             // 
             this.groupBox4.Controls.Add(this.btnSortFilter);
             this.groupBox4.Controls.Add(this.btnRefreshVersion);
-            this.groupBox4.Controls.Add(this.btnForgeInstall);
             this.groupBox4.Controls.Add(this.btnSetLastVersion);
             this.groupBox4.Controls.Add(this.cbVersion);
             this.groupBox4.Controls.Add(this.label1);
@@ -627,6 +624,17 @@
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Launch";
             // 
+            // btnSortFilter
+            // 
+            this.btnSortFilter.Location = new System.Drawing.Point(149, 65);
+            this.btnSortFilter.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.btnSortFilter.Name = "btnSortFilter";
+            this.btnSortFilter.Size = new System.Drawing.Size(163, 29);
+            this.btnSortFilter.TabIndex = 5;
+            this.btnSortFilter.Text = "Sort option";
+            this.btnSortFilter.UseVisualStyleBackColor = true;
+            this.btnSortFilter.Click += new System.EventHandler(this.btnSortFilter_Click);
+            // 
             // btnRefreshVersion
             // 
             this.btnRefreshVersion.Location = new System.Drawing.Point(323, 65);
@@ -638,17 +646,6 @@
             this.btnRefreshVersion.UseVisualStyleBackColor = true;
             this.btnRefreshVersion.Click += new System.EventHandler(this.btnRefreshVersion_Click);
             // 
-            // btnForgeInstall
-            // 
-            this.btnForgeInstall.Location = new System.Drawing.Point(32, 65);
-            this.btnForgeInstall.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.btnForgeInstall.Name = "btnForgeInstall";
-            this.btnForgeInstall.Size = new System.Drawing.Size(111, 29);
-            this.btnForgeInstall.TabIndex = 3;
-            this.btnForgeInstall.Text = "Install Forge";
-            this.btnForgeInstall.UseVisualStyleBackColor = true;
-            this.btnForgeInstall.Click += new System.EventHandler(this.btnForgeInstall_Click);
-            // 
             // btnSetLastVersion
             // 
             this.btnSetLastVersion.Location = new System.Drawing.Point(323, 31);
@@ -659,17 +656,6 @@
             this.btnSetLastVersion.Text = "Lastest\r\n";
             this.btnSetLastVersion.UseVisualStyleBackColor = true;
             this.btnSetLastVersion.Click += new System.EventHandler(this.btnSetLastVersion_Click);
-            // 
-            // btnMojangServer
-            // 
-            this.btnMojangServer.Location = new System.Drawing.Point(166, 558);
-            this.btnMojangServer.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.btnMojangServer.Name = "btnMojangServer";
-            this.btnMojangServer.Size = new System.Drawing.Size(145, 29);
-            this.btnMojangServer.TabIndex = 29;
-            this.btnMojangServer.Text = "MojangServer";
-            this.btnMojangServer.UseVisualStyleBackColor = true;
-            this.btnMojangServer.Click += new System.EventHandler(this.btnMojangServer_Click);
             // 
             // btnOptions
             // 
@@ -690,17 +676,6 @@
             this.lbLibraryVersion.TabIndex = 31;
             this.lbLibraryVersion.Text = "CmlLib.Core";
             // 
-            // btnSortFilter
-            // 
-            this.btnSortFilter.Location = new System.Drawing.Point(149, 65);
-            this.btnSortFilter.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.btnSortFilter.Name = "btnSortFilter";
-            this.btnSortFilter.Size = new System.Drawing.Size(163, 29);
-            this.btnSortFilter.TabIndex = 5;
-            this.btnSortFilter.Text = "Sort option";
-            this.btnSortFilter.UseVisualStyleBackColor = true;
-            this.btnSortFilter.Click += new System.EventHandler(this.btnSortFilter_Click);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
@@ -708,7 +683,6 @@
             this.ClientSize = new System.Drawing.Size(918, 608);
             this.Controls.Add(this.lbLibraryVersion);
             this.Controls.Add(this.btnOptions);
-            this.Controls.Add(this.btnMojangServer);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.btnChangelog);
@@ -792,9 +766,7 @@
         private System.Windows.Forms.CheckBox cbSkipAssetsDownload;
         private System.Windows.Forms.GroupBox groupBox4;
         private System.Windows.Forms.Button btnSetLastVersion;
-        private System.Windows.Forms.Button btnMojangServer;
         private System.Windows.Forms.Button btnOptions;
-        private System.Windows.Forms.Button btnForgeInstall;
         private System.Windows.Forms.Button btnRefreshVersion;
         private System.Windows.Forms.CheckBox cbFullscreen;
         private System.Windows.Forms.CheckBox cbSkipHashCheck;

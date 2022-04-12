@@ -272,27 +272,6 @@ namespace CmlLibWinFormSample
             groupBox4.Enabled = value;
         }
 
-        // not stable
-        private void btnForgeInstall_Click(object sender, EventArgs e)
-        {
-            setUIEnabled(false);
-            new Thread(() =>
-            {
-                var forgeJava = "";
-                var java = new MJava();
-                java.ProgressChanged += Launcher_ProgressChanged;
-                forgeJava = java.CheckJava();
-
-                Invoke(new Action(async () =>
-                {
-                    var forgeForm = new ForgeInstall(gamePath, forgeJava);
-                    forgeForm.ShowDialog();
-                    setUIEnabled(true);
-                    await refreshVersions(forgeForm.LastInstalledVersion);
-                }));
-            }).Start();
-        }
-
         private void StartProcess(Process process)
         {
             File.WriteAllText("launcher.txt", process.StartInfo.Arguments);
@@ -315,13 +294,6 @@ namespace CmlLibWinFormSample
         {
             // Game Changelog
             var f = new ChangeLog();
-            f.Show();
-        }
-
-        private void btnMojangServer_Click(object sender, EventArgs e)
-        {
-            // Mojang Server
-            var f = new MojangServerForm();
             f.Show();
         }
 

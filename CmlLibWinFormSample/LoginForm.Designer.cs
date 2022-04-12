@@ -38,7 +38,6 @@
             this.btnDeleteToken = new System.Windows.Forms.Button();
             this.label7 = new System.Windows.Forms.Label();
             this.gMojangLogin = new System.Windows.Forms.GroupBox();
-            this.btnAutoLoginMojangLauncher = new System.Windows.Forms.Button();
             this.btnAutoLogin = new System.Windows.Forms.Button();
             this.gOfflineLogin = new System.Windows.Forms.GroupBox();
             this.btnOfflineLogin = new System.Windows.Forms.Button();
@@ -141,7 +140,6 @@
             // 
             // gMojangLogin
             // 
-            this.gMojangLogin.Controls.Add(this.btnAutoLoginMojangLauncher);
             this.gMojangLogin.Controls.Add(this.btnAutoLogin);
             this.gMojangLogin.Controls.Add(this.btnLogin);
             this.gMojangLogin.Controls.Add(this.label7);
@@ -161,20 +159,9 @@
             this.gMojangLogin.TabStop = false;
             this.gMojangLogin.Text = "Mojang Login";
             // 
-            // btnAutoLoginMojangLauncher
-            // 
-            this.btnAutoLoginMojangLauncher.Location = new System.Drawing.Point(104, 64);
-            this.btnAutoLoginMojangLauncher.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.btnAutoLoginMojangLauncher.Name = "btnAutoLoginMojangLauncher";
-            this.btnAutoLoginMojangLauncher.Size = new System.Drawing.Size(322, 29);
-            this.btnAutoLoginMojangLauncher.TabIndex = 15;
-            this.btnAutoLoginMojangLauncher.Text = "TryAutoLogin (launcher_accounts.json)";
-            this.btnAutoLoginMojangLauncher.UseVisualStyleBackColor = true;
-            this.btnAutoLoginMojangLauncher.Click += new System.EventHandler(this.btnAutoLoginMojangLauncher_Click);
-            // 
             // btnAutoLogin
             // 
-            this.btnAutoLogin.Location = new System.Drawing.Point(104, 27);
+            this.btnAutoLogin.Location = new System.Drawing.Point(107, 64);
             this.btnAutoLogin.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btnAutoLogin.Name = "btnAutoLogin";
             this.btnAutoLogin.Size = new System.Drawing.Size(322, 29);
@@ -228,7 +215,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Font = new System.Drawing.Font("굴림", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (129)));
+            this.label2.Font = new System.Drawing.Font("굴림", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.label2.Location = new System.Drawing.Point(8, 15);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(532, 19);
@@ -238,7 +225,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("굴림", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (129)));
+            this.label1.Font = new System.Drawing.Font("굴림", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.label1.Location = new System.Drawing.Point(19, 42);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(317, 15);
@@ -248,7 +235,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Font = new System.Drawing.Font("굴림", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (129)));
+            this.label3.Font = new System.Drawing.Font("굴림", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.label3.Location = new System.Drawing.Point(12, 298);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(280, 15);
@@ -293,7 +280,6 @@
         private System.Windows.Forms.Button btnOfflineLogin;
         private System.Windows.Forms.TextBox txtUsername;
         private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.Button btnAutoLoginMojangLauncher;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label3;

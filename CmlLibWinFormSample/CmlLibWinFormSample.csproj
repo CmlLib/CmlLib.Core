@@ -56,12 +56,6 @@
     <Compile Include="ChangeLog.Designer.cs">
       <DependentUpon>ChangeLog.cs</DependentUpon>
     </Compile>
-    <Compile Include="ForgeInstall.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ForgeInstall.Designer.cs">
-      <DependentUpon>ForgeInstall.cs</DependentUpon>
-    </Compile>
     <Compile Include="GameLog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -98,12 +92,6 @@
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="MojangServerForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MojangServerForm.Designer.cs">
-      <DependentUpon>MojangServerForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util.cs" />
@@ -116,9 +104,6 @@
     <EmbeddedResource Include="ChangeLog.resx">
       <DependentUpon>ChangeLog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ForgeInstall.resx">
-      <DependentUpon>ForgeInstall.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="GameLog.resx">
       <DependentUpon>GameLog.cs</DependentUpon>
     </EmbeddedResource>
@@ -127,9 +112,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="JavaForm.resx">
       <DependentUpon>JavaForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MojangServerForm.resx">
-      <DependentUpon>MojangServerForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="PathForm.resx">
       <DependentUpon>PathForm.cs</DependentUpon>
