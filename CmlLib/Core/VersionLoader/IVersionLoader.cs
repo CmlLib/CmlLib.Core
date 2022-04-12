@@ -6,6 +6,5 @@ namespace CmlLib.Core.VersionLoader
     public interface IVersionLoader
     {
         Task<MVersionCollection> GetVersionMetadatasAsync();
-        MVersionCollection GetVersionMetadatas();
     }
 }

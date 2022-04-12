@@ -1,25 +1,17 @@
 ﻿using CmlLib.Core.Version;
-using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
-using System.Net;
 using System.Threading.Tasks;
 using CmlLib.Core.VersionMetadata;
+using CmlLib.Utils;
+using System.Text.Json;
 
 namespace CmlLib.Core.VersionLoader
 {
     public class MojangVersionLoader : IVersionLoader
     {
-        public MVersionCollection GetVersionMetadatas()
-        {
-            using var wc = new WebClient();
-            var res = wc.DownloadString(MojangServer.Version);
-            return parseList(res);
-        }
-
         public async Task<MVersionCollection> GetVersionMetadatasAsync()
         {
-            using var wc = new WebClient();
-            var res = await wc.DownloadStringTaskAsync(MojangServer.Version);
+            var res = await HttpUtil.HttpClient.GetStringAsync(MojangServer.Version);
             return parseList(res);
         }
 
@@ -31,26 +23,25 @@ namespace CmlLib.Core.VersionLoader
 
             MVersionMetadata? latestRelease = null;
             MVersionMetadata? latestSnapshot = null;
-            
-            var jobj = JObject.Parse(res);
-            var jarr = jobj["versions"] as JArray;
 
-            var latest = jobj["latest"];
-            if (latest != null)
+            using var jsonDocument = JsonDocument.Parse(res);
+            var root = jsonDocument.RootElement;
+
+            if (root.TryGetProperty("latest", out var latest))
             {
-                latestReleaseId = latest["release"]?.ToString();
-                latestSnapshotId = latest["snapshot"]?.ToString();
+                latestReleaseId = latest.GetPropertyValue("release");
+                latestSnapshotId = latest.GetPropertyValue("snapshot");
             }
 
             bool checkLatestRelease = !string.IsNullOrEmpty(latestReleaseId);
             bool checkLatestSnapshot = !string.IsNullOrEmpty(latestSnapshotId);
 
-            var arr = new List<WebVersionMetadata>(jarr?.Count ?? 0);
-            if (jarr != null)
+            var arr = new List<WebVersionMetadata>();
+            if (root.TryGetProperty("versions", out var versions) && versions.ValueKind == JsonValueKind.Array)
             {
-                foreach (var t in jarr)
+                foreach (var t in versions.EnumerateArray())
                 {
-                    var obj = t.ToObject<WebVersionMetadata>();
+                    var obj = t.Deserialize<WebVersionMetadata>();
                     if (obj == null)
                         continue;
                     
