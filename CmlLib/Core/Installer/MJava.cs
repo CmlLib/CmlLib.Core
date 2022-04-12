@@ -1,11 +1,11 @@
 ﻿using CmlLib.Utils;
-using Newtonsoft.Json.Linq;
 using System;
 using System.ComponentModel;
 using System.IO;
-using System.Net;
 using System.Threading.Tasks;
 using CmlLib.Core.Java;
+using System.Text.Json;
+using System.Net;
 
 namespace CmlLib.Core.Installer
 {
@@ -36,30 +36,6 @@ namespace CmlLib.Core.Installer
 
         public bool CheckJavaExistence()
             => File.Exists(GetBinaryPath());
-
-        public string CheckJava()
-        {
-            pProgressChanged = new Progress<ProgressChangedEventArgs>(
-                (e) => ProgressChanged?.Invoke(this, e));
-
-            string javaPath = GetBinaryPath();
-
-            if (!CheckJavaExistence())
-            {
-                string javaUrl = GetJavaUrl();
-                string lzmaPath = downloadJavaLzma(javaUrl);
-
-                decompressJavaFile(lzmaPath);
-
-                if (!File.Exists(javaPath))
-                    throw new WebException("failed to download");
-
-                if (MRule.OSName != MRule.Windows)
-                    NativeMethods.Chmod(javaPath, NativeMethods.Chmod755);
-            }
-
-            return javaPath;
-        }
 
         public Task<string> CheckJavaAsync()
             => CheckJavaAsync(null);
@@ -96,49 +72,26 @@ namespace CmlLib.Core.Installer
             return javapath;
         }
 
-        public string GetJavaUrl()
-        {
-            using (var wc = new WebClient())
-            {
-                string json = wc.DownloadString(MojangServer.LauncherMeta);
-                return parseLauncherMetadata(json);
-            }
-        }
-
         public async Task<string> GetJavaUrlAsync()
         {
-            using (var wc = new WebClient())
-            {
-                string json = await wc.DownloadStringTaskAsync(MojangServer.LauncherMeta)
-                    .ConfigureAwait(false);
-                return parseLauncherMetadata(json);
-            }
+            var json = await HttpUtil.HttpClient.GetStringAsync(MojangServer.LauncherMeta)
+                .ConfigureAwait(false);
+            return parseLauncherMetadata(json);
         }
 
         private string parseLauncherMetadata(string json)
         {
-            var javaUrl = JObject.Parse(json)
-                 [MRule.OSName]
-                ?[MRule.Arch]
-                ?["jre"]
-                ?["url"]
-                ?.ToString();
+            using var jsonDocument = JsonDocument.Parse(json);
+            var root = jsonDocument.RootElement;
+
+            var javaUrl = root.SafeGetProperty(MRule.OSName)?
+                .SafeGetProperty(MRule.Arch)?
+                .SafeGetProperty("jre")?
+                .GetPropertyValue("url");
 
             if (string.IsNullOrEmpty(javaUrl))
                 throw new PlatformNotSupportedException("Downloading JRE on current OS is not supported. Set JavaPath manually.");
             return javaUrl;
-        }
-
-        private string downloadJavaLzma(string javaUrl)
-        {
-            Directory.CreateDirectory(RuntimeDirectory);
-            string lzmapath = Path.Combine(Path.GetTempPath(), "jre.lzma");
-
-            var webdownloader = new WebDownload();
-            webdownloader.DownloadProgressChangedEvent += Downloader_DownloadProgressChangedEvent;
-            webdownloader.DownloadFile(javaUrl, lzmapath);
-
-            return lzmapath;
         }
 
         private async Task<string> downloadJavaLzmaAsync(string javaUrl)
