@@ -111,7 +111,7 @@ namespace CmlLib.Utils
                 return false;
             }
         }
-
+        
         public static bool CheckFileValidation(string path, string? hash, bool checkHash)
         {
             if (!File.Exists(path))
