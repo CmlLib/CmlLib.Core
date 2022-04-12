@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using CmlLib.Core.Files;
 
-namespace CmlLib.Core.Files
+namespace CmlLib.Core.FileChecker
 {
     public class FileCheckerCollection : IEnumerable<IFileChecker>
     {

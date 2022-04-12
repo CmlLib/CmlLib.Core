@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using CmlLib.Core.Downloader;
@@ -12,7 +11,7 @@ using CmlLib.Core.Java;
 using CmlLib.Core.Version;
 using CmlLib.Utils;
 
-namespace CmlLib.Core.Files
+namespace CmlLib.Core.FileChecker
 {
     public class JavaChecker : IFileChecker
     {

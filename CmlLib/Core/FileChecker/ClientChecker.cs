@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Threading.Tasks;
 using CmlLib.Core.Downloader;
+using CmlLib.Core.Files;
 using CmlLib.Core.Version;
 using CmlLib.Utils;
-using System.Threading.Tasks;
 
-namespace CmlLib.Core.Files
+namespace CmlLib.Core.FileChecker
 {
     public sealed class ClientChecker : IFileChecker
     {

@@ -1,10 +1,10 @@
-﻿using CmlLib.Core.Downloader;
+﻿using System;
+using System.Threading.Tasks;
+using CmlLib.Core.Downloader;
 using CmlLib.Core.Version;
 using CmlLib.Utils;
-using System;
-using System.Threading.Tasks;
 
-namespace CmlLib.Core.Files
+namespace CmlLib.Core.FileChecker
 {
     public sealed class LogChecker : IFileChecker
     {

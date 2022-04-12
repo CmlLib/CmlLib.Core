@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using CmlLib.Core.FileChecker;
 using CmlLib.Core.Java;
 
 namespace CmlLib.Core

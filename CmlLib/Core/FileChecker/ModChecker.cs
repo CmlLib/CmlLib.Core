@@ -1,13 +1,14 @@
-﻿using CmlLib.Core.Downloader;
-using CmlLib.Core.Version;
-using CmlLib.Utils;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using CmlLib.Core.Downloader;
+using CmlLib.Core.Files;
+using CmlLib.Core.Version;
+using CmlLib.Utils;
 
-namespace CmlLib.Core.Files
+namespace CmlLib.Core.FileChecker
 {
     public class ModChecker : IFileChecker
     {
