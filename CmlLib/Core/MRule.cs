@@ -1,6 +1,6 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 
 namespace CmlLib.Core
 {
@@ -45,26 +45,27 @@ namespace CmlLib.Core
 #endif
         }
 
-        public static bool CheckOSRequire(JArray arr)
+        public static bool CheckOSRequire(JsonElement arr)
         {
-            var require = true;
+            if (arr.ValueKind != JsonValueKind.Array)
+                throw new ArgumentException("input JsonElement was not array");
 
-            foreach (var token in arr)
+            var require = true;
+            foreach (var token in arr.EnumerateArray())
             {
-                var job = token as JObject;
-                if (job == null)
+                if (token.ValueKind != JsonValueKind.Object)
                     continue;
 
                 bool action = true; // true : "allow", false : "disallow"
                 bool containCurrentOS = true; // if 'os' JArray contains current os name
 
-                foreach (var item in job)
+                foreach (var item in token.EnumerateObject())
                 {
-                    if (item.Key == "action")
-                        action = (item.Value?.ToString() == "allow");
-                    else if (item.Key == "os")
-                        containCurrentOS = checkOSContains(item.Value as JObject);
-                    else if (item.Key == "features") // etc
+                    if (item.Name == "action")
+                        action = (item.Value.GetString() == "allow");
+                    else if (item.Name == "os")
+                        containCurrentOS = checkOSContains(item.Value);
+                    else if (item.Name == "features") // etc
                         return false;
                 }
 
@@ -79,14 +80,14 @@ namespace CmlLib.Core
             return require;
         }
 
-        private static bool checkOSContains(JObject? job)
+        private static bool checkOSContains(JsonElement? element)
         {
-            if (job == null)
+            if (element == null)
                 return false;
             
-            foreach (var os in job)
+            foreach (var os in element.Value.EnumerateObject())
             {
-                if (os.Key == "name" && os.Value?.ToString() == OSName)
+                if (os.Name == "name" && os.Value.GetString() == OSName)
                     return true;
             }
             return false;
