@@ -37,7 +37,7 @@ namespace CmlLib.Core.Installer.LiteLoader
         }
 
         // vanilla
-        public async Task<string> Install(string liteLoaderVersion)
+        public async Task<string> InstallAsync(string liteLoaderVersion)
         {
             var localVersionLoader = new LocalVersionLoader(minecraftPath);
             var localVersions = await localVersionLoader.GetVersionMetadatasAsync()
@@ -57,15 +57,10 @@ namespace CmlLib.Core.Installer.LiteLoader
             if (vanillaVersion == null)
                 throw new KeyNotFoundException(vanillaVersionName);
 
-            return liteLoader.Install(minecraftPath, vanillaVersion);
-        }
-        
-        public Task<string> Install(string liteLoaderVersion, MVersionMetadata target)
-        {
-            return Install(liteLoaderVersion, target.GetVersion());
+            return await liteLoader.InstallAsync(minecraftPath, vanillaVersion);
         }
 
-        public async Task<string> Install(string liteLoaderVersion, MVersion target)
+        public async Task<string> InstallAsync(string liteLoaderVersion, MVersion target)
         {
             if (liteLoaderVersions == null)
                 await GetAllLiteLoaderVersions().ConfigureAwait(false);
@@ -74,7 +69,7 @@ namespace CmlLib.Core.Installer.LiteLoader
             if (liteLoader == null)
                 throw new KeyNotFoundException(liteLoaderVersion);
 
-            return liteLoader.Install(minecraftPath, target);
+            return await liteLoader.InstallAsync(minecraftPath, target);
         }
     }
 }

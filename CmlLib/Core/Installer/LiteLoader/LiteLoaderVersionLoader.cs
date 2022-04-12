@@ -1,77 +1,47 @@
 ﻿using System.Collections.Generic;
-using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using CmlLib.Core.Version;
 using CmlLib.Core.VersionLoader;
 using CmlLib.Core.VersionMetadata;
-using Newtonsoft.Json.Linq;
+using CmlLib.Utils;
 
 namespace CmlLib.Core.Installer.LiteLoader
 {
     public class LiteLoaderVersionLoader : IVersionLoader
     {
-        private const string LiteLoaderLibName = "com.mumfrey:liteloader";
-        private const string ManifestServer = "http://dl.liteloader.com/versions/versions.json";
+        public const string LiteLoaderLibName = "com.mumfrey:liteloader";
+        public const string ManifestServer = "http://dl.liteloader.com/versions/versions.json";
         
         public async Task<MVersionCollection> GetVersionMetadatasAsync()
         {
-            using var wc = new WebClient();
-            var res = await wc.DownloadStringTaskAsync(ManifestServer)
+            var res = await HttpUtil.HttpClient.GetStringAsync(ManifestServer)
                 .ConfigureAwait(false);
-
-            return parseVersions(res);
-        }
-
-        public MVersionCollection GetVersionMetadatas()
-        {
-            using var wc = new WebClient();
-            var res = wc.DownloadString(ManifestServer);
 
             return parseVersions(res);
         }
 
         private MVersionCollection parseVersions(string json)
         {
-            var job = JObject.Parse(json);
-            var versions = job["versions"] as JObject;
+            using var jsonDocument = JsonDocument.Parse(json);
+            var root = jsonDocument.RootElement; 
             
-            List<MVersionMetadata> metadataList = new List<MVersionMetadata>();
-            if (versions != null)
+            var metadataList = new List<MVersionMetadata>();
+            if (root.TryGetProperty("versions", out var versions))
             {
-                foreach (var item in versions)
+                foreach (var item in versions.EnumerateObject())
                 {
-                    var vanillaVersion = item.Key;
+                    var vanillaVersion = item.Name;
                     var versionObj = item.Value;
 
-                    var type = versionObj?["repo"]?["stream"]?.ToString();
+                    var libObj = versionObj.SafeGetProperty("artefacts") ?? versionObj.SafeGetProperty("snapshots");
+                    var latestLiteLoader = libObj?.SafeGetProperty(LiteLoaderLibName)?.SafeGetProperty("latest");
 
-                    var libObj = versionObj?["artefacts"] ?? versionObj?["snapshots"];
-                    var latestLLN = libObj?[LiteLoaderLibName]?["latest"];
-
-                    if (latestLLN == null)
+                    if (latestLiteLoader == null)
                         continue;
 
-                    var tweakClass = latestLLN["tweakClass"]?.ToString();
-                    var libraries = latestLLN["libraries"] as JArray;
-                    var llVersion = latestLLN["version"]?.ToString();
-
-                    if (libraries != null)
-                    {
-                        foreach (var lib in libraries)
-                        {
-                            // asm-all:5.2 is only available on LiteLoader server
-                            var libName = lib["name"]?.ToString();
-                            if (libName == "org.ow2.asm:asm-all:5.2")
-                                lib["url"] = "http://repo.liteloader.com/";
-                        }
-                    }
-
-                    var llName = $"{LiteLoaderLibName}:{llVersion}";
-                    var versionName = $"LiteLoader{vanillaVersion}";
-
-                    var metadata = new LiteLoaderVersionMetadata(
-                        versionName, vanillaVersion, tweakClass, libraries, llName);
-                    metadata.Type = type;
+                    var metadata = new LiteLoaderVersionMetadata(vanillaVersion, latestLiteLoader.Value);
+                    metadata.Type = versionObj.SafeGetProperty("repo")?.GetPropertyValue("stream");
 
                     metadataList.Add(metadata);
                 }

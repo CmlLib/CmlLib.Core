@@ -1,80 +1,92 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.Data;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
+using CmlLib.Core.Files;
 using CmlLib.Core.Version;
 using CmlLib.Core.VersionMetadata;
 using CmlLib.Utils;
-using Newtonsoft.Json.Linq;
 
 namespace CmlLib.Core.Installer.LiteLoader
 {
     public class LiteLoaderVersionMetadata : MVersionMetadata
     {
-        private const string LiteLoaderDl = "http://dl.liteloader.com/versions/";
+        private const string LiteLoaderDl = "http://dl.liteloader.com/versions/"; // should be https
+
+        public LiteLoaderVersionMetadata(string id, string vanillaVersionName) : base(id)
+        {
+            this.VanillaVersionName = vanillaVersionName;
+        }
         
-        public LiteLoaderVersionMetadata(string id, string vanillaVersion, string? tweakClass, JArray? libs, string? llnName) : base(id)
+        public LiteLoaderVersionMetadata(string vanillaVersion, JsonElement element)
+            : base($"LiteLoader-{vanillaVersion}")
         {
             IsLocalVersion = false;
-            
             this.VanillaVersionName = vanillaVersion;
-            this.tweakClass = tweakClass;
-            this.libraries = libs;
-            this.llnName = llnName;
+            this.element = element;
         }
-        
-        public string VanillaVersionName { get; set; }
-        private readonly string? tweakClass;
-        private readonly JArray? libraries;
-        private readonly string? llnName;
 
-        private JObject createVersion(string versionName, string baseVersionName, string? strArgs, string?[]? arrArgs)
+        private readonly JsonElement? element;
+        public string VanillaVersionName { get; private set; }
+
+        private async Task writeVersion(Stream stream,
+            string versionName, string baseVersionName, string? strArgs, string?[]? arrArgs)
         {
-            // add libraries
-            var libs = JArray.FromObject(new[]
-            {
-                new
-                {
-                    name = llnName,
-                    url = LiteLoaderDl
-                }
-            });
-
+            await using var writer = new Utf8JsonWriter(stream);
+            
+            var llVersion = element?.GetPropertyValue("version");
+            var libraries = element?.SafeGetProperty("libraries");
+            
+            writer.WriteStartObject();
+            writer.WriteString("id", versionName);
+            writer.WriteString("type", "release");
+            writer.WriteString("mainClass", "net.minecraft.launchwrapper.Launch");
+            writer.WriteString("inheritsFrom", baseVersionName);
+            writer.WriteString("jar", baseVersionName);
+            
+            writer.WriteStartArray("libraries");
+            writer.WriteStartObject();
+            writer.WriteString("name", $"{LiteLoaderVersionLoader.LiteLoaderLibName}:{llVersion}");
+            writer.WriteString("url", LiteLoaderDl);
+            writer.WriteEndObject();
+            
             if (libraries != null)
             {
-                foreach (var item in libraries)
+                foreach (var lib in libraries.Value.EnumerateArray())
                 {
-                    libs.Add(item);
+                    // asm-all:5.2 is only available on LiteLoader server
+                    var libName = lib.GetPropertyValue("name");
+                    var libUrl = lib.GetPropertyValue("url");
+                    if (libName == "org.ow2.asm:asm-all:5.2")
+                        libUrl = "http://repo.liteloader.com/";
+
+                    writer.WriteStartObject();
+                    writer.WriteString("name", libName);
+                    writer.WriteString("url", libUrl);
+                    writer.WriteEndObject();
                 }
             }
 
-            // create object
-            var obj = new
-            {
-                id = versionName,
-                type = "release",
-                libraries = libs,
-                mainClass = "net.minecraft.launchwrapper.Launch",
-                inheritsFrom = baseVersionName,
-                jar = baseVersionName
-            };
+            writer.WriteEndArray();
             
-            var job = JObject.FromObject(obj);
-
-            // set arguments
             if (!string.IsNullOrEmpty(strArgs))
-                job["minecraftArguments"] = strArgs;
+                writer.WriteString("minecraftArguments", strArgs);
             if (arrArgs != null)
             {
-                job["arguments"] = JObject.FromObject(new
-                {
-                    game = arrArgs
-                });
+                writer.WriteStartObject("arguments");
+                writer.WriteStartArray();
+                foreach (var item in arrArgs)
+                    writer.WriteStringValue(item);
+                writer.WriteEndArray();
+                writer.WriteEndObject();
             }
             
-            return job;
+            writer.WriteEndObject();
         }
-
-        private string prepareWriteMetadata(MinecraftPath path, string name)
+        
+        private Stream createVersionWriteStream(MinecraftPath path, string name)
         {
             var metadataPath = path.GetVersionJsonPath(name);
             
@@ -82,31 +94,22 @@ namespace CmlLib.Core.Installer.LiteLoader
             if (!string.IsNullOrEmpty(directoryPath))
                 Directory.CreateDirectory(directoryPath);
 
-            return metadataPath;
+            return IOUtil.AsyncWriteStream(metadataPath, false);
         }
 
-        private void writeMetadata(string json, MinecraftPath path, string name)
-        {
-            var metadataPath = prepareWriteMetadata(path, name);
-            File.WriteAllText(metadataPath, json);
-        }
-        
-        private Task writeMetadataAsync(string json, MinecraftPath path, string name)
-        {
-            var metadataPath = prepareWriteMetadata(path, name);
-            return IOUtil.WriteFileAsync(metadataPath, json);
-        }
-
-        public string Install(MinecraftPath path, MVersion baseVersion)
+        public async Task<string> InstallAsync(MinecraftPath path, MVersion baseVersion)
         {
             var versionName = LiteLoaderInstaller.GetVersionName(VanillaVersionName, baseVersion.Id);
+            var tweakClass = element?.GetPropertyValue("tweakClass");
+
+            using var fs = createVersionWriteStream(path, versionName);
             
             if (!string.IsNullOrEmpty(baseVersion.MinecraftArguments))
             {
                 // com.mumfrey.liteloader.launch.LiteLoaderTweaker
                 var newArguments = $"--tweakClass {tweakClass} {baseVersion.MinecraftArguments}";
-                var json = createVersion(versionName, baseVersion.Id, newArguments, null).ToString();
-                writeMetadata(json, path, versionName);
+                await writeVersion(fs, versionName, baseVersion.Id, newArguments, null)
+                    .ConfigureAwait(false);
             }
             else if (baseVersion.GameArguments != null)
             {
@@ -117,48 +120,49 @@ namespace CmlLib.Core.Installer.LiteLoader
                 };
 
                 var newArguments = tweakArg.Concat(baseVersion.GameArguments).ToArray();
-                var json = createVersion(versionName, baseVersion.Id, null, newArguments).ToString();
-                writeMetadata(json, path, versionName);
+                await writeVersion(fs, versionName, baseVersion.Id, null, newArguments)
+                    .ConfigureAwait(false);
             }
 
             return versionName;
         }
+
+        private async Task<Stream> writeVersionToMemory()
+        {
+            var ms = new MemoryStream();
+            await writeVersion(ms, Name, VanillaVersionName, null, null)
+                .ConfigureAwait(false);
+            return ms;
+        }
         
-        public override MVersion GetVersion()
+        public override async Task<MVersion> GetVersionAsync()
         {
-            var json = createVersion(Name, VanillaVersionName, null, null).ToString();
-            return MVersionParser.ParseFromJson(json);
-        }
-
-        public override MVersion GetVersion(MinecraftPath savePath)
-        {
-            var json = createVersion(Name, VanillaVersionName, null, null).ToString();
-            writeMetadata(json, savePath, Name);
-            return MVersionParser.ParseFromJson(json);
-        }
-
-        public override Task<MVersion> GetVersionAsync()
-        {
-            return Task.FromResult(GetVersion());
+            using var ms = await writeVersionToMemory()
+                .ConfigureAwait(false);
+            using var jsonDocument = await JsonDocument.ParseAsync(ms)
+                .ConfigureAwait(false);
+            return MVersionParser.ParseFromJson(jsonDocument);
         }
 
         public override async Task<MVersion> GetVersionAsync(MinecraftPath savePath)
         {
-            var json = createVersion(Name, VanillaVersionName, null, null).ToString();
-            await writeMetadataAsync(json, savePath, Name).ConfigureAwait(false);
-            return MVersionParser.ParseFromJson(json);
-        }
+            using var ms = await writeVersionToMemory()
+                .ConfigureAwait(false);
+            using var fs = createVersionWriteStream(savePath, Name);
 
-        public override void Save(MinecraftPath path)
-        {
-            var json = createVersion(Name, VanillaVersionName, null, null).ToString();
-            writeMetadata(json, path, Name);
+            using var jsonDocument = await JsonDocument.ParseAsync(ms);
+            var copyTask = ms.CopyToAsync(fs)
+                .ConfigureAwait(false);
+            var version = MVersionParser.ParseFromJson(jsonDocument);
+            await copyTask;
+            return version;
         }
 
         public override async Task SaveAsync(MinecraftPath path)
         {
-            var json = createVersion(Name, VanillaVersionName, null, null).ToString();
-            await writeMetadataAsync(json, path, Name).ConfigureAwait(false);
+            using var fs = createVersionWriteStream(path, Name);
+            await writeVersion(fs, Name, VanillaVersionName, null, null)
+                .ConfigureAwait(false);
         }
     }
 }
