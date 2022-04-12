@@ -30,7 +30,8 @@ namespace CmlLib.Core.Files
 
             DownloadFile? result;
 
-            progress?.Report(new DownloadFileChangedEventArgs(MFile.Others, this, version.LoggingClient.Id, 1, 0));
+            progress?.Report(new DownloadFileChangedEventArgs(
+                MFile.Others, this, version.LoggingClient?.LogFile?.Id, 1, 0));
             if (async)
             {
                 result = await Task.Run(() => internalCheckLogFile(path, version))
@@ -40,7 +41,8 @@ namespace CmlLib.Core.Files
             {
                 result = internalCheckLogFile(path, version);
             }
-            progress?.Report(new DownloadFileChangedEventArgs(MFile.Others, this, version.LoggingClient.Id, 1, 1));
+            progress?.Report(new DownloadFileChangedEventArgs(
+                MFile.Others, this, version.LoggingClient?.LogFile?.Id, 1, 1));
 
             if (result == null)
                 return null;
@@ -50,22 +52,26 @@ namespace CmlLib.Core.Files
 
         private DownloadFile? internalCheckLogFile(MinecraftPath path, MVersion version)
         {
-            if (version.LoggingClient == null || string.IsNullOrEmpty(version.LoggingClient.Url))
+            if (version.LoggingClient == null)
                 return null;
+            
+            var url = version.LoggingClient?.LogFile?.Url;
+            if (string.IsNullOrEmpty(url))
+                return null;
+            
+            var id = version.LoggingClient?.LogFile?.Id ?? version.Id;
+            var clientPath = path.GetLogConfigFilePath(id);
 
-            string id = version.LoggingClient.Id ?? version.Id;
-            string clientPath = path.GetLogConfigFilePath(id);
-
-            if (!IOUtil.CheckFileValidation(clientPath, version.LoggingClient.Sha1, CheckHash))
+            if (!IOUtil.CheckFileValidation(clientPath, version.LoggingClient?.LogFile?.Sha1, CheckHash))
             {
-                return new DownloadFile(clientPath, version.LoggingClient.Url)
+                return new DownloadFile(clientPath, url)
                 {
                     Type = MFile.Others,
-                    Name = version.LoggingClient.Id
+                    Name = id
                 };
             }
-            else
-                return null;
+            
+            return null;
         }
     }
 }
