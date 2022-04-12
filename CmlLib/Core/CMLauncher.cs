@@ -51,25 +51,11 @@ namespace CmlLib.Core
         
         public IJavaPathResolver JavaPathResolver { get; set; }
 
-        public MVersionCollection GetAllVersions()
-        {
-            Versions = VersionLoader.GetVersionMetadatas();
-            return Versions;
-        }
-
         public async Task<MVersionCollection> GetAllVersionsAsync()
         {
             Versions = await VersionLoader.GetVersionMetadatasAsync()
                 .ConfigureAwait(false);
             return Versions;
-        }
-
-        public MVersion GetVersion(string versionName)
-        {
-            if (Versions == null)
-                GetAllVersions();
-
-            return Versions!.GetVersion(versionName);
         }
 
         public async Task<MVersion> GetVersionAsync(string versionName)
@@ -80,45 +66,6 @@ namespace CmlLib.Core
             var version = await Versions!.GetVersionAsync(versionName)
                 .ConfigureAwait(false);
             return version;
-        }
-        
-        public string CheckForge(string mcversion, string forgeversion, string java)
-        {
-            if (Versions == null)
-                GetAllVersions();
-
-            var forgeNameOld = MForge.GetOldForgeName(mcversion, forgeversion);
-            var forgeName = MForge.GetForgeName(mcversion, forgeversion);
-
-            var exist = false;
-            var name = "";
-            foreach (var item in Versions!)
-            {
-                if (item.Name == forgeName)
-                {
-                    exist = true;
-                    name = forgeName;
-                    break;
-                }
-                else if (item.Name == forgeNameOld)
-                {
-                    exist = true;
-                    name = forgeNameOld;
-                    break;
-                }
-            }
-
-            if (!exist)
-            {
-                var mforge = new MForge(MinecraftPath, java);
-                mforge.FileChanged += (e) => FileChanged?.Invoke(e);
-                mforge.InstallerOutput += (s, e) => LogOutput?.Invoke(this, e);
-                name = mforge.InstallForge(mcversion, forgeversion);
-
-                GetAllVersions();
-            }
-
-            return name;
         }
 
         public DownloadFile[] CheckLostGameFiles(MVersion version)
@@ -184,21 +131,6 @@ namespace CmlLib.Core
             }
         }
 
-        // not stable
-        public Process CreateProcess(string mcversion, string forgeversion, MLaunchOption option)
-        {
-            CheckAndDownload(GetVersion(mcversion));
-
-            var javaPath = option.JavaPath ?? GetDefaultJavaPath()
-                ?? throw new FileNotFoundException("Cannot find java path");
-            var versionName = CheckForge(mcversion, forgeversion, javaPath);
-
-            return CreateProcess(versionName, option);
-        }
-        
-        public Process CreateProcess(string versionName, MLaunchOption option, bool checkAndDownload=true)
-            => CreateProcess(GetVersion(versionName), option, checkAndDownload);
-
         [MethodTimer.Time]
         public Process CreateProcess(MVersion version, MLaunchOption option, bool checkAndDownload=true)
         {
@@ -240,13 +172,6 @@ namespace CmlLib.Core
             checkLaunchOption(option);
             var launch = new MLaunch(option);
             return await Task.Run(launch.GetProcess).ConfigureAwait(false);
-        }
-
-        public Process Launch(string versionName, MLaunchOption option)
-        {
-            Process process = CreateProcess(versionName, option);
-            process.Start();
-            return process;
         }
 
         public async Task<Process> LaunchAsync(string versionName, MLaunchOption option)
