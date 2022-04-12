@@ -86,7 +86,7 @@ namespace CmlLibCoreSample
             // install LiteLoader
             var liteLoader =
                 (LiteLoaderVersionMetadata)liteLoaderVersions.GetVersionMetadata(selectLiteLoaderVersion);
-            var startVersionName = liteLoader.Install(path, await versions.GetVersionAsync(selectGameVersion));
+            var startVersionName = await liteLoader.InstallAsync(path, await versions.GetVersionAsync(selectGameVersion));
 
             // update version list
             await launcher.GetAllVersionsAsync();
@@ -128,7 +128,7 @@ namespace CmlLibCoreSample
                 Console.WriteLine(vanillaVersionName);
                 var vanillaVersion = await versions.GetVersionAsync(vanillaVersionName);
 
-                var liteLoaderVersionName = liteLoaderVersion.Install(path, vanillaVersion);
+                var liteLoaderVersionName = await liteLoaderVersion.InstallAsync(path, vanillaVersion);
                 versions = await launcher.GetAllVersionsAsync(); // update version lists
 
                 var process = await launcher.CreateProcessAsync(liteLoaderVersionName, new MLaunchOption());

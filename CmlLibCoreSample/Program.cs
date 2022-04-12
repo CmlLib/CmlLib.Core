@@ -9,7 +9,7 @@ namespace CmlLibCoreSample
 {
     class Program
     {
-        static void Main()
+        public static async Task Main()
         {
             Console.WriteLine(CmlLib._Test.tstr);
             var p = new Program();
@@ -19,18 +19,18 @@ namespace CmlLibCoreSample
 
             // There are two login methods, one is using mojang email and password, and the other is using only username
             // Choose one which you want.
-            session = p.PremiumLogin(); // Login by mojang email and password
+            session = await p.PremiumLogin(); // Login by mojang email and password
             //session = p.OfflineLogin(); // Login by username
 
             // log login session information
             Console.WriteLine("Success to login : {0} / {1} / {2}", session.Username, session.UUID, session.AccessToken);
 
             // Launch
-            p.Start(session);
+            await p.Start(session);
             //p.StartAsync(session).GetAwaiter().GetResult();
         }
 
-        MSession PremiumLogin()
+        async Task<MSession> PremiumLogin()
         {
             var login = new MLogin();
 
@@ -38,7 +38,7 @@ namespace CmlLibCoreSample
             // If the cached session is invalid, it refreshes the session automatically.
             // Refreshing the session doesn't always succeed, so you have to handle this.
             Console.WriteLine("Attempting to automatically log in.");
-            var response = login.TryAutoLogin();
+            var response = await login.TryAutoLogin();
 
             if (!response.IsSuccess) // if cached session is invalid and failed to refresh token
             {
@@ -49,7 +49,7 @@ namespace CmlLibCoreSample
                 Console.WriteLine("Input your Mojang password: ");
                 var pw = Console.ReadLine();
 
-                response = login.Authenticate(email, pw);
+                response = await login.Authenticate(email, pw);
 
                 if (!response.IsSuccess)
                 {
@@ -70,7 +70,7 @@ namespace CmlLibCoreSample
             return MSession.GetOfflineSession("tester123");
         }
 
-        void Start(MSession session)
+        async Task Start(MSession session)
         {
             // Initializing Launcher
 
@@ -99,7 +99,7 @@ namespace CmlLibCoreSample
             Console.WriteLine($"Initialized in {launcher.MinecraftPath.BasePath}");
 
             // Get all installed profiles and load all profiles from mojang server
-            var versions = launcher.GetAllVersions(); 
+            var versions = await launcher.GetAllVersionsAsync(); 
 
             foreach (var item in versions) // Display all profiles 
             {
@@ -131,7 +131,7 @@ namespace CmlLibCoreSample
             // var process = await launcher.CreateProcessAsync("fabric-loader-0.11.3-1.16.5") // fabric-loader
 
             Console.WriteLine("input version (example: 1.12.2) : ");
-            var process = launcher.CreateProcess(Console.ReadLine(), launchOption);
+            var process = await launcher.CreateProcessAsync(Console.ReadLine(), launchOption);
 
             //var process = launcher.CreateProcess("1.16.2", "33.0.5", launchOption);
             Console.WriteLine(process.StartInfo.FileName);
@@ -141,40 +141,12 @@ namespace CmlLibCoreSample
             var processUtil = new CmlLib.Utils.ProcessUtil(process);
             processUtil.OutputReceived += (s, e) => Console.WriteLine(e);
             processUtil.StartWithEvents();
-            process.WaitForExit();
+            await process.WaitForExitAsync();
 
             // or just start it without print logs
             // process.Start();
 
             Console.ReadLine();
-        }
-
-        async Task StartAsync(MSession session) // async version
-        {
-            var path = new MinecraftPath();
-            var launcher = new CMLauncher(path);
-
-            System.Net.ServicePointManager.DefaultConnectionLimit = 256;
-
-            var versions = await launcher.GetAllVersionsAsync();
-            foreach (var item in versions)
-            {
-                Console.WriteLine(item.Type + " " + item.Name);
-            }
-
-            launcher.FileChanged += Downloader_ChangeFile;
-            launcher.ProgressChanged += Downloader_ChangeProgress;
-            
-            Console.WriteLine("input version (example: 1.12.2) : ");
-            var versionName = Console.ReadLine();
-            var process = await launcher.CreateProcessAsync(versionName, new MLaunchOption
-            {
-                Session = session,
-                MaximumRamMb = 1024
-            });
-
-            Console.WriteLine(process.StartInfo.Arguments);
-            process.Start();
         }
 
         #region QuickStart

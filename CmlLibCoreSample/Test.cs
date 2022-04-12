@@ -53,7 +53,7 @@ namespace CmlLibCoreSample
                 if (!item.IsLocalVersion)
                     continue;
 
-                var process = launcher.CreateProcess(item.Name, launchOption);
+                var process = await launcher.CreateProcessAsync(item.Name, launchOption);
 
                 //var process = launcher.CreateProcess("1.16.2", "33.0.5", launchOption);
                 Console.WriteLine(process.StartInfo.Arguments);
@@ -72,34 +72,8 @@ namespace CmlLibCoreSample
                 }
 
                 process.Kill();
-                process.WaitForExit();
+                await process.WaitForExitAsync();
             }
-
-            return;
-        }
-
-        void TestStartSync(MSession session)
-        {
-            var path = new MinecraftPath();
-            var launcher = new CMLauncher(path);
-
-            launcher.FileChanged += Downloader_ChangeFile;
-            launcher.ProgressChanged += Downloader_ChangeProgress;
-
-            var versions = launcher.GetAllVersions();
-            foreach (var item in versions)
-            {
-                Console.WriteLine(item.Name);
-            }
-
-            var process = launcher.CreateProcess("1.5.2", new MLaunchOption
-            {
-                Session = session
-            });
-
-            var processUtil = new CmlLib.Utils.ProcessUtil(process);
-            processUtil.OutputReceived += (s, e) => Console.WriteLine(e);
-            processUtil.StartWithEvents();
         }
 
         int endTop = -1;
