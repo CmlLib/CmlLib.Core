@@ -1,18 +1,18 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace CmlLib.Core.Installer.FabricMC
 {
     public class FabricLoader
     {
-        [JsonProperty("separator")]
+        [JsonPropertyName("separator")]
         public string? Separator { get; set; }
-        [JsonProperty("build")]
+        [JsonPropertyName("build")]
         public string? Build { get; set; }
-        [JsonProperty("maven")]
+        [JsonPropertyName("maven")]
         public string? Maven { get; set; }
-        [JsonProperty("version")]
+        [JsonPropertyName("version")]
         public string? Version { get; set; }
-        [JsonProperty("stable")]
+        [JsonPropertyName("stable")]
         public bool Stable { get; set; }
     }
 }
