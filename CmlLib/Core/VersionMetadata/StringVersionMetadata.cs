@@ -8,12 +8,11 @@ namespace CmlLib.Core.VersionMetadata
 {
     public abstract class StringVersionMetadata : MVersionMetadata
     {
-        protected StringVersionMetadata(string id) : base(id)
+        protected StringVersionMetadata(string name) : base(name)
         {
             
         }
         
-        protected abstract string ReadMetadata();
         protected abstract Task<string> ReadMetadataAsync();
 
         private string? prepareSaveMetadata(MinecraftPath path)
@@ -39,13 +38,6 @@ namespace CmlLib.Core.VersionMetadata
 
             return metadataPath;
         }
-
-        protected virtual void SaveMetadata(string metadata, MinecraftPath path)
-        {
-            var metadataPath = prepareSaveMetadata(path);
-            if (!string.IsNullOrEmpty(metadataPath))
-                File.WriteAllText(metadataPath, metadata);
-        }
         
         protected virtual Task SaveMetadataAsync(string metadata, MinecraftPath path)
         {
@@ -56,44 +48,24 @@ namespace CmlLib.Core.VersionMetadata
                 return Task.CompletedTask;
         }
         
-        // note: sync flag
-        // https://docs.microsoft.com/en-us/archive/msdn-magazine/2015/july/async-programming-brownfield-async-development#the-flag-argument-hack
-        private async Task<MVersion?> getAsync(MinecraftPath? savePath, bool parse, bool sync)
+        private async Task<MVersion?> getAsync(MinecraftPath? savePath, bool parse)
         {
             string metadataJson;
-            if (sync)
-                metadataJson = ReadMetadata();
-            else
-                metadataJson = await ReadMetadataAsync().ConfigureAwait(false);
+            metadataJson = await ReadMetadataAsync().ConfigureAwait(false);
 
             if (savePath != null)
-            {
-                if (sync)
-                    SaveMetadata(metadataJson, savePath);
-                else
-                    await SaveMetadataAsync(metadataJson, savePath).ConfigureAwait(false);
-            }
+                await SaveMetadataAsync(metadataJson, savePath).ConfigureAwait(false);
 
             return parse ? MVersionParser.ParseFromJson(metadataJson) : null;
         }
-        
-        public override MVersion GetVersion()
-            => getAsync(null, true, true).GetAwaiter().GetResult()!;
-        
-
-        public override MVersion GetVersion(MinecraftPath savePath)
-            => getAsync(savePath, true, true).GetAwaiter().GetResult()!;
 
         public override Task<MVersion> GetVersionAsync()
-            => getAsync(null, true, false)!;
+            => getAsync(null, true)!;
 
         public override Task<MVersion> GetVersionAsync(MinecraftPath savePath)
-            => getAsync(savePath, true, false)!;
-
-        public override void Save(MinecraftPath path)
-            => getAsync(path, false, true).GetAwaiter().GetResult();
+            => getAsync(savePath, true)!;
 
         public override Task SaveAsync(MinecraftPath path)
-            => getAsync(path, false, false);
+            => getAsync(path, false);
     }
 }

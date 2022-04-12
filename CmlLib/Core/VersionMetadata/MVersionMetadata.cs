@@ -1,27 +1,30 @@
 ﻿using System;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using CmlLib.Core.Version;
-using Newtonsoft.Json;
 
 namespace CmlLib.Core.VersionMetadata
 {
     public abstract class MVersionMetadata
     {
-        protected MVersionMetadata(string id)
+        protected MVersionMetadata(string name)
         {
-            this.Name = id;
+            this.Name = name;
         }
 
         public bool IsLocalVersion { get; set; }
 
-        [JsonProperty("id")] public string Name { get; private set; }
+        [JsonPropertyName("id")] 
+        public string Name { get; private set; }
 
-        [JsonProperty("type")] public string? Type { get; set; }
+        [JsonPropertyName("type")] 
+        public string? Type { get; set; }
 
         public MVersionType MType { get; set; }
 
-        [JsonProperty("releaseTime")] public string? ReleaseTimeStr { get; set; }
-
+        [JsonPropertyName("releaseTime")] 
+        public string? ReleaseTimeStr { get; set; }
+        [JsonIgnore]
         public DateTime? ReleaseTime
         {
             get
@@ -32,7 +35,8 @@ namespace CmlLib.Core.VersionMetadata
             }
         }
         
-        [JsonProperty("url")] public string? Path { get; set; }
+        [JsonPropertyName("url")] 
+        public string? Path { get; set; }
 
         public override bool Equals(object? obj)
         {
@@ -59,11 +63,8 @@ namespace CmlLib.Core.VersionMetadata
             return Name.GetHashCode();
         }
 
-        public abstract MVersion GetVersion();
-        public abstract MVersion GetVersion(MinecraftPath savePath);
         public abstract Task<MVersion> GetVersionAsync();
         public abstract Task<MVersion> GetVersionAsync(MinecraftPath savePath);
-        public abstract void Save(MinecraftPath path);
         public abstract Task SaveAsync(MinecraftPath path);
     }
 }
