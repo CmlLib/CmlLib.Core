@@ -2,23 +2,38 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using CmlLib.Core.Downloader;
 using CmlLib.Core.Installer;
 using CmlLib.Core.Java;
 using CmlLib.Core.Version;
 using CmlLib.Utils;
-using Newtonsoft.Json.Linq;
 
 namespace CmlLib.Core.Files
 {
     public class JavaChecker : IFileChecker
     {
+        class JavaCheckResult
+        {
+            public string? JavaBinaryPath { get; set; }
+            public DownloadFile[]? JavaFiles { get; set; }
+        }
+        
         public string JavaManifestServer { get; set; } = MojangServer.JavaManifest;
         public bool CheckHash { get; set; } = true;
 
         public DownloadFile[]? CheckFiles(MinecraftPath path, MVersion version,
+            IProgress<DownloadFileChangedEventArgs>? downloadProgress)
+        {
+            return CheckFilesTaskAsync(path, version, downloadProgress)
+                .ConfigureAwait(false)
+                .GetAwaiter().GetResult();
+        }
+
+        public async Task<DownloadFile[]?> CheckFilesTaskAsync(MinecraftPath path, MVersion version,
             IProgress<DownloadFileChangedEventArgs>? downloadProgress)
         {
             if (!string.IsNullOrEmpty(version.JavaBinaryPath) && File.Exists(version.JavaBinaryPath))
@@ -28,57 +43,65 @@ namespace CmlLib.Core.Files
             if (string.IsNullOrEmpty(javaVersion))
                 javaVersion = MinecraftJavaPathResolver.JreLegacyVersionName;
 
-            var files = CheckJava(
-                javaVersion, path, downloadProgress, out string binPath);
+            var result = await internalCheckJava(javaVersion, path, downloadProgress)
+                .ConfigureAwait(false);
 
-            version.JavaBinaryPath = binPath;
-            return files;
+            version.JavaBinaryPath = result.JavaBinaryPath;
+            return result.JavaFiles;
         }
 
-        public Task<DownloadFile[]?> CheckFilesTaskAsync(MinecraftPath path, MVersion version,
+        private async Task<JavaCheckResult> internalCheckJava(string javaVersion, MinecraftPath path,
             IProgress<DownloadFileChangedEventArgs>? downloadProgress)
         {
-            return Task.Run(() => CheckFiles(path, version, downloadProgress));
-        }
-
-        public DownloadFile[] CheckJava(string javaVersion, MinecraftPath path,
-            IProgress<DownloadFileChangedEventArgs>? downloadProgress, out string binPath)
-        {
             var javaPathResolver = new MinecraftJavaPathResolver(path);
-            binPath = javaPathResolver.GetJavaBinaryPath(javaVersion, MRule.OSName);
+            var binPath = javaPathResolver.GetJavaBinaryPath(javaVersion, MRule.OSName);
+            DownloadFile[]? downloadFiles;
 
             try
             {
                 var osName = getJavaOSName(); // safe
-                var javaVersions = getJavaVersionsForOs(osName); // Net, JsonParse Exception
+                
+                var response = await HttpUtil.HttpClient.GetAsync(JavaManifestServer);
+                var str = await response.Content.ReadAsStringAsync();
+                using var jsonDocument = JsonDocument.Parse(str);
+                
+                var root = jsonDocument.RootElement;
+                var javaVersions = root.SafeGetProperty(osName);
+                
                 if (javaVersions != null)
                 {
-                    // Net, JsonParse
-                    var javaManifest = getJavaVersionManifest(javaVersions, javaVersion);
-                    
+                    var javaManifest = await getJavaVersionManifest(javaVersions.Value, javaVersion);
+
                     if (javaManifest == null && javaVersion != MinecraftJavaPathResolver.JreLegacyVersionName)
-                        javaManifest = getJavaVersionManifest(javaVersions, MinecraftJavaPathResolver.JreLegacyVersionName);
+                        javaManifest = await getJavaVersionManifest(javaVersions.Value, MinecraftJavaPathResolver.JreLegacyVersionName);
                     if (javaManifest == null)
-                        return legacyJavaChecker(path, out binPath);
+                        return await legacyJavaChecker(path);
 
-                    var files = javaManifest["files"] as JObject;
+                    using var manifestDocument = JsonDocument.Parse(javaManifest);
+                    var files = manifestDocument.RootElement.SafeGetProperty("files");
                     if (files == null)
-                        return legacyJavaChecker(path, out binPath);
+                        return await legacyJavaChecker(path);
 
-                    return toDownloadFiles(files, javaPathResolver.GetJavaDirPath(javaVersion), downloadProgress);
+                    downloadFiles = toDownloadFiles(files.Value, javaPathResolver.GetJavaDirPath(javaVersion), downloadProgress);
                 }
                 else
-                    return legacyJavaChecker(path, out binPath);
+                    return await legacyJavaChecker(path);
             }
             catch (Exception e)
             {
                 Debug.WriteLine(e);
 
                 if (string.IsNullOrEmpty(binPath))
-                    return legacyJavaChecker(path, out binPath);
+                    return await legacyJavaChecker(path);
                 else
-                    return new DownloadFile[] { };
+                    downloadFiles = new DownloadFile[] { };
             }
+
+            return new JavaCheckResult()
+            {
+                JavaFiles = downloadFiles,
+                JavaBinaryPath = binPath
+            };
         }
 
         private string getJavaOSName()
@@ -106,56 +129,38 @@ namespace CmlLib.Core.Files
 
             return osName;
         }
-        
-        private JObject? getJavaVersionsForOs(string osName)
-        {
-            string response;
-            
-            using (var wc = new WebClient())
-            {
-                response = wc.DownloadString(JavaManifestServer); // ex
-            }
 
-            var job = JObject.Parse(response); // ex
-            return job[osName] as JObject;
-        }
-
-        private JObject? getJavaVersionManifest(JObject job, string version)
+        private async Task<string?> getJavaVersionManifest(JsonElement job, string version)
         {
-            var versionArr = job[version] as JArray;
-            if (versionArr == null || versionArr.Count == 0)
+            var versionArr = job.SafeGetProperty(version)?.EnumerateArray();
+            if (versionArr == null)
                 return null;
-            
-            var manifestUrl = versionArr[0]["manifest"]?["url"]?.ToString();
+
+            var firstManifest = versionArr.Value.FirstOrDefault();
+            var manifestUrl = firstManifest.SafeGetProperty("manifest")?.SafeGetProperty("url")?.GetString();
             if (string.IsNullOrEmpty(manifestUrl))
                 return null;
 
-            string response;
-            using (var wc = new WebClient())
-            {
-                response = wc.DownloadString(manifestUrl); // ex
-            }
-
-            return JObject.Parse(response); // ex
+            return await HttpUtil.HttpClient.GetStringAsync(manifestUrl);
         }
 
-        private DownloadFile[] toDownloadFiles(JObject manifest, string path,
+        private DownloadFile[] toDownloadFiles(JsonElement manifest, string path,
             IProgress<DownloadFileChangedEventArgs>? progress)
         {
             var progressed = 0;
-            var files = new List<DownloadFile>(manifest.Count);
-            foreach (var prop in manifest)
+            var files = new List<DownloadFile>();
+            foreach (var prop in manifest.EnumerateObject())
             {
-                var name = prop.Key;
+                var name = prop.Name;
                 var value = prop.Value;
 
-                var type = value?["type"]?.ToString();
+                var type = value.GetPropertyValue("type");
                 if (type == "file")
                 {
                     var filePath = Path.Combine(path, name);
                     filePath = IOUtil.NormalizePath(filePath);
-                    
-                    bool.TryParse(value?["executable"]?.ToString(), out bool executable);
+
+                    var executable = value.SafeGetProperty("executable")?.GetBoolean() ?? false;
                     
                     var file = checkJavaFile(value, filePath);
                     if (file != null)
@@ -177,24 +182,23 @@ namespace CmlLib.Core.Files
                 
                 progressed++;
                 progress?.Report(new DownloadFileChangedEventArgs(
-                    MFile.Runtime, this, name, manifest.Count, progressed));
+                    MFile.Runtime, this, name, progressed, progressed));
             }
             return files.ToArray();
         }
 
-        private DownloadFile? checkJavaFile(JToken? value, string filePath)
+        private DownloadFile? checkJavaFile(JsonElement value, string filePath)
         {
-            var downloadObj = value?["downloads"]?["raw"];
+            var downloadObj = value.SafeGetProperty("downloads")?.SafeGetProperty("raw");
             if (downloadObj == null)
                 return null;
-                    
-            var url = downloadObj["url"]?.ToString();
+
+            var url = downloadObj.Value.GetPropertyValue("url");
             if (string.IsNullOrEmpty(url))
                 return null;
-                    
-            var hash = downloadObj["sha1"]?.ToString();
-            var sizeStr = downloadObj["size"]?.ToString();
-            long.TryParse(sizeStr, out long size);
+
+            var hash = downloadObj.Value.GetPropertyValue("sha1");
+            var size = downloadObj.Value.SafeGetProperty("size")?.GetInt64() ?? 0;
 
             if (IOUtil.CheckFileValidation(filePath, hash, CheckHash))
                 return null;
@@ -205,20 +209,24 @@ namespace CmlLib.Core.Files
             };
         }
 
-        private DownloadFile[] legacyJavaChecker(MinecraftPath path, out string binPath)
+        private async Task<JavaCheckResult> legacyJavaChecker(MinecraftPath path)
         {
             var javaPathResolver = new MinecraftJavaPathResolver(path);
             string legacyJavaPath = javaPathResolver.GetJavaDirPath(MinecraftJavaPathResolver.CmlLegacyVersionName);
             
             MJava mJava = new MJava(legacyJavaPath);
-            binPath = mJava.GetBinaryPath();
+            var result = new JavaCheckResult()
+            {
+                JavaBinaryPath = mJava.GetBinaryPath(),
+                JavaFiles = null
+            };
             
             try
             {
                 if (mJava.CheckJavaExistence())
-                    return new DownloadFile[] {};
+                    return result;
 
-                string javaUrl = mJava.GetJavaUrl(); 
+                string javaUrl = await mJava.GetJavaUrlAsync(); 
                 string lzmaPath = Path.Combine(Path.GetTempPath(), "jre.lzma");
                 string zipPath = Path.Combine(Path.GetTempPath(), "jre.zip");
                             
@@ -239,13 +247,14 @@ namespace CmlLib.Core.Files
                         })
                     }
                 };
+                result.JavaFiles = new[] { file };
 
-                return new[] {file};
+                return result;
             }
             catch (Exception e)
             {
                 Debug.WriteLine(e);
-                return new DownloadFile[] {};
+                return result;
             }
         }
 
