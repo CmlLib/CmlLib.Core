@@ -42,6 +42,10 @@ Support all version, forge, optifine
         <PackageReference Include="SharpZipLib" Version="1.3.3" />
         <PackageReference Include="System.Text.Json" Version="6.0.2" />
         <None Include="../icon.png" Pack="true" Visible="false" PackagePath="" />
+
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+            <_Parameter1>CmlLib.Core.Test</_Parameter1>
+        </AssemblyAttribute>
     </ItemGroup>
 
 </Project>

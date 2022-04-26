@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CmlLibWinFormSample", "CmlL
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CmlLib", "CmlLib\CmlLib.csproj", "{AF1C09F9-C4BD-420A-85B9-9EB454F55FCD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CmlLib.Core.Test", "CmlLib.Core.Test\CmlLib.Core.Test.csproj", "{39BB9440-1CBC-42DD-BBCF-E7C0FDE5719A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{AF1C09F9-C4BD-420A-85B9-9EB454F55FCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF1C09F9-C4BD-420A-85B9-9EB454F55FCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AF1C09F9-C4BD-420A-85B9-9EB454F55FCD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39BB9440-1CBC-42DD-BBCF-E7C0FDE5719A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39BB9440-1CBC-42DD-BBCF-E7C0FDE5719A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39BB9440-1CBC-42DD-BBCF-E7C0FDE5719A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39BB9440-1CBC-42DD-BBCF-E7C0FDE5719A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
