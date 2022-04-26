@@ -76,12 +76,6 @@ namespace CmlLib.Core
 
         public static string ToFullPath(string str, string prepath)
         {
-            // [de.oceanlabs.mcp:mcp_config:1.16.2-20200812.004259@zip]
-            // \libraries\de\oceanlabs\mcp\mcp_config\1.16.2-20200812.004259\mcp_config-1.16.2-20200812.004259.zip
-
-            // [net.minecraft:client:1.16.2-20200812.004259:slim]
-            // /libraries\net\minecraft\client\1.16.2-20200812.004259\client-1.16.2-20200812.004259-slim.jar
-
             if (str.StartsWith("[") && str.EndsWith("]") && !string.IsNullOrEmpty(prepath))
             {
                 var innerStr = str.TrimStart('[').TrimEnd(']').Split('@');

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,31 +17,6 @@ namespace CmlLib.Utils
                 .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
                 .TrimEnd(Path.DirectorySeparatorChar);
         }
-        
-        public static void DeleteDirectory(string targetDir)
-        {
-            try
-            {
-                string[] files = Directory.GetFiles(targetDir);
-                string[] dirs = Directory.GetDirectories(targetDir);
-
-                foreach (string file in files)
-                {
-                    File.Delete(file);
-                }
-
-                foreach (string dir in dirs)
-                {
-                    DeleteDirectory(dir);
-                }
-
-                Directory.Delete(targetDir, true);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(ex);
-            }
-        }
 
         public static string CombinePath(string[] paths)
         {
@@ -53,39 +29,6 @@ namespace CmlLib.Utils
                     else
                         return path;
                 }));
-        }
-
-        public static void CopyDirectory(string org, string des, bool overwrite)
-        {
-            var dir = new DirectoryInfo(org);
-            if (!dir.Exists)
-                return;
-
-            copyDirectoryFiles(org, des, "", overwrite);
-        }
-
-        private static void copyDirectoryFiles(string org, string des, string path, bool overwrite)
-        {
-            var orgpath = Path.Combine(org, path);
-            var orgdir = new DirectoryInfo(orgpath);
-
-            var despath = Path.Combine(des, path);
-            if (!Directory.Exists(despath))
-                Directory.CreateDirectory(despath);
-
-            foreach (var dir in orgdir.GetDirectories("*", SearchOption.TopDirectoryOnly))
-            {
-                var innerpath = Path.Combine(path, dir.Name);
-                copyDirectoryFiles(org, des, innerpath, overwrite);
-            }
-
-            foreach (var file in orgdir.GetFiles("*", SearchOption.TopDirectoryOnly))
-            {
-                var innerpath = Path.Combine(path, file.Name);
-                var desfile = Path.Combine(des, innerpath);
-
-                file.CopyTo(desfile, overwrite);
-            }
         }
 
         public static bool CheckSHA1(string path, string? compareHash)
