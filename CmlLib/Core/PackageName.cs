@@ -62,7 +62,7 @@ namespace CmlLib.Core
 
         public string GetDirectory()
         {
-            string dir = Package.Replace(".", "/");
+            string dir = Package.Replace('.', Path.DirectorySeparatorChar);
             return Path.Combine(dir, Name, Version);
         }
 
