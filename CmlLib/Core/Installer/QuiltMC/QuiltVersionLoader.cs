@@ -35,9 +35,10 @@ namespace CmlLib.Core.Installer.QuiltMC
                 else
                     loaders = await GetQuiltLoadersAsync().ConfigureAwait(false);
 
-                LoaderVersion = loaders[0].Version;
-                if (loaders.Length == 0 || string.IsNullOrEmpty(LoaderVersion))
+                if (loaders.Length == 0 || string.IsNullOrEmpty(loaders[0].Version))
                     throw new KeyNotFoundException("can't find loaders");
+                
+                LoaderVersion = loaders[0].Version;
             }
 
             string url = "https://meta.quiltmc.org/v3/versions/game";
