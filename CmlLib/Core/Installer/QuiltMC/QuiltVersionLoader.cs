@@ -4,20 +4,19 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using CmlLib.Core.VersionLoader;
-using CmlLib.Core.VersionMetadata;
 
-namespace CmlLib.Core.Installer.FabricMC
+namespace CmlLib.Core.Installer.QuiltMC
 {
-    public class FabricVersionLoader : IVersionLoader
+    public class QuiltVersionLoader : IVersionLoader
     {
-        public static readonly string ApiServer = "https://meta.fabricmc.net";
-        private static readonly string LoaderUrl = ApiServer + "/v2/versions/loader";
-        
+        public static readonly string ApiServer = "https://meta.quiltmc.org";
+        private static readonly string LoaderUrl = ApiServer + "/v3/versions/loader";
+
         public string? LoaderVersion { get; set; }
 
         protected string GetVersionName(string version, string loaderVersion)
         {
-            return $"fabric-loader-{loaderVersion}-{version}";
+            return $"quilt-loader-{loaderVersion}-{version}";
         }
 
         public MVersionCollection GetVersionMetadatas()
@@ -30,19 +29,19 @@ namespace CmlLib.Core.Installer.FabricMC
         {
             if (string.IsNullOrEmpty(LoaderVersion))
             {
-                FabricLoader[] loaders;
+                QuiltLoader[] loaders;
                 if (sync)
-                    loaders = GetFabricLoaders();
+                    loaders = GetQuiltLoaders();
                 else
-                    loaders = await GetFabricLoadersAsync().ConfigureAwait(false);
-                
+                    loaders = await GetQuiltLoadersAsync().ConfigureAwait(false);
+
                 if (loaders.Length == 0 || string.IsNullOrEmpty(loaders[0].Version))
                     throw new KeyNotFoundException("can't find loaders");
                 
                 LoaderVersion = loaders[0].Version;
             }
 
-            string url = "https://meta.fabricmc.net/v2/versions/game/intermediary";
+            string url = "https://meta.quiltmc.org/v3/versions/game";
             string res;
             using (var wc = new WebClient())
             {
@@ -67,14 +66,14 @@ namespace CmlLib.Core.Installer.FabricMC
                 if (string.IsNullOrEmpty(versionName))
                     continue;
 
-                string jsonUrl = $"{ApiServer}/v2/versions/loader/{versionName}/{loader}/profile/json";
+                string jsonUrl = $"{ApiServer}/v3/versions/loader/{versionName}/{loader}/profile/json";
 
                 string id = GetVersionName(versionName, loader);
                 var versionMetadata = new WebVersionMetadata(id)
                 {
                     MType = MVersionType.Custom,
                     Path = jsonUrl,
-                    Type = "fabric"
+                    Type = "quilt"
                 };
                 versionList.Add(versionMetadata);
             }
@@ -82,7 +81,7 @@ namespace CmlLib.Core.Installer.FabricMC
             return versionList;
         }
 
-        public FabricLoader[] GetFabricLoaders()
+        public QuiltLoader[] GetQuiltLoaders()
         {
             using var wc = new WebClient();
             var res = wc.DownloadString(LoaderUrl);
@@ -90,7 +89,7 @@ namespace CmlLib.Core.Installer.FabricMC
             return parseLoaders(res);
         }
 
-        public async Task<FabricLoader[]> GetFabricLoadersAsync()
+        public async Task<QuiltLoader[]> GetQuiltLoadersAsync()
         {
             using var wc = new WebClient();
             var res = await wc.DownloadStringTaskAsync(LoaderUrl)
@@ -99,13 +98,13 @@ namespace CmlLib.Core.Installer.FabricMC
             return parseLoaders(res);
         }
 
-        private FabricLoader[] parseLoaders(string res)
+        private QuiltLoader[] parseLoaders(string res)
         {
             var jarr = JArray.Parse(res);
-            var loaderList = new List<FabricLoader>(jarr.Count);
+            var loaderList = new List<QuiltLoader>(jarr.Count);
             foreach (var item in jarr)
             {
-                var obj = item.ToObject<FabricLoader>();
+                var obj = item.ToObject<QuiltLoader>();
                 if (obj != null)
                     loaderList.Add(obj);
             }
