@@ -7,7 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
+using CmlLib.Core.Java;
 
 namespace CmlLib.Core
 {
@@ -29,6 +31,8 @@ namespace CmlLib.Core
                 e => FileChanged?.Invoke(e));
             pProgressChanged = new Progress<ProgressChangedEventArgs>(
                 e => ProgressChanged?.Invoke(this, e));
+
+            JavaPathResolver = new MinecraftJavaPathResolver(mc);
         }
 
         public event DownloadFileChangedHandler? FileChanged;
@@ -40,11 +44,12 @@ namespace CmlLib.Core
 
         public MinecraftPath MinecraftPath { get; private set; }
         public MVersionCollection? Versions { get; private set; }
-
         public IVersionLoader VersionLoader { get; set; }
+        
         public FileCheckerCollection GameFileCheckers { get; private set; }
-
         public IDownloader? FileDownloader { get; set; }
+        
+        public IJavaPathResolver JavaPathResolver { get; set; }
 
         public MVersionCollection GetAllVersions()
         {
@@ -59,20 +64,20 @@ namespace CmlLib.Core
             return Versions;
         }
 
-        public MVersion GetVersion(string versionname)
+        public MVersion GetVersion(string versionName)
         {
             if (Versions == null)
                 GetAllVersions();
 
-            return Versions!.GetVersion(versionname);
+            return Versions!.GetVersion(versionName);
         }
 
-        public async Task<MVersion> GetVersionAsync(string versionname)
+        public async Task<MVersion> GetVersionAsync(string versionName)
         {
             if (Versions == null)
                 await GetAllVersionsAsync().ConfigureAwait(false);
 
-            var version = await Versions!.GetVersionAsync(versionname)
+            var version = await Versions!.GetVersionAsync(versionName)
                 .ConfigureAwait(false);
             return version;
         }
@@ -184,7 +189,9 @@ namespace CmlLib.Core
         {
             CheckAndDownload(GetVersion(mcversion));
 
-            var versionName = CheckForge(mcversion, forgeversion, option.JavaPath);
+            var javaPath = option.JavaPath ?? GetDefaultJavaPath()
+                ?? throw new FileNotFoundException("Cannot find java path");
+            var versionName = CheckForge(mcversion, forgeversion, javaPath);
 
             return CreateProcess(versionName, option);
         }
@@ -260,7 +267,20 @@ namespace CmlLib.Core
                     option.StartVersion.JavaBinaryPath = option.JavaPath;
                 else if (!string.IsNullOrEmpty(option.JavaVersion))
                     option.StartVersion.JavaVersion = option.JavaVersion;
+                else if (string.IsNullOrEmpty(option.StartVersion.JavaBinaryPath))
+                    option.StartVersion.JavaBinaryPath = 
+                        GetJavaPath(option.StartVersion) ?? GetDefaultJavaPath();
             }
         }
+
+        public string? GetJavaPath(MVersion version)
+        {
+            if (string.IsNullOrEmpty(version.JavaVersion))
+                return null;
+            
+            return JavaPathResolver.GetJavaBinaryPath(version.JavaVersion, MRule.OSName);
+        }
+
+        public string? GetDefaultJavaPath() => JavaPathResolver.GetDefaultJavaBinaryPath();
     }
 }

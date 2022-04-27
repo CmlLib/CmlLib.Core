@@ -23,6 +23,8 @@ namespace CmlLib.Utils
             Process.StartInfo.UseShellExecute = false;
             Process.StartInfo.RedirectStandardError = true;
             Process.StartInfo.RedirectStandardOutput = true;
+            Process.StartInfo.StandardOutputEncoding = System.Text.Encoding.UTF8;
+            Process.StartInfo.StandardErrorEncoding = System.Text.Encoding.UTF8;
             Process.EnableRaisingEvents = true;
             Process.ErrorDataReceived += (s, e) => OutputReceived?.Invoke(this, e.Data ?? "");
             Process.OutputDataReceived += (s, e) => OutputReceived?.Invoke(this, e.Data ?? "");

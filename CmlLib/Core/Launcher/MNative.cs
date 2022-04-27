@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using CmlLib.Core.Version;
+﻿using CmlLib.Core.Version;
 using CmlLib.Utils;
 using System.IO;
 

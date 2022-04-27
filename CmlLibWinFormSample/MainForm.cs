@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using CmlLib.Core.Downloader;
+using CmlLib.Core.Version;
 
 namespace CmlLibWinFormSample
 {
@@ -26,8 +27,6 @@ namespace CmlLibWinFormSample
         readonly MSession session;
         MinecraftPath gamePath; 
         string javaPath;
-        
-        GameLog logForm;
 
         private async void MainForm_Shown(object sender, EventArgs e)
         {
@@ -40,6 +39,7 @@ namespace CmlLibWinFormSample
 
         private async Task initializeLauncher(MinecraftPath path)
         {
+            lbUsername.Text = session.Username;
             txtPath.Text = path.BasePath;
             this.gamePath = path;
             
@@ -77,6 +77,13 @@ namespace CmlLibWinFormSample
         private void btnSetLastVersion_Click(object sender, EventArgs e)
         {
             cbVersion.Text = launcher.Versions?.LatestReleaseVersion?.Name;
+        }
+        
+        private void btnSortFilter_Click(object sender, EventArgs e)
+        {
+            var form = new VersionSortOptionForm(launcher, new MVersionSortOption());
+            form.ShowDialog();
+            
         }
 
         // Start Game
@@ -160,6 +167,9 @@ namespace CmlLibWinFormSample
 
                 // process.Start(); // Just start game, or
                 StartProcess(process); // Start Process with debug options
+
+                var gameLog = new GameLog(process);
+                gameLog.Show();
             }
             catch (FormatException fex) // int.Parse exception
             {
@@ -184,13 +194,6 @@ namespace CmlLibWinFormSample
             }
             finally
             {
-                // re open log form
-                if (logForm != null)
-                    logForm.Close();
-
-                logForm = new GameLog();
-                logForm.Show();
-
                 // enable ui
                 setUIEnabled(true);
             }
@@ -293,35 +296,19 @@ namespace CmlLibWinFormSample
         private void StartProcess(Process process)
         {
             File.WriteAllText("launcher.txt", process.StartInfo.Arguments);
-            output(process.StartInfo.Arguments);
-
+            
             // process options to display game log
 
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.RedirectStandardError = true;
             process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.StandardErrorEncoding = System.Text.Encoding.UTF8;
+            process.StartInfo.StandardOutputEncoding = System.Text.Encoding.UTF8;
             process.EnableRaisingEvents = true;
-            process.ErrorDataReceived += Process_ErrorDataReceived;
-            process.OutputDataReceived += Process_OutputDataReceived;
 
             process.Start();
             process.BeginErrorReadLine();
             process.BeginOutputReadLine();
-        }
-
-        private void Process_OutputDataReceived(object sender, DataReceivedEventArgs e)
-        {
-            output(e.Data);
-        }
-
-        private void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
-        {
-            output(e.Data);
-        }
-
-        void output(string msg)
-        {
-            GameLog.AddLog(msg);
         }
 
         private void btnChangelog_Click(object sender, EventArgs e)

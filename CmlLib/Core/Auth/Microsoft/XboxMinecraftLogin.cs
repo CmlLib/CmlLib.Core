@@ -20,6 +20,8 @@ namespace CmlLib.Core.Auth.Microsoft
         private string readRes(WebResponse res)
         {
             using var resStream = res.GetResponseStream();
+            if (resStream == null)
+                return "";
             using var sr = new StreamReader(resStream);
             return sr.ReadToEnd();
         }
@@ -38,7 +40,8 @@ namespace CmlLib.Core.Auth.Microsoft
             var res = req.GetResponse();
             var resBody = readRes(res);
 
-            var obj = JsonConvert.DeserializeObject<AuthenticationResponse>(resBody);
+            var obj = JsonConvert.DeserializeObject<AuthenticationResponse>(resBody)
+                ?? new AuthenticationResponse();
             obj.ExpiresOn = DateTime.Now.AddSeconds(obj.ExpiresIn);
             return obj;
         }

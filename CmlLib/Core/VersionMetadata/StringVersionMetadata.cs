@@ -1,9 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using CmlLib.Core.Version;
 using CmlLib.Utils;
 
-namespace CmlLib.Core.Version
+namespace CmlLib.Core.VersionMetadata
 {
     public abstract class StringVersionMetadata : MVersionMetadata
     {

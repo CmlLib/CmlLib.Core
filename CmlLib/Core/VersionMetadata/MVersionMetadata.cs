@@ -1,7 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using CmlLib.Core.Version;
 using Newtonsoft.Json;
 
-namespace CmlLib.Core.Version
+namespace CmlLib.Core.VersionMetadata
 {
     public abstract class MVersionMetadata
     {
@@ -18,8 +20,18 @@ namespace CmlLib.Core.Version
 
         public MVersionType MType { get; set; }
 
-        [JsonProperty("releaseTime")] public string? ReleaseTime { get; set; }
+        [JsonProperty("releaseTime")] public string? ReleaseTimeStr { get; set; }
 
+        public DateTime? ReleaseTime
+        {
+            get
+            {
+                if (DateTime.TryParse(this.ReleaseTimeStr, out DateTime dt))
+                    return dt;
+                return null;
+            }
+        }
+        
         [JsonProperty("url")] public string? Path { get; set; }
 
         public override bool Equals(object? obj)

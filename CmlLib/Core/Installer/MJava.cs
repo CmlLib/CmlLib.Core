@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+using CmlLib.Core.Java;
 
 namespace CmlLib.Core.Installer
 {
@@ -20,78 +21,54 @@ namespace CmlLib.Core.Installer
 
         private IProgress<ProgressChangedEventArgs>? pProgressChanged;
 
+        public IJavaPathResolver JavaPathResolver { get; set; }
+
         public MJava() : this(DefaultRuntimeDirectory) { }
 
         public MJava(string runtimePath)
         {
             RuntimeDirectory = runtimePath;
-        }
-
-        public static string GetDefaultBinaryName()
-        {
-            string binaryName = "java";
-            if (MRule.OSName == MRule.Windows)
-                binaryName = "javaw.exe";
-            return binaryName;
+            JavaPathResolver = new MinecraftJavaPathResolver(runtimePath);
         }
 
         public string GetBinaryPath()
-            => GetBinaryPath(GetDefaultBinaryName());
-        
-        public string GetBinaryPath(string binaryName)
-            => Path.Combine(RuntimeDirectory, "bin", binaryName);
-
-        public string CheckJava()
-        {
-            string binaryName = GetDefaultBinaryName();
-            return CheckJava(binaryName);
-        }
+            => JavaPathResolver.GetJavaBinaryPath(MinecraftJavaPathResolver.CmlLegacyVersionName, MRule.OSName);
 
         public bool CheckJavaExistence()
-            => CheckJavaExistence(GetDefaultBinaryName());
+            => File.Exists(GetBinaryPath());
 
-        public bool CheckJavaExistence(string binaryName)
-            => File.Exists(GetBinaryPath(binaryName));
-        
-
-        public string CheckJava(string binaryName)
+        public string CheckJava()
         {
             pProgressChanged = new Progress<ProgressChangedEventArgs>(
                 (e) => ProgressChanged?.Invoke(this, e));
 
-            string javapath = GetBinaryPath(binaryName);
+            string javaPath = GetBinaryPath();
 
-            if (!CheckJavaExistence(binaryName))
+            if (!CheckJavaExistence())
             {
                 string javaUrl = GetJavaUrl();
                 string lzmaPath = downloadJavaLzma(javaUrl);
 
                 decompressJavaFile(lzmaPath);
 
-                if (!File.Exists(javapath))
+                if (!File.Exists(javaPath))
                     throw new WebException("failed to download");
 
                 if (MRule.OSName != MRule.Windows)
-                    NativeMethods.Chmod(javapath, NativeMethods.Chmod755);
+                    NativeMethods.Chmod(javaPath, NativeMethods.Chmod755);
             }
 
-            return javapath;
+            return javaPath;
         }
 
         public Task<string> CheckJavaAsync()
             => CheckJavaAsync(null);
-
-        public Task<string> CheckJavaAsync(IProgress<ProgressChangedEventArgs>? progress)
+        
+        public async Task<string> CheckJavaAsync(IProgress<ProgressChangedEventArgs>? progress)
         {
-            string binaryName = GetDefaultBinaryName();
-            return CheckJavaAsync(binaryName, progress);
-        }
+            string javapath = GetBinaryPath();
 
-        public async Task<string> CheckJavaAsync(string binaryName, IProgress<ProgressChangedEventArgs>? progress)
-        {
-            string javapath = GetBinaryPath(binaryName);
-
-            if (!CheckJavaExistence(binaryName))
+            if (!CheckJavaExistence())
             {
                 if (progress == null)
                 {

@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading.Tasks;
 using CmlLib.Core.Downloader;
 using CmlLib.Core.Installer;
+using CmlLib.Core.Java;
 using CmlLib.Core.Version;
 using CmlLib.Utils;
 using Newtonsoft.Json.Linq;
@@ -15,9 +16,8 @@ namespace CmlLib.Core.Files
     public class JavaChecker : IFileChecker
     {
         public string JavaManifestServer { get; set; } = MojangServer.JavaManifest;
-        public string JavaBinaryName { get; set; } = MJava.GetDefaultBinaryName();
         public bool CheckHash { get; set; } = true;
-        
+
         public DownloadFile[]? CheckFiles(MinecraftPath path, MVersion version,
             IProgress<DownloadFileChangedEventArgs>? downloadProgress)
         {
@@ -26,9 +26,9 @@ namespace CmlLib.Core.Files
             
             var javaVersion = version.JavaVersion;
             if (string.IsNullOrEmpty(javaVersion))
-                javaVersion = "jre-legacy";
+                javaVersion = MinecraftJavaPathResolver.JreLegacyVersionName;
 
-            var files = internalCheckFile(
+            var files = CheckJava(
                 javaVersion, path, downloadProgress, out string binPath);
 
             version.JavaBinaryPath = binPath;
@@ -41,10 +41,11 @@ namespace CmlLib.Core.Files
             return Task.Run(() => CheckFiles(path, version, downloadProgress));
         }
 
-        private DownloadFile[] internalCheckFile(string javaVersion, MinecraftPath path,
+        public DownloadFile[] CheckJava(string javaVersion, MinecraftPath path,
             IProgress<DownloadFileChangedEventArgs>? downloadProgress, out string binPath)
         {
-            binPath = Path.Combine(path.Runtime, javaVersion, "bin", JavaBinaryName);
+            var javaPathResolver = new MinecraftJavaPathResolver(path);
+            binPath = javaPathResolver.GetJavaBinaryPath(javaVersion, MRule.OSName);
 
             try
             {
@@ -52,10 +53,11 @@ namespace CmlLib.Core.Files
                 var javaVersions = getJavaVersionsForOs(osName); // Net, JsonParse Exception
                 if (javaVersions != null)
                 {
-                    var javaManifest = getJavaVersionManifest(javaVersions, javaVersion); // Net, JsonParse
-
-                    if (javaManifest == null)
-                        javaManifest = getJavaVersionManifest(javaVersions, "jre-legacy");
+                    // Net, JsonParse
+                    var javaManifest = getJavaVersionManifest(javaVersions, javaVersion);
+                    
+                    if (javaManifest == null && javaVersion != MinecraftJavaPathResolver.JreLegacyVersionName)
+                        javaManifest = getJavaVersionManifest(javaVersions, MinecraftJavaPathResolver.JreLegacyVersionName);
                     if (javaManifest == null)
                         return legacyJavaChecker(path, out binPath);
 
@@ -63,7 +65,7 @@ namespace CmlLib.Core.Files
                     if (files == null)
                         return legacyJavaChecker(path, out binPath);
 
-                    return toDownloadFiles(javaVersion, files, path, downloadProgress);
+                    return toDownloadFiles(files, javaPathResolver.GetJavaDirPath(javaVersion), downloadProgress);
                 }
                 else
                     return legacyJavaChecker(path, out binPath);
@@ -137,7 +139,7 @@ namespace CmlLib.Core.Files
             return JObject.Parse(response); // ex
         }
 
-        private DownloadFile[] toDownloadFiles(string javaVersionName, JObject manifest, MinecraftPath path,
+        private DownloadFile[] toDownloadFiles(JObject manifest, string path,
             IProgress<DownloadFileChangedEventArgs>? progress)
         {
             var progressed = 0;
@@ -150,7 +152,7 @@ namespace CmlLib.Core.Files
                 var type = value?["type"]?.ToString();
                 if (type == "file")
                 {
-                    var filePath = Path.Combine(path.Runtime, javaVersionName, name);
+                    var filePath = Path.Combine(path, name);
                     filePath = IOUtil.NormalizePath(filePath);
                     
                     bool.TryParse(value?["executable"]?.ToString(), out bool executable);
@@ -205,7 +207,9 @@ namespace CmlLib.Core.Files
 
         private DownloadFile[] legacyJavaChecker(MinecraftPath path, out string binPath)
         {
-            string legacyJavaPath = Path.Combine(path.Runtime, "m-legacy");
+            var javaPathResolver = new MinecraftJavaPathResolver(path);
+            string legacyJavaPath = javaPathResolver.GetJavaDirPath(MinecraftJavaPathResolver.CmlLegacyVersionName);
+            
             MJava mJava = new MJava(legacyJavaPath);
             binPath = mJava.GetBinaryPath();
             

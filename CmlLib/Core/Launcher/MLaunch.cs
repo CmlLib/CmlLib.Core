@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using CmlLib.Core.Auth;
 using CmlLib.Core.Version;
 
 namespace CmlLib.Core
@@ -28,22 +27,19 @@ namespace CmlLib.Core
         public MLaunch(MLaunchOption option)
         {
             option.CheckValid();
-            LaunchOption = option;
+            launchOption = option;
             this.minecraftPath = option.GetMinecraftPath();
         }
 
         private readonly MinecraftPath minecraftPath;
-        public MLaunchOption LaunchOption { get; private set; }
-
-        /// <summary>
-        /// Build game process and return it
-        /// </summary>
+        private readonly MLaunchOption launchOption;
+        
         public Process GetProcess()
         {
             string arg = string.Join(" ", CreateArg());
             Process mc = new Process();
             mc.StartInfo.FileName = 
-                useNotNull(LaunchOption.GetJavaPath(), LaunchOption.GetStartVersion().JavaBinaryPath) ?? "";
+                useNotNull(launchOption.GetStartVersion().JavaBinaryPath, launchOption.GetJavaPath()) ?? "";
             mc.StartInfo.Arguments = arg;
             mc.StartInfo.WorkingDirectory = minecraftPath.BasePath;
 
@@ -80,19 +76,19 @@ namespace CmlLib.Core
         [MethodTimer.Time]
         public string[] CreateArg()
         {
-            MVersion version = LaunchOption.GetStartVersion();
+            MVersion version = launchOption.GetStartVersion();
             var args = new List<string>();
             
             var classpath = createClassPath(version);
             var nativePath = createNativePath(version);
-            var session = LaunchOption.GetSession();
+            var session = launchOption.GetSession();
             
             var argDict = new Dictionary<string, string?>
             {
                 { "library_directory", minecraftPath.Library },
                 { "natives_directory", nativePath },
-                { "launcher_name", useNotNull(LaunchOption.GameLauncherName, "minecraft-launcher") },
-                { "launcher_version", useNotNull(LaunchOption.GameLauncherVersion, "2") },
+                { "launcher_name", useNotNull(launchOption.GameLauncherName, "minecraft-launcher") },
+                { "launcher_version", useNotNull(launchOption.GameLauncherVersion, "2") },
                 { "classpath_separator", Path.PathSeparator.ToString() },
                 { "classpath", classpath },
                 
@@ -107,7 +103,7 @@ namespace CmlLib.Core
                 { "user_type"        , session.UserType ?? "Mojang" },
                 { "game_assets"      , minecraftPath.GetAssetLegacyPath(version.AssetId ?? "legacy") },
                 { "auth_session"     , session.AccessToken },
-                { "version_type"     , useNotNull(LaunchOption.VersionType, version.TypeStr) }
+                { "version_type"     , useNotNull(launchOption.VersionType, version.TypeStr) }
             };
 
             // JVM argument
@@ -117,15 +113,15 @@ namespace CmlLib.Core
                 args.AddRange(Mapper.MapInterpolation(version.JvmArguments, argDict));
             
             // default jvm arguments
-            if (LaunchOption.JVMArguments != null)
-                args.AddRange(LaunchOption.JVMArguments);
+            if (launchOption.JVMArguments != null)
+                args.AddRange(launchOption.JVMArguments);
             else
             {
-                if (LaunchOption.MaximumRamMb > 0)
-                    args.Add("-Xmx" + LaunchOption.MaximumRamMb + "m");
+                if (launchOption.MaximumRamMb > 0)
+                    args.Add("-Xmx" + launchOption.MaximumRamMb + "m");
 
-                if (LaunchOption.MinimumRamMb > 0)
-                    args.Add("-Xms" + LaunchOption.MinimumRamMb + "m");
+                if (launchOption.MinimumRamMb > 0)
+                    args.Add("-Xms" + launchOption.MinimumRamMb + "m");
                 
                 args.AddRange(DefaultJavaParameter);
             }
@@ -137,10 +133,10 @@ namespace CmlLib.Core
             }
 
             // for macOS
-            if (!string.IsNullOrEmpty(LaunchOption.DockName))
-                args.Add("-Xdock:name=" + handleEmpty(LaunchOption.DockName));
-            if (!string.IsNullOrEmpty(LaunchOption.DockIcon))
-                args.Add("-Xdock:icon=" + handleEmpty(LaunchOption.DockIcon));
+            if (!string.IsNullOrEmpty(launchOption.DockName))
+                args.Add("-Xdock:name=" + handleEmpty(launchOption.DockName));
+            if (!string.IsNullOrEmpty(launchOption.DockIcon))
+                args.Add("-Xdock:icon=" + handleEmpty(launchOption.DockIcon));
 
             // logging
             if (!string.IsNullOrEmpty(version.LoggingClient?.Argument))
@@ -160,21 +156,21 @@ namespace CmlLib.Core
                 args.AddRange(Mapper.MapInterpolation(version.MinecraftArguments.Split(' '), argDict));
 
             // options
-            if (!string.IsNullOrEmpty(LaunchOption.ServerIp))
+            if (!string.IsNullOrEmpty(launchOption.ServerIp))
             {
-                args.Add("--server " + handleEmpty(LaunchOption.ServerIp));
+                args.Add("--server " + handleEmpty(launchOption.ServerIp));
 
-                if (LaunchOption.ServerPort != DefaultServerPort)
-                    args.Add("--port " + LaunchOption.ServerPort);
+                if (launchOption.ServerPort != DefaultServerPort)
+                    args.Add("--port " + launchOption.ServerPort);
             }
 
-            if (LaunchOption.ScreenWidth > 0 && LaunchOption.ScreenHeight > 0)
+            if (launchOption.ScreenWidth > 0 && launchOption.ScreenHeight > 0)
             {
-                args.Add("--width " + LaunchOption.ScreenWidth);
-                args.Add("--height " + LaunchOption.ScreenHeight);
+                args.Add("--width " + launchOption.ScreenWidth);
+                args.Add("--height " + launchOption.ScreenHeight);
             }
 
-            if (LaunchOption.FullScreen)
+            if (launchOption.FullScreen)
                 args.Add("--fullscreen");
 
             return args.ToArray();

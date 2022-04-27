@@ -1,31 +1,44 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Text;
 using System.Windows.Forms;
 
 namespace CmlLibWinFormSample
 {
     public partial class GameLog : Form
     {
-        public GameLog()
+        public GameLog(Process process)
         {
             InitializeComponent();
+
+            process.ErrorDataReceived += Process_DataReceived;
+            process.OutputDataReceived += Process_DataReceived;
+            output(process.StartInfo.Arguments);
         }
 
-        static ConcurrentQueue<string> logQueue = new ConcurrentQueue<string>();
+        private readonly ConcurrentQueue<string> logQueue = new ConcurrentQueue<string>();
 
-        public static void AddLog(string msg)
+        private void Process_DataReceived(object sender, DataReceivedEventArgs e)
         {
-            logQueue.Enqueue(msg);
+            if (!string.IsNullOrEmpty(e.Data))
+                logQueue.Enqueue(e.Data);
         }
+
+        private void output(string msg) => logQueue.Enqueue(msg);
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            string msg;
-            while (logQueue.TryDequeue(out msg))
+            if (logQueue.Count == 0)
+                return;
+
+            var sb = new StringBuilder();
+            while (logQueue.TryDequeue(out string msg))
             {
-                richTextBox1.AppendText(msg + "\n");
-                richTextBox1.ScrollToCaret();
+                sb.AppendLine(msg);
             }
+            richTextBox1.AppendText(sb.ToString());
+            richTextBox1.ScrollToCaret();
         }
     }
 }
