@@ -5,6 +5,10 @@ using CmlLib.Core.Version;
 
 namespace CmlLib.Core.VersionMetadata
 {
+    /// <summary>
+    /// Represent version metadata
+    /// It does not contains actual version data, but contains some metadata and the way to get version data (MVersion)
+    /// </summary>
     public abstract class MVersionMetadata
     {
         protected MVersionMetadata(string name)
@@ -63,8 +67,24 @@ namespace CmlLib.Core.VersionMetadata
             return Name.GetHashCode();
         }
 
+        /// <summary>
+        /// Get version data
+        /// </summary>
+        /// <returns>MVersion object containing actual version data</returns>
         public abstract Task<MVersion> GetVersionAsync();
+        
+        /// <summary>
+        /// Get version data and save version data into file
+        /// </summary>
+        /// <param name="savePath">Game directory</param>
+        /// <returns>MVersion object containing actual version data</returns>
         public abstract Task<MVersion> GetVersionAsync(MinecraftPath savePath);
+
+        /// <summary>
+        /// Get version data and save version data into file. This method may not make MVersion object
+        /// </summary>
+        /// <param name="path">Game directory</param>
+        /// <returns></returns>
         public abstract Task SaveAsync(MinecraftPath path);
     }
 }

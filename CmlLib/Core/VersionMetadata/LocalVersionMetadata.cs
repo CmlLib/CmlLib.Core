@@ -5,6 +5,9 @@ using CmlLib.Utils;
 
 namespace CmlLib.Core.VersionMetadata
 {
+    /// <summary>
+    /// Represent metadata where the actual version data is in local file
+    /// </summary>
     public class LocalVersionMetadata : StringVersionMetadata
     {
         public LocalVersionMetadata(string id) : base(id)
@@ -12,7 +15,7 @@ namespace CmlLib.Core.VersionMetadata
             IsLocalVersion = true;
         }
 
-        protected override Task<string> ReadMetadataAsync()
+        protected override Task<string> ReadVersionDataAsync()
         {
             if (string.IsNullOrEmpty(Path))
                 throw new InvalidOperationException("Path property was null");

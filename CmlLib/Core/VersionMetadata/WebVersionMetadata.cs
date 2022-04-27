@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 
 namespace CmlLib.Core.VersionMetadata
 {
+    /// <summary>
+    /// Represent metadata where the actual version data is on web
+    /// </summary>
     public class WebVersionMetadata : StringVersionMetadata
     {
         public WebVersionMetadata(string name) : base(name)
@@ -11,7 +14,7 @@ namespace CmlLib.Core.VersionMetadata
             IsLocalVersion = false;
         }
 
-        protected override async Task<string> ReadMetadataAsync()
+        protected override async Task<string> ReadVersionDataAsync()
         {
             if (string.IsNullOrEmpty(Path))
                 throw new InvalidOperationException("Path property was null");
