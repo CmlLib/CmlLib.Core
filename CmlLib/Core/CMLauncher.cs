@@ -1,16 +1,13 @@
 using CmlLib.Core.Downloader;
-using CmlLib.Core.Files;
-using CmlLib.Core.Installer;
+using CmlLib.Core.FileChecker;
+using CmlLib.Core.Java;
 using CmlLib.Core.Version;
 using CmlLib.Core.VersionLoader;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Threading.Tasks;
-using CmlLib.Core.FileChecker;
-using CmlLib.Core.Java;
 
 namespace CmlLib.Core
 {
@@ -20,9 +17,9 @@ namespace CmlLib.Core
         {
         }
 
-        public CMLauncher(MinecraftPath mc)
+        public CMLauncher(MinecraftPath path)
         {
-            this.MinecraftPath = mc;
+            this.MinecraftPath = path;
 
             GameFileCheckers = new FileCheckerCollection();
             FileDownloader = new AsyncParallelDownloader();
@@ -33,7 +30,7 @@ namespace CmlLib.Core
             pProgressChanged = new Progress<ProgressChangedEventArgs>(
                 e => ProgressChanged?.Invoke(this, e));
 
-            JavaPathResolver = new MinecraftJavaPathResolver(mc);
+            JavaPathResolver = new MinecraftJavaPathResolver(path);
         }
 
         public event DownloadFileChangedHandler? FileChanged;
@@ -49,8 +46,17 @@ namespace CmlLib.Core
         
         public FileCheckerCollection GameFileCheckers { get; private set; }
         public IDownloader? FileDownloader { get; set; }
-        
-        public IJavaPathResolver JavaPathResolver { get; set; }
+
+        private IJavaPathResolver javaPathResolver;
+        public IJavaPathResolver JavaPathResolver { 
+            get => javaPathResolver; 
+            set
+            {
+                javaPathResolver = value;
+                if (GameFileCheckers.JavaFileChecker != null)
+                    GameFileCheckers.JavaFileChecker.JavaPathResolver = value;
+            }
+        }
 
         public async Task<MVersionCollection> GetAllVersionsAsync()
         {
