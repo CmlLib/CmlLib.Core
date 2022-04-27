@@ -46,8 +46,6 @@ namespace CmlLib.Core
 
             Runtime = NormalizePath(BasePath + "/runtime");
             Assets = NormalizePath(basePathForAssets + "/assets");
-
-            CreateDirs();
         }
 
         public void CreateDirs()
