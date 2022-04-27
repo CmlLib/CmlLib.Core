@@ -88,7 +88,6 @@ namespace CmlLib.Core.Version
             {
                 if (Libraries != null)
                     Libraries = Libraries.Concat(parentVersion.Libraries).ToArray();
-                    //Libraries = parentVersion.Libraries.Concat(Libraries).ToArray();
                 else
                     Libraries = parentVersion.Libraries;
             }
@@ -96,7 +95,6 @@ namespace CmlLib.Core.Version
             if (parentVersion.GameArguments != null)
             {
                 if (GameArguments != null)
-                    //GameArguments = GameArguments.Concat(parentVersion.GameArguments).ToArray();
                     GameArguments = parentVersion.GameArguments.Concat(GameArguments).ToArray();
                 else
                     GameArguments = parentVersion.GameArguments;
@@ -105,7 +103,6 @@ namespace CmlLib.Core.Version
             if (parentVersion.JvmArguments != null)
             {
                 if (JvmArguments != null)
-                    //JvmArguments = JvmArguments.Concat(parentVersion.JvmArguments).ToArray();
                     JvmArguments = parentVersion.JvmArguments.Concat(JvmArguments).ToArray();
                 else
                     JvmArguments = parentVersion.JvmArguments;

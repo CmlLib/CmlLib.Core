@@ -8,31 +8,33 @@ using CmlLib.Core.VersionMetadata;
 
 namespace CmlLib.Core.Version
 {
+    // Collection for MVersionMetadata
+    // return MVersion object from MVersionMetadata
     public class MVersionCollection : IEnumerable<MVersionMetadata>
     {
-        public MVersionCollection(MVersionMetadata[] datas)
-            : this(datas, null, null, null)
+        public MVersionCollection(MVersionMetadata[] versions)
+            : this(versions, null, null, null)
         {
 
         }
 
-        public MVersionCollection(MVersionMetadata[] datas, MinecraftPath originalPath)
-            : this(datas, originalPath, null, null)
+        public MVersionCollection(MVersionMetadata[] versions, MinecraftPath originalPath)
+            : this(versions, originalPath, null, null)
         {
 
         }
 
         public MVersionCollection(
-            MVersionMetadata[] datas,
+            IEnumerable<MVersionMetadata> versions,
             MinecraftPath? originalPath,
             MVersionMetadata? latestRelease,
             MVersionMetadata? latestSnapshot)
         {
-            if (datas == null)
-                throw new ArgumentNullException(nameof(datas));
+            if (versions == null)
+                throw new ArgumentNullException(nameof(versions));
 
             Versions = new OrderedDictionary();
-            foreach (var item in datas)
+            foreach (var item in versions)
             {
                 Versions.Add(item.Name, item);
             }
@@ -42,10 +44,12 @@ namespace CmlLib.Core.Version
             LatestSnapshotVersion = latestSnapshot;
         }
 
+        // Use OrderedDictionary to keep version order
+        protected OrderedDictionary Versions;
+
         public MVersionMetadata? LatestReleaseVersion { get; private set; }
         public MVersionMetadata? LatestSnapshotVersion { get; private set; }
         public MinecraftPath? MinecraftPath { get; private set; }
-        protected OrderedDictionary Versions;
         
         public MVersionMetadata this[int index] => (MVersionMetadata)Versions[index]!;
 
@@ -78,6 +82,7 @@ namespace CmlLib.Core.Version
             return GetVersionAsync(versionMetadata);
         }
 
+        // get MVersion from MVersionMetadata
         public virtual async Task<MVersion> GetVersionAsync(MVersionMetadata versionMetadata)
         {
             if (versionMetadata == null)

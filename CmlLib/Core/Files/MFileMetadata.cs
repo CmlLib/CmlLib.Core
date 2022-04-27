@@ -2,6 +2,7 @@
 
 namespace CmlLib.Core.Files
 {
+    // Represent common file metadata. most files in version.json file follow this form
     public class MFileMetadata
     {
         public MFileMetadata()

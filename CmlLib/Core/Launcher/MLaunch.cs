@@ -34,6 +34,7 @@ namespace CmlLib.Core
         private readonly MinecraftPath minecraftPath;
         private readonly MLaunchOption launchOption;
         
+        // make process that ready to launch game
         public Process GetProcess()
         {
             string arg = string.Join(" ", CreateArg());
@@ -46,10 +47,13 @@ namespace CmlLib.Core
             return mc;
         }
 
+        // make library files into jvm classpath string
         private string createClassPath(MVersion version)
         {
+            // if there is no libraries then launcher would need only one library file: <version>.jar file itself
             var classpath = new List<string>(version.Libraries?.Length ?? 1);
 
+            // libraries 
             if (version.Libraries != null)
             {
                 var libraries = version.Libraries
@@ -58,6 +62,7 @@ namespace CmlLib.Core
                 classpath.AddRange(libraries);
             }
 
+            // <version>.jar file
             if (!string.IsNullOrEmpty(version.Jar))
                 classpath.Add(minecraftPath.GetVersionJarPath(version.Jar));
 

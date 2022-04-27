@@ -1,5 +1,6 @@
 ﻿namespace CmlLib.Core.Files
 {
+    // Represent log configuration. "logging" property of <version>.json file
     public class MLogConfiguration
     {
         public MFileMetadata? LogFile { get; set; }

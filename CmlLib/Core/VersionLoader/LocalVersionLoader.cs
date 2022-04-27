@@ -35,18 +35,18 @@ namespace CmlLib.Core.VersionLoader
             var dirs = versionDirectory.GetDirectories();
             var arr = new List<MVersionMetadata>(dirs.Length);
 
-            for (int i = 0; i < dirs.Length; i++)
+            foreach (var dir in dirs)
             {
-                var dir = dirs[i];
                 var filepath = Path.Combine(dir.FullName, dir.Name + ".json");
-                if (File.Exists(filepath))
+                if (!File.Exists(filepath)) continue;
+                
+                var info = new LocalVersionMetadata(dir.Name)
                 {
-                    var info = new LocalVersionMetadata(dir.Name);
-                    info.Path = filepath;
-                    info.Type = "local";
-                    info.MType = MVersionType.Custom;
-                    arr.Add(info);
-                }
+                    Path = filepath,
+                    Type = "local",
+                    MType = MVersionType.Custom
+                };
+                arr.Add(info);
             }
 
             return arr;

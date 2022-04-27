@@ -10,7 +10,6 @@ namespace CmlLib.Core.Downloader
     {
         public DownloadFileChangedEventArgs(MFile type, object source, string? filename, int total, int progressed)
         {
-            FileKind = type;
             FileType = type;
             FileName = filename;
             TotalFileCount = total;
@@ -20,7 +19,7 @@ namespace CmlLib.Core.Downloader
 
         // FileType and FileKind is exactly same.
         public MFile FileType { get; private set; }
-        public MFile FileKind { get; private set; }
+        public MFile FileKind => FileType; // backward compatible
         public string? FileName { get; private set; }
         public int TotalFileCount { get; private set; }
         public int ProgressedFileCount { get; private set; }
