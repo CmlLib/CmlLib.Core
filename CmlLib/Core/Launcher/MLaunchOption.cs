@@ -1,6 +1,7 @@
 ﻿using CmlLib.Core.Auth;
 using CmlLib.Core.Version;
 using System;
+using System.Collections.Generic;
 
 namespace CmlLib.Core
 {
@@ -29,6 +30,11 @@ namespace CmlLib.Core
         public string? VersionType { get; set; }
         public string? GameLauncherName { get; set; }
         public string? GameLauncherVersion { get; set; }
+
+        public string? UserProperties { get; set; }
+        public string? ClientId { get; set; }
+
+        public Dictionary<string, string>? ArgumentDictionary { get; set; }
 
         internal MinecraftPath GetMinecraftPath() => Path!;
         internal MVersion GetStartVersion() => StartVersion!;

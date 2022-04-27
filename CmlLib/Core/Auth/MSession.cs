@@ -23,6 +23,8 @@ namespace CmlLib.Core.Auth
         public string? ClientToken { get; set; }
         [JsonPropertyName("userType")]
         public string? UserType { get; set; }
+        [JsonPropertyName("xuid")]
+        public string? Xuid { get; set; }
 
         public bool CheckIsValid()
         {

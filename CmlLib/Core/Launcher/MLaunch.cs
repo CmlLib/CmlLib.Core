@@ -11,7 +11,7 @@ namespace CmlLib.Core
     {
         private const int DefaultServerPort = 25565;
 
-        public static readonly string SupportVersion = "1.17.1";
+        public static readonly string SupportVersion = "1.18.2";
         public readonly static string[] DefaultJavaParameter = 
             {
                 "-XX:+UnlockExperimentalVMOptions",
@@ -90,13 +90,14 @@ namespace CmlLib.Core
             
             var argDict = new Dictionary<string, string?>
             {
-                { "library_directory", minecraftPath.Library },
-                { "natives_directory", nativePath },
-                { "launcher_name", useNotNull(launchOption.GameLauncherName, "minecraft-launcher") },
-                { "launcher_version", useNotNull(launchOption.GameLauncherVersion, "2") },
+                { "library_directory"  , minecraftPath.Library },
+                { "natives_directory"  , nativePath },
+                { "launcher_name"      , useNotNull(launchOption.GameLauncherName, "minecraft-launcher") },
+                { "launcher_version"   , useNotNull(launchOption.GameLauncherVersion, "2") },
                 { "classpath_separator", Path.PathSeparator.ToString() },
-                { "classpath", classpath },
-                
+                { "classpath"          , classpath },
+
+                { "auth_xuid"        , session.Xuid },
                 { "auth_player_name" , session.Username },
                 { "version_name"     , version.Id },
                 { "game_directory"   , minecraftPath.BasePath },
@@ -108,8 +109,17 @@ namespace CmlLib.Core
                 { "user_type"        , session.UserType ?? "Mojang" },
                 { "game_assets"      , minecraftPath.GetAssetLegacyPath(version.Assets?.Id ?? "legacy") },
                 { "auth_session"     , session.AccessToken },
-                { "version_type"     , useNotNull(launchOption.VersionType, version.TypeStr) }
+                { "version_type"     , useNotNull(launchOption.VersionType, version.TypeStr) },
+                { "clientid"         , "" }
             };
+
+            if (launchOption.ArgumentDictionary != null)
+            {
+                foreach (var argument in launchOption.ArgumentDictionary)
+                {
+                    argDict[argument.Key] = argument.Value;
+                }
+            }
 
             // JVM argument
             
