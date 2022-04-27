@@ -5,42 +5,8 @@ using CmlLib.Core.VersionMetadata;
 
 namespace CmlLib.Core.Version
 {
-    public enum MVersionSortPropertyOption
-    {
-        Name,
-        Version,
-        ReleaseDate
-    }
-
-    public enum MVersionNullReleaseDateSortOption
-    {
-        AsLatest,
-        AsOldest
-    }
-    
-    public class MVersionSortOption
-    {
-        public MVersionType[] TypeOrder { get; set; } = 
-        {
-            MVersionType.Custom, 
-            MVersionType.Release, 
-            MVersionType.Snapshot, 
-            MVersionType.OldBeta, 
-            MVersionType.OldAlpha
-        };
-
-        public MVersionSortPropertyOption PropertyOrderBy { get; set; }
-            = MVersionSortPropertyOption.Version;
-
-        public bool AscendingPropertyOrder { get; set; } = true;
-
-        public MVersionNullReleaseDateSortOption NullReleaseDateSortOption { get; set; } =
-            MVersionNullReleaseDateSortOption.AsOldest;
-        
-        public bool CustomAsRelease { get; set; } = false;
-        public bool TypeClassification { get; set; } = true;
-    }
-
+    // Sort MVersionMetadata
+    // TODO: measure performance and optimizing
     public class MVersionMetadataSorter
     {
         public MVersionMetadataSorter(MVersionSortOption option)
