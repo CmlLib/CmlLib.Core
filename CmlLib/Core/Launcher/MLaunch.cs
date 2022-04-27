@@ -111,19 +111,21 @@ namespace CmlLib.Core
             // version-specific jvm arguments
             if (version.JvmArguments != null)
                 args.AddRange(Mapper.MapInterpolation(version.JvmArguments, argDict));
-            
+
             // default jvm arguments
             if (launchOption.JVMArguments != null)
                 args.AddRange(launchOption.JVMArguments);
+
             else
+                args.AddRange(DefaultJavaParameter);
+
+            if (args.Where(arg => arg.StartsWith("-Xm")).ToArray().Length == 0)
             {
                 if (launchOption.MaximumRamMb > 0)
                     args.Add("-Xmx" + launchOption.MaximumRamMb + "m");
 
                 if (launchOption.MinimumRamMb > 0)
                     args.Add("-Xms" + launchOption.MinimumRamMb + "m");
-                
-                args.AddRange(DefaultJavaParameter);
             }
 
             if (version.JvmArguments == null)
