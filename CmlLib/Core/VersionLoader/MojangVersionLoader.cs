@@ -55,7 +55,7 @@ namespace CmlLib.Core.VersionLoader
                 }
             }
 
-            return new MVersionCollection(arr.ToArray(), null, latestRelease, latestSnapshot);
+            return new MVersionCollection(arr, null, latestRelease, latestSnapshot);
         }
     }
 }

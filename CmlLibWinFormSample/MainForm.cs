@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using CmlLib.Core.Downloader;
+using CmlLib.Core.FileChecker;
 using CmlLib.Core.Version;
 
 namespace CmlLibWinFormSample
