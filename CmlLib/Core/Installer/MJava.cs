@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using CmlLib.Core.Java;
 using System.Text.Json;
 using System.Net;
+using System.Net.Http;
+using CmlLib.Core.Downloader;
 
 namespace CmlLib.Core.Installer
 {
@@ -19,16 +21,19 @@ namespace CmlLib.Core.Installer
         public event ProgressChangedEventHandler? ProgressChanged;
         public string RuntimeDirectory { get; private set; }
 
+        private readonly HttpClient httpClient;
         private IProgress<ProgressChangedEventArgs>? pProgressChanged;
-
         public IJavaPathResolver JavaPathResolver { get; set; }
 
-        public MJava() : this(DefaultRuntimeDirectory) { }
+        public MJava() : this(HttpUtil.HttpClient) { }
+        public MJava(HttpClient client) : this(client, DefaultRuntimeDirectory) { }
+        public MJava(string runtimePath) : this(HttpUtil.HttpClient, runtimePath) { }
 
-        public MJava(string runtimePath)
+        public MJava(HttpClient client, string runtimePath)
         {
             RuntimeDirectory = runtimePath;
             JavaPathResolver = new MinecraftJavaPathResolver(runtimePath);
+            httpClient = client;
         }
 
         public string GetBinaryPath()
@@ -97,16 +102,17 @@ namespace CmlLib.Core.Installer
         private async Task<string> downloadJavaLzmaAsync(string javaUrl)
         {
             Directory.CreateDirectory(RuntimeDirectory);
-            string lzmapath = Path.Combine(Path.GetTempPath(), "jre.lzma");
+            string lzmaPath = Path.Combine(Path.GetTempPath(), "jre.lzma");
 
-            using (var wc = new WebClient())
+            var downloader = new HttpClientDownloadHelper(httpClient);
+            var progress = new Progress<DownloadFileByteProgress>(p =>
             {
-                wc.DownloadProgressChanged += Downloader_DownloadProgressChangedEvent;
-                await wc.DownloadFileTaskAsync(javaUrl, lzmapath)
-                    .ConfigureAwait(false);
-            }
+                var percent = (float)p.ProgressedBytes / p.TotalBytes * 100;
+                pProgressChanged?.Report(new ProgressChangedEventArgs((int)percent / 2, null));
+            });
+            await downloader.DownloadFileAsync(new DownloadFile(lzmaPath, javaUrl), progress);
 
-            return lzmapath;
+            return lzmaPath;
         }
 
         private void decompressJavaFile(string lzmaPath)
@@ -122,11 +128,6 @@ namespace CmlLib.Core.Installer
         private void Z_ProgressEvent(object? sender, int e)
         {
             pProgressChanged?.Report(new ProgressChangedEventArgs(50 + e / 2, null));
-        }
-
-        private void Downloader_DownloadProgressChangedEvent(object? sender, ProgressChangedEventArgs e)
-        { 
-            pProgressChanged?.Report(new ProgressChangedEventArgs(e.ProgressPercentage / 2, null));
         }
     }
 }
