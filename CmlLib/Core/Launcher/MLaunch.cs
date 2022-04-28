@@ -119,7 +119,7 @@ namespace CmlLib.Core
             else
                 args.AddRange(DefaultJavaParameter);
 
-            if (args.Where(arg => arg.StartsWith("-Xm")).ToArray().Length == 0)
+            if (!args.Where(arg => arg.StartsWith("-Xm")).Any())
             {
                 if (launchOption.MaximumRamMb > 0)
                     args.Add("-Xmx" + launchOption.MaximumRamMb + "m");
