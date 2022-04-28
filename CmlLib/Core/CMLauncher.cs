@@ -30,12 +30,12 @@ namespace CmlLib.Core
             pProgressChanged = new Progress<ProgressChangedEventArgs>(
                 e => ProgressChanged?.Invoke(this, e));
 
-            JavaPathResolver = new MinecraftJavaPathResolver(path);
+            // to prevent null-reference warning, set both field, property
+            JavaPathResolver = javaPathResolver = new MinecraftJavaPathResolver(path);
         }
 
         public event DownloadFileChangedHandler? FileChanged;
         public event ProgressChangedEventHandler? ProgressChanged;
-        public event EventHandler<string>? LogOutput;
         
         private readonly IProgress<DownloadFileChangedEventArgs> pFileChanged;
         private readonly IProgress<ProgressChangedEventArgs> pProgressChanged;
@@ -49,7 +49,7 @@ namespace CmlLib.Core
 
         private IJavaPathResolver javaPathResolver;
         public IJavaPathResolver JavaPathResolver { 
-            get => javaPathResolver; 
+            get => javaPathResolver;
             set
             {
                 javaPathResolver = value;

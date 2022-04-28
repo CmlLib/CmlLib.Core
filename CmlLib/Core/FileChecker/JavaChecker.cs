@@ -53,14 +53,14 @@ namespace CmlLib.Core.FileChecker
             if (string.IsNullOrEmpty(javaVersion))
                 javaVersion = MinecraftJavaPathResolver.JreLegacyVersionName;
 
-            var result = await internalCheckJava(javaVersion, path, downloadProgress)
+            var result = await internalCheckJava(javaVersion, downloadProgress)
                 .ConfigureAwait(false);
 
             version.JavaBinaryPath = result.JavaBinaryPath;
             return result.JavaFiles;
         }
 
-        private async Task<JavaCheckResult> internalCheckJava(string javaVersion, MinecraftPath path,
+        private async Task<JavaCheckResult> internalCheckJava(string javaVersion,
             IProgress<DownloadFileChangedEventArgs>? downloadProgress)
         {
             if (JavaPathResolver == null)
@@ -88,25 +88,25 @@ namespace CmlLib.Core.FileChecker
                     if (javaManifest == null && javaVersion != MinecraftJavaPathResolver.JreLegacyVersionName)
                         javaManifest = await getJavaVersionManifest(javaVersions.Value, MinecraftJavaPathResolver.JreLegacyVersionName);
                     if (javaManifest == null)
-                        return await legacyJavaChecker(path);
+                        return await legacyJavaChecker();
 
                     // get file objects
                     using var manifestDocument = JsonDocument.Parse(javaManifest);
                     var files = manifestDocument.RootElement.SafeGetProperty("files");
                     if (files == null)
-                        return await legacyJavaChecker(path);
+                        return await legacyJavaChecker();
 
                     downloadFiles = toDownloadFiles(files.Value, JavaPathResolver.GetJavaDirPath(javaVersion), downloadProgress);
                 }
                 else // no java version for osName
-                    return await legacyJavaChecker(path);
+                    return await legacyJavaChecker();
             }
             catch (Exception e)
             {
                 Debug.WriteLine(e);
 
                 if (string.IsNullOrEmpty(binPath))
-                    return await legacyJavaChecker(path);
+                    return await legacyJavaChecker();
                 else
                     downloadFiles = new DownloadFile[] { };
             }
@@ -230,7 +230,7 @@ namespace CmlLib.Core.FileChecker
         }
 
         // legacy java checker that use MJava
-        private async Task<JavaCheckResult> legacyJavaChecker(MinecraftPath path)
+        private async Task<JavaCheckResult> legacyJavaChecker()
         {
             if (JavaPathResolver == null)
                 throw new InvalidOperationException("JavaPathResolver was null");

@@ -1,9 +1,7 @@
 ﻿using CmlLib.Utils;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,7 +18,6 @@ namespace CmlLib.Core.Downloader
     // https://source.dot.net/#System.Net.WebClient/System/Net/WebClient.cs,c2224e40a6960929
     internal class HttpClientDownloadHelper
     {
-        private const int DefaultCopyBufferLength = 8192;
         private const int DefaultDownloadBufferLength = 65536;
 
         public HttpClientDownloadHelper(HttpClient client) 
@@ -55,6 +52,9 @@ namespace CmlLib.Core.Downloader
                 return;
             }
 
+            if (download.CanTimeout)
+                download.ReadTimeout = 10000;
+            
             byte[] copyBuffer = new byte[contentLength == -1 || contentLength > DefaultDownloadBufferLength ? DefaultDownloadBufferLength : contentLength];
             while (true)
             {

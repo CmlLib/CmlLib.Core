@@ -160,7 +160,7 @@ namespace CmlLib.Core.Downloader
                 if (receivedBytes > totalBytes)
                     return;
 
-                float percent = (float)receivedBytes / totalBytes * 100;
+                double percent = (double)receivedBytes / totalBytes * 100;
                 pChangeProgress?.Report(new FileProgressChangedEventArgs(totalBytes, receivedBytes, (int)percent));
             }
         }
