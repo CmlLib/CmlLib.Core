@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace CmlLib.Core.Version
+﻿namespace CmlLib.Core.Version
 {
     public enum MVersionSortPropertyOption
     {

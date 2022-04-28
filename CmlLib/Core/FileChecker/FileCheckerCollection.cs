@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using CmlLib.Core.Files;
 
 namespace CmlLib.Core.FileChecker
 {

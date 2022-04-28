@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
+// ReSharper disable UnusedMember.Local
 // ReSharper disable InconsistentNaming
 
 namespace CmlLib.Utils

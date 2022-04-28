@@ -1,7 +1,6 @@
 ﻿using CmlLib.Utils;
 using System;
 using System.ComponentModel;
-using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -12,7 +11,6 @@ namespace CmlLib.Core.Downloader
         private readonly HttpClientDownloadHelper downloader;
 
         public bool IgnoreInvalidFiles { get; set; } = true;
-        private IProgress<ProgressChangedEventArgs>? pChangeProgress;
 
         public SequenceDownloader() : this(HttpUtil.HttpClient)
         {
@@ -36,7 +34,6 @@ namespace CmlLib.Core.Downloader
                 var percent = (float)progress.ProgressedBytes / progress.TotalBytes * 100;
                 downloadProgress?.Report(new ProgressChangedEventArgs((int)percent, null));
             });
-            pChangeProgress = downloadProgress;
 
             fileProgress?.Report(
                 new DownloadFileChangedEventArgs(files[0].Type, this, null, files.Length, 0));

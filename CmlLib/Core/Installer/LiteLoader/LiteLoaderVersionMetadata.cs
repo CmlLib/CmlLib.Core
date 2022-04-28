@@ -1,10 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Data;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using CmlLib.Core.Files;
 using CmlLib.Core.Version;
 using CmlLib.Core.VersionMetadata;
 using CmlLib.Utils;

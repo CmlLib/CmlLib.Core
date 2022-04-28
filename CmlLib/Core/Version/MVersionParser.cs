@@ -81,7 +81,7 @@ namespace CmlLib.Core.Version
                 }
 
                 // metadata
-                version.ReleaseTime = root.GetPropertyValue("releaseTime");;
+                version.ReleaseTime = root.GetPropertyValue("releaseTime");
 
                 var type = root.GetPropertyValue("type");
                 version.TypeStr = type;
@@ -147,13 +147,20 @@ namespace CmlLib.Core.Version
                             {
                                 foreach (var strProp in value.Value.EnumerateArray())
                                 {
+                                    if (strProp.ValueKind != JsonValueKind.String)
+                                        continue;
+                                    
                                     var str = strProp.GetString();
                                     if (!string.IsNullOrEmpty(str))
                                         strList.Add(str);
                                 }
                             }
-                            else
-                                strList.Add(value.ToString());
+                            else if (value.Value.ValueKind == JsonValueKind.String)
+                            {
+                                var valueString = value.Value.GetString();
+                                if (!string.IsNullOrEmpty(valueString))
+                                    strList.Add(valueString);
+                            }
                         }
                     }
                 }

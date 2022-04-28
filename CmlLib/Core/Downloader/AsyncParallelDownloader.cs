@@ -149,7 +149,7 @@ namespace CmlLib.Core.Downloader
         {
             lock (progressEventLock)
             {
-                if (progress.File.Size <= 0)
+                if (progress.File != null && progress.File.Size <= 0)
                 {
                     totalBytes += progress.TotalBytes;
                     progress.File.Size = progress.TotalBytes;

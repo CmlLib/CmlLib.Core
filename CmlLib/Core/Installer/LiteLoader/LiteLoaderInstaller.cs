@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using CmlLib.Core.Version;
 using CmlLib.Core.VersionLoader;
-using CmlLib.Core.VersionMetadata;
 
 namespace CmlLib.Core.Installer.LiteLoader
 {

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace CmlLib.Utils
@@ -39,24 +37,27 @@ namespace CmlLib.Utils
                         return path;
                 }));
         }
-
-#pragma warning disable SYSLIB0021
+        
         public static bool CheckSHA1(string path, string? compareHash)
         {
             if (string.IsNullOrEmpty(compareHash))
                 return true;
-            
+
             try
             {
                 string fileHash;
 
+#pragma warning disable CS0618
+#pragma warning disable SYSLIB0021
                 using (var file = File.OpenRead(path))
-
                 using (var hasher = new System.Security.Cryptography.SHA1CryptoServiceProvider())
+
                 {
                     var binaryHash = hasher.ComputeHash(file);
                     fileHash = BitConverter.ToString(binaryHash).Replace("-", "").ToLowerInvariant();
                 }
+#pragma warning restore SYSLIB0021
+#pragma warning restore CS0618
 
                 return fileHash == compareHash;
             }
@@ -65,7 +66,6 @@ namespace CmlLib.Utils
                 return false;
             }
         }
-#pragma warning restore SYSLIB0021
 
         public static bool CheckFileValidation(string path, string? hash, bool checkHash)
         {
@@ -100,6 +100,7 @@ namespace CmlLib.Utils
         // from .NET Framework reference source code
         // If we use the path-taking constructors we will not have FileOptions.Asynchronous set and
         // we will have asynchronous file access faked by the thread pool. We want the real thing.
+        // https://source.dot.net/#System.Private.CoreLib/File.cs,c7e38336f651ba69
         public static FileStream AsyncReadStream(string path)
         {
             FileStream stream = new FileStream(
@@ -108,7 +109,8 @@ namespace CmlLib.Utils
 
             return stream;
         }
-        
+
+        // https://source.dot.net/#System.Private.CoreLib/File.cs,b5563532b5be50f6
         public static FileStream AsyncWriteStream(string path, bool append)
         {
             FileStream stream = new FileStream(
@@ -117,7 +119,7 @@ namespace CmlLib.Utils
 
             return stream;
         }
-        
+
         public static StreamReader AsyncStreamReader(string path, Encoding encoding)
         {
             FileStream stream = AsyncReadStream(path);

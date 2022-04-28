@@ -154,9 +154,6 @@ namespace CmlLib.Core.Version
         {
             foreach (DictionaryEntry? item in Versions)
             {
-                if (!item.HasValue)
-                    continue;
-
                 var entry = item.Value;
                 
                 var version = (MVersionMetadata)entry.Value!;
@@ -168,9 +165,6 @@ namespace CmlLib.Core.Version
         {
             foreach (DictionaryEntry? item in Versions)
             {
-                if (!item.HasValue)
-                    continue;
-
                 yield return item.Value;
             }
         }

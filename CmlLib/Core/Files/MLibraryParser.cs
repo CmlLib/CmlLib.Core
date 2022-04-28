@@ -38,12 +38,12 @@ namespace CmlLib.Core.Files
                 var natives = item.SafeGetProperty("natives");
                 if (natives != null)
                 {
-                    var nativeId = natives?.GetPropertyValue(MRule.OSName)?
+                    var nativeId = natives.Value.GetPropertyValue(MRule.OSName)?
                         .Replace("${arch}", MRule.Arch);
 
                     if (classifiers != null && nativeId != null)
                     {
-                        var lObj = classifiers?.SafeGetProperty(nativeId) ?? classifiers?.SafeGetProperty(MRule.OSName);
+                        var lObj = classifiers.Value.SafeGetProperty(nativeId) ?? classifiers.Value.SafeGetProperty(MRule.OSName);
                         if (lObj != null)
                             list.Add(createMLibrary(name, nativeId, isRequire, lObj));
                     }
