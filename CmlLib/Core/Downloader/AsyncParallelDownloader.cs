@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,6 +11,8 @@ namespace CmlLib.Core.Downloader
 {
     public class AsyncParallelDownloader : IDownloader
     {
+        private readonly HttpClientDownloadHelper downloader;
+
         public int MaxThread { get; private set; }
         public bool IgnoreInvalidFiles { get; set; } = true;
 
@@ -25,15 +28,18 @@ namespace CmlLib.Core.Downloader
 
         private IProgress<FileProgressChangedEventArgs>? pChangeProgress;
         private IProgress<DownloadFileChangedEventArgs>? pChangeFile;
+        private IProgress<DownloadFileByteProgress> fileByteProgress;
 
-        public AsyncParallelDownloader() : this(10)
+        public AsyncParallelDownloader() : this(10, HttpUtil.HttpClient)
         {
 
         }
 
-        public AsyncParallelDownloader(int parallelism)
+        public AsyncParallelDownloader(int parallelism, HttpClient httpClient)
         {
             MaxThread = parallelism;
+            downloader = new HttpClientDownloadHelper(httpClient);
+            fileByteProgress = new Progress<DownloadFileByteProgress>(byteProgressHandler);
         }
 
         public async Task DownloadFiles(DownloadFile[] files, 
@@ -71,7 +77,7 @@ namespace CmlLib.Core.Downloader
         }
 
         private async Task ForEachAsyncSemaphore<T>(IEnumerable<T> source,
-    int degreeOfParallelism, Func<T, Task> body)
+            int degreeOfParallelism, Func<T, Task> body)
         {
             List<Task> tasks = new List<Task>();
             using SemaphoreSlim throttler = new SemaphoreSlim(degreeOfParallelism);
@@ -113,10 +119,7 @@ namespace CmlLib.Core.Downloader
         {
             try
             {
-                WebDownload downloader = new WebDownload();
-                downloader.FileDownloadProgressChanged += Downloader_FileDownloadProgressChanged;
-
-                await downloader.DownloadFileAsync(file).ConfigureAwait(false);
+                await downloader.DownloadFileAsync(file, fileByteProgress).ConfigureAwait(false);
 
                 if (file.AfterDownload != null)
                 {
@@ -142,26 +145,23 @@ namespace CmlLib.Core.Downloader
             }
         }
 
-        private void Downloader_FileDownloadProgressChanged(object? sender, DownloadFileProgress e)
+        private void byteProgressHandler(DownloadFileByteProgress progress)
         {
             lock (progressEventLock)
             {
-                if (e.File.Size <= 0)
+                if (progress.File.Size <= 0)
                 {
-                    totalBytes += e.TotalBytes;
-                    e.File.Size = e.TotalBytes;
+                    totalBytes += progress.TotalBytes;
+                    progress.File.Size = progress.TotalBytes;
                 }
 
-                receivedBytes += e.ProgressedBytes;
+                receivedBytes += progress.ProgressedBytes;
 
                 if (receivedBytes > totalBytes)
                     return;
 
                 float percent = (float)receivedBytes / totalBytes * 100;
-                if (percent >= 0)
-                    pChangeProgress?.Report(new FileProgressChangedEventArgs(totalBytes, receivedBytes, (int)percent));
-                else
-                    Debug.WriteLine($"total: {totalBytes} received: {receivedBytes} filename: {e.File.Name} filesize: {e.File.Size}");
+                pChangeProgress?.Report(new FileProgressChangedEventArgs(totalBytes, receivedBytes, (int)percent));
             }
         }
     }

@@ -2,14 +2,27 @@
 using System;
 using System.ComponentModel;
 using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace CmlLib.Core.Downloader
 {
     public class SequenceDownloader : IDownloader
     {
+        private readonly HttpClientDownloadHelper downloader;
+
         public bool IgnoreInvalidFiles { get; set; } = true;
         private IProgress<ProgressChangedEventArgs>? pChangeProgress;
+
+        public SequenceDownloader() : this(HttpUtil.HttpClient)
+        {
+
+        }
+
+        public SequenceDownloader(HttpClient client)
+        {
+            downloader = new HttpClientDownloadHelper(client);
+        }
 
         public async Task DownloadFiles(DownloadFile[] files, 
             IProgress<DownloadFileChangedEventArgs>? fileProgress,
@@ -18,10 +31,12 @@ namespace CmlLib.Core.Downloader
             if (files.Length == 0)
                 return;
 
+            var byteProgress = new Progress<DownloadFileByteProgress>(progress =>
+            {
+                var percent = (float)progress.ProgressedBytes / progress.TotalBytes * 100;
+                downloadProgress?.Report(new ProgressChangedEventArgs((int)percent, null));
+            });
             pChangeProgress = downloadProgress;
-
-            WebDownload downloader = new WebDownload();
-            downloader.FileDownloadProgressChanged += Downloader_FileDownloadProgressChanged;
 
             fileProgress?.Report(
                 new DownloadFileChangedEventArgs(files[0].Type, this, null, files.Length, 0));
@@ -32,11 +47,7 @@ namespace CmlLib.Core.Downloader
 
                 try
                 {
-                    var directoryPath = Path.GetDirectoryName(file.Path);
-                    if (!string.IsNullOrEmpty(directoryPath))
-                        Directory.CreateDirectory(directoryPath);
-                    
-                    await downloader.DownloadFileAsync(file).ConfigureAwait(false);
+                    await downloader.DownloadFileAsync(file, byteProgress).ConfigureAwait(false);
 
                     if (file.AfterDownload != null)
                     {
@@ -57,11 +68,6 @@ namespace CmlLib.Core.Downloader
                         throw new MDownloadFileException(ex.Message, ex, files[i]);
                 }
             }
-        }
-
-        private void Downloader_FileDownloadProgressChanged(object? sender, DownloadFileProgress e)
-        {
-            pChangeProgress?.Report(new ProgressChangedEventArgs(e.ProgressPercentage, null));
         }
     }
 }
