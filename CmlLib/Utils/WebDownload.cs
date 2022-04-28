@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace CmlLib.Utils
 {
+    [Obsolete]
     internal class WebDownload
     {
         public static bool IgnoreProxy { get; set; } = true;
@@ -15,12 +16,9 @@ namespace CmlLib.Utils
 
         private class TimeoutWebClient : WebClient
         {
-            protected override WebRequest? GetWebRequest(Uri uri)
+            protected override WebRequest GetWebRequest(Uri uri)
             {
-                WebRequest? w = base.GetWebRequest(uri);
-                if (w == null)
-                    return null;
-                
+                WebRequest w = base.GetWebRequest(uri);
                 w.Timeout = DefaultWebRequestTimeout;
 
                 if (IgnoreProxy)
@@ -36,7 +34,7 @@ namespace CmlLib.Utils
         private static readonly int DefaultBufferSize = 1024 * 64; // 64kb
         private readonly object locker = new object();
         
-        internal event EventHandler<DownloadFileProgress>? FileDownloadProgressChanged;
+        internal event EventHandler<DownloadFileByteProgress>? FileDownloadProgressChanged;
         internal event ProgressChangedEventHandler? DownloadProgressChangedEvent;
 
         internal void DownloadFile(string url, string path)
@@ -94,8 +92,17 @@ namespace CmlLib.Utils
 
                         lastBytes = e.BytesReceived;
 
-                        var progress = new DownloadFileProgress(
-                            file, e.TotalBytesToReceive, progressedBytes, e.BytesReceived, e.ProgressPercentage);
+                        var progress = new DownloadFileByteProgress()
+                        {
+                            File = file,
+                            TotalBytes = e.TotalBytesToReceive,
+                            ProgressedBytes = progressedBytes
+                        };
+                            //file: file,
+                            //total: e.TotalBytesToReceive,
+                            //progressed: progressedBytes);
+                            //received: e.BytesReceived, 
+                            //percent: e.ProgressPercentage);
                         FileDownloadProgressChanged?.Invoke(this, progress);
                     }
                 };
