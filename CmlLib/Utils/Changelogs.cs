@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Runtime.CompilerServices;
-using System.Text;
+using System.Net.Http;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -17,14 +15,19 @@ namespace CmlLib.Utils
         // Versions that exist in 'PatchNotesUrl' do not need to be added the list below
         private static readonly Dictionary<string, string> AltUrls = new Dictionary<string, string>
         {
-            { "1.14.2", "https://feedback.minecraft.net/hc/en-us/articles/360028919851-Minecraft-Java-Edition-1-14-2" },
+                { "1.14.2", "https://feedback.minecraft.net/hc/en-us/articles/360028919851-Minecraft-Java-Edition-1-14-2" },
             { "1.14.3", "https://feedback.minecraft.net/hc/en-us/articles/360030771451-Minecraft-Java-Edition-1-14-3" },
             { "1.14.4", "https://feedback.minecraft.net/hc/en-us/articles/360030780172-Minecraft-Java-Edition-1-14-4" },
         };
-        
-        public static async Task<Changelogs> GetChangelogs()
+
+        public static Task<Changelogs> GetChangelogs()
         {
-            var response = await HttpUtil.HttpClient.GetStreamAsync(PatchNotesUrl)
+            return GetChangelogs(HttpUtil.HttpClient);
+        }
+        
+        public static async Task<Changelogs> GetChangelogs(HttpClient client)
+        {
+            var response = await client.GetStreamAsync(PatchNotesUrl)
                 .ConfigureAwait(false);
             var jsonDocument = await JsonDocument.ParseAsync(response).ConfigureAwait(false);
             var root = jsonDocument.RootElement;
@@ -44,14 +47,16 @@ namespace CmlLib.Utils
                 }
             }
 
-            return new Changelogs(versionDict);
+            return new Changelogs(versionDict, client);
         }
         
-        private Changelogs(Dictionary<string, string?> versions)
+        private Changelogs(Dictionary<string, string?> versions, HttpClient client)
         {
+            this.httpClient = client;
             this.versions = versions;
         }
 
+        private readonly HttpClient httpClient;
         private readonly Dictionary<string, string?> versions;
 
         public string[] GetAvailableVersions()
@@ -82,12 +87,7 @@ namespace CmlLib.Utils
 
         private async Task<string> GetChangelogFromUrl(string url)
         {
-            string html;
-            using (var wc = new WebClient())
-            {
-                var data = await wc.DownloadDataTaskAsync(url).ConfigureAwait(false);
-                html = Encoding.UTF8.GetString(data);
-            }
+            var html = await httpClient.GetStringAsync(url).ConfigureAwait(false);
 
             var regResult = ArticleRegex.Match(html);
             if (!regResult.Success)
