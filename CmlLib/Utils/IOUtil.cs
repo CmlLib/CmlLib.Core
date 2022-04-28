@@ -3,13 +3,22 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CmlLib.Utils
 {
     internal static class IOUtil
     {
+        // from dotnet core source code, default buffer size of file stream is 4096
         private const int DefaultBufferSize = 4096;
+
+        public static void CreateParentDirectory(string filePath)
+        {
+            var dirPath = Path.GetDirectoryName(filePath);
+            if (!string.IsNullOrEmpty(dirPath))
+                Directory.CreateDirectory(dirPath);
+        }
 
         public static string NormalizePath(string path)
         {
@@ -31,6 +40,7 @@ namespace CmlLib.Utils
                 }));
         }
 
+#pragma warning disable SYSLIB0021
         public static bool CheckSHA1(string path, string? compareHash)
         {
             if (string.IsNullOrEmpty(compareHash))
@@ -41,6 +51,7 @@ namespace CmlLib.Utils
                 string fileHash;
 
                 using (var file = File.OpenRead(path))
+
                 using (var hasher = new System.Security.Cryptography.SHA1CryptoServiceProvider())
                 {
                     var binaryHash = hasher.ComputeHash(file);
@@ -54,7 +65,8 @@ namespace CmlLib.Utils
                 return false;
             }
         }
-        
+#pragma warning restore SYSLIB0021
+
         public static bool CheckFileValidation(string path, string? hash, bool checkHash)
         {
             if (!File.Exists(path))
@@ -84,7 +96,7 @@ namespace CmlLib.Utils
         }
 
         #region Async File IO
-        
+
         // from .NET Framework reference source code
         // If we use the path-taking constructors we will not have FileOptions.Asynchronous set and
         // we will have asynchronous file access faked by the thread pool. We want the real thing.

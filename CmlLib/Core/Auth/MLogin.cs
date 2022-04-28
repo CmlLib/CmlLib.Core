@@ -50,9 +50,7 @@ namespace CmlLib.Core.Auth
         private async Task writeSessionCache(MSession session)
         {
             if (!SaveSession) return;
-            var directoryPath = Path.GetDirectoryName(SessionCacheFilePath);
-            if (!string.IsNullOrEmpty(directoryPath))
-                Directory.CreateDirectory(directoryPath);
+            IOUtil.CreateParentDirectory(SessionCacheFilePath);
 
             var json = JsonSerializer.Serialize(session);
             await IOUtil.WriteFileAsync(SessionCacheFilePath, json);

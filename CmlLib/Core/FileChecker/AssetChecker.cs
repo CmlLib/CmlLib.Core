@@ -61,9 +61,7 @@ namespace CmlLib.Core.FileChecker
             if (IOUtil.CheckFileValidation(indexFilePath, assets.Sha1, CheckHash))
                 return;
             
-            var directoryName = Path.GetDirectoryName(indexFilePath);
-            if (!string.IsNullOrEmpty(directoryName))
-                Directory.CreateDirectory(directoryName);
+            IOUtil.CreateParentDirectory(indexFilePath);
 
             using var wc = new WebClient();
             wc.DownloadFile(assets.Url, indexFilePath);
@@ -175,10 +173,7 @@ namespace CmlLib.Core.FileChecker
 
                 if (!desFile.Exists || orgFile.Length != desFile.Length)
                 {
-                    var directoryName = Path.GetDirectoryName(des);
-                    if (!string.IsNullOrEmpty(directoryName))
-                        Directory.CreateDirectory(directoryName);
-
+                    IOUtil.CreateParentDirectory(des);
                     await IOUtil.CopyFileAsync(org, des);
                 }
             }

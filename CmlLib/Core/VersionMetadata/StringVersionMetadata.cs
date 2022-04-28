@@ -54,10 +54,7 @@ namespace CmlLib.Core.VersionMetadata
                     return null;
             }
 
-            var directoryPath = System.IO.Path.GetDirectoryName(metadataPath);
-            if (!string.IsNullOrEmpty(directoryPath))
-                Directory.CreateDirectory(directoryPath);
-
+            IOUtil.CreateParentDirectory(metadataPath);
             return metadataPath;
         }
 
