@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
+using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using CmlLib.Core.Downloader;
@@ -15,6 +15,18 @@ namespace CmlLib.Core.FileChecker
 {
     public sealed class AssetChecker : IFileChecker
     {
+        private readonly HttpClient httpClient;
+
+        public AssetChecker() : this(HttpUtil.HttpClient)
+        {
+            
+        }
+
+        public AssetChecker(HttpClient client)
+        {
+            this.httpClient = client;
+        }
+
         private string assetServer = MojangServer.ResourceDownload;
         public string AssetServer
         {
@@ -32,26 +44,24 @@ namespace CmlLib.Core.FileChecker
         public DownloadFile[]? CheckFiles(MinecraftPath path, MVersion version, 
             IProgress<DownloadFileChangedEventArgs>? progress)
         {
-            return checkIndexAndAsset(path, version, progress);
+            if (version.Assets == null)
+                return null;
+            checkIndex(path, version.Assets).GetAwaiter().GetResult();
+            return CheckAssetFiles(path, version.Assets, progress);
         }
 
-        public Task<DownloadFile[]?> CheckFilesTaskAsync(MinecraftPath path, MVersion version, 
-            IProgress<DownloadFileChangedEventArgs>? progress)
-        {
-            return Task.Run(() => checkIndexAndAsset(path, version, progress));
-        }
-
-        private DownloadFile[]? checkIndexAndAsset(MinecraftPath path, MVersion version,
+        public async Task<DownloadFile[]?> CheckFilesTaskAsync(MinecraftPath path, MVersion version, 
             IProgress<DownloadFileChangedEventArgs>? progress)
         {
             if (version.Assets == null)
                 return null;
-            checkIndex(path, version.Assets);
-            return CheckAssetFiles(path, version.Assets, progress);
+
+            await checkIndex(path, version.Assets).ConfigureAwait(false);
+            return await Task.Run(() => CheckAssetFiles(path, version.Assets, progress)).ConfigureAwait(false);
         }
 
         // Check index file validation and download
-        private void checkIndex(MinecraftPath path, MFileMetadata assets)
+        private async Task checkIndex(MinecraftPath path, MFileMetadata assets)
         {
             if (string.IsNullOrEmpty(assets.Id) || string.IsNullOrEmpty(assets.Url))
                 return;
@@ -63,8 +73,8 @@ namespace CmlLib.Core.FileChecker
             
             IOUtil.CreateParentDirectory(indexFilePath);
 
-            using var wc = new WebClient();
-            wc.DownloadFile(assets.Url, indexFilePath);
+            var downloader = new HttpClientDownloadHelper(httpClient);
+            await downloader.DownloadFileAsync(new DownloadFile(indexFilePath, assets.Url)).ConfigureAwait(false);
         }
 
         [MethodTimer.Time]
