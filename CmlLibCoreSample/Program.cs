@@ -3,7 +3,6 @@ using CmlLib.Core.Auth;
 using CmlLib.Core.Downloader;
 using System;
 using System.Threading.Tasks;
-using CmlLib.Core.VersionLoader;
 
 namespace CmlLibCoreSample
 {
@@ -19,8 +18,8 @@ namespace CmlLibCoreSample
 
             // There are two login methods, one is using mojang email and password, and the other is using only username
             // Choose one which you want.
-            session = await p.PremiumLogin(); // Login by mojang email and password
-            //session = p.OfflineLogin(); // Login by username
+            //session = await p.PremiumLogin(); // Login by mojang email and password
+            session = p.OfflineLogin(); // Login by username
 
             // log login session information
             Console.WriteLine("Success to login : {0} / {1} / {2}", session.Username, session.UUID, session.AccessToken);
@@ -131,7 +130,9 @@ namespace CmlLibCoreSample
             // var process = await launcher.CreateProcessAsync("fabric-loader-0.11.3-1.16.5") // fabric-loader
 
             Console.WriteLine("input version (example: 1.12.2) : ");
-            var process = await launcher.CreateProcessAsync(Console.ReadLine(), launchOption);
+            var versionName = Console.ReadLine();
+            //var versionName = "1.18.2";
+            var process = await launcher.CreateProcessAsync(versionName, launchOption);
 
             //var process = launcher.CreateProcess("1.16.2", "33.0.5", launchOption);
             Console.WriteLine(process.StartInfo.FileName);
@@ -199,16 +200,13 @@ namespace CmlLibCoreSample
 
         #region Pretty event handler
 
-        int endTop = -1;
-
         private void Downloader_ChangeProgress(object sender, System.ComponentModel.ProgressChangedEventArgs e)
         {
-            Console.SetCursorPosition(0, endTop);
-
+            var top = Console.CursorTop;
+            Console.SetCursorPosition(0, top);
             // e.ProgressPercentage: 0~100
-            Console.Write("{0}%       ", e.ProgressPercentage);
-
-            Console.SetCursorPosition(0, endTop);
+            Console.Write($"{e.ProgressPercentage}%  ");
+            Console.SetCursorPosition(0, top);
         }
 
         private void Downloader_ChangeFile(DownloadFileChangedEventArgs e)
@@ -217,8 +215,6 @@ namespace CmlLibCoreSample
             // https://github.com/AlphaBs/CmlLib.Core/wiki/Handling-Events#downloadfilechangedeventargs
 
             Console.WriteLine("[{0}] ({2}/{3}) {1}   ", e.FileKind.ToString(), e.FileName, e.ProgressedFileCount, e.TotalFileCount);
-
-            endTop = Console.CursorTop;
         }
 
         #endregion
@@ -236,3 +232,4 @@ namespace CmlLibCoreSample
         #endregion
     }
 }
+

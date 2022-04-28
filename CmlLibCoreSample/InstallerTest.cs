@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 using CmlLib.Core;
 using CmlLib.Core.Auth;
 using CmlLib.Core.Downloader;
-using CmlLib.Core.Installer;
 using CmlLib.Core.Installer.FabricMC;
 using CmlLib.Core.Installer.LiteLoader;
 
