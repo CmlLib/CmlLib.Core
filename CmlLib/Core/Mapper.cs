@@ -31,7 +31,8 @@ namespace CmlLib.Core
             foreach (string item in arg)
             {
                 var a = Interpolation(item, dicts, true);
-                args.Add(a);
+                if (!string.IsNullOrEmpty(a))
+                    args.Add(a);
             }
 
             return args.ToArray();
@@ -51,7 +52,7 @@ namespace CmlLib.Core
 
         public static string Interpolation(string str, Dictionary<string, string?> dicts, bool handleEmpty)
         {
-            str = argBracket.Replace(str, (match =>
+            str = argBracket.Replace(str, match =>
             {
                 if (match.Groups.Count < 2)
                     return match.Value;
@@ -66,7 +67,7 @@ namespace CmlLib.Core
                 }
 
                 return match.Value;
-            }));
+            });
 
             if (handleEmpty)
                 return HandleEmptyArg(str);
@@ -117,12 +118,12 @@ namespace CmlLib.Core
             {
                 var s = input.Split('=');
 
-                if (s[1].Contains(" ") && !checkEmptyHandled(s[1]))
+                if ((s[1].Contains(" ") && !checkEmptyHandled(s[1])) || string.IsNullOrWhiteSpace(s[1]))
                     return s[0] + "=\"" + s[1] + "\"";
                 else
                     return input;
             }
-            else if (input.Contains(" ") && !checkEmptyHandled(input))
+            else if ((input.Contains(" ") && !checkEmptyHandled(input)) || string.IsNullOrWhiteSpace(input))
                 return "\"" + input + "\"";
             else
                 return input;
