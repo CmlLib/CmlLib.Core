@@ -21,10 +21,10 @@ It supports all versions, including Forge
 * Mojang Authentication
 * Microsoft Xbox Live Login
 * Download the game files from the Mojang file server
-* Launch any version (tested up to 1.17.1)
+* Launch any version (tested up to 1.18.2)
 * Launch Forge, Optifine, FabricMC, LiteLoader or any other custom version
 * Install Java runtime
-* Install Forge, LiteLoader, FabricMC
+* Install LiteLoader, FabricMC
 * Launch with options (direct server connecting, screen resolution)
 * Cross-platform (Windows, Linux, macOS)
 
@@ -52,6 +52,7 @@ There are many features for custom launchers. Read the wiki to see all of the fe
 
 ### Microsoft Xbox Login
 
+[CmlLib.Core.Auth.Microsoft](https://github.com/CmlLib/CmlLib.Core.Auth.Microsoft)\
 [Wiki](https://github.com/CmlLib/CmlLib.Core/wiki/Microsoft-Xbox-Live-Login)
 
 ### Mojang Login
@@ -115,7 +116,7 @@ foreach (var item in versions)
 var launchOption = new MLaunchOption
 {
     MaximumRamMb = 1024,
-    Session = MSession.GetOfflineSession("hello"), // Login Session. ex) Session = MSession.GetOfflineSession("hello")
+    Session = session, // replace this with login session value. ex) Session = MSession.GetOfflineSession("hello")
 
     //ScreenWidth = 1600,
     //ScreenHeigth = 900,
