@@ -119,7 +119,7 @@ var launchOption = new MLaunchOption
     Session = session, // replace this with login session value. ex) Session = MSession.GetOfflineSession("hello")
 
     //ScreenWidth = 1600,
-    //ScreenHeigth = 900,
+    //ScreenHeight = 900,
     //ServerIp = "mc.hypixel.net"
 };
 
