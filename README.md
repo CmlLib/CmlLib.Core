@@ -15,6 +15,8 @@ It supports all versions, including Forge
 
 [한국어 README](https://github.com/AlphaBs/CmlLib.Core/blob/master/docs/README-kr.md)
 
+[简体中文 README](https://github.com/AlphaBs/CmlLib.Core/blob/master/docs/README-chs.md)
+
 ## Features
 
 * Asynchronous APIs
