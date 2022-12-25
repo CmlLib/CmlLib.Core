@@ -1,6 +1,6 @@
 # CmlLib.Core
 
-## Minecraft Launcher Library
+## Minecraft 启动器库
 
 <img src='https://raw.githubusercontent.com/CmlLib/CmlLib.Core/master/icon.png' width=128>
 
@@ -10,56 +10,56 @@
 
 [![Discord](https://img.shields.io/discord/795952027443527690?label=discord\&logo=discord\&style=for-the-badge)](https://discord.gg/cDW2pvwHSc)
 
-CmlLib.Core is a Minecraft launcher library for .NET\
-It supports all versions, including Forge
+CmlLib.Core 是.NET上的一个Minecraft启动库\
+它支持所有版本，包括Forge。
 
 [한국어 README](https://github.com/AlphaBs/CmlLib.Core/blob/master/docs/README-kr.md)
 
 [简体中文 README](https://github.com/AlphaBs/CmlLib.Core/blob/master/docs/README-chs.md)
 
-## Features
+## 特点
 
-* Asynchronous APIs
-* Mojang Authentication
-* Microsoft Xbox Live Login
-* Download the game files from the Mojang file server
-* Launch any version (tested up to 1.18.2)
-* Launch Forge, Optifine, FabricMC, LiteLoader or any other custom version
-* Install Java runtime
-* Install LiteLoader, FabricMC
-* Launch with options (direct server connecting, screen resolution)
-* Cross-platform (Windows, Linux, macOS)
+* 异步 API
+* Mojang 认证
+* 微软 Xbox Live 登录
+* 从Mojang文件服务器下载游戏文件
+* 启动所有版本 (最高测试到1.18.2)
+* 启动Forge, Optifine, FabricMC, LiteLoader或者其他任何自定义的版本。
+* 安装Java运行时
+* 安装LiteLoader、FabricMC。
+* 自定义参数启动 (服务器直连, 屏幕分辨率)
+* 跨平台 (Windows, Linux, macOS)
 
-[Go to the wiki for all features](https://github.com/CmlLib/CmlLib.Core/wiki)
+[去Wiki查看所有特性](https://github.com/CmlLib/CmlLib.Core/wiki)
 
-## Install
+## 安装
 
-Install the [CmlLib.Core Nuget package](https://www.nuget.org/packages/CmlLib.Core)
+在Nuget上安装 [CmlLib.Core](https://www.nuget.org/packages/CmlLib.Core)
 
-or download the DLL files in [Releases](https://github.com/AlphaBs/CmlLib.Core/releases) and add references to them in your project.
+或从 [Releases](https://github.com/AlphaBs/CmlLib.Core/releases) 中下载DLL文件，并将其引用至你的项目。
 
-Write this at the top of your source code:
+在源代码的顶端写入下列语句：
 
 ```csharp
 using CmlLib.Core;
 using CmlLib.Core.Auth;
 ```
 
-## Documentation
+## 文档
 
-There are many features for custom launchers. Read the wiki to see all of the features.\
-**Official documentation: [wiki](https://github.com/CmlLib/CmlLib.Core/wiki)**
+自定义启动器具有许多特性，查看文档了解所有特性： \
+**官方文档: [wiki](https://github.com/CmlLib/CmlLib.Core/wiki)**
 
-## Quick start
+## 快速开始
 
-### Microsoft Xbox Login
+### 微软 Xbox 登录
 
 [CmlLib.Core.Auth.Microsoft](https://github.com/CmlLib/CmlLib.Core.Auth.Microsoft)\
-[Wiki](https://github.com/CmlLib/CmlLib.Core/wiki/Microsoft-Xbox-Live-Login)
+[文档](https://github.com/CmlLib/CmlLib.Core/wiki/Microsoft-Xbox-Live-Login)
 
-### Mojang Login
+### Mojang 登录
 
-[Login Process](https://github.com/AlphaBs/CmlLib.Core/wiki/Login-and-Sessions)
+[登录过程](https://github.com/AlphaBs/CmlLib.Core/wiki/Login-and-Sessions)
 
 ```csharp
 var login = new MLogin();
@@ -79,14 +79,14 @@ if (!response.IsSuccess) // failed to automatically log in
 var session = response.Session;
 ```
 
-### Offline Login
+### 离线登录
 
 ```csharp
 // This session variable is the result of logging in and is used in MLaunchOption, in the Launch part below.
 var session = MSession.GetOfflineSession("USERNAME");
 ```
 
-### Launch
+### 启动
 
 ```csharp
 // increase connection limit to fast download
@@ -134,6 +134,6 @@ var process = await launcher.CreateProcessAsync("1.15.2", launchOption); // vani
 process.Start();
 ```
 
-## Example
+## 示例
 
-[Sample Code](https://github.com/AlphaBs/CmlLib.Core/wiki/Sample-Code)
+[示例代码](https://github.com/AlphaBs/CmlLib.Core/wiki/Sample-Code)
