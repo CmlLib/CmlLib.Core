@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/CmlLibCoreSample/bin/Debug/net7.0/CmlLibCoreSample.dll",
+            "program": "${workspaceFolder}/CmlLibCoreSample/bin/Debug/net6.0/CmlLibCoreSample.dll",
             "args": [],
             "cwd": "${workspaceFolder}/CmlLibCoreSample",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
