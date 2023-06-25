@@ -100,6 +100,8 @@ namespace CmlLib.Core
                 { "auth_uuid"        , session.UUID },
                 { "auth_access_token", session.AccessToken },
                 { "user_properties"  , "{}" },
+                { "auth_xuid"        , session.Xuid ?? "xuid" },
+                { "clientid"         , launchOption.ClientId ?? "clientId" },
                 { "user_type"        , session.UserType ?? "Mojang" },
                 { "game_assets"      , minecraftPath.GetAssetLegacyPath(version.AssetId ?? "legacy") },
                 { "auth_session"     , session.AccessToken },
@@ -139,8 +141,9 @@ namespace CmlLib.Core
                 args.Add("-Xdock:icon=" + handleEmpty(launchOption.DockIcon));
 
             // logging
-            if (!string.IsNullOrEmpty(version.LoggingClient?.Argument))
-                args.Add(Mapper.Interpolation(version.LoggingClient?.Argument, new Dictionary<string, string?>()
+            var loggingArgument = version.LoggingClient?.Argument;
+            if (!string.IsNullOrEmpty(loggingArgument))
+                args.Add(Mapper.Interpolation(loggingArgument, new Dictionary<string, string?>()
                 {
                     { "path", minecraftPath.GetLogConfigFilePath(version.LoggingClient?.Id ?? version.Id) }
                 }, true));

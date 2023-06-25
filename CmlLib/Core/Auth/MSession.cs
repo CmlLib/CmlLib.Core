@@ -21,6 +21,8 @@ namespace CmlLib.Core.Auth
         public string? UUID { get; set; }
         [JsonProperty("clientToken")]
         public string? ClientToken { get; set; }
+
+        public string? Xuid { get; set; }
         
         public string? UserType { get; set; }
 
