@@ -15,12 +15,9 @@ namespace CmlLib.Utils
 
         private class TimeoutWebClient : WebClient
         {
-            protected override WebRequest? GetWebRequest(Uri uri)
+            protected override WebRequest GetWebRequest(Uri uri)
             {
-                WebRequest? w = base.GetWebRequest(uri);
-                if (w == null)
-                    return null;
-                
+                WebRequest w = base.GetWebRequest(uri);
                 w.Timeout = DefaultWebRequestTimeout;
 
                 if (IgnoreProxy)
