@@ -1,199 +1,141 @@
-﻿using CmlLib.Core.Downloader;
-using CmlLib.Core.Files;
 using CmlLib.Utils;
+using HtmlAgilityPack;
 using ICSharpCode.SharpZipLib.Zip;
+using MCQuery;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
+using System.Net.Http;
+using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
+using System.Web;
+using CmlLib.Core.Downloader;
+using CmlLib.Core.Files;
+using CmlLib.Core.Version;
+using UnityEngine;
+using UnityEngine.Windows;
+using UnityEngine.WSA;
+using Directory = System.IO.Directory;
+using File = System.IO.File;
+
 
 namespace CmlLib.Core.Installer
 {
     public class MForge
     {
-        private const string MavenServer = "https://maven.minecraftforge.net/net/minecraftforge/forge/";
-
-        public static string GetOldForgeName(string mcVersion, string forgeVersion)
-        {
-            return $"{mcVersion}-forge{mcVersion}-{forgeVersion}";
-        }
-
-        public static string GetForgeName(string mcVersion, string forgeVersion)
-        {
-            return $"{mcVersion}-forge-{forgeVersion}";
-        }
-
-        public MForge(MinecraftPath mc, string java)
-        {
-            this.minecraftPath = mc;
-            JavaPath = java;
-            downloader = new SequenceDownloader();
-        }
-
-        public string JavaPath { get; private set; }
-        private readonly MinecraftPath minecraftPath;
+         private readonly MinecraftPath minecraftPath;
+        private readonly string JavaPath;
+        private CMLauncher launcher;
+        private static HttpClient httpClient = new HttpClient();
         private readonly IDownloader downloader;
         public event DownloadFileChangedHandler? FileChanged;
         public event EventHandler<string>? InstallerOutput;
 
-        public string InstallForge(string mcVersion, string forgeVersion)
+        public IForge(MinecraftPath mc, CMLauncher launcher, string java)
         {
-            var minecraftJar = minecraftPath.GetVersionJarPath(mcVersion);
-            if (!File.Exists(minecraftJar))
-                throw new IOException($"Install {mcVersion} first");
+            this.minecraftPath = mc;
+            this.JavaPath = java;
+            this.launcher = launcher;
+            downloader = new SequenceDownloader();
 
-            var installerPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-
-            var installerStream = getInstallerStream(mcVersion, forgeVersion); // download installer
-            if (installerStream == null)
-                throw new InvalidOperationException("cannot open installer stream");
-            var extractedFile = extractInstaller(installerStream, installerPath); // extract installer
-
-            var profileObj = extractedFile.Item1; // version profile json
-            var installerObj = extractedFile.Item2; // installer info
-
-            // copy forge libraries to minecraft
-            extractMaven(installerPath); // new installer
-
-            var universalPath = installerObj["filePath"]?.ToString();
-            if (string.IsNullOrEmpty(universalPath))
-                throw new InvalidOperationException("filePath property in installer was null");
-            
-            var destPath = installerObj["path"]?.ToString();
-            if (string.IsNullOrEmpty(destPath))
-                throw new InvalidOperationException("path property in installer was null");
-            
-            extractUniversal(installerPath, universalPath, destPath); // old installer
-
-            // download libraries and processors
-            checkLibraries(installerObj["libraries"] as JArray);
-
-            // mapping client data
-            var installerData = installerObj["data"] as JObject;
-            var mapData = (installerData == null) 
-                ? new Dictionary<string, string?>()
-                : mapping(installerData, "client", minecraftJar, installerPath);
-
-            // process
-            process(installerObj["processors"] as JArray, mapData);
-
-            // version name like 1.16.2-forge-33.0.20
-            var versionName = installerObj["target"]?.ToString()
-                           ?? installerObj["version"]?.ToString()
-                           ?? GetForgeName(mcVersion, forgeVersion);
-
-            var versionPath = minecraftPath.GetVersionJsonPath(versionName);
-
-            // write version profile json
-            writeProfile(profileObj, versionPath);
-
-            return versionName;
         }
 
-        private Stream? getInstallerStream(string mcVersion, string forgeVersion)
+        /* 1.7.10 - 1.9.4 */
+        public static string GetLegacyForgeName(string mcVersion, string forgeVersion) => $"forge-{mcVersion}-{forgeVersion}-{mcVersion}";
+        
+        /* 1.12 - *.*.* */
+        public static string GetForgeName(string mcVersion, string forgeVersion) => $"{mcVersion}-forge-{forgeVersion}";
+
+        /*1.10 - 1.11.2 */
+        public static string GetOldForgeName(string mcVersion, string forgeVersion) => $"forge-{mcVersion}-{forgeVersion}";
+
+        /* 1.7.10 - 1.11.2 */
+        private static string GetLegacyFolderName(string mcVersion, string forgeVersion) => mcVersion == "1.7.10" ? 
+            $"{mcVersion}-Forge-{forgeVersion}-{mcVersion}" : 
+            $"{mcVersion}-forge{mcVersion}-{forgeVersion}";
+
+        
+        public async Task<string> Install(string mcVersion, string forgeVersion, bool AlwaysUpdate = false) => IsOldType(mcVersion) ? 
+            await Legacy(mcVersion, forgeVersion, AlwaysUpdate) : 
+            await Newest(mcVersion, forgeVersion, AlwaysUpdate);
+
+
+        private async Task<string> Newest(string mcVersion, string forgeVersion, bool AlwaysUpdate = false)
         {
-            fireEvent(MFile.Library, "installer", 1, 0);
+            if (!AlwaysUpdate && Directory.Exists(Path.Combine(minecraftPath.Versions, GetForgeName(mcVersion, forgeVersion))))
+                return GetForgeName(mcVersion, forgeVersion); //the version is already installed
 
-            var url = $"{MavenServer}{mcVersion}-{forgeVersion}/" +
-                $"forge-{mcVersion}-{forgeVersion}-installer.jar";
+            var version_jar = minecraftPath.GetVersionJarPath(mcVersion); // get vanilla jar file
+            var install_folder = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()); //create folder in temp
+            if (!System.IO.File.Exists(version_jar))
+                await launcher.CheckAndDownloadAsync(launcher.GetVersion(mcVersion)); //install vanilla version
 
-            return WebRequest.Create(url).GetResponse().GetResponseStream();
+            await DownloadFile(mcVersion, forgeVersion, install_folder); //download forge version
+            new FastZip().ExtractZip(Path.Combine(install_folder, "version.zip"), install_folder, null); //unzip version
+
+            var version = JObject.Parse(File.ReadAllText(Path.Combine(install_folder, "version.json")));
+            var installer = JObject.Parse(File.ReadAllText(Path.Combine(install_folder, "install_profile.json")));
+            var installerData = installer["data"] as JObject;
+            var mapData = installerData == null ? new Dictionary<string, string?>() : mapping(installerData, "client", version_jar, install_folder);
+
+            extractMaven(install_folder); //setup maven
+            await checkLibraries(installer["libraries"] as JArray); //install libs
+            process(installer["processors"] as JArray, mapData);
+            setupFolder(mcVersion, forgeVersion, install_folder, version.ToString()); //copy version.json and forge.jar
+
+            await launcher.GetAllVersionsAsync(); //update version list
+
+            return GetForgeName(mcVersion, forgeVersion);
         }
 
-        private Tuple<JToken, JToken> extractInstaller(Stream stream, string extractPath)
+
+        private async Task<string> Legacy(string mcVersion, string forgeVersion, bool AlwaysUpdate = false)
         {
-            // extract installer
-            string? installProfile = null;
-            string? versionsJson = null;
+            if (!AlwaysUpdate && Directory.Exists(Path.Combine(minecraftPath.Versions, GetLegacyFolderName(mcVersion, forgeVersion))))
+                return $"{GetLegacyFolderName(mcVersion, forgeVersion)}";
 
-            using (stream)
-            using (var s = new ZipInputStream(stream))
-            {
-                ZipEntry e;
-                while ((e = s.GetNextEntry()) != null)
-                {
-                    if (e.Name.Length <= 0)
-                        continue;
+            var version_jar = minecraftPath.GetVersionJarPath(mcVersion); // get vanilla jar file
+            var install_folder = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()); //create folder in temp
+            if (!System.IO.File.Exists(version_jar))
+                await launcher.CheckAndDownloadAsync(launcher.GetVersion(mcVersion)); //install vanilla version
 
-                    var realpath = Path.Combine(extractPath, e.Name);
+            await DownloadFile(mcVersion, forgeVersion, install_folder); //download forge version
+            new FastZip().ExtractZip(Path.Combine(install_folder, "version.zip"), install_folder, null); //unzip version
 
-                    if (e.IsFile)
-                    {
-                        if (e.Name == "install_profile.json")
-                            installProfile = readStreamString(s);
-                        else if (e.Name == "version.json")
-                            versionsJson = readStreamString(s);
-                        else
-                        {
-                            var dirPath = Path.GetDirectoryName(realpath);
-                            if (!string.IsNullOrEmpty(dirPath))
-                                Directory.CreateDirectory(dirPath);
+            var installer = JObject.Parse(File.ReadAllText(Path.Combine(install_folder, "install_profile.json")));
+            var version = installer["versionInfo"] as JObject;
+            var installerData = installer["data"] as JObject;
+            var mapData = installerData == null ? new Dictionary<string, string?>() : mapping(installerData, "client", version_jar, install_folder);
+            var version_name = version["id"].ToString();
+            var destPath = (installer["install"] as JObject)["path"]?.ToString();
+            var universalPath = (installer["install"] as JObject)["filePath"]?.ToString();
 
-                            using var fs = File.OpenWrite(realpath);
-                            s.CopyTo(fs);
-                        }
-                    }
-                }
-            }
+            if (string.IsNullOrEmpty(universalPath)) throw new InvalidOperationException("filePath property in installer was null");
+            if (string.IsNullOrEmpty(destPath)) throw new InvalidOperationException("path property in installer was null");
 
-            if (installProfile == null)
-                throw new InvalidOperationException("no install_profile.json in installer");
-            if (versionsJson == null)
-                throw new InvalidOperationException("no version.json in installer");
-            
-            JToken profileObj;
-            var installObj = JObject.Parse(installProfile); // installer info
-            var versionInfo = installObj["versionInfo"]; // version profile
+            extractUniversal(install_folder, universalPath, destPath); // old installer
+            await checkLibraries(installer["libraries"] as JArray); //install libs
+            process(installer["processors"] as JArray, mapData);
+            setupFolderLegacy(mcVersion, forgeVersion, install_folder, version_name, version.ToString()); //copy version.json and forge.jar
 
-            if (versionInfo == null)
-                profileObj = JObject.Parse(versionsJson);
-            else
-            {
-                installObj = installObj["install"] as JObject;
-                profileObj = versionInfo;
-            }
+            await launcher.GetAllVersionsAsync(); //update version list
 
-            if (installObj == null)
-                throw new InvalidOperationException("no 'install' object in install_profile.json");
-
-            return new Tuple<JToken, JToken>(profileObj, installObj);
+            return version_name;
         }
 
-        private string readStreamString(Stream s)
-        {
-            var str = new StringBuilder();
-            var buffer = new byte[1024];
-            while (true)
-            {
-                int size = s.Read(buffer, 0, buffer.Length);
-                if (size == 0)
-                    break;
-
-                str.Append(Encoding.UTF8.GetString(buffer, 0, size));
-            }
-
-            return str.ToString();
-        }
-
-        // for new installer
         private void extractMaven(string installerPath)
         {
-            fireEvent(MFile.Library, "maven", 1, 0);
-
-            // copy all libraries in maven (include universal) to minecraft
             var org = Path.Combine(installerPath, "maven");
             if (Directory.Exists(org))
                 IOUtil.CopyDirectory(org, minecraftPath.Library, true);
         }
 
-        // for old installer
         private void extractUniversal(string installerPath, string universalPath, string destinyName)
         {
-            fireEvent(MFile.Library, "universal", 1, 0);
 
             if (string.IsNullOrEmpty(universalPath) || string.IsNullOrEmpty(destinyName))
                 return;
@@ -212,43 +154,41 @@ namespace CmlLib.Core.Installer
             }
         }
 
-        // legacy
-        private void downloadUniversal(string mcVersion, string forgeVersion)
+        private Task checkLibraries(JArray? jarr)
         {
-            fireEvent(MFile.Library, "universal", 1, 0);
+            if (jarr == null || jarr.Count == 0)
+                return Task.CompletedTask;
 
-            var forgeName = $"forge-{mcVersion}-{forgeVersion}";
-            var baseUrl = $"{MavenServer}{mcVersion}-{forgeVersion}";
+            var libs = new List<MLibrary>();
+            var parser = new MLibraryParser();
+            foreach (var item in jarr)
+            {
+                var parsedLib = parser.ParseJsonObject((JObject)item);
+                if (parsedLib != null)
+                    libs.AddRange(parsedLib);
+            }
 
-            var universalUrl = $"{baseUrl}/{forgeName}-universal.jar";
-            var universalPath = Path.Combine(
-                minecraftPath.Library,
-                "net",
-                "minecraftforge",
-                "forge",
-                $"{mcVersion}-{forgeVersion}",
-                $"forge-{mcVersion}-{forgeVersion}.jar"
-            );
+            var fileProgress = new Progress<DownloadFileChangedEventArgs>(
+                e => FileChanged?.Invoke(e));
 
-            var dirPath = Path.GetDirectoryName(universalPath);
-            if (!string.IsNullOrEmpty(dirPath))
-                Directory.CreateDirectory(dirPath);
-            
-            var dl = new WebDownload();
-            dl.DownloadFile(universalUrl, universalPath);
+            var libraryChecker = new LibraryChecker();
+            var lostLibrary = libraryChecker.CheckFiles(minecraftPath, libs.ToArray(), fileProgress);
+
+            if (lostLibrary == null)
+                return Task.CompletedTask;
+            downloader.DownloadFiles(lostLibrary, fileProgress, null).GetAwaiter().GetResult();
+            return Task.CompletedTask;
         }
 
         private Dictionary<string, string?> mapping(JObject data, string kind,
             string minecraftJar, string installerPath)
         {
-            // convert [path] to absolute path
-
             var dataMapping = new Dictionary<string, string?>();
             foreach (var item in data)
             {
                 var key = item.Key;
                 var value = item.Value?[kind]?.ToString();
-                
+
                 if (string.IsNullOrEmpty(value))
                     continue;
 
@@ -268,36 +208,11 @@ namespace CmlLib.Core.Installer
             return dataMapping;
         }
 
-        private void checkLibraries(JArray? jarr)
-        {
-            if (jarr == null || jarr.Count == 0)
-                return;
-
-            var libs = new List<MLibrary>();
-            var parser = new MLibraryParser();
-            foreach (var item in jarr)
-            {
-                var parsedLib = parser.ParseJsonObject((JObject)item);
-                if (parsedLib != null)
-                    libs.AddRange(parsedLib);
-            }
-
-            var fileProgress = new Progress<DownloadFileChangedEventArgs>(
-                e => FileChanged?.Invoke(e));
-            
-            var libraryChecker = new LibraryChecker();
-            var lostLibrary = libraryChecker.CheckFiles(minecraftPath, libs.ToArray(), fileProgress);
-            
-            if (lostLibrary != null)
-                downloader.DownloadFiles(lostLibrary, fileProgress, null);
-        }
-
         private void process(JArray? processors, Dictionary<string, string?> mapData)
         {
             if (processors == null || processors.Count == 0)
                 return;
 
-            fireEvent(MFile.Library, "processors", processors.Count, 0);
 
             for (int i = 0; i < processors.Count; i++)
             {
@@ -307,7 +222,6 @@ namespace CmlLib.Core.Installer
                 if (outputs == null || !checkProcessorOutputs(outputs, mapData))
                     startProcessor(item, mapData);
 
-                fireEvent(MFile.Library, "processors", processors.Count, i + 1);
             }
         }
 
@@ -317,7 +231,7 @@ namespace CmlLib.Core.Installer
             {
                 if (item.Value == null)
                     continue;
-                
+
                 var key = Mapper.Interpolation(item.Key, mapData, true);
                 var value = Mapper.Interpolation(item.Value.ToString(), mapData, true);
 
@@ -357,7 +271,7 @@ namespace CmlLib.Core.Installer
                     var libNameString = libName?.ToString();
                     if (string.IsNullOrEmpty(libNameString))
                         continue;
-                    
+
                     var lib = Path.Combine(minecraftPath.Library,
                         PackageName.Parse(libNameString).GetPath());
                     classpath.Add(lib);
@@ -385,7 +299,7 @@ namespace CmlLib.Core.Installer
 
             if (args != null && args.Length > 0)
                 arg += " " + string.Join(" ", args);
-            
+
             var process = new Process();
             process.StartInfo = new ProcessStartInfo()
             {
@@ -399,17 +313,92 @@ namespace CmlLib.Core.Installer
             p.Process.WaitForExit();
         }
 
-        private void writeProfile(JToken profileObj, string versionPath)
+        private bool IsOldType(string mcVersion) => Convert.ToInt32(mcVersion.Split('.')[1]) < 12 ? true : false;
+
+        private void setupFolder(string mcVersion, string forgeVersion, string install_folder, string JVersion)
         {
-            var dirPath = Path.GetDirectoryName(versionPath);
-            if (!string.IsNullOrEmpty(dirPath))
-                Directory.CreateDirectory(dirPath);
-            File.WriteAllText(versionPath, profileObj.ToString());
+            string version_folder = Path.Combine(minecraftPath.Versions, GetForgeName(mcVersion, forgeVersion));
+            if(Directory.Exists(version_folder))
+                Directory.Delete(version_folder, true); //remove version folder
+            Directory.CreateDirectory(version_folder); //create version folder
+            File.Copy(Path.Combine(install_folder, $"maven\\net\\minecraftforge\\forge\\{mcVersion}-{forgeVersion}\\forge-{mcVersion}-{forgeVersion}.jar"), 
+                Path.Combine(version_folder, $"{GetForgeName(mcVersion, forgeVersion)}.jar")); //copy jar file
+            File.WriteAllText(Path.Combine(version_folder, $"{GetForgeName(mcVersion, forgeVersion)}.json"), JVersion); //write version.json
+            Directory.Delete(install_folder, true); //remove temp folder
         }
 
-        private void fireEvent(MFile kind, string name, int total, int progressed)
+        private void setupFolderLegacy(string mcVersion, string forgeVersion, string install_folder, string version_name, string JVersion)
         {
-            FileChanged?.Invoke(new DownloadFileChangedEventArgs(kind, this, name, total, progressed));
+            string version_folder = Path.Combine(minecraftPath.Versions, version_name);
+            var universal_jar = Convert.ToInt32(mcVersion.Split('.')[1]) < 10 ?
+                $"{GetLegacyForgeName(mcVersion, forgeVersion)}-universal.jar" :
+                $"{GetOldForgeName(mcVersion, forgeVersion)}-universal.jar";
+
+            if (Directory.Exists(version_folder))
+                Directory.Delete(version_folder, true); //remove version folder
+            Directory.CreateDirectory(version_folder); //create version folder
+
+            File.Copy(Path.Combine(install_folder, universal_jar),
+                Path.Combine(version_folder, $"{version_name}.jar")); //copy jar file
+            File.WriteAllText(Path.Combine(version_folder, $"{version_name}.json"), JVersion); //write version.json
+            Directory.Delete(install_folder, true); //remove temp folder
+        }
+
+        public async Task<string> getForgeUrl(string mcVersion, string forgeVersion)
+        {
+            var document = new HtmlDocument();
+            var html = await httpClient.GetStringAsync($"https://files.minecraftforge.net/net/minecraftforge/forge/index_{mcVersion}.html");
+            document.LoadHtml(html);
+            var rows = document.DocumentNode.SelectNodes("//html[1]//body[1]//main[1]//div[2]//div[2]//div[2]//table[1]//tbody[1]//tr").ToList();
+            foreach (var row in rows)
+            {
+                var current_version = ClearName(row.Descendants(0).Where(n => n.HasClass("download-version")).FirstOrDefault().FirstChild.OuterHtml.Replace(" ", ""));
+                if (current_version == forgeVersion)
+                    return GetQueryString(row.ChildNodes[5].ChildNodes[1].ChildNodes[3].ChildNodes[3].Attributes["href"].Value, "url=");
+            }
+            throw new Exception("The version was not found on the official website");
+        }
+
+        public async Task<string> getForgeMD5(string mcVersion, string forgeVersion)
+        {
+            var document = new HtmlDocument();
+            var html = await httpClient.GetStringAsync($"https://files.minecraftforge.net/net/minecraftforge/forge/index_{mcVersion}.html");
+            document.LoadHtml(html);
+            var rows = document.DocumentNode.SelectNodes("//html[1]//body[1]//main[1]//div[2]//div[2]//div[2]//table[1]//tbody[1]//tr").ToList();
+            foreach (var row in rows)
+            {
+                var current_version = ClearName(row.Descendants(0).Where(n => n.HasClass("download-version")).FirstOrDefault().FirstChild.OuterHtml.Replace(" ", ""));
+                if (current_version == forgeVersion)
+                    return ClearName(row.ChildNodes[5].ChildNodes[1].ChildNodes[3].ChildNodes[5].ChildNodes[2].InnerText);
+            }
+            return "404";
+        }
+
+        private string ClearName(string name) => name.Replace(" ", "").Replace("\n", "");
+
+        private string GetQueryString(string url, string key)
+        {
+            int index = url.IndexOf('?');
+            var query = url.Substring(index + 1).Split('&').SingleOrDefault(s => s.StartsWith(key));
+            return query == null ? url : query.Replace(key, null);
+        }
+
+        private async Task DownloadFile(string mcVersion, string forgeVersion, string install_folder)
+        {
+            System.IO.Directory.CreateDirectory(install_folder);
+            var fileUrl = await getForgeUrl(mcVersion, forgeVersion);
+            var httpResult = await httpClient.GetAsync(fileUrl);
+            using var resultStream = await httpResult.Content.ReadAsStreamAsync();
+            using var fileStream = System.IO.File.Create(Path.Combine(install_folder, "version.zip"));
+            resultStream.CopyTo(fileStream);
+        }
+
+        private static string CalculateMD5(string filename)
+        {
+            using var md5 = MD5.Create();
+            using var stream = File.OpenRead(filename);
+            var hash = md5.ComputeHash(stream);
+            return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
         }
     }
 }
