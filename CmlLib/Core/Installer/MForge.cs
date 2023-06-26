@@ -15,7 +15,7 @@ namespace CmlLib.Core.Installer
 {
     public class MForge
     {
-        private const string MavenServer = "https://files.minecraftforge.net/maven/net/minecraftforge/forge/";
+        private const string MavenServer = "https://maven.minecraftforge.net/net/minecraftforge/forge/";
 
         public static string GetOldForgeName(string mcVersion, string forgeVersion)
         {
