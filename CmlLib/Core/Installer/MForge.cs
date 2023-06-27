@@ -8,28 +8,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Text;
-
-using CmlLib.Utils;
-using HtmlAgilityPack;
-using ICSharpCode.SharpZipLib.Zip;
-using MCQuery;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
-using System.Web;
-using CmlLib.Core.Downloader;
-using CmlLib.Core.Files;
-using CmlLib.Core.Installer;
-using CmlLib.Core.Version;
+using HtmlAgilityPack;
 using Directory = System.IO.Directory;
 using File = System.IO.File;
 
@@ -37,7 +19,7 @@ namespace CmlLib.Core.Installer
 {
     public class MForge
     {
-         private readonly MinecraftPath minecraftPath;
+        private readonly MinecraftPath minecraftPath;
         private readonly string JavaPath;
         private CMLauncher launcher;
         private static HttpClient httpClient = new HttpClient();
@@ -45,7 +27,7 @@ namespace CmlLib.Core.Installer
         public event DownloadFileChangedHandler? FileChanged;
         public event EventHandler<string>? InstallerOutput;
 
-        public IForge(MinecraftPath mc, CMLauncher launcher, string java)
+        public MForge(MinecraftPath mc, CMLauncher launcher, string java)
         {
             this.minecraftPath = mc;
             this.JavaPath = java;
