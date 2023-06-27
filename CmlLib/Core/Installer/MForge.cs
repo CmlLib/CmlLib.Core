@@ -365,20 +365,6 @@ namespace CmlLib.Core.Installer
             throw new Exception("The version was not found on the official website");
         }
 
-        public async Task<string> getForgeMD5(string mcVersion, string forgeVersion)
-        {
-            var document = new HtmlDocument();
-            var html = await httpClient.GetStringAsync($"https://files.minecraftforge.net/net/minecraftforge/forge/index_{mcVersion}.html");
-            document.LoadHtml(html);
-            var rows = document.DocumentNode.SelectNodes("//html[1]//body[1]//main[1]//div[2]//div[2]//div[2]//table[1]//tbody[1]//tr").ToList();
-            foreach (var row in rows)
-            {
-                var current_version = ClearName(row.Descendants(0).Where(n => n.HasClass("download-version")).FirstOrDefault().FirstChild.OuterHtml.Replace(" ", ""));
-                if (current_version == forgeVersion)
-                    return ClearName(row.ChildNodes[5].ChildNodes[1].ChildNodes[3].ChildNodes[5].ChildNodes[2].InnerText);
-            }
-            return "404";
-        }
 
         private string getAdUrl() =>
             $"https://adfoc.us/serve/sitelinks/?id=271228&url=https://maven.minecraftforge.net/";
