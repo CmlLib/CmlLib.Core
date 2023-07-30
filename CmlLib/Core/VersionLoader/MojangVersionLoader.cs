@@ -15,7 +15,6 @@ namespace CmlLib.Core.VersionLoader
             return parseList(res);
         }
 
-        [MethodTimer.Time]
         private MVersionCollection parseList(string res)
         {
             string? latestReleaseId = null;

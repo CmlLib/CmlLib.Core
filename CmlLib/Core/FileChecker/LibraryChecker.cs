@@ -49,7 +49,6 @@ namespace CmlLib.Core.FileChecker
             return checkLibraries(path, libs, progress);
         }
         
-        [MethodTimer.Time]
         private DownloadFile[]? checkLibraries(MinecraftPath path, MLibrary[]? libs,
             IProgress<DownloadFileChangedEventArgs>? progress)
         {

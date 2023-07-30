@@ -77,7 +77,6 @@ namespace CmlLib.Core.FileChecker
             await downloader.DownloadFileAsync(new DownloadFile(indexFilePath, assets.Url)).ConfigureAwait(false);
         }
 
-        [MethodTimer.Time]
         public DownloadFile[]? CheckAssetFiles(MinecraftPath path, MFileMetadata assets,
             IProgress<DownloadFileChangedEventArgs>? progress)
         {

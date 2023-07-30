@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
-        <LangVersion>8.0</LangVersion>
+        <TargetFrameworks>netstandard2.0</TargetFrameworks>
+        <LangVersion>10.0</LangVersion>
         <Nullable>enable</Nullable>
         <Version>3.4.0</Version>
         <Description>Minecraft Launcher Library for .NET
@@ -19,13 +19,13 @@ Support all version, forge, optifine
         <Authors>AlphaBs</Authors>
         <PackageReleaseNotes />
         <PackageId>CmlLib.Core</PackageId>
-        
-        <WeaverConfiguration Condition="'$(Configuration)' == 'Debug'">
-            <Weavers>
-                <MethodTimer />
-            </Weavers>
-        </WeaverConfiguration>
     </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="LZMA-SDK" Version="19.0.0" />
+        <PackageReference Include="SharpZipLib" Version="1.3.3" />
+        <PackageReference Include="System.Text.Json" Version="6.0.2" />
+    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="ConfigureAwait.Fody" Version="3.3.1">
@@ -35,17 +35,15 @@ Support all version, forge, optifine
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="LZMA-SDK" Version="19.0.0" />
-        <PackageReference Include="MethodTimer.Fody" Version="3.2.0">
-            <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
-        <PackageReference Include="SharpZipLib" Version="1.3.3" />
-        <PackageReference Include="System.Text.Json" Version="6.0.2" />
+        <PackageReference Include="TunnelVisionLabs.ReferenceAssemblyAnnotator" Version="1.0.0-alpha.160" PrivateAssets="all" />
+        <PackageDownload Include="Microsoft.NETCore.App.Ref" Version="[5.0.0]" />
+    </ItemGroup>
+
+    <ItemGroup>
         <None Include="../icon.png" Pack="true" Visible="false" PackagePath="" />
 
         <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
             <_Parameter1>CmlLib.Core.Test</_Parameter1>
         </AssemblyAttribute>
     </ItemGroup>
-
 </Project>

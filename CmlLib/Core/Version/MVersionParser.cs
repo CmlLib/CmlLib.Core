@@ -21,7 +21,6 @@ namespace CmlLib.Core.Version
             return ParseFromJson(jsonDocument);
         }
         
-        [MethodTimer.Time]
         public static MVersion ParseFromJson(JsonDocument document)
         {
             try

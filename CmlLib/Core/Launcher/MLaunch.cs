@@ -78,7 +78,6 @@ namespace CmlLib.Core
             return nativePath;
         }
 
-        [MethodTimer.Time]
         public string[] CreateArg()
         {
             MVersion version = launchOption.GetStartVersion();

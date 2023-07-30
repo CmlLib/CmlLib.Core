@@ -10,7 +10,6 @@ namespace CmlLibCoreSample
     {
         public static async Task Main()
         {
-            Console.WriteLine(CmlLib._Test.tstr);
             var p = new Program();
 
             // Login

@@ -138,7 +138,6 @@ namespace CmlLib.Core
             }
         }
 
-        [MethodTimer.Time]
         public Process CreateProcess(MVersion version, MLaunchOption option, bool checkAndDownload=true)
         {
             option.StartVersion = version;
