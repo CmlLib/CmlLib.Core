@@ -15,7 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\CmlLib\CmlLib.csproj" />
+      <ProjectReference Include="../src/CmlLib.csproj" />
     </ItemGroup>
 
 </Project>
