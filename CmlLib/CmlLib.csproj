@@ -4,11 +4,11 @@
         <TargetFrameworks>netstandard2.0</TargetFrameworks>
         <LangVersion>10.0</LangVersion>
         <Nullable>enable</Nullable>
-        <Version>3.4.0</Version>
+        <Version>3.3.7</Version>
         <Description>Minecraft Launcher Library for .NET
 Support all version, forge, optifine
         </Description>
-        <Copyright>Copyright (c) 2022 AlphaBs</Copyright>
+        <Copyright>Copyright (c) 2023 AlphaBs</Copyright>
         <PackageProjectUrl>https://github.com/CmlLib/CmlLib.Core</PackageProjectUrl>
         <RepositoryUrl>https://github.com/CmlLib/CmlLib.Core</RepositoryUrl>
         <PackageIcon>icon.png</PackageIcon>
@@ -19,6 +19,7 @@ Support all version, forge, optifine
         <Authors>AlphaBs</Authors>
         <PackageReleaseNotes />
         <PackageId>CmlLib.Core</PackageId>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
@@ -41,6 +42,7 @@ Support all version, forge, optifine
 
     <ItemGroup>
         <None Include="../icon.png" Pack="true" Visible="false" PackagePath="" />
+        <None Include="../README.md" Pack="true" Visible="false" PackagePath="" />
 
         <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
             <_Parameter1>CmlLib.Core.Test</_Parameter1>

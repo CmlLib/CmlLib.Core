@@ -82,14 +82,14 @@ namespace CmlLib.Core.Version
 
         private int compareVersion(MVersionMetadata v1, MVersionMetadata v2)
         {
-            bool v1r = System.Version.TryParse(v1.Name, out System.Version v1v);
-            bool v2r = System.Version.TryParse(v2.Name, out System.Version v2v);
+            bool v1r = System.Version.TryParse(v1.Name, out System.Version? v1v);
+            bool v2r = System.Version.TryParse(v2.Name, out System.Version? v2v);
 
             if (!v1r && !v2r)
                 return 0;
-            if (!v1r) // v1 > v2
+            if (!v1r || v1v == null) // v1 > v2
                 return 1;
-            if (!v2r) // v1 < v2
+            if (!v2r || v2v == null) // v1 < v2
                 return -1;
             
             var result = v1v.CompareTo(v2v);
