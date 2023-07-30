@@ -1,8 +1,6 @@
 ﻿using CmlLib.Core.Version;
-using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
 using System.Net;
-using System.Threading.Tasks;
+using System.Text.Json;
 using CmlLib.Core.VersionLoader;
 using CmlLib.Core.VersionMetadata;
 
@@ -58,12 +56,15 @@ namespace CmlLib.Core.Installer.QuiltMC
 
         private List<MVersionMetadata> parseVersions(string res, string loader)
         {
-            var jarr = JArray.Parse(res);
-            var versionList = new List<MVersionMetadata>(jarr.Count);
+            using var json = JsonDocument.Parse(res);
+            var jarr = json.RootElement.EnumerateArray();
+            var versionList = new List<MVersionMetadata>();
 
             foreach (var item in jarr)
             {
-                string? versionName = item["version"]?.ToString();
+                if (!item.TryGetProperty("version", out var versionProp))
+                    continue;
+                var versionName = versionProp.GetString();
                 if (string.IsNullOrEmpty(versionName))
                     continue;
 
@@ -101,11 +102,12 @@ namespace CmlLib.Core.Installer.QuiltMC
 
         private QuiltLoader[] parseLoaders(string res)
         {
-            var jarr = JArray.Parse(res);
-            var loaderList = new List<QuiltLoader>(jarr.Count);
+            using var json = JsonDocument.Parse(res);
+            var jarr = json.RootElement.EnumerateArray();
+            var loaderList = new List<QuiltLoader>();
             foreach (var item in jarr)
             {
-                var obj = item.ToObject<QuiltLoader>();
+                var obj = item.Deserialize<QuiltLoader>();
                 if (obj != null)
                     loaderList.Add(obj);
             }
