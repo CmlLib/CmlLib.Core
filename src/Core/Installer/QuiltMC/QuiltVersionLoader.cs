@@ -1,118 +1,99 @@
-﻿using CmlLib.Core.Version;
-using System.Net;
+﻿using System.Net;
 using System.Text.Json;
 using CmlLib.Core.VersionLoader;
 using CmlLib.Core.VersionMetadata;
 
-namespace CmlLib.Core.Installer.QuiltMC
+namespace CmlLib.Core.Installer.QuiltMC;
+
+public class QuiltVersionLoader : IVersionLoader
 {
-    public class QuiltVersionLoader : IVersionLoader
+    public static readonly string ApiServer = "https://meta.quiltmc.org";
+    private static readonly string LoaderUrl = ApiServer + "/v3/versions/loader";
+
+    private readonly HttpClient _httpClient;
+
+    public QuiltVersionLoader(HttpClient httpClient) => _httpClient = httpClient;
+
+    public string? LoaderVersion { get; set; }
+
+    protected string GetVersionName(string version, string loaderVersion)
     {
-        public static readonly string ApiServer = "https://meta.quiltmc.org";
-        private static readonly string LoaderUrl = ApiServer + "/v3/versions/loader";
+        return $"quilt-loader-{loaderVersion}-{version}";
+    }
 
-        public string? LoaderVersion { get; set; }
-
-        protected string GetVersionName(string version, string loaderVersion)
+    public async ValueTask<MVersionCollection> GetVersionMetadatasAsync()
+    {
+        if (string.IsNullOrEmpty(LoaderVersion))
         {
-            return $"quilt-loader-{loaderVersion}-{version}";
+            var loaders = await GetQuiltLoadersAsync().ConfigureAwait(false);
+
+            if (loaders.Length == 0 || string.IsNullOrEmpty(loaders[0].Version))
+                throw new KeyNotFoundException("can't find loaders");
+            
+            LoaderVersion = loaders[0].Version;
         }
 
-        public MVersionCollection GetVersionMetadatas()
-            => internalGetVersionMetadatasAsync(sync: true).GetAwaiter().GetResult();
+        var url = "https://meta.quiltmc.org/v3/versions/game";
+        var res = await _httpClient.GetStringAsync(url);
 
-        public Task<MVersionCollection> GetVersionMetadatasAsync()
-            => internalGetVersionMetadatasAsync(sync: false);
+        var versions = parseVersions(res, LoaderVersion!);
+        return new MVersionCollection(versions, null, null);
+    }
 
-        private async Task<MVersionCollection> internalGetVersionMetadatasAsync(bool sync)
+    private IEnumerable<IVersionMetadata> parseVersions(string res, string loader)
+    {
+        using var json = JsonDocument.Parse(res);
+        var jarr = json.RootElement.EnumerateArray();
+
+        foreach (var item in jarr)
         {
-            if (string.IsNullOrEmpty(LoaderVersion))
+            if (!item.TryGetProperty("version", out var versionProp))
+                continue;
+            var versionName = versionProp.GetString();
+            if (string.IsNullOrEmpty(versionName))
+                continue;
+
+            string jsonUrl = $"{ApiServer}/v3/versions/loader/{versionName}/{loader}/profile/json";
+
+            string id = GetVersionName(versionName, loader);
+            var model = new JsonVersionMetadataModel
             {
-                QuiltLoader[] loaders;
-                if (sync)
-                    loaders = GetQuiltLoaders();
-                else
-                    loaders = await GetQuiltLoadersAsync().ConfigureAwait(false);
-
-                if (loaders.Length == 0 || string.IsNullOrEmpty(loaders[0].Version))
-                    throw new KeyNotFoundException("can't find loaders");
-                
-                LoaderVersion = loaders[0].Version;
-            }
-
-            string url = "https://meta.quiltmc.org/v3/versions/game";
-            string res;
-            using (var wc = new WebClient())
-            {
-                if (sync)
-                    res = wc.DownloadString(url);
-                else
-                    res = await wc.DownloadStringTaskAsync(url).ConfigureAwait(false);
-            }
-
-            var versions = parseVersions(res, LoaderVersion!);
-            return new MVersionCollection(versions.ToArray());
+                Type = "quilt",
+                Url = jsonUrl,
+            };
+            yield return new MojangVersionMetadata(model, _httpClient);
         }
+    }
 
-        private List<MVersionMetadata> parseVersions(string res, string loader)
+    public QuiltLoader[] GetQuiltLoaders()
+    {
+        using var wc = new WebClient();
+        var res = wc.DownloadString(LoaderUrl);
+
+        return parseLoaders(res);
+    }
+
+    public async Task<QuiltLoader[]> GetQuiltLoadersAsync()
+    {
+        using var wc = new WebClient();
+        var res = await wc.DownloadStringTaskAsync(LoaderUrl)
+            .ConfigureAwait(false);
+
+        return parseLoaders(res);
+    }
+
+    private QuiltLoader[] parseLoaders(string res)
+    {
+        using var json = JsonDocument.Parse(res);
+        var jarr = json.RootElement.EnumerateArray();
+        var loaderList = new List<QuiltLoader>();
+        foreach (var item in jarr)
         {
-            using var json = JsonDocument.Parse(res);
-            var jarr = json.RootElement.EnumerateArray();
-            var versionList = new List<MVersionMetadata>();
-
-            foreach (var item in jarr)
-            {
-                if (!item.TryGetProperty("version", out var versionProp))
-                    continue;
-                var versionName = versionProp.GetString();
-                if (string.IsNullOrEmpty(versionName))
-                    continue;
-
-                string jsonUrl = $"{ApiServer}/v3/versions/loader/{versionName}/{loader}/profile/json";
-
-                string id = GetVersionName(versionName, loader);
-                var versionMetadata = new WebVersionMetadata(id)
-                {
-                    MType = MVersionType.Custom,
-                    Path = jsonUrl,
-                    Type = "quilt"
-                };
-                versionList.Add(versionMetadata);
-            }
-
-            return versionList;
+            var obj = item.Deserialize<QuiltLoader>();
+            if (obj != null)
+                loaderList.Add(obj);
         }
 
-        public QuiltLoader[] GetQuiltLoaders()
-        {
-            using var wc = new WebClient();
-            var res = wc.DownloadString(LoaderUrl);
-
-            return parseLoaders(res);
-        }
-
-        public async Task<QuiltLoader[]> GetQuiltLoadersAsync()
-        {
-            using var wc = new WebClient();
-            var res = await wc.DownloadStringTaskAsync(LoaderUrl)
-                .ConfigureAwait(false);
-
-            return parseLoaders(res);
-        }
-
-        private QuiltLoader[] parseLoaders(string res)
-        {
-            using var json = JsonDocument.Parse(res);
-            var jarr = json.RootElement.EnumerateArray();
-            var loaderList = new List<QuiltLoader>();
-            foreach (var item in jarr)
-            {
-                var obj = item.Deserialize<QuiltLoader>();
-                if (obj != null)
-                    loaderList.Add(obj);
-            }
-
-            return loaderList.ToArray();
-        }
+        return loaderList.ToArray();
     }
 }

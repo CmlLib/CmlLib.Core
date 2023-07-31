@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using CmlLib.Core;
 using CmlLib.Core.Auth;
 using CmlLib.Core.Downloader;
+using CmlLib.Core.VersionMetadata;
 
 namespace CmlLibCoreSample
 {
@@ -29,10 +30,10 @@ namespace CmlLibCoreSample
             var path = MinecraftPath.GetOSDefaultPath();
             var game = new MinecraftPath(path);
 
-            var launcher = new CMLauncher(game);
+            var launcher = new CMLauncher(game, Program.HttpClient);
 
             System.Net.ServicePointManager.DefaultConnectionLimit = 256;
-            launcher.FileDownloader = new AsyncParallelDownloader();
+            launcher.FileDownloader = new AsyncParallelDownloader(Program.HttpClient);
 
             launcher.ProgressChanged += Downloader_ChangeProgress;
             launcher.FileChanged += Downloader_ChangeFile;
@@ -49,8 +50,7 @@ namespace CmlLibCoreSample
             foreach (var item in versions)
             {
                 Console.WriteLine(item.Type + " " + item.Name);
-
-                if (!item.IsLocalVersion)
+                if (item is LocalVersionMetadata)
                     continue;
 
                 var process = await launcher.CreateProcessAsync(item.Name, launchOption);

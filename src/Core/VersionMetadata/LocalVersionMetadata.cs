@@ -1,26 +1,26 @@
-﻿using System;
-using System.Threading.Tasks;
-using CmlLib.Utils;
+﻿using CmlLib.Utils;
 
-namespace CmlLib.Core.VersionMetadata
+namespace CmlLib.Core.VersionMetadata;
+
+/// <summary>
+/// Represent metadata where the actual version data is in local file
+/// </summary>
+public class LocalVersionMetadata : JsonVersionMetadata
 {
-    /// <summary>
-    /// Represent metadata where the actual version data is in local file
-    /// </summary>
-    public class LocalVersionMetadata : StringVersionMetadata
-    {
-        public LocalVersionMetadata(string id) : base(id)
-        {
-            IsLocalVersion = true;
-        }
+    public string Path { get; }
 
-        protected override Task<string> ReadVersionDataAsync()
-        {
-            if (string.IsNullOrEmpty(Path))
-                throw new InvalidOperationException("Path property was null");
-            
-            // FileNotFoundException will be thrown if Path does not exist.
-            return IOUtil.ReadFileAsync(Path);
-        }
+    public LocalVersionMetadata(JsonVersionMetadataModel model, string path) : base(model)
+    {
+        IsSaved = true;
+        Path = path;
+    }
+
+    protected override async ValueTask<string> GetVersionJsonString()
+    {
+        if (string.IsNullOrEmpty(Path))
+            throw new InvalidOperationException("Path property was null");
+        
+        // FileNotFoundException will be thrown if Path does not exist.
+        return await IOUtil.ReadFileAsync(Path);
     }
 }

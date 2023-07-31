@@ -1,23 +1,18 @@
 ﻿using CmlLib.Core;
 using CmlLib.Core.Auth;
-using CmlLib.Core.Installer;
-using CmlLib.Core.Files;
-using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using CmlLib.Core.Downloader;
 using CmlLib.Core.FileChecker;
-using CmlLib.Core.Version;
+using CmlLib.Core.VersionMetadata;
 
 namespace CmlLibWinFormSample
 {
     public partial class MainForm : Form
     {
+        private readonly HttpClient _httpClient = new();
+
         public MainForm(MSession session)
         {
             this.session = session;
@@ -44,7 +39,7 @@ namespace CmlLibWinFormSample
             txtPath.Text = path.BasePath;
             this.gamePath = path;
             
-            launcher = new CMLauncher(path);
+            launcher = new CMLauncher(path, _httpClient);
             launcher.FileChanged += Launcher_FileChanged;
             launcher.ProgressChanged += Launcher_ProgressChanged;
             await refreshVersions(null);
@@ -77,7 +72,7 @@ namespace CmlLibWinFormSample
 
         private void btnSetLastVersion_Click(object sender, EventArgs e)
         {
-            cbVersion.Text = launcher.Versions?.LatestReleaseVersion?.Name;
+            cbVersion.Text = launcher.Versions?.LatestReleaseName;
         }
         
         private void btnSortFilter_Click(object sender, EventArgs e)
@@ -146,23 +141,23 @@ namespace CmlLibWinFormSample
                 if (rbParallelDownload.Checked)
                 {
                     System.Net.ServicePointManager.DefaultConnectionLimit = 256;
-                    launcher.FileDownloader = new AsyncParallelDownloader();
+                    launcher.FileDownloader = new AsyncParallelDownloader(_httpClient);
                 }
                 else
-                    launcher.FileDownloader = new SequenceDownloader();
+                    launcher.FileDownloader = new SequenceDownloader(_httpClient);
 
-                if (cbSkipAssetsDownload.Checked)
-                    launcher.GameFileCheckers.AssetFileChecker = null;
-                else if (launcher.GameFileCheckers.AssetFileChecker == null)
-                    launcher.GameFileCheckers.AssetFileChecker = new AssetChecker();
+                //if (cbSkipAssetsDownload.Checked)
+                //    launcher.GameFileCheckers.AssetFileChecker = null;
+                //else if (launcher.GameFileCheckers.AssetFileChecker == null)
+                //    launcher.GameFileCheckers.AssetFileChecker = new AssetChecker();
                 
                 // check file hash or don't check
-                if (launcher.GameFileCheckers.AssetFileChecker != null)
-                    launcher.GameFileCheckers.AssetFileChecker.CheckHash = !cbSkipHashCheck.Checked;
-                if (launcher.GameFileCheckers.ClientFileChecker != null)
-                    launcher.GameFileCheckers.ClientFileChecker.CheckHash = !cbSkipHashCheck.Checked;
-                if (launcher.GameFileCheckers.LibraryFileChecker != null)
-                    launcher.GameFileCheckers.LibraryFileChecker.CheckHash = !cbSkipHashCheck.Checked;
+                //if (launcher.GameFileCheckers.AssetFileChecker != null)
+                //    launcher.GameFileCheckers.AssetFileChecker.CheckHash = !cbSkipHashCheck.Checked;
+                //if (launcher.GameFileCheckers.ClientFileChecker != null)
+                //    launcher.GameFileCheckers.ClientFileChecker.CheckHash = !cbSkipHashCheck.Checked;
+                //if (launcher.GameFileCheckers.LibraryFileChecker != null)
+                //    launcher.GameFileCheckers.LibraryFileChecker.CheckHash = !cbSkipHashCheck.Checked;
 
                 var process = await launcher.CreateProcessAsync(cbVersion.Text, launchOption); // Create Arguments and Process
 

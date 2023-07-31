@@ -1,6 +1,4 @@
 ﻿using CmlLib.Utils;
-using System;
-using System.Windows.Forms;
 
 namespace CmlLibWinFormSample
 {
@@ -16,7 +14,7 @@ namespace CmlLibWinFormSample
         private async void ChangeLog_Load(object sender, EventArgs e)
         {
             btnLoad.Enabled = false;
-            changelogs = await Changelogs.GetChangelogs();
+            changelogs = await Changelogs.GetChangelogs(new HttpClient());
             listBox1.Items.AddRange(changelogs.GetAvailableVersions());
             btnLoad.Enabled = true;
         }

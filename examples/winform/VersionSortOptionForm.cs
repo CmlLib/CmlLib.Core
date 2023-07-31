@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Windows.Forms;
-using CmlLib.Core;
-using CmlLib.Core.Version;
+﻿using CmlLib.Core;
+using CmlLib.Core.VersionMetadata;
 
 namespace CmlLibWinFormSample
 {
@@ -99,8 +96,7 @@ namespace CmlLibWinFormSample
             var vers = versions.ToArray(option);
             foreach (var item in vers)
             {
-                var tag = item.IsLocalVersion ? "Local" : item.MType.ToString();
-                listPreview.Items.Add($"{tag} {item.Name}");
+                listPreview.Items.Add($"{item.Type} {item.Name}");
             }
         }
 
