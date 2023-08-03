@@ -1,65 +1,67 @@
-﻿using CmlLib.Core.Version;
+﻿using CmlLib.Core.Rules;
+using CmlLib.Core.Version;
 using CmlLib.Utils;
-using System.IO;
 
-namespace CmlLib.Core
+namespace CmlLib.Core;
+
+public class MNative
 {
-    public class MNative
+    public MNative(MinecraftPath gamePath, IVersion version)
     {
-        public MNative(MinecraftPath gamePath, MVersion version)
+        this.version = version;
+        this.gamePath = gamePath;
+    }
+
+    private readonly IVersion version;
+    private readonly MinecraftPath gamePath;
+    private readonly IRulesEvaluator rulesEvaluator;
+
+    public string ExtractNatives()
+    {
+        var extractPath = gamePath.GetNativePath(version.Id);
+        Directory.CreateDirectory(extractPath);
+
+        var nativeLibraries = getNativeLibraryPaths();
+        foreach (var libPath in nativeLibraries)
         {
-            this.version = version;
-            this.gamePath = gamePath;
+            if (File.Exists(libPath))
+                new SharpZip(libPath).Unzip(extractPath);
         }
 
-        private readonly MVersion version;
-        private readonly MinecraftPath gamePath;
+        return extractPath;
+    }
 
-        public string ExtractNatives()
+    private IEnumerable<string> getNativeLibraryPaths()
+    {
+        return version
+            .ConcatInheritedCollection(v => v.Libraries)
+            .Where(lib => lib.CheckIsRequired("SIDE"))
+            .Where(lib => lib.Rules == null || rulesEvaluator.Match(lib.Rules))
+            .Select(lib => lib.GetNativeLibraryPath(os))
+            .Where(libPath => !string.IsNullOrEmpty(libPath))
+            .Select(libPath => Path.Combine(gamePath.Library, libPath));
+    }
+
+    public void CleanNatives()
+    {
+
+        try
         {
             string path = gamePath.GetNativePath(version.Id);
-            Directory.CreateDirectory(path);
+            DirectoryInfo di = new DirectoryInfo(path);
 
-            if (version.Libraries == null) return path;
-            
-            foreach (var item in version.Libraries)
+            if (!di.Exists)
+                return;
+
+            foreach (var item in di.GetFiles())
             {
-                // do not ignore exception
-                if (item.IsRequire && item.IsNative && !string.IsNullOrEmpty(item.Path))
-                {
-                    string zPath = Path.Combine(gamePath.Library, item.Path);
-                    if (File.Exists(zPath))
-                    {
-                        var z = new SharpZip(zPath);
-                        z.Unzip(path);
-                    }
-                }
+                item.Delete();
             }
-
-            return path;
         }
-
-        public void CleanNatives()
+        catch
         {
-
-            try
-            {
-                string path = gamePath.GetNativePath(version.Id);
-                DirectoryInfo di = new DirectoryInfo(path);
-
-                if (!di.Exists)
-                    return;
-
-                foreach (var item in di.GetFiles())
-                {
-                    item.Delete();
-                }
-            }
-            catch
-            {
-                // ignore exception
-                // will be overwriten to new file
-            }
+            // ignore exception
+            // will be overwriten to new file
         }
     }
 }

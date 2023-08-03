@@ -30,7 +30,7 @@ public sealed class AssetChecker : IFileChecker
     }
     public bool CheckHash { get; set; } = true;
 
-    public DownloadFile[]? CheckFiles(MinecraftPath path, MVersion version, 
+    public DownloadFile[]? CheckFiles(MinecraftPath path, IVersion version, 
         IProgress<DownloadFileChangedEventArgs>? progress)
     {
         if (version.Assets == null)
@@ -39,7 +39,7 @@ public sealed class AssetChecker : IFileChecker
         return CheckAssetFiles(path, version.Assets, progress);
     }
 
-    public async Task<DownloadFile[]?> CheckFilesTaskAsync(MinecraftPath path, MVersion version, 
+    public async Task<DownloadFile[]?> CheckFilesTaskAsync(MinecraftPath path, IVersion version, 
         IProgress<DownloadFileChangedEventArgs>? progress)
     {
         if (version.Assets == null)

@@ -60,10 +60,7 @@ namespace CmlLib.Core
                 var key = match.Groups[1].Value;
                 if (dicts.TryGetValue(key, out string? value))
                 {
-                    if (value == null)
-                        value = "";
-
-                    return value;
+                    return value ?? "";
                 }
 
                 return match.Value;

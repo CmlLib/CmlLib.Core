@@ -5,16 +5,16 @@ using CmlLib.Core.Version;
 namespace CmlLib.Core.VersionMetadata;
 
 // Collection for IVersionMetadata
-// return MVersion object from IVersionMetadata
-public class MVersionCollection : IEnumerable<IVersionMetadata>
+// return IVersion object from IVersionMetadata
+public class VersionCollection : IEnumerable<IVersionMetadata>
 {
-    public MVersionCollection()
+    public VersionCollection()
         : this(Enumerable.Empty<IVersionMetadata>(), null, null)
     {
 
     }
 
-    public MVersionCollection(
+    public VersionCollection(
         IEnumerable<IVersionMetadata> versions,
         string? latestRelease,
         string? latestSnapshot)
@@ -58,7 +58,7 @@ public class MVersionCollection : IEnumerable<IVersionMetadata>
         return sorter.Sort(this);
     }
 
-    public Task<MVersion> GetVersionAsync(string name)
+    public Task<IVersion> GetVersionAsync(string name)
     {
         if (string.IsNullOrEmpty(name))
             throw new ArgumentNullException(nameof(name));
@@ -67,7 +67,7 @@ public class MVersionCollection : IEnumerable<IVersionMetadata>
         return GetVersionAsync(versionMetadata);
     }
 
-    public Task<MVersion> GetAndSaveVersionAsync(string name, MinecraftPath path)
+    public Task<IVersion> GetAndSaveVersionAsync(string name, MinecraftPath path)
     {
         if (string.IsNullOrEmpty(name))
             throw new ArgumentNullException(nameof(name));
@@ -76,18 +76,18 @@ public class MVersionCollection : IEnumerable<IVersionMetadata>
         return GetAndSaveVersionAsync(versionMetadata, path);
     }
 
-    public Task<MVersion> GetVersionAsync(IVersionMetadata versionMetadata) =>
+    public Task<IVersion> GetVersionAsync(IVersionMetadata versionMetadata) =>
         getVersionInternal(versionMetadata, null);
 
-    public Task<MVersion> GetAndSaveVersionAsync(IVersionMetadata versionMetadata, MinecraftPath path) =>
+    public Task<IVersion> GetAndSaveVersionAsync(IVersionMetadata versionMetadata, MinecraftPath path) =>
         getVersionInternal(versionMetadata, path);
 
-    private async Task<MVersion> getVersionInternal(IVersionMetadata versionMetadata, MinecraftPath? path)
+    private async Task<IVersion> getVersionInternal(IVersionMetadata versionMetadata, MinecraftPath? path)
     {
         if (versionMetadata == null)
             throw new ArgumentNullException(nameof(versionMetadata));
 
-        MVersion version;
+        IVersion version;
         if (path == null)
             version = await versionMetadata.GetVersionAsync();
         else
@@ -97,17 +97,17 @@ public class MVersionCollection : IEnumerable<IVersionMetadata>
         return version;
     }
 
-    private async Task inheritIfRequired(MVersion version, MinecraftPath? path)
+    private async Task inheritIfRequired(IVersion version, MinecraftPath? path)
     {
-        if (version.IsInherited && !string.IsNullOrEmpty(version.ParentVersionId))
+        if (!string.IsNullOrEmpty(version.InheritsFrom))
         {
-            if (version.ParentVersionId == version.Id) // prevent StackOverFlowException
+            if (version.InheritsFrom == version.Id) // prevent StackOverFlowException
                 throw new InvalidDataException(
                     "Invalid version json file : inheritFrom property is equal to id property.");
 
-            var baseVersionMetadata = GetVersionMetadata(version.ParentVersionId);
+            var baseVersionMetadata = GetVersionMetadata(version.InheritsFrom);
             var baseVersion = await getVersionInternal(baseVersionMetadata, path);
-            version.InheritFrom(baseVersion);
+            version.ParentVersion = baseVersion;
         }
     }
 
@@ -119,7 +119,7 @@ public class MVersionCollection : IEnumerable<IVersionMetadata>
     public bool Contains(string? versionName)
         => !string.IsNullOrEmpty(versionName) && Versions.Contains(versionName);
 
-    public void Merge(MVersionCollection from)
+    public void Merge(VersionCollection from)
     {
         foreach (var item in from)
         {

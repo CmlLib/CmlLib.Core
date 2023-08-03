@@ -35,7 +35,6 @@ public class CMLauncher
         pProgressChanged = new Progress<ProgressChangedEventArgs>(
             e => ProgressChanged?.Invoke(this, e));
 
-        // to prevent null-reference warning, set both field, property
         JavaPathResolver = new MinecraftJavaPathResolver(path);
     }
 
@@ -66,7 +65,7 @@ public class CMLauncher
         if (Versions == null)
             await GetAllVersionsAsync().ConfigureAwait(false);
 
-        var version = await Versions!.GetVersionAsync(versionName)
+        var version = await Versions!.GetAndSaveVersionAsync(versionName, MinecraftPath)
             .ConfigureAwait(false);
         return version;
     }

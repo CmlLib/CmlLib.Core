@@ -15,7 +15,7 @@ public class MojangVersionLoader : IVersionLoader
     public MojangVersionLoader(HttpClient httpClient, string endpoint) =>
         (_httpClient, _endpoint) = (httpClient, endpoint);
 
-    public async ValueTask<MVersionCollection> GetVersionMetadatasAsync()
+    public async ValueTask<VersionCollection> GetVersionMetadatasAsync()
     {
         var res = await _httpClient.GetStreamAsync(_endpoint)
             .ConfigureAwait(false);
@@ -41,6 +41,6 @@ public class MojangVersionLoader : IVersionLoader
             }
         }
 
-        return new MVersionCollection(metadatas, latestReleaseId, latestSnapshotId);
+        return new VersionCollection(metadatas, latestReleaseId, latestSnapshotId);
     }
 }

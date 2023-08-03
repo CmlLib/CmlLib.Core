@@ -11,11 +11,11 @@ public class LocalVersionLoader : IVersionLoader
 
     private readonly MinecraftPath minecraftPath;
 
-    public ValueTask<MVersionCollection> GetVersionMetadatasAsync()
+    public ValueTask<VersionCollection> GetVersionMetadatasAsync()
     {
         var versions = getFromLocal(minecraftPath);
-        var collection = new MVersionCollection(versions, null, null);
-        return new ValueTask<MVersionCollection>(collection);
+        var collection = new VersionCollection(versions, null, null);
+        return new ValueTask<VersionCollection>(collection);
     }
 
     private IEnumerable<IVersionMetadata> getFromLocal(MinecraftPath path)

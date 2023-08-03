@@ -7,9 +7,9 @@ public class VersionLoaderCollection : IVersionLoader, ICollection<IVersionLoade
 {
     private readonly List<IVersionLoader> _collection = new();
 
-    public async ValueTask<MVersionCollection> GetVersionMetadatasAsync()
+    public async ValueTask<VersionCollection> GetVersionMetadatasAsync()
     {
-        var versions = new MVersionCollection();
+        var versions = new VersionCollection();
         foreach (var loader in _collection)
         {
             var newVersions = await loader.GetVersionMetadatasAsync();

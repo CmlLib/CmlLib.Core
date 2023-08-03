@@ -25,7 +25,7 @@ namespace CmlLib.Utils
                 .TrimEnd(Path.DirectorySeparatorChar);
         }
 
-        public static string CombinePath(string[] paths)
+        public static string CombinePath(IEnumerable<string> paths)
         {
             return string.Join(Path.PathSeparator.ToString(),
                 paths.Select(x =>

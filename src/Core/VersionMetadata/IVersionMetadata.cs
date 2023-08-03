@@ -12,7 +12,7 @@ public interface IVersionMetadata
     string? Type { get; }
     DateTime? ReleaseTime { get; }
 
-    Task<MVersion> GetVersionAsync();
-    Task<MVersion> GetAndSaveVersionAsync(MinecraftPath minecraftPath);
+    Task<IVersion> GetVersionAsync();
+    Task<IVersion> GetAndSaveVersionAsync(MinecraftPath minecraftPath);
     Task SaveVersionAsync(MinecraftPath minecraftPath);
 }
