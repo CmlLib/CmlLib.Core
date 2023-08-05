@@ -11,7 +11,7 @@ public interface IVersion
     IVersion? ParentVersion { get; set; }
     AssetMetadata? AssetIndex { get; }
     MFileMetadata? Client { get; }
-    MinecraftJavaVersion? JavaVersion { get; }
+    JavaVersion? JavaVersion { get; }
     MLibrary[] Libraries { get; }
     string? Jar { get; }
     MLogFileMetadata? Logging { get; }

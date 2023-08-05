@@ -1,6 +1,12 @@
 ﻿using CmlLib.Core;
 using CmlLib.Core.Auth;
 using CmlLib.Core.Downloader;
+using CmlLib.Core.Executors;
+using CmlLib.Core.FileExtractors;
+using CmlLib.Core.Java;
+using CmlLib.Core.Rules;
+using CmlLib.Core.Tasks;
+using CmlLib.Core.VersionLoader;
 
 namespace CmlLibCoreSample;
 
@@ -13,7 +19,7 @@ class Program
         var p = new Program();
 
         // Login
-        MSession session; 
+        MSession session;
         session = p.OfflineLogin(); // Login by username
 
         // log login session information
@@ -31,127 +37,66 @@ class Program
 
     async Task Start(MSession session)
     {
-        // Initializing Launcher
+        var minecraftPath = new MinecraftPath();
+        var httpClient = new HttpClient();
+        var rulesEvaluator = new RulesEvaluator();
+        var javaPathResolver = new MinecraftJavaPathResolver(minecraftPath);
+        var rulesContext = new RulesEvaluatorContext(LauncherOSRule.CreateCurrent());
 
-        // Set minecraft home directory
-        // MinecraftPath.GetOSDefaultPath() return default minecraft BasePath of current OS.
-        // https://github.com/AlphaBs/CmlLib.Core/blob/master/CmlLib/Core/MinecraftPath.cs
-
-        // You can set this path to what you want like this :
-        //var path = "./testdir";
-        var path = MinecraftPath.GetOSDefaultPath();
-        var game = new MinecraftPath(path);
-
-        // Create CMLauncher instance
-        var launcher = new CMLauncher(game, HttpClient);
-
-        // if you want to download with parallel downloader, add below code :
-        System.Net.ServicePointManager.DefaultConnectionLimit = 256;
-
-        // for offline mode
-        //launcher.VersionLoader = new LocalVersionLoader(launcher.MinecraftPath);
-        //launcher.FileDownloader = null;
-        
-        launcher.ProgressChanged += Downloader_ChangeProgress;
-        launcher.FileChanged += Downloader_ChangeFile;
-
-        Console.WriteLine($"Initialized in {launcher.MinecraftPath.BasePath}");
-
-        // Get all installed profiles and load all profiles from mojang server
-        var versions = await launcher.GetAllVersionsAsync(); 
-
-        foreach (var item in versions) // Display all profiles 
+        var versionLoader = new VersionLoaderCollection()
         {
-            // You can filter snapshots and old versions to add if statement : 
-            // if (item.MType == MProfileType.Custom || item.MType == MProfileType.Release)
-            Console.WriteLine(item.Type + " " + item.Name);
-        }
-
-        var launchOption = new MLaunchOption
-        {
-            MaximumRamMb = 1024,
-            Session = session,
-
-            //ScreenWidth = 1600,
-            //ScreenHeight = 900,
-            //ServerIp = "mc.hypixel.net",
-            //MinimumRamMb = 102,
-            //FullScreen = true,
-
-            // More options:
-            // https://github.com/AlphaBs/CmlLib.Core/wiki/MLaunchOption
+            new LocalVersionLoader(minecraftPath),
+            //new MojangVersionLoader(httpClient),
         };
 
-        // download essential files (ex: vanilla libraries) and create game process.
+        var versions = await versionLoader.GetVersionMetadatasAsync();
+        foreach (var v in versions)
+        {
+            Console.WriteLine($"{v.Name}, {v.Type}, {v.ReleaseTime}");
+        }
 
-        // var process = await launcher.CreateProcessAsync("1.15.2", launchOption); // vanilla
-        // var process = await launcher.CreateProcessAsync("1.12.2-forge1.12.2-14.23.5.2838", launchOption); // forge
-        // var process = await launcher.CreateProcessAsync("1.12.2-LiteLoader1.12.2"); // liteloader
-        // var process = await launcher.CreateProcessAsync("fabric-loader-0.11.3-1.16.5") // fabric-loader
+        var version = await versions.GetAndSaveVersionAsync(
+            "1.20.1", minecraftPath);
 
-        Console.WriteLine("input version (example: 1.12.2) : ");
-        var versionName = Console.ReadLine();
-        //var versionName = "1.18.2";
-        var process = await launcher.CreateProcessAsync(versionName, launchOption);
+        var extractors = FileExtractorCollection.CreateDefault(
+            httpClient, javaPathResolver, rulesEvaluator, rulesContext);
 
-        //var process = launcher.CreateProcess("1.16.2", "33.0.5", launchOption);
-        Console.WriteLine(process.StartInfo.FileName);
-        Console.WriteLine(process.StartInfo.Arguments);
+        //foreach (var ex in extractors)
+        //{
+        //    var tasks = await ex.Extract(minecraftPath, version);
+        //    foreach (var task in tasks)
+        //    {
+        //        printTask(task);
+        //    }
+        //}
 
-        // Below codes are print game logs in Console.
-        var processUtil = new CmlLib.Utils.ProcessUtil(process);
-        processUtil.OutputReceived += (s, e) => Console.WriteLine(e);
-        processUtil.StartWithEvents();
-        await process.WaitForExitAsync();
-
-        // or just start it without print logs
-        // process.Start();
-
+        var installer = new TPLTaskExecutor();
+        await installer.Install(extractors, minecraftPath, version);
+        Console.WriteLine("DONE");
         Console.ReadLine();
     }
 
-    #region QuickStart
-
-    // this code is from README.md
-
-    async Task QuickStart()
+    private void printTask(LinkedTask? task)
     {
-        //var path = new MinecraftPath("game_directory_path");
-        var path = new MinecraftPath(); // use default directory
-
-        var launcher = new CMLauncher(path, HttpClient);
-        launcher.FileChanged += (e) =>
+        while (task != null)
         {
-            Console.WriteLine("[{0}] {1} - {2}/{3}", e.FileKind.ToString(), e.FileName, e.ProgressedFileCount, e.TotalFileCount);
-        };
-        launcher.ProgressChanged += (s, e) =>
-        {
-            Console.WriteLine("{0}%", e.ProgressPercentage);
-        };
-
-        var versions = await launcher.GetAllVersionsAsync();
-        foreach (var item in versions)
-        {
-            Console.WriteLine(item.Name);
+            Console.WriteLine(task.GetType().Name);
+            if (task is FileCheckTask fct)
+            {
+                Console.WriteLine(fct.Path);
+                Console.WriteLine(fct.Hash);
+                printTask(fct.OnTrue);
+                printTask(fct.OnFalse);
+            }
+            else if (task is DownloadTask dt)
+            {
+                Console.WriteLine(dt.Path);
+                Console.WriteLine(dt.Url);
+            }
+            Console.WriteLine();
+            task = task.NextTask;
         }
-
-        var launchOption = new MLaunchOption
-        {
-            MaximumRamMb = 1024,
-            Session = MSession.GetOfflineSession("hello"), // Login Session. ex) Session = MSession.GetOfflineSession("hello")
-
-            //ScreenWidth = 1600,
-            //ScreenHeigth = 900,
-            //ServerIp = "mc.hypixel.net"
-        };
-
-        // launch vanila
-        var process = await launcher.CreateProcessAsync("1.15.2", launchOption);
-
-        process.Start();
     }
-
-    #endregion
 
     // Event Handling
 

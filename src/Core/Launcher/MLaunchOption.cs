@@ -1,4 +1,5 @@
 ﻿using CmlLib.Core.Auth;
+using CmlLib.Core.Rules;
 using CmlLib.Core.Version;
 
 namespace CmlLib.Core;
@@ -8,6 +9,7 @@ public class MLaunchOption
     public MinecraftPath? Path { get; set; }
     public IVersion? StartVersion { get; set; }
     public MSession? Session { get; set; }
+    public RulesEvaluatorContext? RulesContext { get; set; }
 
     public string? JavaVersion { get; set; }
     public string? JavaPath { get; set; }
@@ -42,6 +44,9 @@ public class MLaunchOption
     internal void CheckValid()
     {
         string? exMsg = null; // error message
+
+        if (RulesContext == null)
+            exMsg = "RulesContext is null";
 
         if (Path == null)
             exMsg = nameof(Path) + " is null";

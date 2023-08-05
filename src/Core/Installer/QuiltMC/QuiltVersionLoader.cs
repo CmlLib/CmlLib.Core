@@ -21,7 +21,7 @@ public class QuiltVersionLoader : IVersionLoader
         return $"quilt-loader-{loaderVersion}-{version}";
     }
 
-    public async ValueTask<MVersionCollection> GetVersionMetadatasAsync()
+    public async ValueTask<VersionCollection> GetVersionMetadatasAsync()
     {
         if (string.IsNullOrEmpty(LoaderVersion))
         {
@@ -37,7 +37,7 @@ public class QuiltVersionLoader : IVersionLoader
         var res = await _httpClient.GetStringAsync(url);
 
         var versions = parseVersions(res, LoaderVersion!);
-        return new MVersionCollection(versions, null, null);
+        return new VersionCollection(versions, null, null);
     }
 
     private IEnumerable<IVersionMetadata> parseVersions(string res, string loader)

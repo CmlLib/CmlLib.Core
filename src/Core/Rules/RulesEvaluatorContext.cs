@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace CmlLib.Core.Rules;
 
 public class RulesEvaluatorContext

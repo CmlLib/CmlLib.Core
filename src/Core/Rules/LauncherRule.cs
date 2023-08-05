@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 
 namespace CmlLib.Core.Rules;
@@ -41,6 +42,31 @@ public class LauncherRule
 
 public record LauncherOSRule
 {
+    public static readonly string Windows = "windows";
+    public static readonly string OSX = "osx";
+    public static readonly string Linux = "linux";
+
+    public static LauncherOSRule CreateCurrent()
+    {
+        var os = new LauncherOSRule();
+        if (Environment.Is64BitOperatingSystem)
+            os.Arch = "64";
+        else
+            os.Arch = "32";
+        os.Name = getOSName();
+        return os;
+    }
+
+    private static string getOSName()
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            return OSX;
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            return Windows;
+        else
+            return Linux;
+    }
+
     [JsonPropertyName("name")]
     public string? Name { get; set; }
 
@@ -49,7 +75,7 @@ public record LauncherOSRule
 
     public bool Match(LauncherOSRule toMatch)
     {
-        return isPropMatch(Name, toMatch.Name) && 
+        return isPropMatch(Name, toMatch.Name) &&
                isPropMatch(Arch, toMatch.Arch);
     }
 

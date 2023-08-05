@@ -33,7 +33,7 @@ public class JsonVersion : IVersion
     private MFileMetadata? _client = null;
     public MFileMetadata? Client => _client ??= getClient();
 
-    public MinecraftJavaVersion? JavaVersion => _model.JavaVersion;
+    public JavaVersion? JavaVersion => _model.JavaVersion;
 
     private MLibrary[]? _libs = null;
     public MLibrary[] Libraries => _libs ??= getLibraries();

@@ -6,6 +6,13 @@ namespace CmlLib.Core.ProcessBuilder;
 public class MinecraftArgumentBuilder
 {
     private readonly IRulesEvaluator _evaluator;
+    private readonly RulesEvaluatorContext _context;
+
+    public MinecraftArgumentBuilder(IRulesEvaluator evaluator, RulesEvaluatorContext context)
+    {
+        _evaluator = evaluator;
+        _context = context;
+    }
 
     public IEnumerable<string> Build(IEnumerable<MArgument> arguments, Dictionary<string, string?> mapper)
     {
@@ -23,7 +30,7 @@ public class MinecraftArgumentBuilder
 
         if (arg.Rules != null)
         {
-            var isMatch = _evaluator.Match(arg.Rules);
+            var isMatch = _evaluator.Match(arg.Rules, _context);
             if (!isMatch)
                 yield break;
         }

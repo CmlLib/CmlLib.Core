@@ -2,24 +2,15 @@ namespace CmlLib.Core.Rules;
 
 public class RulesEvaluator : IRulesEvaluator
 {
-    private readonly RulesEvaluatorContext _context;
-
-    public RulesEvaluator()
+    public bool Match(IEnumerable<LauncherRule> rules, RulesEvaluatorContext context)
     {
+        return rules.Any(rule => match(rule, context));
     }
 
-    public RulesEvaluator(RulesEvaluatorContext context) =>
-        _context = context;
-
-    public bool Match(IEnumerable<LauncherRule> rules)
-    {
-        return rules.Any(rule => match(rule));
-    }
-
-    private bool match(LauncherRule rule)
+    private bool match(LauncherRule rule, RulesEvaluatorContext context)
     {
         var isAllow = rule.Action == "allow";
-        var isOSMatched = rule.OS != null && rule.OS.Match(_context.OS);
+        var isOSMatched = rule.OS != null && rule.OS.Match(context.OS);
 
         if (isAllow)
             return isOSMatched;

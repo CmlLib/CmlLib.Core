@@ -57,13 +57,13 @@ public abstract class JsonVersionMetadata : IVersionMetadata
     public async Task<IVersion> GetVersionAsync()
     {
         var metadataJson = await GetVersionJsonString().ConfigureAwait(false);
-        return JsonVersionParser.ParseFromJsonString(metadataJson);
+        return JsonVersionParser.ParseFromJsonString(metadataJson, new JsonVersionParserOptions());
     }
 
     public async Task<IVersion> GetAndSaveVersionAsync(MinecraftPath path)
     {
         var metadataJson = await GetVersionJsonString().ConfigureAwait(false);
-        var version = JsonVersionParser.ParseFromJsonString(metadataJson);
+        var version = JsonVersionParser.ParseFromJsonString(metadataJson, new JsonVersionParserOptions());
         await saveMetdataJson(path, metadataJson);
         return version;
     }

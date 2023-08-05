@@ -10,12 +10,11 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/CmlLibCoreSample/bin/Debug/net6.0/CmlLibCoreSample.dll",
+            "program": "${workspaceFolder}/examples/console/bin/Debug/net6.0/CmlLibCoreSample.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/CmlLibCoreSample",
+            "cwd": "${workspaceFolder}/examples/console",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
-            "console": "integratedTerminal",
-            "internalConsoleOptions": "neverOpen",
+            "console": "internalConsole",
             "stopAtEntry": false
         },
         {

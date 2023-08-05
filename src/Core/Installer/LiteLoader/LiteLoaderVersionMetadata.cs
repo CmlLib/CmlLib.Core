@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using CmlLib.Core.Launcher;
 using CmlLib.Core.Version;
 using CmlLib.Core.VersionMetadata;
 using CmlLib.Utils;
@@ -23,7 +24,7 @@ public class LiteLoaderVersionMetadata : JsonVersionMetadata
     public string VanillaVersionName { get; private set; }
 
     private void writeVersion(Utf8JsonWriter writer,
-        string versionName, string baseVersionName, string? strArgs, string?[]? arrArgs)
+        string versionName, string baseVersionName, string? strArgs, IEnumerable<MArgument>? arrArgs)
     {
         var llVersion = _element?.GetPropertyValue("version");
         var libraries = _element?.GetPropertyOrNull("libraries");
@@ -67,7 +68,7 @@ public class LiteLoaderVersionMetadata : JsonVersionMetadata
             writer.WriteStartObject("arguments");
             writer.WriteStartArray();
             foreach (var item in arrArgs)
-                writer.WriteStringValue(item);
+                JsonSerializer.Serialize(writer, item);
             writer.WriteEndArray();
             writer.WriteEndObject();
         }
@@ -85,7 +86,7 @@ public class LiteLoaderVersionMetadata : JsonVersionMetadata
         return File.Create(metadataPath);
     }
 
-    public async Task<string> InstallAsync(MinecraftPath path, MVersion baseVersion)
+    public async Task<string> InstallAsync(MinecraftPath path, IVersion baseVersion)
     {
         var versionName = LiteLoaderInstaller.GetVersionName(VanillaVersionName, baseVersion.Id);
         var tweakClass = _element?.GetPropertyValue("tweakClass");
@@ -93,21 +94,22 @@ public class LiteLoaderVersionMetadata : JsonVersionMetadata
         using var fs = createVersionWriteStream(path, versionName);
         using var writer = new Utf8JsonWriter(fs);
         
-        if (!string.IsNullOrEmpty(baseVersion.MinecraftArguments))
+        var minecraftArguments = baseVersion.GetProperty("minecraftArguments");
+        if (!string.IsNullOrEmpty(minecraftArguments))
         {
             // com.mumfrey.liteloader.launch.LiteLoaderTweaker
-            var newArguments = $"--tweakClass {tweakClass} {baseVersion.MinecraftArguments}";
+            var newArguments = $"--tweakClass {tweakClass} {minecraftArguments}";
             writeVersion(writer, versionName, baseVersion.Id, newArguments, null);
         }
-        else if (baseVersion.GameArguments != null)
+        else if (baseVersion.GameArguments.Any())
         {
-            var tweakArg = new []
+            var tweakArg = new MArgument[]
             {
-                "--tweakClass",
-                tweakClass
+                new MArgument("--tweakClass"),
+                new MArgument(tweakClass!)
             };
 
-            var newArguments = tweakArg.Concat(baseVersion.GameArguments).ToArray();
+            var newArguments = tweakArg.Concat(baseVersion.GameArguments);
             writeVersion(writer, versionName, baseVersion.Id, null, newArguments);
         }
 

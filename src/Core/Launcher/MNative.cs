@@ -6,15 +6,22 @@ namespace CmlLib.Core;
 
 public class MNative
 {
-    public MNative(MinecraftPath gamePath, IVersion version)
+    public MNative(
+        MinecraftPath gamePath, 
+        IVersion version,
+        IRulesEvaluator rulesEvaluator,
+        RulesEvaluatorContext context)
     {
         this.version = version;
         this.gamePath = gamePath;
+        this.rulesEvaluator = rulesEvaluator;
+        this.context = context;
     }
 
     private readonly IVersion version;
     private readonly MinecraftPath gamePath;
     private readonly IRulesEvaluator rulesEvaluator;
+    private readonly RulesEvaluatorContext context;
 
     public string ExtractNatives()
     {
@@ -36,10 +43,10 @@ public class MNative
         return version
             .ConcatInheritedCollection(v => v.Libraries)
             .Where(lib => lib.CheckIsRequired("SIDE"))
-            .Where(lib => lib.Rules == null || rulesEvaluator.Match(lib.Rules))
-            .Select(lib => lib.GetNativeLibraryPath(os))
+            .Where(lib => lib.Rules == null || rulesEvaluator.Match(lib.Rules, context))
+            .Select(lib => lib.GetNativeLibraryPath(context.OS))
             .Where(libPath => !string.IsNullOrEmpty(libPath))
-            .Select(libPath => Path.Combine(gamePath.Library, libPath));
+            .Select(libPath => Path.Combine(gamePath.Library, libPath!));
     }
 
     public void CleanNatives()

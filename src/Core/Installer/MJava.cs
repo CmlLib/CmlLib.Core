@@ -4,6 +4,7 @@ using CmlLib.Core.Java;
 using System.Text.Json;
 using System.Net;
 using CmlLib.Core.Downloader;
+using CmlLib.Core.Rules;
 
 namespace CmlLib.Core.Installer;
 
@@ -30,20 +31,22 @@ public class MJava
         _httpClient = client;
     }
 
-    public string GetBinaryPath()
-        => JavaPathResolver.GetJavaBinaryPath(MinecraftJavaPathResolver.CmlLegacyVersionName, MRule.OSName);
+    public string GetBinaryPath(LauncherOSRule os)
+        => JavaPathResolver.GetJavaBinaryPath(
+            MinecraftJavaPathResolver.CmlLegacyVersion, 
+            os);
 
-    public bool CheckJavaExistence()
-        => File.Exists(GetBinaryPath());
+    public bool CheckJavaExistence(LauncherOSRule os)
+        => File.Exists(GetBinaryPath(os));
 
-    public Task<string> CheckJavaAsync()
-        => CheckJavaAsync(null);
+    public Task<string> CheckJavaAsync(LauncherOSRule os)
+        => CheckJavaAsync(os, null);
     
-    public async Task<string> CheckJavaAsync(IProgress<ProgressChangedEventArgs>? progress)
+    public async Task<string> CheckJavaAsync(LauncherOSRule os, IProgress<ProgressChangedEventArgs>? progress)
     {
-        string javapath = GetBinaryPath();
+        string javapath = GetBinaryPath(os);
 
-        if (!CheckJavaExistence())
+        if (!CheckJavaExistence(os))
         {
             if (progress == null)
             {

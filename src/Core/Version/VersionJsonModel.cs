@@ -15,14 +15,14 @@ public class VersionJsonModel
     [JsonPropertyName("assets")]
     public string? Assets { get; set; }
 
-    [JsonPropertyName("complianceLevel")]
-    public string? ComplianceLevel { get; set;}
-
     [JsonPropertyName("id")]
     public string? Id { get; set; }
 
+    [JsonPropertyName("complianceLevel")]
+    public int ComplianceLevel { get; set; }
+
     [JsonPropertyName("javaVersion")]
-    public MinecraftJavaVersion? JavaVersion { get; set; }
+    public JavaVersion? JavaVersion { get; set; }
 
     [JsonPropertyName("jar")]
     public string? Jar { get; set; }
@@ -34,7 +34,7 @@ public class VersionJsonModel
     public string? MinecraftArguments { get; set; }
 
     [JsonPropertyName("minimumLauncherVersion")]
-    public string? MinimumLauncherVersion { get; set; }
+    public int MinimumLauncherVersion { get; set; }
 
     [JsonPropertyName("releaseTime")]
     public DateTime ReleaseTime { get; set; }

@@ -1,5 +1,4 @@
-﻿using CmlLib.Core.Version;
-using System.Text.Json;
+﻿using System.Text.Json;
 using CmlLib.Core.VersionLoader;
 using CmlLib.Core.VersionMetadata;
 using CmlLib.Utils;
@@ -23,7 +22,7 @@ public class FabricVersionLoader : IVersionLoader
         return $"fabric-loader-{loaderVersion}-{version}";
     }
 
-    public async ValueTask<MVersionCollection> GetVersionMetadatasAsync()
+    public async ValueTask<VersionCollection> GetVersionMetadatasAsync()
     {
         if (string.IsNullOrEmpty(LoaderVersion))
         {
@@ -40,7 +39,7 @@ public class FabricVersionLoader : IVersionLoader
             .ConfigureAwait(false);
 
         var versions = parseVersions(res, LoaderVersion!);
-        return new MVersionCollection(versions, null, null);
+        return new VersionCollection(versions, null, null);
     }
 
     private IEnumerable<IVersionMetadata> parseVersions(string res, string loader)

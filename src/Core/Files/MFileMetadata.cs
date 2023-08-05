@@ -24,4 +24,12 @@ public class MFileMetadata
 
     [JsonPropertyName("url")]
     public string? Url { get; set; }
+
+    public string? GetSha1()
+    {
+        var result = Sha1;
+        if (string.IsNullOrEmpty(result))
+            result = Checksums?.FirstOrDefault();
+        return result;
+    }
 }

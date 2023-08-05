@@ -30,10 +30,11 @@ public class MLaunch
         launchOption = option;
         version = option.GetStartVersion();
         this.minecraftPath = option.GetMinecraftPath();
+        builder = new MinecraftArgumentBuilder(rulesEvaluator, launchOption.RulesContext!);
     }
 
     private readonly IVersion version;
-    private readonly IRulesEvaluator rulesEvaluator;
+    private readonly IRulesEvaluator rulesEvaluator = new RulesEvaluator();
     private readonly MinecraftArgumentBuilder builder;
     private readonly MinecraftPath minecraftPath;
     private readonly MLaunchOption launchOption;
@@ -43,8 +44,7 @@ public class MLaunch
     {
         string arg = string.Join(" ", BuildArguments());
         Process mc = new Process();
-        mc.StartInfo.FileName = 
-            useNotNull(launchOption.GetStartVersion().JavaBinaryPath, launchOption.GetJavaPath()) ?? "";
+        mc.StartInfo.FileName = launchOption.JavaPath!;
         mc.StartInfo.Arguments = arg;
         mc.StartInfo.WorkingDirectory = minecraftPath.BasePath;
 
@@ -195,7 +195,7 @@ public class MLaunch
         var libPaths = version
             .ConcatInheritedCollection(v => v.Libraries)
             .Where(lib => lib.CheckIsRequired("SIDE"))
-            .Where(lib => lib.Rules == null || rulesEvaluator.Match(lib.Rules))
+            .Where(lib => lib.Rules == null || rulesEvaluator.Match(lib.Rules, launchOption.RulesContext!))
             .Where(lib => lib.Artifact != null)
             .Select(lib => lib.GetLibraryPath());
 
@@ -209,7 +209,7 @@ public class MLaunch
 
     private string createNativePath()
     {
-        var native = new MNative(minecraftPath, version);
+        var native = new MNative(minecraftPath, version, rulesEvaluator, launchOption.RulesContext!);
         native.CleanNatives();
         var nativePath = native.ExtractNatives();
         return nativePath;
