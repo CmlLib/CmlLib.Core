@@ -7,10 +7,10 @@ public class ChmodTask : LinkedTask
 {
     public string Path { get; private set; }
 
-    public ChmodTask(string path) =>
+    public ChmodTask(string name, string path) : base(name) =>
         Path = path;
 
-    public override ValueTask<LinkedTask?> Execute()
+    protected override ValueTask<LinkedTask?> OnExecuted()
     {
         try
         {

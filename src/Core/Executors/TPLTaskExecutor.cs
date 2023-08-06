@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Threading.Tasks.Dataflow;
 using CmlLib.Core.FileExtractors;
 using CmlLib.Core.Tasks;
@@ -7,13 +8,22 @@ namespace CmlLib.Core.Executors;
 
 public class TPLTaskExecutor
 {
-    private readonly DataflowLinkOptions _linkOptions = new ()
+    private enum TaskStatus
+    {
+        Processing,
+        Done
+    }
+
+    private readonly ConcurrentDictionary<string, TaskStatus> _runningTasks = new();
+    private int proceed = 0;
+
+    private readonly DataflowLinkOptions _linkOptions = new()
     {
         PropagateCompletion = true
     };
 
     public async ValueTask Install(
-        IEnumerable<IFileExtractor> extractors, 
+        IEnumerable<IFileExtractor> extractors,
         MinecraftPath path,
         IVersion version)
     {
@@ -21,8 +31,6 @@ public class TPLTaskExecutor
         var installer = completeBlock(executor, path, extractors);
 
         await installer.SendAsync(version);
-        installer.Complete();
-        await installer.Completion;
     }
 
     private BufferBlock<LinkedTask> createTaskExecutorBlock()
@@ -30,25 +38,30 @@ public class TPLTaskExecutor
         var buffer = new BufferBlock<LinkedTask>();
         var executor = new TransformBlock<LinkedTask, LinkedTask?>(async task =>
         {
-            Console.WriteLine(task.GetType().Name);
-            if (task is FileCheckTask fct)
+            if (_runningTasks.TryAdd(task.Name, TaskStatus.Processing))
+                fireEvent(task.Name, TaskStatus.Processing);
+            var nextTask = await task.Execute();
+
+            if (nextTask == null || nextTask.Name != task.Name)
             {
-                Console.WriteLine(fct.Path);
-                Console.WriteLine(fct.Hash);
+                Interlocked.Increment(ref proceed);
+                _runningTasks.TryUpdate(task.Name, TaskStatus.Done, TaskStatus.Processing);
+                fireEvent(task.Name, TaskStatus.Done);
+
+                if (proceed == _runningTasks.Count) // TODO: check also extractor is all done
+                {
+                    Console.WriteLine("ALL DONE");
+                }
             }
-            else if (task is DownloadTask dt)
-            {
-                Console.WriteLine(dt.Path);
-                Console.WriteLine(dt.Url);
-            }
-            return await task.Execute();
+
+            return nextTask;
         }, new ExecutionDataflowBlockOptions
         {
             MaxDegreeOfParallelism = 8
         });
 
         buffer.LinkTo(executor, _linkOptions);
-        executor.LinkTo(buffer!, _linkOptions, next => next != null);
+        executor.LinkTo(buffer!, _linkOptions, t => t != null);
 
         return buffer;
     }
@@ -61,14 +74,21 @@ public class TPLTaskExecutor
         var broadcaster = new BroadcastBlock<IVersion>(null);
         foreach (var extractor in extractors)
         {
-            var block = new TransformManyBlock<IVersion, LinkedTask>(async v => 
+            var block = new TransformManyBlock<IVersion, LinkedTask>(async v =>
             {
                 return await extractor.Extract(path, v);
             });
             broadcaster.LinkTo(block, _linkOptions);
             block.LinkTo(executor, _linkOptions);
         }
-        
+
         return broadcaster;
+    }
+
+    private void fireEvent(string name, TaskStatus status)
+    {
+        var totalTasks = _runningTasks.Count;
+        var statusMsg = status == TaskStatus.Processing ? "START" : "END";
+        Console.WriteLine($"[{proceed}/{totalTasks}][{statusMsg}] {name}");
     }
 }

@@ -48,9 +48,8 @@ public class LibraryFileExtractor : IFileExtractor
         if (artifact != null)
         {
             var libPath = library.GetLibraryPath();
-            var file = new TaskFile
+            var file = new TaskFile(library.Name)
             {
-                Name = library.Name,
                 Path = Path.Combine(path.Library, libPath),
                 Url = createDownloadUrl(artifact.Url, libPath),
                 Hash = artifact.GetSha1()
@@ -67,9 +66,8 @@ public class LibraryFileExtractor : IFileExtractor
             var libPath = library.GetNativeLibraryPath(_rulesContext.OS);
             if (!string.IsNullOrEmpty(libPath))
             {
-                var file = new TaskFile
+                var file = new TaskFile(library.Name)
                 {
-                    Name = library.Name,
                     Path = Path.Combine(path.Library, libPath),
                     Url = createDownloadUrl(native.Url, libPath),
                     Hash = native.GetSha1()

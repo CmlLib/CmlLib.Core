@@ -2,12 +2,12 @@ namespace CmlLib.Core.Tasks;
 
 public class UnzipTask : LinkedTask
 {
-    public UnzipTask(string zipPath, string unzipTo)
+    public UnzipTask(string name, string zipPath, string unzipTo) : base(name)
     {
         
     }
 
-    public override ValueTask<LinkedTask?> Execute()
+    protected override ValueTask<LinkedTask?> OnExecuted()
     {
         throw new NotImplementedException();
     }

@@ -4,7 +4,7 @@ namespace CmlLib.Core.Tasks;
 
 public class FileCheckTask : ResultTask
 {
-    public FileCheckTask(TaskFile file)
+    public FileCheckTask(TaskFile file) : base(file)
     {
         if (string.IsNullOrEmpty(file.Path))
             throw new ArgumentException("file.Path was empty");
@@ -15,7 +15,7 @@ public class FileCheckTask : ResultTask
         this.Hash = file.Hash;
     }
 
-    public FileCheckTask(string path, string hash)
+    public FileCheckTask(string name, string path, string hash) : base(name)
     {
         this.Path = path;
         this.Hash = hash;
@@ -24,7 +24,7 @@ public class FileCheckTask : ResultTask
     public string Path { get; }
     public string Hash { get; }
 
-    protected override ValueTask<bool> ExecuteWithResult()
+    protected override ValueTask<bool> OnExecutedWithResult()
     {
         var result = IOUtil.CheckFileValidation(Path, Hash, true);
         return new ValueTask<bool>(result);

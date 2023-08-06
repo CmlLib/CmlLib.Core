@@ -163,9 +163,8 @@ public class JavaFileExtractor : IFileExtractor
 
         var executable = value.GetPropertyOrNull("executable")?.GetBoolean() ?? false;
 
-        var file = new TaskFile
+        var file = new TaskFile(name)
         {
-            Name = name,
             Hash = hash,
             Path = filePath,
             Url = url,
@@ -176,7 +175,7 @@ public class JavaFileExtractor : IFileExtractor
         checkTask.OnFalse = new DownloadTask(file);
 
         if (executable)
-            checkTask.InsertNextTask(new ChmodTask(file.Path));
+            checkTask.InsertNextTask(new ChmodTask(file.Name, file.Path));
 
         return checkTask;
     }
@@ -194,17 +193,16 @@ public class JavaFileExtractor : IFileExtractor
         var lzmaPath = Path.Combine(Path.GetTempPath(), "jre.lzma");
         var zipPath = Path.Combine(Path.GetTempPath(), "jre.zip");
 
-        var file = new TaskFile
+        var file = new TaskFile("jre.lzma")
         {
-            Name = "jre.lzma",
             Url = javaUrl,
             Path = lzmaPath
         };
 
         var download = new DownloadTask(file);
-        var decompressLZMA = new LZMADecompressTask(lzmaPath, zipPath);
-        var unzip = new UnzipTask(zipPath, legacyJavaPath);
-        var chmod = new ChmodTask(mJava.GetBinaryPath(_os));
+        var decompressLZMA = new LZMADecompressTask(file.Name, lzmaPath, zipPath);
+        var unzip = new UnzipTask(file.Name, zipPath, legacyJavaPath);
+        var chmod = new ChmodTask(file.Name, mJava.GetBinaryPath(_os));
 
         return new LinkedTask[]
         {

@@ -16,6 +16,10 @@ class Program
 
     public static async Task Main()
     {
+        //var t = new TPL();
+        //await t.Test();
+        //return;
+
         var p = new Program();
 
         // Login

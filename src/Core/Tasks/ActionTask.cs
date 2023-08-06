@@ -4,10 +4,10 @@ public class ActionTask : LinkedTask
 {
     private readonly Func<ValueTask<LinkedTask?>> _action;
 
-    public ActionTask(Func<ValueTask<LinkedTask?>> action) => 
+    public ActionTask(string name, Func<ValueTask<LinkedTask?>> action) : base(name) => 
         _action = action;
 
-    public override async ValueTask<LinkedTask?> Execute()
+    protected override async ValueTask<LinkedTask?> OnExecuted()
     {
         return await _action.Invoke();
     }

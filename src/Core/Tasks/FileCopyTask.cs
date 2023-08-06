@@ -2,13 +2,13 @@ namespace CmlLib.Core.Tasks;
 
 public class FileCopyTask : LinkedTask
 {
-    public FileCopyTask(string sourcePath, IEnumerable<string> destPaths) =>
+    public FileCopyTask(string name, string sourcePath, IEnumerable<string> destPaths) : base(name) =>
         (SourcePath, DestinationPaths) = (sourcePath, destPaths.ToArray());
 
     public string SourcePath { get; }
     public string[] DestinationPaths { get; }
 
-    public override ValueTask<LinkedTask?> Execute()
+    protected override ValueTask<LinkedTask?> OnExecuted()
     {
         if (!File.Exists(SourcePath))
             throw new InvalidOperationException("The source file does not exists");

@@ -22,9 +22,8 @@ public class LogFileExtractor : IFileExtractor
         
         var id = version.Logging?.LogFile?.Id ?? version.Id;
 
-        var file = new TaskFile
+        var file = new TaskFile(id)
         {
-            Name = id,
             Path = path.GetLogConfigFilePath(id),
             Url = url,
             Hash = version.Logging?.LogFile?.GetSha1()

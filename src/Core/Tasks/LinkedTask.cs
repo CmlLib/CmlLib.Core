@@ -2,10 +2,30 @@ namespace CmlLib.Core.Tasks;
 
 public abstract class LinkedTask
 {
-    public string? Name { get; set; }
+    public LinkedTask(TaskFile file)
+    {
+        if (string.IsNullOrEmpty(file.Name))
+            throw new ArgumentException("file.Name was empty");
+        this.Name = file.Name;
+    }
+
+    public LinkedTask(string name)
+    {
+        this.Name = name;
+    }
+
+    public string Name { get; set; }
     public LinkedTask? NextTask { get; private set; }
 
-    public abstract ValueTask<LinkedTask?> Execute();
+    public async ValueTask<LinkedTask?> Execute()
+    {
+        var nextTask = await OnExecuted();
+        if (nextTask != null && nextTask.Name != this.Name)
+            throw new InvalidOperationException("Name should be same");
+        return nextTask;
+    }
+
+    protected abstract ValueTask<LinkedTask?> OnExecuted();
 
     public LinkedTask InsertNextTask(LinkedTask task)
     {

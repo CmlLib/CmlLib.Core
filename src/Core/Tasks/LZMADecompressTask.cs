@@ -2,12 +2,12 @@ namespace CmlLib.Core.Tasks;
 
 public class LZMADecompressTask : LinkedTask
 {
-    public LZMADecompressTask(string lzmaPath, string decompressTo)
+    public LZMADecompressTask(string name, string lzmaPath, string decompressTo) : base(name)
     {
 
     }
 
-    public override ValueTask<LinkedTask?> Execute()
+    protected override ValueTask<LinkedTask?> OnExecuted()
     {
         throw new NotImplementedException();
     }

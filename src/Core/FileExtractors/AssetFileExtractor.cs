@@ -73,9 +73,8 @@ public class AssetFileExtractor : IFileExtractor
             if (mapResource)
                 copyPath.Add(Path.Combine(path.Resource, prop.Name));
 
-            var file = new TaskFile
+            var file = new TaskFile(prop.Name)
             {
-                Name = prop.Name,
                 Path = hashPath,
                 Hash = hash,
                 Size = size,
@@ -86,8 +85,8 @@ public class AssetFileExtractor : IFileExtractor
             checkTask.OnFalse = new DownloadTask(file);
 
             if (copyPath.Count > 0)
-                checkTask.InsertNextTask(new FileCopyTask(hashPath, copyPath.ToArray()));
-
+                checkTask.InsertNextTask(new FileCopyTask(prop.Name, hashPath, copyPath.ToArray()));
+            
             yield return checkTask;
         }
     }

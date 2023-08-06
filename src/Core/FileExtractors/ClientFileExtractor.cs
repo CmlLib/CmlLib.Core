@@ -20,9 +20,8 @@ public class ClientFileExtractor : IFileExtractor
             yield break;
 
         var clientPath = path.GetVersionJarPath(id);
-        var file = new TaskFile
+        var file = new TaskFile(id)
         {
-            Name = id,
             Path = clientPath,
             Url = url,
             Hash = version.Client?.GetSha1(),

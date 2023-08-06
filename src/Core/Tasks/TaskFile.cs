@@ -2,9 +2,12 @@ namespace CmlLib.Core.Tasks;
 
 public struct TaskFile
 {
-    public string? Name { get; set; }
-    public string? Path { get; set; }
-    public string? Hash { get; set; }
-    public string? Url { get; set; }
-    public long Size { get; set; }
+    public TaskFile(string name) => 
+        Name = name;
+
+    public string Name { get; }
+    public string? Path { get; set; } = null;
+    public string? Hash { get; set; } = null;
+    public string? Url { get; set; } = null;
+    public long Size { get; set; } = 0;
 }
