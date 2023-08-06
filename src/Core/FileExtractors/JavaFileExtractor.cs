@@ -137,7 +137,7 @@ public class JavaFileExtractor : IFileExtractor
 
                 var file = createTask(value, name, filePath);
                 if (file != null)
-                    yield return file; // TODO: tryChmod
+                    yield return file;
             }
             else
             {

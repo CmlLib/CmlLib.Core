@@ -4,6 +4,28 @@ using CmlLib.Core.Version;
 
 namespace CmlLibCoreSample;
 
+public class MockTask : LinkedTask
+{
+    public int Count { get; set; }
+
+    public MockTask(string name) : base(name)
+    {
+    }
+
+    protected override ValueTask<LinkedTask?> OnExecuted()
+    {
+        Console.WriteLine($"{Name}: {Count}");
+        if (Count == 0)
+            return new ValueTask<LinkedTask?>();
+        else
+        {
+            var nextTask = new MockTask(Name);
+            nextTask.Count = Count - 1;
+            return new ValueTask<LinkedTask?>(nextTask);
+        }
+    }
+}
+
 public class TPL
 {
     public async Task Test()
@@ -13,41 +35,27 @@ public class TPL
             PropagateCompletion = true
         };
 
-        var buffer = new BufferBlock<TaskFile>();
-        var executor = new TransformManyBlock<TaskFile, TaskFile>(
-            f => 
-            {    
-                if (f.Size < 0) 
-                    Console.WriteLine($"@@@ ERROR {f.Name}, {f.Size}");
-                else
-                    Console.WriteLine($"{f.Name}, {f.Size}");
-                Thread.Sleep(100);
-
-                var list = new List<TaskFile>();
-                for (int i = 0; i < f.Size; i++)
-                {
-                    list.Add(new TaskFile(f.Name)
-                    {
-                        Size = f.Size - 1
-                    });
-                }
-                return list;
+        var buffer = new BufferBlock<MockTask>();
+        var executor = new TransformBlock<MockTask, MockTask?>(
+            async f =>
+            {
+                var next = await f.Execute();
+                return next as MockTask;
             },
             new ExecutionDataflowBlockOptions
             {
                 MaxDegreeOfParallelism = 8
             });
-        var done = new ActionBlock<TaskFile>(f => Console.WriteLine($"DONE {f.Name} {f.Size}"));
 
         buffer.LinkTo(executor, linkOptions);
-        executor.LinkTo(done, linkOptions, f => f.Size == 0);
-        executor.LinkTo(buffer, linkOptions);
+        executor.LinkTo(buffer!, linkOptions, f => f != null);
+        executor.LinkTo(DataflowBlock.NullTarget<LinkedTask?>(), linkOptions);
 
         var versionBroadcaster = new BroadcastBlock<string>(null);
         for (var i = 0; i < 4; i++)
         {
             int copy = i;
-            var extractor = new TransformManyBlock<string, TaskFile>(
+            var extractor = new TransformManyBlock<string, MockTask>(
                 v => extract(v, copy));
             versionBroadcaster.LinkTo(extractor, linkOptions);
             extractor.LinkTo(buffer, linkOptions);
@@ -58,16 +66,16 @@ public class TPL
         Console.WriteLine("DONE");
     }
 
-    private async IAsyncEnumerable<TaskFile> extract(string version, int i)
+    private async IAsyncEnumerable<MockTask> extract(string version, int i)
     {
         Console.WriteLine($"extractor {i}");
         for (int j = 0; j < 4; j++)
         {
             await Task.Delay(100);
             Console.WriteLine("extracted " + (i*10+j));
-            yield return new TaskFile((i*10 + j).ToString())
+            yield return new MockTask((i*10 + j).ToString())
             {
-                Size = j
+                Count = j
             };
         }
     }

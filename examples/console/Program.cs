@@ -7,6 +7,7 @@ using CmlLib.Core.Java;
 using CmlLib.Core.Rules;
 using CmlLib.Core.Tasks;
 using CmlLib.Core.VersionLoader;
+using System.Diagnostics;
 
 namespace CmlLibCoreSample;
 
@@ -50,7 +51,7 @@ class Program
         var versionLoader = new VersionLoaderCollection()
         {
             new LocalVersionLoader(minecraftPath),
-            //new MojangVersionLoader(httpClient),
+            new MojangVersionLoader(httpClient),
         };
 
         var versions = await versionLoader.GetVersionMetadatasAsync();
@@ -60,7 +61,7 @@ class Program
         }
 
         var version = await versions.GetAndSaveVersionAsync(
-            "1.20.1", minecraftPath);
+            "1.16.5", minecraftPath);
 
         var extractors = FileExtractorCollection.CreateDefault(
             httpClient, javaPathResolver, rulesEvaluator, rulesContext);
@@ -75,9 +76,18 @@ class Program
         //}
 
         var installer = new TPLTaskExecutor();
+
+        var sw = new Stopwatch();
+        sw.Start();
         await installer.Install(extractors, minecraftPath, version);
-        Console.WriteLine("DONE");
-        Console.ReadLine();
+        sw.Stop();
+        Console.WriteLine(sw.ElapsedMilliseconds);
+        
+        while (true)
+        {
+            Console.ReadLine();
+            installer.PrintStatus();
+        }
     }
 
     private void printTask(LinkedTask? task)

@@ -121,6 +121,7 @@ public class AssetFileExtractor : IFileExtractor
                 await ms.CopyToAsync(fs);
             } // dispose immediately
 
+            ms.Position = 0;
             return ms;
         }
     }
