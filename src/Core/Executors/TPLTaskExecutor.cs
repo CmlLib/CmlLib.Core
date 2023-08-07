@@ -14,16 +14,21 @@ public class TPLTaskExecutor
     private enum TaskStatus
     {
         Queued,
+        Processing,
         Done
     }
 
+    private readonly DataflowLinkOptions _completeLinkOptions = new()
+    {
+        PropagateCompletion = true
+    };
     private readonly ConcurrentDictionary<string, TaskStatus> _runningTasks = new();
     private int proceed = 0;
 
     public void PrintStatus()
     {
         var runningTasks = _runningTasks
-            .Where(kv => kv.Value == TaskStatus.Queued)
+            .Where(kv => kv.Value != TaskStatus.Done)
             .Select(kv => kv.Key);
 
         foreach (var task in runningTasks)
@@ -32,8 +37,6 @@ public class TPLTaskExecutor
         }
     }
 
-    private readonly DataflowLinkOptions _linkOptions = new();
-
     public async ValueTask Install(
         IEnumerable<IFileExtractor> extractors,
         MinecraftPath path,
@@ -41,7 +44,7 @@ public class TPLTaskExecutor
     {
         var extractBlock = createExtractBlock(version, path);
         var executeBlock = createExecuteBlock(extractBlock.Completion);
-        extractBlock.LinkTo(executeBlock, _linkOptions);
+        extractBlock.LinkTo(executeBlock);
 
         await Task.WhenAll(extractors.Select(extractor => extractBlock.SendAsync(extractor)));
         extractBlock.Complete();
@@ -62,6 +65,7 @@ public class TPLTaskExecutor
             Exception? exception = null;
             try
             {
+                fireEvent(task.Name, TaskStatus.Processing);
                 nextTask = await task.Execute();
             }
             catch (Exception ex)
@@ -88,8 +92,8 @@ public class TPLTaskExecutor
             MaxDegreeOfParallelism = 6
         });
 
-        buffer.LinkTo(executor, _linkOptions);
-        executor.LinkTo(buffer!, _linkOptions, t => t != null);
+        buffer.LinkTo(executor);
+        executor.LinkTo(buffer!, t => t != null);
         executor.LinkTo(DataflowBlock.NullTarget<LinkedTask?>());
 
         return buffer;
@@ -104,8 +108,10 @@ public class TPLTaskExecutor
             foreach (var task in tasks)
             {
                 if (_runningTasks.TryAdd(task.Name, TaskStatus.Queued))
+                {
                     fireEvent(task.Name, TaskStatus.Queued);
-                yield return task;
+                    yield return task;
+                }
             }
         }
 
@@ -116,7 +122,7 @@ public class TPLTaskExecutor
             return iterated;
         }, new ExecutionDataflowBlockOptions
         {
-            MaxDegreeOfParallelism = 2
+            MaxDegreeOfParallelism = 6
         });
 
         return block;
@@ -127,7 +133,7 @@ public class TPLTaskExecutor
         //if (status != TaskStatus.Done) return;
         //if (proceed % 100 != 0) return;
         var totalTasks = _runningTasks.Count;
-        var statusMsg = status == TaskStatus.Queued ? "START" : "END";
-        Console.WriteLine($"[{proceed}/{totalTasks}][{statusMsg}] {name}");
+        var now = DateTime.Now.ToString("hh:mm:ss.fff");
+        Console.WriteLine($"[{now}][{proceed}/{totalTasks}][{status}] {name}");
     }
 }
