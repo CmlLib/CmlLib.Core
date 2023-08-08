@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CmlLibCoreSample", "example
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CmlLibWinFormSample", "examples\winform\CmlLibWinFormSample.csproj", "{362D93FE-B624-451E-AAD9-D66EFBE90EC3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CmlLib.Core.Benchmarks", "benchmark\CmlLib.Core.Benchmarks.csproj", "{99852557-DBA7-4E13-A883-4B535F0D33FB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +40,10 @@ Global
 		{362D93FE-B624-451E-AAD9-D66EFBE90EC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{362D93FE-B624-451E-AAD9-D66EFBE90EC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{362D93FE-B624-451E-AAD9-D66EFBE90EC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99852557-DBA7-4E13-A883-4B535F0D33FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99852557-DBA7-4E13-A883-4B535F0D33FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99852557-DBA7-4E13-A883-4B535F0D33FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99852557-DBA7-4E13-A883-4B535F0D33FB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{C9F876F3-5579-4B3A-A808-17845BB9C744} = {6C52D5EC-0391-43EB-B34A-E5AA1E5BBBFE}

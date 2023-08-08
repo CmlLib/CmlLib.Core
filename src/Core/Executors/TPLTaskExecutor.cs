@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using CmlLib.Core.FileExtractors;
 using CmlLib.Core.Tasks;
@@ -9,20 +7,45 @@ using CmlLib.Core.Version;
 
 namespace CmlLib.Core.Executors;
 
+public enum TaskStatus
+{
+    Queued,
+    Processing,
+    Done
+}
+
+public class TaskExecutorEventArgs
+{
+    public TaskExecutorEventArgs(string name) =>
+        Name = name;
+
+    public int TotalTasks { get; set; }
+    public int ProceedTasks { get; set; }
+    public TaskStatus EventType { get; set; }
+    public string Name { get; set; }
+
+    public void Print()
+    {
+        //if (status != TaskStatus.Done) return;
+        //if (proceed % 100 != 0) return;
+        var now = DateTime.Now.ToString("hh:mm:ss.fff");
+        Console.WriteLine($"[{now}][{ProceedTasks}/{TotalTasks}][{EventType}] {Name}");
+    }
+}
+
 public class TPLTaskExecutor
 {
-    private enum TaskStatus
+    private readonly int _maxParallelism;
+    private readonly ConcurrentDictionary<string, TaskStatus> _runningTasks;
+
+    public TPLTaskExecutor(int parallelism)
     {
-        Queued,
-        Processing,
-        Done
+        _maxParallelism = parallelism;
+        _runningTasks = new ConcurrentDictionary<string, TaskStatus>(_maxParallelism, 2047);
     }
 
-    private readonly DataflowLinkOptions _completeLinkOptions = new()
-    {
-        PropagateCompletion = true
-    };
-    private readonly ConcurrentDictionary<string, TaskStatus> _runningTasks = new();
+    public event EventHandler<TaskExecutorEventArgs>? Progress;
+    private int totalTasks = 0;
     private int proceed = 0;
 
     public void PrintStatus()
@@ -89,7 +112,7 @@ public class TPLTaskExecutor
             return nextTask;
         }, new ExecutionDataflowBlockOptions
         {
-            MaxDegreeOfParallelism = 6
+            MaxDegreeOfParallelism = _maxParallelism
         });
 
         buffer.LinkTo(executor);
@@ -109,8 +132,9 @@ public class TPLTaskExecutor
             {
                 if (_runningTasks.TryAdd(task.Name, TaskStatus.Queued))
                 {
-                    fireEvent(task.Name, TaskStatus.Queued);
                     yield return task;
+                    Interlocked.Increment(ref totalTasks);
+                    fireEvent(task.Name, TaskStatus.Queued);
                 }
             }
         }
@@ -122,7 +146,7 @@ public class TPLTaskExecutor
             return iterated;
         }, new ExecutionDataflowBlockOptions
         {
-            MaxDegreeOfParallelism = 6
+            MaxDegreeOfParallelism = _maxParallelism
         });
 
         return block;
@@ -130,10 +154,11 @@ public class TPLTaskExecutor
 
     private void fireEvent(string name, TaskStatus status)
     {
-        //if (status != TaskStatus.Done) return;
-        //if (proceed % 100 != 0) return;
-        var totalTasks = _runningTasks.Count;
-        var now = DateTime.Now.ToString("hh:mm:ss.fff");
-        Console.WriteLine($"[{now}][{proceed}/{totalTasks}][{status}] {name}");
+        Progress?.Invoke(this, new TaskExecutorEventArgs(name)
+        {
+            EventType = status,
+            TotalTasks = totalTasks,
+            ProceedTasks = proceed
+        });
     }
 }
