@@ -12,16 +12,8 @@ public class ChmodTask : LinkedTask
 
     protected override ValueTask<LinkedTask?> OnExecuted()
     {
-        try
-        {
-            if (MRule.OSName != MRule.Windows)
-                NativeMethods.Chmod(Path, NativeMethods.Chmod755);
-        }
-        catch (Exception e)
-        {
-            Debug.WriteLine(e);
-        }
-
+        if (MRule.OSName != MRule.Windows)
+            NativeMethods.Chmod(Path, NativeMethods.Chmod755);
         return new ValueTask<LinkedTask?>(NextTask);
     }
 }

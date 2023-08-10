@@ -1,62 +1,27 @@
 ﻿using ICSharpCode.SharpZipLib.Zip;
-using System;
-using System.IO;
 
-namespace CmlLib.Utils
+namespace CmlLib.Utils;
+
+internal static class SharpZipWrapper
 {
-    internal class SharpZip
+    public static void Unzip(string zipPath, string extractTo, IProgress<int>? progress)
     {
-        public SharpZip(string path)
+        using var fs = File.OpenRead(zipPath);
+        using var s = new ZipInputStream(fs);
+
+        long length = fs.Length;
+        ZipEntry e;
+        while ((e = s.GetNextEntry()) != null)
         {
-            this.ZipPath = path;
-        }
+            var fullPath = Path.Combine(extractTo, e.Name);
+            IOUtil.CreateParentDirectory(fullPath);
+            var fileName = Path.GetFileName(fullPath);
 
-        public event EventHandler<int>? ProgressEvent;
-        public string ZipPath { get; private set; }
+            using var output = File.Create(fullPath);
+            s.CopyTo(output);
 
-        public void Unzip(string path)
-        {
-            using (var fs = File.OpenRead(ZipPath))
-            using (var s = new ZipInputStream(fs))
-            {
-                long length = fs.Length;
-                ZipEntry e;
-                while ((e = s.GetNextEntry()) != null)
-                {
-                    var zfile = Path.Combine(path, e.Name);
-
-                    var dirName = Path.GetDirectoryName(zfile);
-                    var fileName = Path.GetFileName(zfile);
-
-                    if (!string.IsNullOrWhiteSpace(dirName))
-                        Directory.CreateDirectory(dirName);
-
-                    if (!string.IsNullOrWhiteSpace(fileName))
-                    {
-                        using (var zFileStream = File.OpenWrite(zfile))
-                        {
-                            s.CopyTo(zFileStream);
-                        }
-                    }
-
-                    ev(s.Position, length);
-                }
-            }
-        }
-
-        private int previousPerc;
-
-        private void ev(long curr, long total)
-        {
-            if (ProgressEvent == null)
-                return;
-
-            int progress = (int)(curr / (double)total * 100);
-            if (previousPerc != progress)
-            {
-                previousPerc = progress;
-                ProgressEvent.Invoke(this, progress);
-            }
+            int percent = (int)(s.Position / (double)length * 100);
+            progress?.Report(percent);
         }
     }
 }

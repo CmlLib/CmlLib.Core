@@ -118,13 +118,7 @@ public class MJava
         string zippath = Path.Combine(Path.GetTempPath(), "jre.zip");
         SevenZipWrapper.DecompressFileLZMA(lzmaPath, zippath);
 
-        var z = new SharpZip(zippath);
-        z.ProgressEvent += Z_ProgressEvent;
-        z.Unzip(RuntimeDirectory);
-    }
-
-    private void Z_ProgressEvent(object? sender, int e)
-    {
-        pProgressChanged?.Report(new ProgressChangedEventArgs(50 + e / 2, null));
+        SharpZipWrapper.Unzip(zippath, RuntimeDirectory, new Progress<int>(p => 
+            pProgressChanged?.Report(new ProgressChangedEventArgs(50 + p / 2, null))));
     }
 }

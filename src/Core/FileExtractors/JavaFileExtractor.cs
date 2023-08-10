@@ -17,7 +17,7 @@ public class JavaFileExtractor : IFileExtractor
     public string JavaManifestServer { get; set; } = MojangServer.JavaManifest;
 
     public JavaFileExtractor(
-        HttpClient httpClient, 
+        HttpClient httpClient,
         IJavaPathResolver javaPathResolver,
         LauncherOSRule rule)
     {
@@ -28,53 +28,36 @@ public class JavaFileExtractor : IFileExtractor
 
     public async ValueTask<IEnumerable<LinkedTask>> Extract(MinecraftPath path, IVersion version)
     {
-        //if (!string.IsNullOrEmpty(version.JavaBinaryPath) && File.Exists(version.JavaBinaryPath))
-        //    return null
-        JavaVersion javaVersion;
         if (!version.JavaVersion.HasValue || string.IsNullOrEmpty(version.JavaVersion.Value.Component))
-            javaVersion = MinecraftJavaPathResolver.JreLegacyVersion;
+            return await extractFromJavaVersion(MinecraftJavaPathResolver.JreLegacyVersion);
         else
-            javaVersion = version.JavaVersion.Value;
-
-        // try three versions
-        //  - latest
-        //  - JreLegacyVersionName(jre-legacy)
-        //  - legacy java (MJava)
-        try
-        {
-            // get all java version
-            using var response = await _httpClient.GetStreamAsync(JavaManifestServer);
-            using var jsonDocument = await JsonDocument.ParseAsync(response);
-
-            var root = jsonDocument.RootElement;
-            var javaVersions = root.GetProperty(getJavaOSName()); // get os specific java version
-
-            var latestVersionUrl = getJavaUrl(javaVersions, javaVersion);
-            var legacyVersionUrl = getJavaUrl(javaVersions, MinecraftJavaPathResolver.JreLegacyVersion);
-
-            if (!string.IsNullOrEmpty(latestVersionUrl))
-            {
-                var res = await _httpClient.GetStreamAsync(latestVersionUrl);
-                return extractTasks(res, javaVersion);
-            }
-            else if (!string.IsNullOrEmpty(legacyVersionUrl) && 
-                javaVersion.Component != MinecraftJavaPathResolver.JreLegacyVersion.Component)
-            {
-                var res = await _httpClient.GetStreamAsync(legacyVersionUrl);
-                return extractTasks(res, MinecraftJavaPathResolver.JreLegacyVersion);
-            }
-            else
-            {
-                throw new Exception();
-            }
-        }
-        catch
-        {
-            return await legacyJavaChecker();
-        }
+            return await extractFromJavaVersion(version.JavaVersion.Value);
     }
 
-    private string getJavaOSName()
+    private async ValueTask<IEnumerable<LinkedTask>> extractFromJavaVersion(JavaVersion javaVersion)
+    {
+        using var response = await _httpClient.GetStreamAsync(JavaManifestServer);
+        using var jsonDocument = JsonDocument.Parse(response);
+        var root = jsonDocument.RootElement;
+
+        if (!root.TryGetProperty(getJavaOSName(), out var javaVersionsForOS))
+            return await legacyJavaChecker();
+
+        var currentVersionManifestUrl = getManifestUrl(javaVersionsForOS, javaVersion);
+
+        if (!string.IsNullOrEmpty(currentVersionManifestUrl))
+            return await extractFromManifestUrl(currentVersionManifestUrl, javaVersion);
+        else if (javaVersion.Component != MinecraftJavaPathResolver.JreLegacyVersion.Component)
+        {
+            var legacyVersionManifestUrl = getManifestUrl(javaVersionsForOS, MinecraftJavaPathResolver.JreLegacyVersion);
+            if (!string.IsNullOrEmpty(legacyVersionManifestUrl))
+                return await extractFromManifestUrl(legacyVersionManifestUrl, javaVersion);
+        }
+
+        return await legacyJavaChecker();
+    }
+
+    private string getJavaOSName() // TODO: mac arm
     {
         string osName = "";
 
@@ -100,10 +83,10 @@ public class JavaFileExtractor : IFileExtractor
         return osName;
     }
 
-    private string? getJavaUrl(JsonElement element, JavaVersion javaVersion)
+    private string? getManifestUrl(JsonElement element, JavaVersion version)
     {
         return element
-            .GetPropertyOrNull(javaVersion.Component)?
+            .GetPropertyOrNull(version.Component)?
             .EnumerateArray()
             .FirstOrDefault()
             .GetPropertyOrNull("manifest")?
@@ -111,19 +94,25 @@ public class JavaFileExtractor : IFileExtractor
             .GetString();
     }
 
-    // compare local files with `manifest`
-    private IEnumerable<LinkedTask> extractTasks(Stream stream, JavaVersion version)
+    private async ValueTask<IEnumerable<LinkedTask>> extractFromManifestUrl(string manifestUrl, JavaVersion version)
     {
-        var path = _javaPathResolver.GetJavaDirPath(version);
-        using var s = stream;
-        using var manifestDocument = JsonDocument.Parse(stream);
-        var manifest = manifestDocument.RootElement;
+        using var res = await _httpClient.GetStreamAsync(manifestUrl);
+        var json = JsonDocument.Parse(res); // should be disposed after extraction
+        return extractFromManifestJson(json, version);
+    }
 
-        var files = manifestDocument.RootElement.GetPropertyOrNull("files");
-        if (files == null)
+    private IEnumerable<LinkedTask> extractFromManifestJson(
+        JsonDocument _json, JavaVersion version)
+    {
+        using var json = _json;
+        var manifest = json.RootElement;
+
+        var path = _javaPathResolver.GetJavaDirPath(version);
+
+        if (!manifest.TryGetProperty("files", out var files))
             yield break;
 
-        var objects = files.Value.EnumerateObject();
+        var objects = files.EnumerateObject();
         foreach (var prop in objects)
         {
             var name = prop.Name;
@@ -180,7 +169,7 @@ public class JavaFileExtractor : IFileExtractor
         return checkTask;
     }
 
-    // legacy java checker that use MJava
+    // legacy java checker using MJava
     private async ValueTask<IEnumerable<LinkedTask>> legacyJavaChecker()
     {
         var legacyJavaPath = _javaPathResolver.GetJavaDirPath(MinecraftJavaPathResolver.CmlLegacyVersion);
@@ -199,14 +188,13 @@ public class JavaFileExtractor : IFileExtractor
             Path = lzmaPath
         };
 
-        var download = new DownloadTask(file);
-        var decompressLZMA = new LZMADecompressTask(file.Name, lzmaPath, zipPath);
-        var unzip = new UnzipTask(file.Name, zipPath, legacyJavaPath);
-        var chmod = new ChmodTask(file.Name, mJava.GetBinaryPath(_os));
-
-        return new LinkedTask[]
+        var task = LinkedTask.LinkTasks(new LinkedTask[]
         {
-            LinkedTask.LinkTasks(download, decompressLZMA, unzip, chmod)!
-        };
+            new DownloadTask(file),
+            new LZMADecompressTask(file.Name, lzmaPath, zipPath),
+            new UnzipTask(file.Name, zipPath, legacyJavaPath),
+            new ChmodTask(file.Name, mJava.GetBinaryPath(_os))
+        });
+        return new LinkedTask[] { task! };
     }
 }

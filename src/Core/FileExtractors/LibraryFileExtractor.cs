@@ -44,6 +44,7 @@ public class LibraryFileExtractor : IFileExtractor
 
     private IEnumerable<LinkedTask> createLibraryTasks(MinecraftPath path, MLibrary library)
     {
+        // java library (*.jar)
         var artifact = library.Artifact;
         if (artifact != null)
         {
@@ -60,6 +61,7 @@ public class LibraryFileExtractor : IFileExtractor
             yield return task;
         }
 
+        // native library (*.dll, *.so)
         var native = library.GetNativeLibrary(_rulesContext.OS);
         if (native != null)
         {

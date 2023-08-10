@@ -32,7 +32,7 @@ public class MNative
         foreach (var libPath in nativeLibraries)
         {
             if (File.Exists(libPath))
-                new SharpZip(libPath).Unzip(extractPath);
+                SharpZipWrapper.Unzip(libPath, extractPath, null);
         }
 
         return extractPath;

@@ -31,32 +31,65 @@ public class AssetFileExtractor : IFileExtractor
 
     public async ValueTask<IEnumerable<LinkedTask>> Extract(MinecraftPath path, IVersion version)
     {
-        if (version.AssetIndex == null || string.IsNullOrEmpty(version.AssetIndex.Id))
+        var assets = version.AssetIndex;
+        if (assets == null ||
+            string.IsNullOrEmpty(assets.Id) ||
+            string.IsNullOrEmpty(assets.Url))
             return Enumerable.Empty<LinkedTask>();
 
-        var assetIndex = await getAssetIndex(path, version.AssetIndex);
-        if (assetIndex == null)
-            return Enumerable.Empty<LinkedTask>();
-
-        return extractFromIndex(path, version, assetIndex);
+        using var assetIndexStream = await createAssetIndexStream(path, assets);
+        var assetIndexJson = JsonDocument.Parse(assetIndexStream);
+        return extractFromAssetIndexJson(assetIndexJson, path, version);
     }
 
-    private IEnumerable<LinkedTask> extractFromIndex(
-        MinecraftPath path, IVersion version, Stream stream)
+    // Check index file validation and download
+    private async ValueTask<Stream> createAssetIndexStream(MinecraftPath path, MFileMetadata assets)
     {
-        using var s = stream;
-        using var doc = JsonDocument.Parse(s);
-        var root = doc.RootElement;
+        Debug.Assert(!string.IsNullOrEmpty(assets?.Id));
+        Debug.Assert(!string.IsNullOrEmpty(assets?.Url));
 
-        var assetId = version.AssetIndex?.Id ?? "legacy";
+        var indexFilePath = path.GetIndexFilePath(assets.Id);
+
+        if (IOUtil.CheckFileValidation(indexFilePath, assets.Sha1, true))
+        {
+            return File.Open(indexFilePath, FileMode.Open);
+        }
+        else
+        {
+            IOUtil.CreateParentDirectory(indexFilePath);
+
+            var ms = new MemoryStream();
+            using (var res = await httpClient.GetStreamAsync(assets.Url))
+            {
+                await res.CopyToAsync(ms);
+            } // dispose immediately
+
+            using (var fs = File.Create(indexFilePath))
+            {
+                await ms.CopyToAsync(fs);
+            } // dispose immediately
+
+            ms.Position = 0;
+            return ms;
+        }
+    }
+
+    private IEnumerable<LinkedTask> extractFromAssetIndexJson(
+        JsonDocument _json, MinecraftPath path, IVersion version)
+    {
+        Debug.Assert(!string.IsNullOrEmpty(version.AssetIndex?.Id));
+
+        using var json = _json;
+        var root = json.RootElement;
+
+        var assetId = version.AssetIndex.Id;
         var isVirtual = root.GetPropertyOrNull("virtual")?.GetBoolean() ?? false;
         var mapResource = root.GetPropertyOrNull("map_to_resources")?.GetBoolean() ?? false;
 
-        var objectsProp = root.GetPropertyOrNull("objects");
-        if (!objectsProp.HasValue)
+        if (!root.TryGetProperty("objects", out var objectsProp))
             yield break;
 
-        var objects = objectsProp.Value.EnumerateObject();
+        var objects = objectsProp.EnumerateObject();
         foreach (var prop in objects)
         {
             var hash = prop.Value.GetPropertyValue("hash");
@@ -88,60 +121,6 @@ public class AssetFileExtractor : IFileExtractor
                 checkTask.InsertNextTask(new FileCopyTask(prop.Name, hashPath, copyPath.ToArray()));
             
             yield return checkTask;
-        }
-    }
-
-    // Check index file validation and download
-    private async ValueTask<Stream?> getAssetIndex(MinecraftPath path, MFileMetadata? assets)
-    {
-        if (assets == null ||
-            string.IsNullOrEmpty(assets.Id) ||
-            string.IsNullOrEmpty(assets.Url))
-            return null;
-
-        var indexFilePath = path.GetIndexFilePath(assets.Id);
-
-        if (IOUtil.CheckFileValidation(indexFilePath, assets.Sha1, true))
-        {
-            return File.Open(indexFilePath, FileMode.Open);
-        }
-        else
-        {
-            IOUtil.CreateParentDirectory(indexFilePath);
-
-            var ms = new MemoryStream();
-
-            using (var res = await httpClient.GetStreamAsync(assets.Url))
-            {
-                await res.CopyToAsync(ms);
-            } // dispose immediately
-
-            using (var fs = File.Create(indexFilePath))
-            {
-                await ms.CopyToAsync(fs);
-            } // dispose immediately
-
-            ms.Position = 0;
-            return ms;
-        }
-    }
-
-    private async Task assetCopy(string org, string des)
-    {
-        try
-        {
-            var orgFile = new FileInfo(org);
-            var desFile = new FileInfo(des);
-
-            if (!desFile.Exists || orgFile.Length != desFile.Length)
-            {
-                IOUtil.CreateParentDirectory(des);
-                await IOUtil.CopyFileAsync(org, des);
-            }
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine(ex);
         }
     }
 }

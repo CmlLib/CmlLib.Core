@@ -1,7 +1,7 @@
 ﻿using BenchmarkDotNet.Running;
 using CmlLib.Core.Benchmarks;
 
-var summary = BenchmarkRunner.Run<TPLTaskExecutorBenchmark>();
+var summary = BenchmarkRunner.Run<HashBenchmark>();
 
 async Task once()
 {

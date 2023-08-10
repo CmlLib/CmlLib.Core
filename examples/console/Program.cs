@@ -75,7 +75,7 @@ class Program
         //    }
         //}
 
-        var installer = new TPLTaskExecutor();
+        var installer = new TPLTaskExecutor(6);
 
         var sw = new Stopwatch();
         sw.Start();

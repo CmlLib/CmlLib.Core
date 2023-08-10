@@ -6,7 +6,6 @@ using CmlLib.Core.Version;
 using CmlLib.Core.VersionLoader;
 using CmlLib.Core.VersionMetadata;
 using System.ComponentModel;
-using System.Diagnostics;
 
 namespace CmlLib.Core;
 

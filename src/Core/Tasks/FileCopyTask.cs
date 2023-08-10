@@ -1,3 +1,5 @@
+using CmlLib.Utils;
+
 namespace CmlLib.Core.Tasks;
 
 public class FileCopyTask : LinkedTask
@@ -13,9 +15,15 @@ public class FileCopyTask : LinkedTask
         if (!File.Exists(SourcePath))
             throw new InvalidOperationException("The source file does not exists");
 
+        var orgFile = new FileInfo(SourcePath);
         foreach (var destination in DestinationPaths)
         {
-            File.Copy(SourcePath, destination);
+            var desFile = new FileInfo(destination);
+            if (!desFile.Exists || orgFile.Length != desFile.Length)
+            {
+                IOUtil.CreateParentDirectory(destination);
+                orgFile.CopyTo(desFile.FullName, true);
+            }
         }
 
         return new ValueTask<LinkedTask?>(NextTask);
