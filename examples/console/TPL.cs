@@ -56,7 +56,7 @@ public class TPL
         {
             int copy = i;
             var extractor = new TransformManyBlock<string, MockTask>(
-                v => extract(v, copy));
+                v => extract(v, i));
             versionBroadcaster.LinkTo(extractor, linkOptions);
             extractor.LinkTo(buffer, linkOptions);
         }
@@ -66,12 +66,12 @@ public class TPL
         Console.WriteLine("DONE");
     }
 
-    private async IAsyncEnumerable<MockTask> extract(string version, int i)
+    private IEnumerable<MockTask> extract(string version, int i)
     {
         Console.WriteLine($"extractor {i}");
         for (int j = 0; j < 4; j++)
         {
-            await Task.Delay(100);
+            Thread.Sleep(100);
             Console.WriteLine("extracted " + (i*10+j));
             yield return new MockTask((i*10 + j).ToString())
             {

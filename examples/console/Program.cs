@@ -46,12 +46,12 @@ class Program
         var httpClient = new HttpClient();
         var rulesEvaluator = new RulesEvaluator();
         var javaPathResolver = new MinecraftJavaPathResolver(minecraftPath);
-        var rulesContext = new RulesEvaluatorContext(LauncherOSRule.CreateCurrent());
+        var rulesContext = new RulesEvaluatorContext(LauncherOSRule.Current);
 
         var versionLoader = new VersionLoaderCollection()
         {
             new LocalVersionLoader(minecraftPath),
-            new MojangVersionLoader(httpClient),
+            //new MojangVersionLoader(httpClient),
         };
 
         var versions = await versionLoader.GetVersionMetadatasAsync();
@@ -66,16 +66,8 @@ class Program
         var extractors = FileExtractorCollection.CreateDefault(
             httpClient, javaPathResolver, rulesEvaluator, rulesContext);
 
-        //foreach (var ex in extractors)
-        //{
-        //    var tasks = await ex.Extract(minecraftPath, version);
-        //    foreach (var task in tasks)
-        //    {
-        //        printTask(task);
-        //    }
-        //}
-
         var installer = new TPLTaskExecutor(6);
+        installer.Progress += (s, e) => e.Print();
 
         var sw = new Stopwatch();
         sw.Start();

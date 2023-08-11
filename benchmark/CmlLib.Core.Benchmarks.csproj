@@ -10,7 +10,7 @@
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.13.7" />
     <PackageReference Include="Standart.Hash.xxHash" Version="4.0.5" />
-    <ProjectReference Include="../src/CmlLib.csproj" />
+    <ProjectReference Include="../src/CmlLib.Core.csproj" />
   </ItemGroup>
 
 </Project>

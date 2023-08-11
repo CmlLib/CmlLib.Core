@@ -35,23 +35,33 @@ public class TaskExecutorEventArgs
 
 public class TPLTaskExecutor
 {
+    private struct TaskState
+    {
+        public TaskStatus Status { get; set; }
+        public long TotalBytes { get; set; }
+        public long ProgressedBytes { get; set; }
+    }
+
     private readonly int _maxParallelism;
-    private readonly ConcurrentDictionary<string, TaskStatus> _runningTasks;
+    private readonly ConcurrentDictionary<string, TaskState> _runningTasks;
 
     public TPLTaskExecutor(int parallelism)
     {
         _maxParallelism = parallelism;
-        _runningTasks = new ConcurrentDictionary<string, TaskStatus>(_maxParallelism, 2047);
+        _runningTasks = new ConcurrentDictionary<string, TaskState>(_maxParallelism, 2047);
     }
 
-    public event EventHandler<TaskExecutorEventArgs>? Progress;
+    public event EventHandler<TaskExecutorEventArgs>? FileProgress;
+    public event EventHandler<int>? BytesProgress;
+
+    private long totalBytes = 0;
     private int totalTasks = 0;
     private int proceed = 0;
 
     public void PrintStatus()
     {
         var runningTasks = _runningTasks
-            .Where(kv => kv.Value != TaskStatus.Done)
+            .Where(kv => kv.Value.Status != TaskStatus.Done)
             .Select(kv => kv.Key);
 
         foreach (var task in runningTasks)
@@ -75,8 +85,18 @@ public class TPLTaskExecutor
 
         if (proceed == _runningTasks.Count)
             return;
-        else
-            await executeBlock.Completion;
+        
+        var executeTask = executeBlock.Completion;
+        while (!executeTask.IsCompleted)
+        {
+            long progressedBytes = _runningTasks
+                .Select(kv => kv.Value.ProgressedBytes)
+                .Sum();
+            
+            var percent = (int)(progressedBytes / (double)totalBytes * 100);
+            BytesProgress?.Invoke(this, percent);
+            await Task.Delay(100);
+        }
     }
 
     private BufferBlock<LinkedTask> createExecuteBlock(Task extractTask)
@@ -100,7 +120,11 @@ public class TPLTaskExecutor
             if (nextTask == null)
             {
                 Interlocked.Increment(ref proceed);
-                _runningTasks.TryUpdate(task.Name, TaskStatus.Done, TaskStatus.Queued);
+                _runningTasks.AddOrUpdate(
+                    task.Name, 
+                    new TaskState { Status = TaskStatus.Done }, 
+                    (key, oldValue) => oldValue with { Status = TaskStatus.Done });
+
                 fireEvent(task.Name, TaskStatus.Done);
 
                 if (proceed == _runningTasks.Count && extractTask.IsCompleted)
@@ -126,14 +150,24 @@ public class TPLTaskExecutor
         IVersion version,
         MinecraftPath path)
     {
-        IEnumerable<LinkedTask> fireTasksEvent(IEnumerable<LinkedTask> tasks)
+        IEnumerable<LinkedTask> fireTasksEvent(IEnumerable<LinkedTaskHead> tasks)
         {
             foreach (var task in tasks)
             {
-                if (_runningTasks.TryAdd(task.Name, TaskStatus.Queued))
+                if (task.First == null)
+                    continue;
+
+                var state = new TaskState 
+                { 
+                    Status = TaskStatus.Queued, 
+                    TotalBytes = task.File.Size
+                };
+
+                if (_runningTasks.TryAdd(task.Name, state))
                 {
-                    yield return task;
+                    yield return task.First;
                     Interlocked.Increment(ref totalTasks);
+                    Interlocked.Add(ref totalBytes, task.File.Size);
                     fireEvent(task.Name, TaskStatus.Queued);
                 }
             }
@@ -154,7 +188,7 @@ public class TPLTaskExecutor
 
     private void fireEvent(string name, TaskStatus status)
     {
-        Progress?.Invoke(this, new TaskExecutorEventArgs(name)
+        FileProgress?.Invoke(this, new TaskExecutorEventArgs(name)
         {
             EventType = status,
             TotalTasks = totalTasks,

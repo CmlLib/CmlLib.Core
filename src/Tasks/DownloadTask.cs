@@ -1,3 +1,5 @@
+using CmlLib.Core.Downloader;
+
 namespace CmlLib.Core.Tasks;
 
 public class DownloadTask : LinkedTask

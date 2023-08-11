@@ -7,7 +7,7 @@ using CmlLib.Core.Version;
 namespace CmlLib.Core.Benchmarks;
 
 [SimpleJob(RunStrategy.Monitoring, iterationCount: 10)]
-public class TPLTaskExecutorBenchmark
+public class TPLTaskExecutorWithRandomFileBenchmark
 {
     public static bool Verbose { get; set; } = false;
 
@@ -16,7 +16,7 @@ public class TPLTaskExecutorBenchmark
 
     private MinecraftPath MinecraftPath = new MinecraftPath();
     private IVersion DummyVersion = new DummyVersion();
-    private TestFileExtractor[] Extractors;
+    private RandomFileExtractor[] Extractors;
     private TPLTaskExecutor Executor;
 
     [GlobalSetup]
@@ -27,17 +27,17 @@ public class TPLTaskExecutorBenchmark
     [IterationSetup]
     public void IterationSetup()
     {
-        Extractors = new TestFileExtractor[extractorCount];
+        Extractors = new RandomFileExtractor[extractorCount];
         for (int i = 0; i < extractorCount; i++)
         {
             var path = Path.GetFullPath("./benchmark" + i);
-            Extractors[i] = new TestFileExtractor(path, 1024, 1024*1024/2);
+            Extractors[i] = new RandomFileExtractor(path, 1024, 1024*1024/2);
             Extractors[i].Setup();
         }
         Executor = new TPLTaskExecutor(parallelism);
 
         if (Verbose)
-            Executor.Progress += (s, e) => e.Print();
+            Executor.FileProgress += (s, e) => e.Print();
     }
 
     [IterationCleanup]

@@ -8,6 +8,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="../../src/CmlLib.csproj" />
+        <ProjectReference Include="../../src/CmlLib.Core.csproj" />
     </ItemGroup>
 </Project>

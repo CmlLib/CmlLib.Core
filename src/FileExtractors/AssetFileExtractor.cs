@@ -29,13 +29,13 @@ public class AssetFileExtractor : IFileExtractor
         }
     }
 
-    public async ValueTask<IEnumerable<LinkedTask>> Extract(MinecraftPath path, IVersion version)
+    public async ValueTask<IEnumerable<LinkedTaskHead>> Extract(MinecraftPath path, IVersion version)
     {
         var assets = version.AssetIndex;
         if (assets == null ||
             string.IsNullOrEmpty(assets.Id) ||
             string.IsNullOrEmpty(assets.Url))
-            return Enumerable.Empty<LinkedTask>();
+            return Enumerable.Empty<LinkedTaskHead>();
 
         using var assetIndexStream = await createAssetIndexStream(path, assets);
         var assetIndexJson = JsonDocument.Parse(assetIndexStream);
@@ -74,7 +74,7 @@ public class AssetFileExtractor : IFileExtractor
         }
     }
 
-    private IEnumerable<LinkedTask> extractFromAssetIndexJson(
+    private IEnumerable<LinkedTaskHead> extractFromAssetIndexJson(
         JsonDocument _json, MinecraftPath path, IVersion version)
     {
         Debug.Assert(!string.IsNullOrEmpty(version.AssetIndex?.Id));
@@ -120,7 +120,8 @@ public class AssetFileExtractor : IFileExtractor
             if (copyPath.Count > 0)
                 checkTask.InsertNextTask(new FileCopyTask(prop.Name, hashPath, copyPath.ToArray()));
             
-            yield return checkTask;
+            var taskHead = new LinkedTaskHead(checkTask, file);
+            yield return taskHead;
         }
     }
 }

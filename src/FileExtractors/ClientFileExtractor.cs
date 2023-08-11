@@ -5,13 +5,13 @@ namespace CmlLib.Core.FileExtractors;
 
 public class ClientFileExtractor : IFileExtractor
 {
-    public ValueTask<IEnumerable<LinkedTask>> Extract(MinecraftPath path, IVersion version)
+    public ValueTask<IEnumerable<LinkedTaskHead>> Extract(MinecraftPath path, IVersion version)
     {
         var result = extract(path, version);
-        return new ValueTask<IEnumerable<LinkedTask>>(result);
+        return new ValueTask<IEnumerable<LinkedTaskHead>>(result);
     }
 
-    private IEnumerable<LinkedTask> extract(MinecraftPath path, IVersion version)
+    private IEnumerable<LinkedTaskHead> extract(MinecraftPath path, IVersion version)
     {
         var id = version.Jar;
         var url = version.Client?.Url;
@@ -30,6 +30,7 @@ public class ClientFileExtractor : IFileExtractor
 
         var checkTask = new FileCheckTask(file);
         checkTask.OnFalse = new DownloadTask(file);
-        yield return checkTask;
+
+        yield return new LinkedTaskHead(checkTask, file);
     }
 }

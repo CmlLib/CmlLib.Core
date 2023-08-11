@@ -28,13 +28,13 @@ public class LibraryFileExtractor : IFileExtractor
         }
     }
 
-    public ValueTask<IEnumerable<LinkedTask>> Extract(MinecraftPath path, IVersion version)
+    public ValueTask<IEnumerable<LinkedTaskHead>> Extract(MinecraftPath path, IVersion version)
     {
         var result = extract(path, version);
-        return new ValueTask<IEnumerable<LinkedTask>>(result);
+        return new ValueTask<IEnumerable<LinkedTaskHead>>(result);
     }
 
-    private IEnumerable<LinkedTask> extract(MinecraftPath path, IVersion version)
+    private IEnumerable<LinkedTaskHead> extract(MinecraftPath path, IVersion version)
     {
         return version.Libraries
             .Where(lib => lib.CheckIsRequired("SIDE"))
@@ -42,7 +42,7 @@ public class LibraryFileExtractor : IFileExtractor
             .SelectMany(lib => createLibraryTasks(path, lib));
     }
 
-    private IEnumerable<LinkedTask> createLibraryTasks(MinecraftPath path, MLibrary library)
+    private IEnumerable<LinkedTaskHead> createLibraryTasks(MinecraftPath path, MLibrary library)
     {
         // java library (*.jar)
         var artifact = library.Artifact;
@@ -58,7 +58,7 @@ public class LibraryFileExtractor : IFileExtractor
 
             var task = new FileCheckTask(file);
             task.OnFalse = new DownloadTask(file);
-            yield return task;
+            yield return new LinkedTaskHead(task, file);
         }
 
         // native library (*.dll, *.so)
@@ -77,7 +77,7 @@ public class LibraryFileExtractor : IFileExtractor
 
                 var task = new FileCheckTask(file);
                 task.OnFalse = new DownloadTask(file);
-                yield return task;
+                yield return new LinkedTaskHead(task, file);
             }
         }
     }

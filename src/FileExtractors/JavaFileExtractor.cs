@@ -26,7 +26,7 @@ public class JavaFileExtractor : IFileExtractor
         _os = rule;
     }
 
-    public async ValueTask<IEnumerable<LinkedTask>> Extract(MinecraftPath path, IVersion version)
+    public async ValueTask<IEnumerable<LinkedTaskHead>> Extract(MinecraftPath path, IVersion version)
     {
         if (!version.JavaVersion.HasValue || string.IsNullOrEmpty(version.JavaVersion.Value.Component))
             return await extractFromJavaVersion(MinecraftJavaPathResolver.JreLegacyVersion);
@@ -34,7 +34,7 @@ public class JavaFileExtractor : IFileExtractor
             return await extractFromJavaVersion(version.JavaVersion.Value);
     }
 
-    private async ValueTask<IEnumerable<LinkedTask>> extractFromJavaVersion(JavaVersion javaVersion)
+    private async ValueTask<IEnumerable<LinkedTaskHead>> extractFromJavaVersion(JavaVersion javaVersion)
     {
         using var response = await _httpClient.GetStreamAsync(JavaManifestServer);
         using var jsonDocument = JsonDocument.Parse(response);
@@ -69,7 +69,7 @@ public class JavaFileExtractor : IFileExtractor
             (LauncherOSRule.Windows, _) => null,
             (LauncherOSRule.Linux, "64") => "linux",
             (LauncherOSRule.Linux, "32") => "linux-i386",
-            (LauncherOSRule.Linux, _) => null,
+            (LauncherOSRule.Linux, _) => "linux",
             (LauncherOSRule.OSX, "64") => "mac-os",
             (LauncherOSRule.OSX, "32") => "mac-os",
             (LauncherOSRule.OSX, "arm") => "mac-os", // TODO
@@ -90,14 +90,14 @@ public class JavaFileExtractor : IFileExtractor
             .GetString();
     }
 
-    private async ValueTask<IEnumerable<LinkedTask>> extractFromManifestUrl(string manifestUrl, JavaVersion version)
+    private async ValueTask<IEnumerable<LinkedTaskHead>> extractFromManifestUrl(string manifestUrl, JavaVersion version)
     {
         using var res = await _httpClient.GetStreamAsync(manifestUrl);
         var json = JsonDocument.Parse(res); // should be disposed after extraction
         return extractFromManifestJson(json, version);
     }
 
-    private IEnumerable<LinkedTask> extractFromManifestJson(
+    private IEnumerable<LinkedTaskHead> extractFromManifestJson(
         JsonDocument _json, JavaVersion version)
     {
         using var json = _json;
@@ -120,9 +120,9 @@ public class JavaFileExtractor : IFileExtractor
                 var filePath = Path.Combine(path, name);
                 filePath = IOUtil.NormalizePath(filePath);
 
-                var file = createTask(value, name, filePath);
-                if (file != null)
-                    yield return file;
+                var task = createTask(value, name, filePath);
+                if (task.HasValue)
+                    yield return task.Value;
             }
             else
             {
@@ -133,7 +133,7 @@ public class JavaFileExtractor : IFileExtractor
         }
     }
 
-    private LinkedTask? createTask(JsonElement value, string name, string filePath)
+    private LinkedTaskHead? createTask(JsonElement value, string name, string filePath)
     {
         var downloadObj = value.GetPropertyOrNull("downloads")?.GetPropertyOrNull("raw");
         if (downloadObj == null)
@@ -162,17 +162,17 @@ public class JavaFileExtractor : IFileExtractor
         if (executable)
             checkTask.InsertNextTask(new ChmodTask(file.Name, file.Path));
 
-        return checkTask;
+        return new LinkedTaskHead(checkTask, file);
     }
 
     // legacy java checker using MJava
-    private async ValueTask<IEnumerable<LinkedTask>> legacyJavaChecker()
+    private async ValueTask<IEnumerable<LinkedTaskHead>> legacyJavaChecker()
     {
         var legacyJavaPath = _javaPathResolver.GetJavaDirPath(MinecraftJavaPathResolver.CmlLegacyVersion);
 
         var mJava = new MJava(_httpClient, legacyJavaPath);
         if (mJava.CheckJavaExistence(_os))
-            return Enumerable.Empty<LinkedTask>();
+            return Enumerable.Empty<LinkedTaskHead>();
 
         var javaUrl = await mJava.GetJavaUrlAsync();
         var lzmaPath = Path.Combine(Path.GetTempPath(), "jre.lzma");
@@ -191,6 +191,10 @@ public class JavaFileExtractor : IFileExtractor
             new UnzipTask(file.Name, zipPath, legacyJavaPath),
             new ChmodTask(file.Name, mJava.GetBinaryPath(_os))
         });
-        return new LinkedTask[] { task! };
+        
+        return new LinkedTaskHead[]
+        {
+            new LinkedTaskHead(task!, file)
+        };
     }
 }

@@ -4,13 +4,13 @@ using CmlLib.Core.Version;
 
 namespace CmlLib.Core.Benchmarks;
 
-public class TestFileExtractor : IFileExtractor
+public class RandomFileExtractor : IFileExtractor
 {
     private readonly string _path;
     private readonly int _fileCount;
     private readonly int _fileSize;
 
-    public TestFileExtractor(string path, int fileCount, int fileSize)
+    public RandomFileExtractor(string path, int fileCount, int fileSize)
     {
         _path = path;
         _fileCount = fileCount;
@@ -24,7 +24,7 @@ public class TestFileExtractor : IFileExtractor
         for (int i = 0; i < _fileCount; i++)
         {
             var dummyFilePath = Path.Combine(_path, i + ".dat");
-            if (TPLTaskExecutorBenchmark.Verbose)
+            if (TPLTaskExecutorWithRandomFileBenchmark.Verbose)
                 Console.WriteLine(dummyFilePath);
             using var fs = File.Create(dummyFilePath);
 
@@ -50,13 +50,13 @@ public class TestFileExtractor : IFileExtractor
         Directory.Delete(_path);
     }
 
-    public ValueTask<IEnumerable<LinkedTask>> Extract(MinecraftPath path, IVersion version)
+    public ValueTask<IEnumerable<LinkedTaskHead>> Extract(MinecraftPath path, IVersion version)
     {
         var result = extract();
-        return new ValueTask<IEnumerable<LinkedTask>>(result);
+        return new ValueTask<IEnumerable<LinkedTaskHead>>(result);
     }
 
-    private IEnumerable<LinkedTask> extract()
+    private IEnumerable<LinkedTaskHead> extract()
     {
         foreach (var filePath in Directory.GetFiles(_path))
         {
@@ -68,7 +68,7 @@ public class TestFileExtractor : IFileExtractor
 
 
             var task = new FileCheckTask(file);
-            yield return task;
+            yield return new LinkedTaskHead(task, file);
         }
     }
 }
