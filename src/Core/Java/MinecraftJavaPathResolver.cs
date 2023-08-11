@@ -67,7 +67,7 @@ public class MinecraftJavaPathResolver : IJavaPathResolver
     public string GetJavaBinaryName(LauncherOSRule os)
     {
         string binaryName = "java";
-        if (os.Name == MRule.Windows)
+        if (os.Name == LauncherOSRule.Windows)
             binaryName = "javaw.exe";
         return binaryName;
     }

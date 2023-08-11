@@ -50,7 +50,7 @@ public class AssetFileExtractor : IFileExtractor
 
         var indexFilePath = path.GetIndexFilePath(assets.Id);
 
-        if (IOUtil.CheckFileValidation(indexFilePath, assets.Sha1, true))
+        if (IOUtil.CheckFileValidation(indexFilePath, assets.Sha1))
         {
             return File.Open(indexFilePath, FileMode.Open);
         }

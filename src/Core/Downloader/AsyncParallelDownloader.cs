@@ -5,9 +5,9 @@ namespace CmlLib.Core.Downloader;
 
 public class AsyncParallelDownloader : IDownloader
 {
-    private readonly HttpClientDownloadHelper downloader;
+    private readonly HttpClient _httpClient;
 
-    public int MaxThread { get; private set; }
+    public int MaxParallelism { get; private set; }
     public bool IgnoreInvalidFiles { get; set; } = true;
 
     private int totalFiles;
@@ -26,8 +26,8 @@ public class AsyncParallelDownloader : IDownloader
 
     public AsyncParallelDownloader(HttpClient httpClient, int parallelism = 10)
     {
-        MaxThread = parallelism;
-        downloader = new HttpClientDownloadHelper(httpClient);
+        _httpClient = httpClient;
+        MaxParallelism = parallelism;
         fileByteProgress = new Progress<DownloadFileByteProgress>(byteProgressHandler);
     }
 
@@ -60,7 +60,7 @@ public class AsyncParallelDownloader : IDownloader
 
         fileProgress?.Report(
             new DownloadFileChangedEventArgs(files[0].Type, this, null, files.Length, 0));
-        await ForEachAsyncSemaphore(files, MaxThread, doDownload).ConfigureAwait(false);
+        await ForEachAsyncSemaphore(files, MaxParallelism, doDownload).ConfigureAwait(false);
         
         isRunning = false;
     }
@@ -108,7 +108,8 @@ public class AsyncParallelDownloader : IDownloader
     {
         try
         {
-            await downloader.DownloadFileAsync(file, fileByteProgress).ConfigureAwait(false);
+            await HttpClientDownloadHelper.DownloadFileAsync(_httpClient, file, fileByteProgress)
+                .ConfigureAwait(false);
 
             if (file.AfterDownload != null)
             {

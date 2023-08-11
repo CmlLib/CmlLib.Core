@@ -26,16 +26,7 @@ public class FileCheckTask : ResultTask
 
     protected override ValueTask<bool> OnExecutedWithResult()
     {
-        var result = checkFile();
+        var result = IOUtil.CheckFileValidation(Path, Hash);
         return new ValueTask<bool>(result);
-    }
-
-    private bool checkFile()
-    {
-        if (!File.Exists(Path))
-            return false;
-        
-        var fileHash = IOUtil.ComputeFileSHA1(Path);
-        return fileHash == Hash;
     }
 }

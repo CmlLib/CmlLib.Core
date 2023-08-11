@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using CmlLib.Core.Rules;
 using CmlLib.Utils;
 
 namespace CmlLib.Core.Tasks;
@@ -12,7 +13,7 @@ public class ChmodTask : LinkedTask
 
     protected override ValueTask<LinkedTask?> OnExecuted()
     {
-        if (MRule.OSName != MRule.Windows)
+        if (LauncherOSRule.Current.Name != LauncherOSRule.Windows)
             NativeMethods.Chmod(Path, NativeMethods.Chmod755);
         return new ValueTask<LinkedTask?>(NextTask);
     }

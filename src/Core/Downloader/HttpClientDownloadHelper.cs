@@ -1,81 +1,89 @@
 ﻿using CmlLib.Utils;
-using System;
-using System.IO;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace CmlLib.Core.Downloader
+namespace CmlLib.Core.Downloader;
+
+internal struct DownloadFileByteProgress
 {
-    internal class DownloadFileByteProgress
+    public DownloadFile? File { get; set; }
+    public long TotalBytes { get; set; }
+    public long ProgressedBytes { get; set; }
+}
+
+// To implement System.Net.WebClient.DownloadFileTaskAsync
+// https://source.dot.net/#System.Net.WebClient/System/Net/WebClient.cs,c2224e40a6960929
+internal static class HttpClientDownloadHelper
+{
+    private const int DefaultDownloadBufferLength = 65536;
+
+    public static async Task DownloadFileAsync(
+        this HttpClient httpClient,
+        DownloadFile file,
+        IProgress<DownloadFileByteProgress>? progress = null, 
+        CancellationToken cancellationToken = default)
     {
-        public DownloadFile? File { get; set; }
-        public long TotalBytes { get; set; }
-        public long ProgressedBytes { get; set; }
+        IOUtil.CreateParentDirectory(file.Path);
+        using var destination = File.Create(file.Path);
+        await DownloadFileAsync(
+            httpClient,
+            file, 
+            destination, 
+            progress, 
+            cancellationToken)
+            .ConfigureAwait(false);
     }
 
-    // To implement System.Net.WebClient.DownloadFileTaskAsync
-    // https://source.dot.net/#System.Net.WebClient/System/Net/WebClient.cs,c2224e40a6960929
-    internal class HttpClientDownloadHelper
+    public static async Task DownloadFileAsync(
+        this HttpClient httpClient,
+        DownloadFile file, 
+        Stream destination,
+        IProgress<DownloadFileByteProgress>? progress = null, 
+        CancellationToken cancellationToken = default)
     {
-        private const int DefaultDownloadBufferLength = 65536;
+        // Get the http headers first to examine the content length
+        using var response = await httpClient.GetAsync(
+            file.Url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
-        public HttpClientDownloadHelper(HttpClient client) 
+        var contentLength = response.Content.Headers.ContentLength ?? file.Size;
+        using var download = await response.Content.ReadAsStreamAsync();
+
+        if (download.CanTimeout)
+            download.ReadTimeout = 10000;
+
+        // Ignore progress reporting when no progress reporter was 
+        // passed or when the content length is unknown
+        if (progress == null)
         {
-            this.httpClient = client;
+            await download.CopyToAsync(destination);
+            return;
         }
+        
+        var bufferSize = (contentLength == -1 || contentLength > DefaultDownloadBufferLength)
+            ? DefaultDownloadBufferLength
+            : contentLength;
+        var copyBuffer = new byte[bufferSize];
 
-        private readonly HttpClient httpClient;
-
-        public async Task DownloadFileAsync(DownloadFile file,
-            IProgress<DownloadFileByteProgress>? progress = null, CancellationToken cancellationToken = default)
+        while (true)
         {
-            IOUtil.CreateParentDirectory(file.Path);
-            using var destination = IOUtil.AsyncWriteStream(file.Path, false);
-            await DownloadFileAsync(file, destination, progress, cancellationToken).ConfigureAwait(false);
-        }
-
-        public async Task DownloadFileAsync(DownloadFile file, Stream destination,
-            IProgress<DownloadFileByteProgress>? progress = null, CancellationToken cancellationToken = default)
-        {
-            // Get the http headers first to examine the content length
-            using var response = await httpClient.GetAsync(file.Url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-            var contentLength = response.Content.Headers.ContentLength ?? file.Size;
-
-            using var download = await response.Content.ReadAsStreamAsync();
-
-            // Ignore progress reporting when no progress reporter was 
-            // passed or when the content length is unknown
-            if (progress == null)
-            {
-                await download.CopyToAsync(destination);
+            if (cancellationToken.IsCancellationRequested)
                 return;
-            }
 
-            if (download.CanTimeout)
-                download.ReadTimeout = 10000;
-            
-            byte[] copyBuffer = new byte[contentLength == -1 || contentLength > DefaultDownloadBufferLength ? DefaultDownloadBufferLength : contentLength];
-            while (true)
+            int bytesRead = await download.ReadAsync(
+                copyBuffer, 
+                0, 
+                copyBuffer.Length)
+                .ConfigureAwait(false);
+
+            if (bytesRead == 0)
+                break;
+
+            await destination.WriteAsync(copyBuffer, 0, bytesRead).ConfigureAwait(false);
+
+            progress?.Report(new DownloadFileByteProgress()
             {
-                if (cancellationToken.IsCancellationRequested)
-                    return;
-
-                int bytesRead = await download.ReadAsync(copyBuffer, 0, copyBuffer.Length).ConfigureAwait(false);
-                if (bytesRead == 0)
-                    break;
-
-                //await writeStream.WriteAsync(new ReadOnlyMemory<byte>(copyBuffer, 0, bytesRead)).ConfigureAwait(false);
-                //await destination.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);
-                await destination.WriteAsync(copyBuffer, 0, bytesRead).ConfigureAwait(false);
-
-                progress?.Report(new DownloadFileByteProgress()
-                {
-                    File = file,
-                    TotalBytes = contentLength,
-                    ProgressedBytes = bytesRead
-                });
-            }
+                File = file,
+                TotalBytes = contentLength,
+                ProgressedBytes = bytesRead
+            });
         }
     }
 }

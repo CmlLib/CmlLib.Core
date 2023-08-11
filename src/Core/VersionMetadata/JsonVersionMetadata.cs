@@ -80,6 +80,6 @@ public abstract class JsonVersionMetadata : IVersionMetadata
             return;
         var metadataPath = path.GetVersionJsonPath(Name);
         IOUtil.CreateParentDirectory(metadataPath);
-        await IOUtil.WriteFileAsync(metadataPath, json).ConfigureAwait(false);
+        await AsyncIO.WriteFileAsync(metadataPath, json).ConfigureAwait(false);
     }
 }

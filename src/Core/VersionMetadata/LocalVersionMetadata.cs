@@ -21,6 +21,6 @@ public class LocalVersionMetadata : JsonVersionMetadata
             throw new InvalidOperationException("Path property was null");
         
         // FileNotFoundException will be thrown if Path does not exist.
-        return await IOUtil.ReadFileAsync(Path);
+        return await AsyncIO.ReadFileAsync(Path);
     }
 }

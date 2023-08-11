@@ -67,7 +67,7 @@ public class MJava
             if (!File.Exists(javapath))
                 throw new WebException("failed to download");
 
-            if (MRule.OSName != MRule.Windows)
+            if (LauncherOSRule.Current.Name != LauncherOSRule.Windows)
                 NativeMethods.Chmod(javapath, NativeMethods.Chmod755);
         }
 
@@ -87,8 +87,8 @@ public class MJava
         var root = jsonDocument.RootElement;
 
         var javaUrl = root
-            .GetPropertyOrNull(MRule.OSName)?
-            .GetPropertyOrNull(MRule.Arch)?
+            .GetPropertyOrNull(LauncherOSRule.Current.Name)?
+            .GetPropertyOrNull(LauncherOSRule.Current.Arch)?
             .GetPropertyOrNull("jre")?
             .GetPropertyValue("url");
 
@@ -102,14 +102,12 @@ public class MJava
         Directory.CreateDirectory(RuntimeDirectory);
         string lzmaPath = Path.Combine(Path.GetTempPath(), "jre.lzma");
 
-        var downloader = new HttpClientDownloadHelper(_httpClient);
         var progress = new Progress<DownloadFileByteProgress>(p =>
         {
             var percent = (float)p.ProgressedBytes / p.TotalBytes * 100;
             pProgressChanged?.Report(new ProgressChangedEventArgs((int)percent / 2, null));
         });
-        await downloader.DownloadFileAsync(new DownloadFile(lzmaPath, javaUrl), progress);
-
+        await HttpClientDownloadHelper.DownloadFileAsync(_httpClient, new DownloadFile(lzmaPath, javaUrl), progress);
         return lzmaPath;
     }
 

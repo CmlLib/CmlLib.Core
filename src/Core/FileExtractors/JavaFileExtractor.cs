@@ -40,7 +40,10 @@ public class JavaFileExtractor : IFileExtractor
         using var jsonDocument = JsonDocument.Parse(response);
         var root = jsonDocument.RootElement;
 
-        if (!root.TryGetProperty(getJavaOSName(), out var javaVersionsForOS))
+        var osName = getJavaOSName();
+        if (string.IsNullOrEmpty(osName))
+            return await legacyJavaChecker();
+        if (!root.TryGetProperty(osName, out var javaVersionsForOS))
             return await legacyJavaChecker();
 
         var currentVersionManifestUrl = getManifestUrl(javaVersionsForOS, javaVersion);
@@ -57,30 +60,23 @@ public class JavaFileExtractor : IFileExtractor
         return await legacyJavaChecker();
     }
 
-    private string getJavaOSName() // TODO: mac arm
+    private string? getJavaOSName() // TODO: find exact version name
     {
-        string osName = "";
-
-        if (_os.Name == MRule.Windows)
+        return (LauncherOSRule.Current.Name, LauncherOSRule.Current.Arch) switch
         {
-            if (_os.Arch == "64")
-                osName = "windows-x64";
-            else
-                osName = "windows-x86";
-        }
-        else if (_os.Name == MRule.Linux)
-        {
-            if (_os.Arch == "64")
-                osName = "linux";
-            else
-                osName = "linux-i386";
-        }
-        else if (_os.Name == MRule.OSX)
-        {
-            osName = "mac-os";
-        }
-
-        return osName;
+            (LauncherOSRule.Windows, "64") => "windows-x64",
+            (LauncherOSRule.Windows, "32") => "windows-x86",
+            (LauncherOSRule.Windows, _) => null,
+            (LauncherOSRule.Linux, "64") => "linux",
+            (LauncherOSRule.Linux, "32") => "linux-i386",
+            (LauncherOSRule.Linux, _) => null,
+            (LauncherOSRule.OSX, "64") => "mac-os",
+            (LauncherOSRule.OSX, "32") => "mac-os",
+            (LauncherOSRule.OSX, "arm") => "mac-os", // TODO
+            (LauncherOSRule.OSX, "arm64") => "mac-os",
+            (LauncherOSRule.OSX, _) => null,
+            (_, _) => null
+        };
     }
 
     private string? getManifestUrl(JsonElement element, JavaVersion version)

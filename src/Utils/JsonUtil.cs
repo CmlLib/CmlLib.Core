@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace CmlLib.Utils;
 
-public static class JsonUtil
+internal static class JsonUtil
 {
     public static JsonSerializerOptions JsonOptions { get; } = new JsonSerializerOptions
     {

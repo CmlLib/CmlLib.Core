@@ -4,13 +4,12 @@ namespace CmlLib.Core.Downloader;
 
 public class SequenceDownloader : IDownloader
 {
-    private readonly HttpClientDownloadHelper downloader;
-
+    private readonly HttpClient _httpClient;
     public bool IgnoreInvalidFiles { get; set; } = true;
 
     public SequenceDownloader(HttpClient client)
     {
-        downloader = new HttpClientDownloadHelper(client);
+        _httpClient = client;
     }
 
     public async Task DownloadFiles(DownloadFile[] files, 
@@ -35,7 +34,8 @@ public class SequenceDownloader : IDownloader
 
             try
             {
-                await downloader.DownloadFileAsync(file, byteProgress).ConfigureAwait(false);
+                await HttpClientDownloadHelper.DownloadFileAsync(_httpClient, file, byteProgress)
+                    .ConfigureAwait(false);
 
                 if (file.AfterDownload != null)
                 {

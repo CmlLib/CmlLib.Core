@@ -13,7 +13,7 @@ public class CMLauncher
 {
     private readonly HttpClient _httpClient;
 
-    public CMLauncher(string path, HttpClient httpClient) : this(new MinecraftPath(path), httpClient, new LauncherOSRule())
+    public CMLauncher(string path, HttpClient httpClient) : this(new MinecraftPath(path), httpClient, LauncherOSRule.Current)
     {
     }
 

@@ -1,7 +1,8 @@
 ﻿using System.Text.Json;
 using System.Text.RegularExpressions;
+using CmlLib.Utils;
 
-namespace CmlLib.Utils;
+namespace CmlLib.Core.Utils;
 
 public class Changelogs
 {
