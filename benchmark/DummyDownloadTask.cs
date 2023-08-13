@@ -11,14 +11,14 @@ public class DummyDownloadTask : DownloadTask
     }
 
     protected override async ValueTask DownloadFile(
-        IProgress<ByteProgressEventArgs>? progress,
+        IProgress<ByteProgress>? progress,
         CancellationToken cancellationToken)
     {
         for (int i = 0; i < Size; i += 1)
         {
             if (Size % 512 == 0)
             {
-                progress?.Report(new ByteProgressEventArgs
+                progress?.Report(new ByteProgress
                 {
                     TotalBytes = Size,
                     ProgressedBytes = i

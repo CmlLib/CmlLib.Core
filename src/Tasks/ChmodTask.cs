@@ -11,7 +11,7 @@ public class ChmodTask : LinkedTask
         Path = path;
 
     protected override ValueTask<LinkedTask?> OnExecuted(
-        IProgress<ByteProgressEventArgs>? progress,
+        IProgress<ByteProgress>? progress,
         CancellationToken cancellationToken)
     {
         if (LauncherOSRule.Current.Name != LauncherOSRule.Windows)

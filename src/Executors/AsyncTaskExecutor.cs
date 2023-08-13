@@ -13,7 +13,7 @@ public class AsyncTaskExecutor : IDisposable
 
     public ValueTask<LinkedTask?> QueueTask(
         LinkedTask task,
-        IProgress<ByteProgressEventArgs> progress,
+        IProgress<ByteProgress> progress,
         CancellationToken cancellationToken)
     {
         var context = new TaskExecutionContext(progress, cancellationToken);
@@ -22,7 +22,7 @@ public class AsyncTaskExecutor : IDisposable
 
     private async ValueTask<LinkedTask?> createQueuedTask(
         LinkedTask task, 
-        IProgress<ByteProgressEventArgs>? progress,
+        IProgress<ByteProgress>? progress,
         CancellationToken cancellationToken)
     {
         await _semaphore.WaitAsync();

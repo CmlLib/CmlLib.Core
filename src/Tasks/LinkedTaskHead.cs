@@ -10,7 +10,7 @@ public struct LinkedTaskHead
     public TaskFile File { get; }
 
     public ValueTask<LinkedTask?> Execute(
-        IProgress<ByteProgressEventArgs>? progress = null,
+        IProgress<ByteProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
         if (First == null)

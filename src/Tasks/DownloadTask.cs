@@ -21,7 +21,7 @@ public class DownloadTask : LinkedTask
     public long Size { get; }
 
     protected async override ValueTask<LinkedTask?> OnExecuted(
-        IProgress<ByteProgressEventArgs>? progress,
+        IProgress<ByteProgress>? progress,
         CancellationToken cancellationToken)
     {
         await DownloadFile(progress, cancellationToken);
@@ -29,7 +29,7 @@ public class DownloadTask : LinkedTask
     }
 
     protected async virtual ValueTask DownloadFile(
-        IProgress<ByteProgressEventArgs>? progress,
+        IProgress<ByteProgress>? progress,
         CancellationToken cancellationToken)
     {
         await HttpClientDownloadHelper.DownloadFileAsync(

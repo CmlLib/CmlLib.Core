@@ -9,7 +9,7 @@ public class DummyTask : LinkedTask
     public DummyTask(TaskFile file, int seed) : base(file) => Seed = seed;
 
     protected override ValueTask<LinkedTask?> OnExecuted(
-        IProgress<ByteProgressEventArgs>? progress,
+        IProgress<ByteProgress>? progress,
         CancellationToken cancellationToken)
     {
         for (int j = 0; j < 1024*256; j++)

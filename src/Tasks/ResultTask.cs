@@ -16,7 +16,7 @@ public abstract class ResultTask : LinkedTask
     public LinkedTask? OnFalse { get; set; }
 
     protected override async ValueTask<LinkedTask?> OnExecuted(
-        IProgress<ByteProgressEventArgs>? progress,
+        IProgress<ByteProgress>? progress,
         CancellationToken cancellationToken)
     {
         var result = await OnExecutedWithResult(progress, cancellationToken);
@@ -29,6 +29,6 @@ public abstract class ResultTask : LinkedTask
     }
 
     protected abstract ValueTask<bool> OnExecutedWithResult(
-        IProgress<ByteProgressEventArgs>? progress,
+        IProgress<ByteProgress>? progress,
         CancellationToken cancellationToken); 
 }

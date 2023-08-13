@@ -103,7 +103,7 @@ public class MJava
         Directory.CreateDirectory(RuntimeDirectory);
         string lzmaPath = Path.Combine(Path.GetTempPath(), "jre.lzma");
 
-        var progress = new Progress<ByteProgressEventArgs>(p =>
+        var progress = new Progress<ByteProgress>(p =>
         {
             var percent = (float)p.ProgressedBytes / p.TotalBytes * 100;
             pProgressChanged?.Report(new ProgressChangedEventArgs((int)percent / 2, null));
@@ -117,7 +117,7 @@ public class MJava
         string zippath = Path.Combine(Path.GetTempPath(), "jre.zip");
         SevenZipWrapper.DecompressFileLZMA(lzmaPath, zippath);
 
-        SharpZipWrapper.Unzip(zippath, RuntimeDirectory, new Progress<ByteProgressEventArgs>(p => 
+        SharpZipWrapper.Unzip(zippath, RuntimeDirectory, new Progress<ByteProgress>(p => 
         {
             var percent = (float)p.ProgressedBytes / p.TotalBytes * 100;
             pProgressChanged?.Report(new ProgressChangedEventArgs(50 + (int)percent / 2, null));

@@ -7,7 +7,7 @@ internal static class SharpZipWrapper
     public static void Unzip(
         string zipPath, 
         string extractTo, 
-        IProgress<ByteProgressEventArgs>? progress,
+        IProgress<ByteProgress>? progress,
         CancellationToken cancellationToken = default)
     {
         using var fs = File.OpenRead(zipPath);
@@ -26,7 +26,7 @@ internal static class SharpZipWrapper
             using var output = File.Create(fullPath);
             s.CopyTo(output);
 
-            progress?.Report(new ByteProgressEventArgs
+            progress?.Report(new ByteProgress
             {
                 TotalBytes = length,
                 ProgressedBytes = s.Position

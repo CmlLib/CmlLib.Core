@@ -9,7 +9,7 @@ public class ActionTask : LinkedTask
         _action = action;
 
     protected override async ValueTask<LinkedTask?> OnExecuted(
-        IProgress<ByteProgressEventArgs>? progress,
+        IProgress<ByteProgress>? progress,
         CancellationToken cancellationToken)
     {
         return await _action.Invoke();

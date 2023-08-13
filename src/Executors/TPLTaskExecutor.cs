@@ -9,27 +9,32 @@ namespace CmlLib.Core.Executors;
 
 public class TPLTaskExecutor
 {
-    private struct TaskProgress
+    private struct WorkerState
     {
-        public long TotalBytes;
-        public long ProgressedBytes;
+        public DateTime LastUpdate;
+        public Dictionary<string, ByteProgress> ProgressStorage;
     }
 
-    //private readonly ConcurrentDictionary<string, TaskProgress> _tasks;
-    private readonly ConcurrentDictionary<string, TaskProgress> _totalProgressStorage;
-    private readonly ThreadLocal<Dictionary<string, TaskProgress>> _progressPerThread;
+    private readonly ConcurrentDictionary<string, ByteProgress> _progressStorage;
+    private readonly ThreadLocal<WorkerState> _progressPerThread;
     private readonly int _maxParallelism;
 
     public TPLTaskExecutor(int parallelism)
     {
         _maxParallelism = parallelism;
-        _totalProgressStorage = new ConcurrentDictionary<string, TaskProgress>();
-        _progressPerThread = new ThreadLocal<Dictionary<string, TaskProgress>>(
-            () => new Dictionary<string, TaskProgress>(), true);
+        _progressStorage = new ConcurrentDictionary<string, ByteProgress>();
+        _progressPerThread = new ThreadLocal<WorkerState>(
+            () =>
+            new WorkerState
+            {
+                LastUpdate = DateTime.MinValue,
+                ProgressStorage = new Dictionary<string, ByteProgress>()
+            },
+            true);
     }
 
     public event EventHandler<TaskExecutorProgressChangedEventArgs>? FileProgress;
-    public event EventHandler<ByteProgressEventArgs>? ByteProgress;
+    public event EventHandler<ByteProgress>? ByteProgress;
 
     private CancellationToken CancellationToken;
     private int totalTasks = 0;
@@ -68,35 +73,13 @@ public class TPLTaskExecutor
         long totalBytes = 0;
         long progressedBytes = 0;
 
-        foreach (var dict in _progressPerThread.Values)
-        {
-            lock (dict)
-            {
-                foreach (var kv in dict)
-                {
-                    _totalProgressStorage.AddOrUpdate(
-                        kv.Key,
-                        new TaskProgress
-                        {
-                            TotalBytes = kv.Value.TotalBytes,
-                            ProgressedBytes = kv.Value.ProgressedBytes
-                        },
-                        (_, old) => new TaskProgress
-                        {
-                            TotalBytes = kv.Value.TotalBytes,
-                            ProgressedBytes = kv.Value.ProgressedBytes
-                        });
-                }
-            }
-        }
-
-        foreach (var kv in _totalProgressStorage)
+        foreach (var kv in _progressStorage)
         {
             totalBytes += kv.Value.TotalBytes;
             progressedBytes += kv.Value.ProgressedBytes;
         }
 
-        ByteProgress?.Invoke(this, new ByteProgressEventArgs
+        ByteProgress?.Invoke(this, new ByteProgress
         {
             TotalBytes = totalBytes,
             ProgressedBytes = progressedBytes
@@ -133,29 +116,10 @@ public class TPLTaskExecutor
             if (downloadTask == null)
                 return task.NextTask;
 
-            var progress = new SyncProgress<ByteProgressEventArgs>(e =>
+            var progress = new SyncProgress<ByteProgress>(e =>
             {
-                var dict = _progressPerThread.Value!;
-                lock (dict)
-                {
-                    dict[task.Name] = new TaskProgress
-                    {
-                        TotalBytes = e.TotalBytes,
-                        ProgressedBytes = e.ProgressedBytes
-                    };
-                }
-                //_progressPerThread.Value!.AddOrUpdate(
-                //    task.Name,
-                //    new TaskProgress
-                //    {
-                //        TotalBytes = e.TotalBytes,
-                //        ProgressedBytes = e.ProgressedBytes
-                //    },
-                //    (_, old) => new TaskProgress
-                //    {
-                //        TotalBytes = e.TotalBytes,
-                //        ProgressedBytes = e.ProgressedBytes
-                //    });
+                _progressPerThread.Value.ProgressStorage[task.Name] = e;
+                updateLocalProgress();
             });
 
             var nextTask = await downloadTask.Execute(progress, CancellationToken);
@@ -165,34 +129,34 @@ public class TPLTaskExecutor
             MaxDegreeOfParallelism = _maxParallelism
         });
 
+        void updateLocalProgress()
+        {
+            if (DateTime.Now > _progressPerThread.Value.LastUpdate.AddSeconds(1))
+            {
+                var storage = _progressPerThread.Value!.ProgressStorage;
+                foreach (var kv in storage)
+                {
+                    _progressStorage.AddOrUpdate(
+                        kv.Key,
+                        kv.Value,
+                        (_, _) => kv.Value);
+                }
+                storage.Clear();
+                _progressPerThread.Value = new WorkerState
+                {
+                    LastUpdate = DateTime.Now,
+                    ProgressStorage = storage
+                };
+            }
+        }
 
         LinkedTask? finalizeTask(LinkedTask task, LinkedTask? nextTask)
         {
             if (nextTask == null)
             {
                 Interlocked.Increment(ref proceed);
-                TaskProgress progress;
-                var dict = _progressPerThread.Value!;
-                lock (dict)
-                {
-                    if (!dict.TryGetValue(task.Name, out progress) &&
-                        !_totalProgressStorage.TryGetValue(task.Name, out progress))
-                        progress = new TaskProgress();
-                    dict[task.Name] = progress;
-                }
-                //_progressPerThread.Value!.AddOrUpdate(
-                //    task.Name,
-                //    new TaskProgress
-                //    {
-                //        TotalBytes = 0,
-                //        ProgressedBytes = 0
-                //    },
-                //    (_, old) => old with
-                //    {
-                //        TotalBytes = old.TotalBytes,
-                //        ProgressedBytes = old.TotalBytes
-                //    });
                 fireEvent(task.Name, TaskStatus.Done);
+                updateLocalProgress();
 
                 if (proceed == totalTasks && extractTask.IsCompleted)
                 {
@@ -230,12 +194,12 @@ public class TPLTaskExecutor
                     continue;
 
                 Interlocked.Increment(ref totalTasks);
-                var state = new TaskProgress
+                var progress = new ByteProgress
                 {
                     TotalBytes = task.File.Size,
                     ProgressedBytes = 0
                 };
-                _totalProgressStorage.TryAdd(task.Name, state);
+                _progressStorage.TryAdd(task.Name, progress);
 
                 yield return task.First;
                 fireEvent(task.Name, TaskStatus.Queued);

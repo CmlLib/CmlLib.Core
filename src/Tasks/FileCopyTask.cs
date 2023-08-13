@@ -11,7 +11,7 @@ public class FileCopyTask : LinkedTask
     public string[] DestinationPaths { get; }
 
     protected override ValueTask<LinkedTask?> OnExecuted(
-        IProgress<ByteProgressEventArgs>? progress,
+        IProgress<ByteProgress>? progress,
         CancellationToken cancellationToken)
     {
         if (!File.Exists(SourcePath))

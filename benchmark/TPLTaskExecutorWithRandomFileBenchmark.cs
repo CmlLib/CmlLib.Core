@@ -15,7 +15,7 @@ public class TPLTaskExecutorWithRandomFileBenchmark
     private int extractorCount = 4;
 
     public static TaskExecutorProgressChangedEventArgs? FileProgressArgs;
-    public static ByteProgressEventArgs BytesProgressArgs;
+    public static ByteProgress BytesProgressArgs;
 
     private MinecraftPath MinecraftPath = new MinecraftPath();
     private IVersion DummyVersion = new DummyVersion();

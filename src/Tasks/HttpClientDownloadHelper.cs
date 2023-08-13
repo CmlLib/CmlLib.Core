@@ -14,7 +14,7 @@ internal static class HttpClientDownloadHelper
         string url, 
         long size, 
         string path,
-        IProgress<ByteProgressEventArgs>? progress = null, 
+        IProgress<ByteProgress>? progress = null, 
         CancellationToken cancellationToken = default)
     {
         IOUtil.CreateParentDirectory(path);
@@ -34,7 +34,7 @@ internal static class HttpClientDownloadHelper
         string url, 
         long size,
         Stream destination,
-        IProgress<ByteProgressEventArgs>? progress = null, 
+        IProgress<ByteProgress>? progress = null, 
         CancellationToken cancellationToken = default)
     {
         // Get the http headers first to examine the content length
@@ -78,7 +78,7 @@ internal static class HttpClientDownloadHelper
             await destination.WriteAsync(copyBuffer, 0, bytesRead).ConfigureAwait(false);
 
             totalRead += bytesRead;
-            progress?.Report(new ByteProgressEventArgs
+            progress?.Report(new ByteProgress
             {
                 TotalBytes = contentLength,
                 ProgressedBytes = totalRead

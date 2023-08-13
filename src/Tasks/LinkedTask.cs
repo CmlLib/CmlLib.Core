@@ -18,7 +18,7 @@ public abstract class LinkedTask
     public LinkedTask? NextTask { get; private set; }
 
     public async ValueTask<LinkedTask?> Execute(
-        IProgress<ByteProgressEventArgs>? progress,
+        IProgress<ByteProgress>? progress,
         CancellationToken cancellationToken)
     {
         var nextTask = await OnExecuted(progress, cancellationToken);
@@ -28,7 +28,7 @@ public abstract class LinkedTask
     }
 
     protected abstract ValueTask<LinkedTask?> OnExecuted(
-        IProgress<ByteProgressEventArgs>? progress, 
+        IProgress<ByteProgress>? progress, 
         CancellationToken cancellationToken);
 
     public LinkedTask InsertNextTask(LinkedTask task)

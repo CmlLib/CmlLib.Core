@@ -14,7 +14,7 @@ public class UnzipTask : LinkedTask
     }
 
     protected override ValueTask<LinkedTask?> OnExecuted(
-        IProgress<ByteProgressEventArgs>? progress,
+        IProgress<ByteProgress>? progress,
         CancellationToken cancellationToken)
     {
         SharpZipWrapper.Unzip(ZipPath, ExtractTo, null, cancellationToken);

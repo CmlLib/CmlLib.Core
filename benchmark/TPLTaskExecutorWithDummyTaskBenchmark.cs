@@ -13,14 +13,14 @@ public class TPLTaskExecutorWithDummyTaskBenchmark
 
     public static bool Verbose = false;
     public static TaskExecutorProgressChangedEventArgs? FileProgressArgs;
-    public static ByteProgressEventArgs BytesProgressArgs;
+    public static ByteProgress BytesProgressArgs;
 
     private MinecraftPath MinecraftPath = new MinecraftPath();
     private IVersion DummyVersion = new DummyVersion();
     private DummyTaskExtractor[] Extractors;
     private TPLTaskExecutor Executor;
 
-    private ByteProgressEventArgs previousEvent;
+    private ByteProgress previousEvent;
     private object consoleLock = new object();
     private string? bottomMsg;
 

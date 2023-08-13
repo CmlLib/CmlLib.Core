@@ -1,6 +1,6 @@
 namespace CmlLib.Core;
 
-public struct ByteProgressEventArgs
+public struct ByteProgress
 {
     public long TotalBytes;
     public long ProgressedBytes;
