@@ -14,6 +14,9 @@ public class TPLTaskExecutorWithRandomFileBenchmark
     private int parallelism = 6;
     private int extractorCount = 4;
 
+    public static TaskExecutorProgressChangedEventArgs? FileProgressArgs;
+    public static ByteProgressEventArgs BytesProgressArgs;
+
     private MinecraftPath MinecraftPath = new MinecraftPath();
     private IVersion DummyVersion = new DummyVersion();
     private RandomFileExtractor[] Extractors;
@@ -35,6 +38,8 @@ public class TPLTaskExecutorWithRandomFileBenchmark
             Extractors[i].Setup();
         }
         Executor = new TPLTaskExecutor(parallelism);
+        Executor.FileProgress += (s, e) => FileProgressArgs = e;
+        Executor.ByteProgress += (s, e) => BytesProgressArgs = e;
 
         if (Verbose)
             Executor.FileProgress += (s, e) => e.Print();
@@ -52,6 +57,10 @@ public class TPLTaskExecutorWithRandomFileBenchmark
     [Benchmark]
     public async Task Benchmark()
     {
-        await Executor.Install(Extractors, MinecraftPath, DummyVersion);
+        await Executor.Install(
+            Extractors, 
+            MinecraftPath, 
+            DummyVersion,
+            default);
     }
 }

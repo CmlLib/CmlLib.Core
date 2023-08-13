@@ -24,7 +24,9 @@ public class FileCheckTask : ResultTask
     public string Path { get; }
     public string Hash { get; }
 
-    protected override ValueTask<bool> OnExecutedWithResult()
+    protected override ValueTask<bool> OnExecutedWithResult(
+        IProgress<ByteProgressEventArgs>? progress,
+        CancellationToken cancellationToken)
     {
         var result = IOUtil.CheckFileValidation(Path, Hash);
         return new ValueTask<bool>(result);

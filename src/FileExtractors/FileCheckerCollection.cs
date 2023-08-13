@@ -14,11 +14,11 @@ public class FileExtractorCollection : IEnumerable<IFileExtractor>
     {
         var extractors = new FileExtractorCollection();
 
-        var library = new LibraryFileExtractor(rulesEvaluator, context);
+        var library = new LibraryFileExtractor(rulesEvaluator, context, httpClient);
         var asset = new AssetFileExtractor(httpClient);
-        var client = new ClientFileExtractor();
+        var client = new ClientFileExtractor(httpClient);
         var java = new JavaFileExtractor(httpClient, javaPathResolver, context.OS);
-        var log = new LogFileExtractor();
+        var log = new LogFileExtractor(httpClient);
 
         extractors.Add(library);
         extractors.Add(asset);

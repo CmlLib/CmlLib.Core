@@ -157,7 +157,7 @@ public class JavaFileExtractor : IFileExtractor
         };
 
         var checkTask = new FileCheckTask(file);
-        checkTask.OnFalse = new DownloadTask(file);
+        checkTask.OnFalse = new DownloadTask(file, _httpClient);
 
         if (executable)
             checkTask.InsertNextTask(new ChmodTask(file.Name, file.Path));
@@ -186,7 +186,7 @@ public class JavaFileExtractor : IFileExtractor
 
         var task = LinkedTask.LinkTasks(new LinkedTask[]
         {
-            new DownloadTask(file),
+            new DownloadTask(file, _httpClient),
             new LZMADecompressTask(file.Name, lzmaPath, zipPath),
             new UnzipTask(file.Name, zipPath, legacyJavaPath),
             new ChmodTask(file.Name, mJava.GetBinaryPath(_os))

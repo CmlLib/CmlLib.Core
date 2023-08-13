@@ -23,7 +23,6 @@ public class CMLauncher
 
         this.os = os;
         MinecraftPath = path;
-        FileDownloader = new AsyncParallelDownloader(_httpClient);
         VersionLoader = new VersionLoaderCollection
         {
             new LocalVersionLoader(MinecraftPath),
@@ -52,7 +51,6 @@ public class CMLauncher
     public IVersionLoader VersionLoader { get; set; }
     
     public FileExtractorCollection GameFileCheckers { get; private set; }
-    public IDownloader? FileDownloader { get; set; }
 
     public IJavaPathResolver JavaPathResolver { get; set; }
 

@@ -8,11 +8,16 @@ public class LibraryFileExtractor : IFileExtractor
 {
     private readonly RulesEvaluatorContext _rulesContext;
     private readonly IRulesEvaluator _rulesEvaluator;
+    private readonly HttpClient _httpClient;
 
-    public LibraryFileExtractor(IRulesEvaluator rulesEvaluator, RulesEvaluatorContext context)
+    public LibraryFileExtractor(
+        IRulesEvaluator rulesEvaluator, 
+        RulesEvaluatorContext context,
+        HttpClient httpClient)
     {
-        this._rulesEvaluator = rulesEvaluator;
-        this._rulesContext = context;
+        _rulesEvaluator = rulesEvaluator;
+        _rulesContext = context;
+        _httpClient = httpClient;
     }
 
     private string libServer = MojangServer.Library;
@@ -57,7 +62,7 @@ public class LibraryFileExtractor : IFileExtractor
             };
 
             var task = new FileCheckTask(file);
-            task.OnFalse = new DownloadTask(file);
+            task.OnFalse = new DownloadTask(file, _httpClient);
             yield return new LinkedTaskHead(task, file);
         }
 
@@ -76,7 +81,7 @@ public class LibraryFileExtractor : IFileExtractor
                 };
 
                 var task = new FileCheckTask(file);
-                task.OnFalse = new DownloadTask(file);
+                task.OnFalse = new DownloadTask(file, _httpClient);
                 yield return new LinkedTaskHead(task, file);
             }
         }

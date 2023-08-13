@@ -5,6 +5,13 @@ namespace CmlLib.Core.FileExtractors;
 
 public class LogFileExtractor : IFileExtractor
 {
+    private readonly HttpClient _httpClient;
+
+    public LogFileExtractor(HttpClient httpClient)
+    {
+        _httpClient = httpClient;
+    }
+
     public ValueTask<IEnumerable<LinkedTaskHead>> Extract(MinecraftPath path, IVersion version)
     {
         var result = extract(path, version);
@@ -29,7 +36,7 @@ public class LogFileExtractor : IFileExtractor
             Hash = version.Logging?.LogFile?.GetSha1()
         };
         var task = new FileCheckTask(file);
-        task.OnFalse = new DownloadTask(file);
+        task.OnFalse = new DownloadTask(file, _httpClient);
         yield return new LinkedTaskHead(task, file);
     }
 }

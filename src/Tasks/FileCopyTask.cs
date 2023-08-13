@@ -10,7 +10,9 @@ public class FileCopyTask : LinkedTask
     public string SourcePath { get; }
     public string[] DestinationPaths { get; }
 
-    protected override ValueTask<LinkedTask?> OnExecuted()
+    protected override ValueTask<LinkedTask?> OnExecuted(
+        IProgress<ByteProgressEventArgs>? progress,
+        CancellationToken cancellationToken)
     {
         if (!File.Exists(SourcePath))
             throw new InvalidOperationException("The source file does not exists");
@@ -18,6 +20,8 @@ public class FileCopyTask : LinkedTask
         var orgFile = new FileInfo(SourcePath);
         foreach (var destination in DestinationPaths)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var desFile = new FileInfo(destination);
             if (!desFile.Exists || orgFile.Length != desFile.Length)
             {

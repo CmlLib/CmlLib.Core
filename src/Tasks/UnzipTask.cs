@@ -13,9 +13,11 @@ public class UnzipTask : LinkedTask
         ExtractTo = unzipTo;
     }
 
-    protected override ValueTask<LinkedTask?> OnExecuted()
+    protected override ValueTask<LinkedTask?> OnExecuted(
+        IProgress<ByteProgressEventArgs>? progress,
+        CancellationToken cancellationToken)
     {
-        SharpZipWrapper.Unzip(ZipPath, ExtractTo, null);
+        SharpZipWrapper.Unzip(ZipPath, ExtractTo, null, cancellationToken);
         return new ValueTask<LinkedTask?>(NextTask);
     }
 }

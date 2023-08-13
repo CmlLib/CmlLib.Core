@@ -13,7 +13,9 @@ public class LZMADecompressTask : LinkedTask
         ExtractPath = extractTo;
     }
 
-    protected override ValueTask<LinkedTask?> OnExecuted()
+    protected override ValueTask<LinkedTask?> OnExecuted(
+        IProgress<ByteProgressEventArgs>? progress,
+        CancellationToken cancellationToken)
     {
         SevenZipWrapper.DecompressFileLZMA(LZMAPath, ExtractPath);
         return new ValueTask<LinkedTask?>();

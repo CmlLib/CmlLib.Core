@@ -15,9 +15,11 @@ public abstract class ResultTask : LinkedTask
     public LinkedTask? OnTrue { get; set; }
     public LinkedTask? OnFalse { get; set; }
 
-    protected override async ValueTask<LinkedTask?> OnExecuted()
+    protected override async ValueTask<LinkedTask?> OnExecuted(
+        IProgress<ByteProgressEventArgs>? progress,
+        CancellationToken cancellationToken)
     {
-        var result = await OnExecutedWithResult();
+        var result = await OnExecutedWithResult(progress, cancellationToken);
         var nextTask = result ? OnTrue : OnFalse;
 
         if (nextTask != null)
@@ -26,5 +28,7 @@ public abstract class ResultTask : LinkedTask
             return NextTask;
     }
 
-    protected abstract ValueTask<bool> OnExecutedWithResult(); 
+    protected abstract ValueTask<bool> OnExecutedWithResult(
+        IProgress<ByteProgressEventArgs>? progress,
+        CancellationToken cancellationToken); 
 }

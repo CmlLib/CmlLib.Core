@@ -115,7 +115,7 @@ public class AssetFileExtractor : IFileExtractor
             };
 
             var checkTask = new FileCheckTask(file);
-            checkTask.OnFalse = new DownloadTask(file);
+            checkTask.OnFalse = new DownloadTask(file, httpClient);
 
             if (copyPath.Count > 0)
                 checkTask.InsertNextTask(new FileCopyTask(prop.Name, hashPath, copyPath.ToArray()));

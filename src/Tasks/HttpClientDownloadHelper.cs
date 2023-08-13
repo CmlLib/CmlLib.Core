@@ -1,13 +1,7 @@
-﻿using CmlLib.Core.Internals;
+﻿using CmlLib.Core.Executors;
+using CmlLib.Core.Internals;
 
-namespace CmlLib.Core.Downloader;
-
-internal struct DownloadFileByteProgress
-{
-    public DownloadFile? File { get; set; }
-    public long TotalBytes { get; set; }
-    public long ProgressedBytes { get; set; }
-}
+namespace CmlLib.Core.Tasks;
 
 // To implement System.Net.WebClient.DownloadFileTaskAsync
 // https://source.dot.net/#System.Net.WebClient/System/Net/WebClient.cs,c2224e40a6960929
@@ -16,16 +10,19 @@ internal static class HttpClientDownloadHelper
     private const int DefaultDownloadBufferLength = 65536;
 
     public static async Task DownloadFileAsync(
-        this HttpClient httpClient,
-        DownloadFile file,
-        IProgress<DownloadFileByteProgress>? progress = null, 
+        HttpClient httpClient,
+        string url, 
+        long size, 
+        string path,
+        IProgress<ByteProgressEventArgs>? progress = null, 
         CancellationToken cancellationToken = default)
     {
-        IOUtil.CreateParentDirectory(file.Path);
-        using var destination = File.Create(file.Path);
+        IOUtil.CreateParentDirectory(path);
+        using var destination = File.Create(path);
         await DownloadFileAsync(
             httpClient,
-            file, 
+            url, 
+            size,
             destination, 
             progress, 
             cancellationToken)
@@ -33,17 +30,18 @@ internal static class HttpClientDownloadHelper
     }
 
     public static async Task DownloadFileAsync(
-        this HttpClient httpClient,
-        DownloadFile file, 
+        HttpClient httpClient,
+        string url, 
+        long size,
         Stream destination,
-        IProgress<DownloadFileByteProgress>? progress = null, 
+        IProgress<ByteProgressEventArgs>? progress = null, 
         CancellationToken cancellationToken = default)
     {
         // Get the http headers first to examine the content length
         using var response = await httpClient.GetAsync(
-            file.Url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
-        var contentLength = response.Content.Headers.ContentLength ?? file.Size;
+        var contentLength = response.Content.Headers.ContentLength ?? size;
         using var download = await response.Content.ReadAsStreamAsync();
 
         if (download.CanTimeout)
@@ -62,6 +60,7 @@ internal static class HttpClientDownloadHelper
             : contentLength;
         var copyBuffer = new byte[bufferSize];
 
+        long totalRead = 0;
         while (true)
         {
             if (cancellationToken.IsCancellationRequested)
@@ -78,11 +77,11 @@ internal static class HttpClientDownloadHelper
 
             await destination.WriteAsync(copyBuffer, 0, bytesRead).ConfigureAwait(false);
 
-            progress?.Report(new DownloadFileByteProgress()
+            totalRead += bytesRead;
+            progress?.Report(new ByteProgressEventArgs
             {
-                File = file,
                 TotalBytes = contentLength,
-                ProgressedBytes = bytesRead
+                ProgressedBytes = totalRead
             });
         }
     }

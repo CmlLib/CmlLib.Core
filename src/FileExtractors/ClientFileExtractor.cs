@@ -5,6 +5,13 @@ namespace CmlLib.Core.FileExtractors;
 
 public class ClientFileExtractor : IFileExtractor
 {
+    private readonly HttpClient _httpClient;
+
+    public ClientFileExtractor(HttpClient httpClient)
+    {
+        _httpClient = httpClient;
+    }
+
     public ValueTask<IEnumerable<LinkedTaskHead>> Extract(MinecraftPath path, IVersion version)
     {
         var result = extract(path, version);
@@ -29,7 +36,7 @@ public class ClientFileExtractor : IFileExtractor
         };
 
         var checkTask = new FileCheckTask(file);
-        checkTask.OnFalse = new DownloadTask(file);
+        checkTask.OnFalse = new DownloadTask(file, _httpClient);
 
         yield return new LinkedTaskHead(checkTask, file);
     }

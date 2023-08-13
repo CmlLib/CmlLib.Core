@@ -10,7 +10,9 @@ public class ChmodTask : LinkedTask
     public ChmodTask(string name, string path) : base(name) =>
         Path = path;
 
-    protected override ValueTask<LinkedTask?> OnExecuted()
+    protected override ValueTask<LinkedTask?> OnExecuted(
+        IProgress<ByteProgressEventArgs>? progress,
+        CancellationToken cancellationToken)
     {
         if (LauncherOSRule.Current.Name != LauncherOSRule.Windows)
             NativeMethods.Chmod(Path, NativeMethods.Chmod755);

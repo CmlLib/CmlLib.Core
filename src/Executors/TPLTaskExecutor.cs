@@ -7,74 +7,42 @@ using CmlLib.Core.Version;
 
 namespace CmlLib.Core.Executors;
 
-public enum TaskStatus
-{
-    Queued,
-    Processing,
-    Done
-}
-
-public class TaskExecutorEventArgs
-{
-    public TaskExecutorEventArgs(string name) =>
-        Name = name;
-
-    public int TotalTasks { get; set; }
-    public int ProceedTasks { get; set; }
-    public TaskStatus EventType { get; set; }
-    public string Name { get; set; }
-
-    public void Print()
-    {
-        //if (status != TaskStatus.Done) return;
-        //if (proceed % 100 != 0) return;
-        var now = DateTime.Now.ToString("hh:mm:ss.fff");
-        Console.WriteLine($"[{now}][{ProceedTasks}/{TotalTasks}][{EventType}] {Name}");
-    }
-}
-
 public class TPLTaskExecutor
 {
-    private struct TaskState
+    private struct TaskProgress
     {
-        public TaskStatus Status { get; set; }
-        public long TotalBytes { get; set; }
-        public long ProgressedBytes { get; set; }
+        public long TotalBytes;
+        public long ProgressedBytes;
     }
 
+    //private readonly ConcurrentDictionary<string, TaskProgress> _tasks;
+    private readonly ConcurrentDictionary<string, TaskProgress> _totalProgressStorage;
+    private readonly ThreadLocal<Dictionary<string, TaskProgress>> _progressPerThread;
     private readonly int _maxParallelism;
-    private readonly ConcurrentDictionary<string, TaskState> _runningTasks;
 
     public TPLTaskExecutor(int parallelism)
     {
         _maxParallelism = parallelism;
-        _runningTasks = new ConcurrentDictionary<string, TaskState>(_maxParallelism, 2047);
+        _totalProgressStorage = new ConcurrentDictionary<string, TaskProgress>();
+        _progressPerThread = new ThreadLocal<Dictionary<string, TaskProgress>>(
+            () => new Dictionary<string, TaskProgress>(), true);
     }
 
-    public event EventHandler<TaskExecutorEventArgs>? FileProgress;
-    public event EventHandler<int>? BytesProgress;
+    public event EventHandler<TaskExecutorProgressChangedEventArgs>? FileProgress;
+    public event EventHandler<ByteProgressEventArgs>? ByteProgress;
 
-    private long totalBytes = 0;
+    private CancellationToken CancellationToken;
     private int totalTasks = 0;
     private int proceed = 0;
-
-    public void PrintStatus()
-    {
-        var runningTasks = _runningTasks
-            .Where(kv => kv.Value.Status != TaskStatus.Done)
-            .Select(kv => kv.Key);
-
-        foreach (var task in runningTasks)
-        {
-            Console.WriteLine(task);
-        }
-    }
 
     public async ValueTask Install(
         IEnumerable<IFileExtractor> extractors,
         MinecraftPath path,
-        IVersion version)
+        IVersion version,
+        CancellationToken cancellationToken)
     {
+        CancellationToken = cancellationToken;
+
         var extractBlock = createExtractBlock(version, path);
         var executeBlock = createExecuteBlock(extractBlock.Completion);
         extractBlock.LinkTo(executeBlock);
@@ -83,20 +51,56 @@ public class TPLTaskExecutor
         extractBlock.Complete();
         await extractBlock.Completion;
 
-        if (proceed == _runningTasks.Count)
+        if (proceed == totalTasks)
             return;
-        
+
         var executeTask = executeBlock.Completion;
         while (!executeTask.IsCompleted)
         {
-            long progressedBytes = _runningTasks
-                .Select(kv => kv.Value.ProgressedBytes)
-                .Sum();
-            
-            var percent = (int)(progressedBytes / (double)totalBytes * 100);
-            BytesProgress?.Invoke(this, percent);
+            reportByteProgress();
             await Task.Delay(100);
         }
+        reportByteProgress();
+    }
+
+    private void reportByteProgress()
+    {
+        long totalBytes = 0;
+        long progressedBytes = 0;
+
+        foreach (var dict in _progressPerThread.Values)
+        {
+            lock (dict)
+            {
+                foreach (var kv in dict)
+                {
+                    _totalProgressStorage.AddOrUpdate(
+                        kv.Key,
+                        new TaskProgress
+                        {
+                            TotalBytes = kv.Value.TotalBytes,
+                            ProgressedBytes = kv.Value.ProgressedBytes
+                        },
+                        (_, old) => new TaskProgress
+                        {
+                            TotalBytes = kv.Value.TotalBytes,
+                            ProgressedBytes = kv.Value.ProgressedBytes
+                        });
+                }
+            }
+        }
+
+        foreach (var kv in _totalProgressStorage)
+        {
+            totalBytes += kv.Value.TotalBytes;
+            progressedBytes += kv.Value.ProgressedBytes;
+        }
+
+        ByteProgress?.Invoke(this, new ByteProgressEventArgs
+        {
+            TotalBytes = totalBytes,
+            ProgressedBytes = progressedBytes
+        });
     }
 
     private BufferBlock<LinkedTask> createExecuteBlock(Task extractTask)
@@ -108,8 +112,7 @@ public class TPLTaskExecutor
             Exception? exception = null;
             try
             {
-                fireEvent(task.Name, TaskStatus.Processing);
-                nextTask = await task.Execute();
+                nextTask = await task.Execute(null, CancellationToken);
             }
             catch (Exception ex)
             {
@@ -117,31 +120,100 @@ public class TPLTaskExecutor
                 Debug.WriteLine(ex.ToString());
             }
 
+            return finalizeTask(task, nextTask);
+
+        }, new ExecutionDataflowBlockOptions
+        {
+            MaxDegreeOfParallelism = _maxParallelism
+        });
+
+        var downloader = new TransformBlock<LinkedTask, LinkedTask?>(async task =>
+        {
+            var downloadTask = task as DownloadTask;
+            if (downloadTask == null)
+                return task.NextTask;
+
+            var progress = new SyncProgress<ByteProgressEventArgs>(e =>
+            {
+                var dict = _progressPerThread.Value!;
+                lock (dict)
+                {
+                    dict[task.Name] = new TaskProgress
+                    {
+                        TotalBytes = e.TotalBytes,
+                        ProgressedBytes = e.ProgressedBytes
+                    };
+                }
+                //_progressPerThread.Value!.AddOrUpdate(
+                //    task.Name,
+                //    new TaskProgress
+                //    {
+                //        TotalBytes = e.TotalBytes,
+                //        ProgressedBytes = e.ProgressedBytes
+                //    },
+                //    (_, old) => new TaskProgress
+                //    {
+                //        TotalBytes = e.TotalBytes,
+                //        ProgressedBytes = e.ProgressedBytes
+                //    });
+            });
+
+            var nextTask = await downloadTask.Execute(progress, CancellationToken);
+            return finalizeTask(task, nextTask);
+        }, new ExecutionDataflowBlockOptions
+        {
+            MaxDegreeOfParallelism = _maxParallelism
+        });
+
+
+        LinkedTask? finalizeTask(LinkedTask task, LinkedTask? nextTask)
+        {
             if (nextTask == null)
             {
                 Interlocked.Increment(ref proceed);
-                _runningTasks.AddOrUpdate(
-                    task.Name, 
-                    new TaskState { Status = TaskStatus.Done }, 
-                    (key, oldValue) => oldValue with { Status = TaskStatus.Done });
-
+                TaskProgress progress;
+                var dict = _progressPerThread.Value!;
+                lock (dict)
+                {
+                    if (!dict.TryGetValue(task.Name, out progress) &&
+                        !_totalProgressStorage.TryGetValue(task.Name, out progress))
+                        progress = new TaskProgress();
+                    dict[task.Name] = progress;
+                }
+                //_progressPerThread.Value!.AddOrUpdate(
+                //    task.Name,
+                //    new TaskProgress
+                //    {
+                //        TotalBytes = 0,
+                //        ProgressedBytes = 0
+                //    },
+                //    (_, old) => old with
+                //    {
+                //        TotalBytes = old.TotalBytes,
+                //        ProgressedBytes = old.TotalBytes
+                //    });
                 fireEvent(task.Name, TaskStatus.Done);
 
-                if (proceed == _runningTasks.Count && extractTask.IsCompleted)
+                if (proceed == totalTasks && extractTask.IsCompleted)
                 {
                     buffer.Complete();
                 }
             }
 
             return nextTask;
-        }, new ExecutionDataflowBlockOptions
-        {
-            MaxDegreeOfParallelism = _maxParallelism
-        });
+        }
 
+        buffer.LinkTo(downloader!, t => t is DownloadTask);
         buffer.LinkTo(executor);
-        executor.LinkTo(buffer!, t => t != null);
-        executor.LinkTo(DataflowBlock.NullTarget<LinkedTask?>());
+
+        void linkToBuffer(IPropagatorBlock<LinkedTask, LinkedTask?> block, BufferBlock<LinkedTask> buffer)
+        {
+            block.LinkTo(buffer!, t => t != null);
+            block.LinkTo(DataflowBlock.NullTarget<LinkedTask?>());
+        }
+
+        linkToBuffer(executor, buffer);
+        linkToBuffer(downloader, buffer);
 
         return buffer;
     }
@@ -157,19 +229,16 @@ public class TPLTaskExecutor
                 if (task.First == null)
                     continue;
 
-                var state = new TaskState 
-                { 
-                    Status = TaskStatus.Queued, 
-                    TotalBytes = task.File.Size
-                };
-
-                if (_runningTasks.TryAdd(task.Name, state))
+                Interlocked.Increment(ref totalTasks);
+                var state = new TaskProgress
                 {
-                    yield return task.First;
-                    Interlocked.Increment(ref totalTasks);
-                    Interlocked.Add(ref totalBytes, task.File.Size);
-                    fireEvent(task.Name, TaskStatus.Queued);
-                }
+                    TotalBytes = task.File.Size,
+                    ProgressedBytes = 0
+                };
+                _totalProgressStorage.TryAdd(task.Name, state);
+
+                yield return task.First;
+                fireEvent(task.Name, TaskStatus.Queued);
             }
         }
 
@@ -188,9 +257,8 @@ public class TPLTaskExecutor
 
     private void fireEvent(string name, TaskStatus status)
     {
-        FileProgress?.Invoke(this, new TaskExecutorEventArgs(name)
+        FileProgress?.Invoke(this, new TaskExecutorProgressChangedEventArgs(name, status)
         {
-            EventType = status,
             TotalTasks = totalTasks,
             ProceedTasks = proceed
         });

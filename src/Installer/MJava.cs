@@ -5,6 +5,7 @@ using System.Net;
 using CmlLib.Core.Downloader;
 using CmlLib.Core.Rules;
 using CmlLib.Core.Internals;
+using CmlLib.Core.Tasks;
 
 namespace CmlLib.Core.Installer;
 
@@ -102,12 +103,12 @@ public class MJava
         Directory.CreateDirectory(RuntimeDirectory);
         string lzmaPath = Path.Combine(Path.GetTempPath(), "jre.lzma");
 
-        var progress = new Progress<DownloadFileByteProgress>(p =>
+        var progress = new Progress<ByteProgressEventArgs>(p =>
         {
             var percent = (float)p.ProgressedBytes / p.TotalBytes * 100;
             pProgressChanged?.Report(new ProgressChangedEventArgs((int)percent / 2, null));
         });
-        await HttpClientDownloadHelper.DownloadFileAsync(_httpClient, new DownloadFile(lzmaPath, javaUrl), progress);
+        await HttpClientDownloadHelper.DownloadFileAsync(_httpClient, javaUrl, 0, lzmaPath, progress);
         return lzmaPath;
     }
 
@@ -116,7 +117,10 @@ public class MJava
         string zippath = Path.Combine(Path.GetTempPath(), "jre.zip");
         SevenZipWrapper.DecompressFileLZMA(lzmaPath, zippath);
 
-        SharpZipWrapper.Unzip(zippath, RuntimeDirectory, new Progress<int>(p => 
-            pProgressChanged?.Report(new ProgressChangedEventArgs(50 + p / 2, null))));
+        SharpZipWrapper.Unzip(zippath, RuntimeDirectory, new Progress<ByteProgressEventArgs>(p => 
+        {
+            var percent = (float)p.ProgressedBytes / p.TotalBytes * 100;
+            pProgressChanged?.Report(new ProgressChangedEventArgs(50 + (int)percent / 2, null));
+        }));
     }
 }

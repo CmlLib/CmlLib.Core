@@ -17,15 +17,19 @@ public abstract class LinkedTask
     public string Name { get; set; }
     public LinkedTask? NextTask { get; private set; }
 
-    public async ValueTask<LinkedTask?> Execute()
+    public async ValueTask<LinkedTask?> Execute(
+        IProgress<ByteProgressEventArgs>? progress,
+        CancellationToken cancellationToken)
     {
-        var nextTask = await OnExecuted();
+        var nextTask = await OnExecuted(progress, cancellationToken);
         if (nextTask != null && nextTask.Name != this.Name)
             throw new InvalidOperationException("Name should be same");
         return nextTask;
     }
 
-    protected abstract ValueTask<LinkedTask?> OnExecuted();
+    protected abstract ValueTask<LinkedTask?> OnExecuted(
+        IProgress<ByteProgressEventArgs>? progress, 
+        CancellationToken cancellationToken);
 
     public LinkedTask InsertNextTask(LinkedTask task)
     {
@@ -43,10 +47,13 @@ public abstract class LinkedTask
 
     public static LinkedTask? LinkTasks(params LinkedTask[] tasks)
     {
-        return LinkTasks(tasks);
+        return internalLinkTasks(tasks);
     }
 
-    public static LinkedTask? LinkTasks(IEnumerable<LinkedTask> tasks)
+    public static LinkedTask? LinkTasks(IEnumerable<LinkedTask> tasks) =>
+        internalLinkTasks(tasks);
+
+    private static LinkedTask? internalLinkTasks(IEnumerable<LinkedTask> tasks)
     {
         var firstTask = tasks.FirstOrDefault();
         if (firstTask == null)
