@@ -29,7 +29,7 @@ public class TPLTaskExecutorWithDummyDownloaderBenchmark
     {
         Extractors = new DummyDownloaderExtractor[extractorCount];
         for (int i = 0; i < extractorCount; i++)
-            Extractors[i] = new DummyDownloaderExtractor(i.ToString(), 1024);
+            Extractors[i] = new DummyDownloaderExtractor(i.ToString(), 1024, 1024*256);
         Executor = new TPLTaskExecutor(parallelism);
         Executor.FileProgress += (s, e) => FileProgressArgs = e;
         Executor.ByteProgress += (s, e) => BytesProgressArgs = e;

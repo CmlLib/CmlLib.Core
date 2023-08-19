@@ -1,5 +1,3 @@
-using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Threading.Tasks.Dataflow;
 using CmlLib.Core.FileExtractors;
 using CmlLib.Core.Tasks;
@@ -9,33 +7,26 @@ namespace CmlLib.Core.Executors;
 
 public class TPLTaskExecutor
 {
-    private struct WorkerState
-    {
-        public DateTime LastUpdate;
-        public Dictionary<string, ByteProgress> ProgressStorage;
-    }
-
-    private readonly ConcurrentDictionary<string, ByteProgress> _progressStorage;
-    private readonly ThreadLocal<WorkerState> _progressPerThread;
+    private readonly Dictionary<string, long> _sizeStorage;
+    private readonly ThreadLocal<Dictionary<string, ByteProgress>> _progressStorage;
+    private readonly SemaphoreSlim _semaphore;
     private readonly int _maxParallelism;
 
     public TPLTaskExecutor(int parallelism)
     {
-        _maxParallelism = parallelism;
-        _progressStorage = new ConcurrentDictionary<string, ByteProgress>();
-        _progressPerThread = new ThreadLocal<WorkerState>(
-            () =>
-            new WorkerState
-            {
-                LastUpdate = DateTime.MinValue,
-                ProgressStorage = new Dictionary<string, ByteProgress>()
-            },
+        _sizeStorage = new Dictionary<string, long>();
+        _progressStorage = new ThreadLocal<Dictionary<string, ByteProgress>>(
+            () => new Dictionary<string, ByteProgress>(),
             true);
+
+        _semaphore = new SemaphoreSlim(1);
+        _maxParallelism = parallelism;
     }
 
     public event EventHandler<TaskExecutorProgressChangedEventArgs>? FileProgress;
     public event EventHandler<ByteProgress>? ByteProgress;
 
+    private bool isStarted = false;
     private CancellationToken CancellationToken;
     private int totalTasks = 0;
     private int proceed = 0;
@@ -46,6 +37,10 @@ public class TPLTaskExecutor
         IVersion version,
         CancellationToken cancellationToken)
     {
+        if (isStarted)
+            throw new InvalidOperationException("Already started");
+        isStarted = true;
+
         CancellationToken = cancellationToken;
 
         var extractBlock = createExtractBlock(version, path);
@@ -62,28 +57,40 @@ public class TPLTaskExecutor
         var executeTask = executeBlock.Completion;
         while (!executeTask.IsCompleted)
         {
-            reportByteProgress();
+            await reportByteProgress();
             await Task.Delay(100);
         }
-        reportByteProgress();
+        await reportByteProgress();
     }
 
-    private void reportByteProgress()
+    private async Task reportByteProgress()
     {
-        long totalBytes = 0;
-        long progressedBytes = 0;
-
-        foreach (var kv in _progressStorage)
+        try
         {
-            totalBytes += kv.Value.TotalBytes;
-            progressedBytes += kv.Value.ProgressedBytes;
+            await _semaphore.WaitAsync();
+
+            long totalBytes = 0;
+            long progressedBytes = 0;
+
+            foreach (var dict in _progressStorage.Values)
+            {
+                foreach (var kv in dict)
+                {
+                    totalBytes += kv.Value.TotalBytes;
+                    progressedBytes += kv.Value.ProgressedBytes;
+                    _sizeStorage.Remove(kv.Key);
+                }
+            }
+
+            foreach (var kv in _sizeStorage)
+                totalBytes += kv.Value;
+
+            fireByteProgress(totalBytes, progressedBytes);
         }
-
-        ByteProgress?.Invoke(this, new ByteProgress
+        finally
         {
-            TotalBytes = totalBytes,
-            ProgressedBytes = progressedBytes
-        });
+            _semaphore.Release();
+        }
     }
 
     private BufferBlock<LinkedTask> createExecuteBlock(Task extractTask)
@@ -91,93 +98,48 @@ public class TPLTaskExecutor
         var buffer = new BufferBlock<LinkedTask>();
         var executor = new TransformBlock<LinkedTask, LinkedTask?>(async task =>
         {
-            LinkedTask? nextTask = null;
-            Exception? exception = null;
-            try
-            {
-                nextTask = await task.Execute(null, CancellationToken);
-            }
-            catch (Exception ex)
-            {
-                exception = ex;
-                Debug.WriteLine(ex.ToString());
-            }
-
-            return finalizeTask(task, nextTask);
-
-        }, new ExecutionDataflowBlockOptions
-        {
-            MaxDegreeOfParallelism = _maxParallelism
-        });
-
-        var downloader = new TransformBlock<LinkedTask, LinkedTask?>(async task =>
-        {
-            var downloadTask = task as DownloadTask;
-            if (downloadTask == null)
-                return task.NextTask;
-
             var progress = new SyncProgress<ByteProgress>(e =>
             {
-                _progressPerThread.Value.ProgressStorage[task.Name] = e;
-                updateLocalProgress();
+                bool isLocked = false;
+                try
+                {
+                    if (_semaphore.Wait(0))
+                    {
+                        isLocked = true;
+                        _progressStorage.Value![task.Name] = e;
+                    }
+                }
+                finally
+                {
+                    if (isLocked)
+                        _semaphore.Release();
+                }
             });
 
-            var nextTask = await downloadTask.Execute(progress, CancellationToken);
-            return finalizeTask(task, nextTask);
-        }, new ExecutionDataflowBlockOptions
-        {
-            MaxDegreeOfParallelism = _maxParallelism
-        });
-
-        void updateLocalProgress()
-        {
-            if (DateTime.Now > _progressPerThread.Value.LastUpdate.AddSeconds(1))
-            {
-                var storage = _progressPerThread.Value!.ProgressStorage;
-                foreach (var kv in storage)
-                {
-                    _progressStorage.AddOrUpdate(
-                        kv.Key,
-                        kv.Value,
-                        (_, _) => kv.Value);
-                }
-                storage.Clear();
-                _progressPerThread.Value = new WorkerState
-                {
-                    LastUpdate = DateTime.Now,
-                    ProgressStorage = storage
-                };
-            }
-        }
-
-        LinkedTask? finalizeTask(LinkedTask task, LinkedTask? nextTask)
-        {
+            var nextTask = await task.Execute(progress, CancellationToken);
             if (nextTask == null)
             {
-                Interlocked.Increment(ref proceed);
-                fireEvent(task.Name, TaskStatus.Done);
-                updateLocalProgress();
-
-                if (proceed == totalTasks && extractTask.IsCompleted)
+                try
                 {
-                    buffer.Complete();
+                    _semaphore.Wait();
+                    var previousProgress = _progressStorage.Value![task.Name];
+                    _progressStorage.Value![task.Name] = new ByteProgress
+                    {
+                        TotalBytes = previousProgress.TotalBytes,
+                        ProgressedBytes = previousProgress.TotalBytes
+                    };
+                }
+                finally
+                {
+                    _semaphore.Release();
                 }
             }
 
             return nextTask;
-        }
-
-        buffer.LinkTo(downloader!, t => t is DownloadTask);
-        buffer.LinkTo(executor);
-
-        void linkToBuffer(IPropagatorBlock<LinkedTask, LinkedTask?> block, BufferBlock<LinkedTask> buffer)
+        }, new ExecutionDataflowBlockOptions
         {
-            block.LinkTo(buffer!, t => t != null);
-            block.LinkTo(DataflowBlock.NullTarget<LinkedTask?>());
-        }
-
-        linkToBuffer(executor, buffer);
-        linkToBuffer(downloader, buffer);
+            MaxDegreeOfParallelism = _maxParallelism
+        });
 
         return buffer;
     }
@@ -186,31 +148,19 @@ public class TPLTaskExecutor
         IVersion version,
         MinecraftPath path)
     {
-        IEnumerable<LinkedTask> fireTasksEvent(IEnumerable<LinkedTaskHead> tasks)
-        {
-            foreach (var task in tasks)
-            {
-                if (task.First == null)
-                    continue;
-
-                Interlocked.Increment(ref totalTasks);
-                var progress = new ByteProgress
-                {
-                    TotalBytes = task.File.Size,
-                    ProgressedBytes = 0
-                };
-                _progressStorage.TryAdd(task.Name, progress);
-
-                yield return task.First;
-                fireEvent(task.Name, TaskStatus.Queued);
-            }
-        }
-
         var block = new TransformManyBlock<IFileExtractor, LinkedTask>(async extractor =>
         {
             var tasks = await extractor.Extract(path, version);
-            var iterated = fireTasksEvent(tasks);
-            return iterated;
+            return tasks
+                .Where(task => task.First != null)
+                .Select(task =>
+                {
+                    Interlocked.Increment(ref totalTasks);
+                    fireFileProgress(task.Name, TaskStatus.Queued);
+                    _sizeStorage[task.Name] = task.File.Size;
+
+                    return task.First;
+                })!;
         }, new ExecutionDataflowBlockOptions
         {
             MaxDegreeOfParallelism = _maxParallelism
@@ -219,12 +169,21 @@ public class TPLTaskExecutor
         return block;
     }
 
-    private void fireEvent(string name, TaskStatus status)
+    private void fireFileProgress(string name, TaskStatus status)
     {
         FileProgress?.Invoke(this, new TaskExecutorProgressChangedEventArgs(name, status)
         {
             TotalTasks = totalTasks,
             ProceedTasks = proceed
+        });
+    }
+
+    private void fireByteProgress(long totalBytes, long progressedBytes)
+    {
+        ByteProgress?.Invoke(this, new ByteProgress
+        {
+            TotalBytes = totalBytes,
+            ProgressedBytes = progressedBytes
         });
     }
 }

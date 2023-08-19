@@ -10,13 +10,13 @@ public class DummyDownloadTask : DownloadTask
     {
     }
 
-    protected override async ValueTask DownloadFile(
+    protected override ValueTask DownloadFile(
         IProgress<ByteProgress>? progress,
         CancellationToken cancellationToken)
     {
         for (int i = 0; i < Size; i += 1)
         {
-            if (Size % 512 == 0)
+            if (Size % 128 == 0)
             {
                 progress?.Report(new ByteProgress
                 {
@@ -27,5 +27,6 @@ public class DummyDownloadTask : DownloadTask
             Seed += i;
             //await Task.Delay(1);
         }
+        return new ValueTask();
     }
 }

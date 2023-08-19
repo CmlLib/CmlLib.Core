@@ -8,8 +8,10 @@ public class DummyDownloaderExtractor : IFileExtractor
 {
     private readonly int _count;
     private readonly string _prefix;
-    public DummyDownloaderExtractor(string prefix, int count) => 
-        (_prefix, _count) = (prefix, count);
+    private readonly long _size;
+
+    public DummyDownloaderExtractor(string prefix, int count, long size) => 
+        (_prefix, _count, _size) = (prefix, count, size);
 
     public ValueTask<IEnumerable<LinkedTaskHead>> Extract(MinecraftPath path, IVersion version)
     {
@@ -23,7 +25,7 @@ public class DummyDownloaderExtractor : IFileExtractor
         {
             var file = new TaskFile(_prefix + "-" + i.ToString())
             {
-                Size = 1024 * 256,
+                Size = _size,
                 Path = "a.dat",
                 Url = "a.dat"
             };

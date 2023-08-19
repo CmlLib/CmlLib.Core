@@ -12,7 +12,7 @@ public class DummyTask : LinkedTask
         IProgress<ByteProgress>? progress,
         CancellationToken cancellationToken)
     {
-        for (int j = 0; j < 1024*256; j++)
+        for (int j = 0; j < 1024; j++)
             Seed += j;
         return new ValueTask<LinkedTask?>(NextTask);
     }
