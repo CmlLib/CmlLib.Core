@@ -3,7 +3,7 @@ using CmlLib.Core.VersionLoader;
 using CmlLib.Core.VersionMetadata;
 using CmlLib.Core.Internals;
 
-namespace CmlLib.Core.Installer.LiteLoader;
+namespace CmlLib.Core.ModLoaders.LiteLoader;
 
 public class LiteLoaderVersionLoader : IVersionLoader
 {

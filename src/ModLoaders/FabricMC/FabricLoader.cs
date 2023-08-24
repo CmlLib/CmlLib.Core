@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace CmlLib.Core.Installer.FabricMC
+namespace CmlLib.Core.ModLoaders.FabricMC
 {
     public class FabricLoader
     {

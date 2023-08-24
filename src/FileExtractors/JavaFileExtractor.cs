@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Text.Json;
-using CmlLib.Core.Installer;
 using CmlLib.Core.Java;
 using CmlLib.Core.Rules;
 using CmlLib.Core.Tasks;
@@ -11,30 +10,43 @@ namespace CmlLib.Core.FileExtractors;
 
 public class JavaFileExtractor : IFileExtractor
 {
-    private readonly LauncherOSRule _os;
     private readonly HttpClient _httpClient;
-    public readonly IJavaPathResolver _javaPathResolver;
+    private readonly IJavaPathResolver _javaPathResolver;
     public string JavaManifestServer { get; set; } = MojangServer.JavaManifest;
 
     public JavaFileExtractor(
         HttpClient httpClient,
-        IJavaPathResolver javaPathResolver,
-        LauncherOSRule rule)
+        IJavaPathResolver javaPathResolver)
     {
         _httpClient = httpClient;
         _javaPathResolver = javaPathResolver;
-        _os = rule;
     }
 
-    public async ValueTask<IEnumerable<LinkedTaskHead>> Extract(MinecraftPath path, IVersion version)
+    public async ValueTask<IEnumerable<LinkedTaskHead>> Extract(
+        MinecraftPath path, 
+        IVersion version,
+        RulesEvaluatorContext rulesContext,
+        CancellationToken cancellationToken)
     {
+        JavaVersion javaVersion;
         if (!version.JavaVersion.HasValue || string.IsNullOrEmpty(version.JavaVersion.Value.Component))
-            return await extractFromJavaVersion(MinecraftJavaPathResolver.JreLegacyVersion);
+            javaVersion = MinecraftJavaPathResolver.JreLegacyVersion;
         else
-            return await extractFromJavaVersion(version.JavaVersion.Value);
+            javaVersion = version.JavaVersion.Value;
+        return await extractFromJavaVersion(
+                path, 
+                javaVersion, 
+                version,
+                rulesContext,
+                cancellationToken);
     }
 
-    private async ValueTask<IEnumerable<LinkedTaskHead>> extractFromJavaVersion(JavaVersion javaVersion)
+    private async ValueTask<IEnumerable<LinkedTaskHead>> extractFromJavaVersion(
+        MinecraftPath minecraftPath, 
+        JavaVersion javaVersion, 
+        IVersion version,
+        RulesEvaluatorContext rulesContext,
+        CancellationToken cancellationToken)
     {
         using var response = await _httpClient.GetStreamAsync(JavaManifestServer);
         using var jsonDocument = JsonDocument.Parse(response);
@@ -42,22 +54,22 @@ public class JavaFileExtractor : IFileExtractor
 
         var osName = getJavaOSName();
         if (string.IsNullOrEmpty(osName))
-            return await legacyJavaChecker();
+            return await createLegacyJavaTask(minecraftPath, version, rulesContext, cancellationToken);
         if (!root.TryGetProperty(osName, out var javaVersionsForOS))
-            return await legacyJavaChecker();
+            return await createLegacyJavaTask(minecraftPath, version, rulesContext, cancellationToken);
 
         var currentVersionManifestUrl = getManifestUrl(javaVersionsForOS, javaVersion);
 
         if (!string.IsNullOrEmpty(currentVersionManifestUrl))
-            return await extractFromManifestUrl(currentVersionManifestUrl, javaVersion);
+            return await extractFromManifestUrl(minecraftPath, currentVersionManifestUrl, javaVersion, rulesContext, cancellationToken);
         else if (javaVersion.Component != MinecraftJavaPathResolver.JreLegacyVersion.Component)
         {
             var legacyVersionManifestUrl = getManifestUrl(javaVersionsForOS, MinecraftJavaPathResolver.JreLegacyVersion);
             if (!string.IsNullOrEmpty(legacyVersionManifestUrl))
-                return await extractFromManifestUrl(legacyVersionManifestUrl, javaVersion);
+                return await extractFromManifestUrl(minecraftPath, legacyVersionManifestUrl, javaVersion, rulesContext, cancellationToken);
         }
 
-        return await legacyJavaChecker();
+        return await createLegacyJavaTask(minecraftPath, version, rulesContext, cancellationToken);
     }
 
     private string? getJavaOSName() // TODO: find exact version name
@@ -90,20 +102,29 @@ public class JavaFileExtractor : IFileExtractor
             .GetString();
     }
 
-    private async ValueTask<IEnumerable<LinkedTaskHead>> extractFromManifestUrl(string manifestUrl, JavaVersion version)
+    private async ValueTask<IEnumerable<LinkedTaskHead>> extractFromManifestUrl(
+        MinecraftPath minecraftPath, 
+        string manifestUrl, 
+        JavaVersion version,
+        RulesEvaluatorContext rulesContext,
+        CancellationToken cancellationToken)
     {
-        using var res = await _httpClient.GetStreamAsync(manifestUrl);
-        var json = JsonDocument.Parse(res); // should be disposed after extraction
-        return extractFromManifestJson(json, version);
+        using var res = await _httpClient.GetAsync(manifestUrl, cancellationToken);
+        using var stream = await res.Content.ReadAsStreamAsync();
+        var json = JsonDocument.Parse(stream); // should be disposed after extraction
+        return extractFromManifestJson(minecraftPath, json, version, rulesContext);
     }
 
     private IEnumerable<LinkedTaskHead> extractFromManifestJson(
-        JsonDocument _json, JavaVersion version)
+        MinecraftPath minecraftPath, 
+        JsonDocument _json, 
+        JavaVersion version,
+        RulesEvaluatorContext rulesContext)
     {
         using var json = _json;
         var manifest = json.RootElement;
 
-        var path = _javaPathResolver.GetJavaDirPath(version);
+        var path = _javaPathResolver.GetJavaDirPath(minecraftPath, version, rulesContext);
 
         if (!manifest.TryGetProperty("files", out var files))
             yield break;
@@ -165,36 +186,13 @@ public class JavaFileExtractor : IFileExtractor
         return new LinkedTaskHead(checkTask, file);
     }
 
-    // legacy java checker using MJava
-    private async ValueTask<IEnumerable<LinkedTaskHead>> legacyJavaChecker()
+    private async ValueTask<IEnumerable<LinkedTaskHead>> createLegacyJavaTask(
+        MinecraftPath path, 
+        IVersion version,
+        RulesEvaluatorContext rulesContext,
+        CancellationToken cancellationToken)
     {
-        var legacyJavaPath = _javaPathResolver.GetJavaDirPath(MinecraftJavaPathResolver.CmlLegacyVersion);
-
-        var mJava = new MJava(_httpClient, legacyJavaPath);
-        if (mJava.CheckJavaExistence(_os))
-            return Enumerable.Empty<LinkedTaskHead>();
-
-        var javaUrl = await mJava.GetJavaUrlAsync();
-        var lzmaPath = Path.Combine(Path.GetTempPath(), "jre.lzma");
-        var zipPath = Path.Combine(Path.GetTempPath(), "jre.zip");
-
-        var file = new TaskFile("jre.lzma")
-        {
-            Url = javaUrl,
-            Path = lzmaPath
-        };
-
-        var task = LinkedTask.LinkTasks(new LinkedTask[]
-        {
-            new DownloadTask(file, _httpClient),
-            new LZMADecompressTask(file.Name, lzmaPath, zipPath),
-            new UnzipTask(file.Name, zipPath, legacyJavaPath),
-            new ChmodTask(file.Name, mJava.GetBinaryPath(_os))
-        });
-        
-        return new LinkedTaskHead[]
-        {
-            new LinkedTaskHead(task!, file)
-        };
+        var legacyJava = new LegacyJavaFileExtractor(_httpClient, _javaPathResolver);
+        return await legacyJava.Extract(path, version, rulesContext, cancellationToken);
     }
 }

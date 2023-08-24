@@ -1,10 +1,10 @@
 ﻿using System.Text.Json;
-using CmlLib.Core.Launcher;
+using CmlLib.Core.ProcessBuilder;
 using CmlLib.Core.Version;
 using CmlLib.Core.VersionMetadata;
 using CmlLib.Core.Internals;
 
-namespace CmlLib.Core.Installer.LiteLoader;
+namespace CmlLib.Core.ModLoaders.LiteLoader;
 
 public class LiteLoaderVersionMetadata : JsonVersionMetadata
 {

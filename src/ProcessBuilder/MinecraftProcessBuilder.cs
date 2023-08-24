@@ -1,13 +1,11 @@
-﻿using CmlLib.Core.Launcher;
-using CmlLib.Core.ProcessBuilder;
-using CmlLib.Core.Rules;
+﻿using CmlLib.Core.Rules;
 using CmlLib.Core.Version;
 using CmlLib.Core.Internals;
 using System.Diagnostics;
 
-namespace CmlLib.Core;
+namespace CmlLib.Core.ProcessBuilder;
 
-public class MLaunch
+public class MinecraftProcessBuilder
 {
     private const int DefaultServerPort = 25565;
 
@@ -24,26 +22,29 @@ public class MLaunch
             // "-Xss1M"
         };
 
-    public MLaunch(MLaunchOption option)
+    public MinecraftProcessBuilder(
+        IRulesEvaluator evaluator, 
+        MLaunchOption option)
     {
         option.CheckValid();
+
         launchOption = option;
         version = option.GetStartVersion();
-        this.minecraftPath = option.GetMinecraftPath();
-        builder = new MinecraftArgumentBuilder(rulesEvaluator, launchOption.RulesContext!);
+        minecraftPath = option.GetMinecraftPath();
+        rulesContext = option.GetRulesContext();
+        rulesEvaluator = evaluator;
     }
 
     private readonly IVersion version;
-    private readonly IRulesEvaluator rulesEvaluator = new RulesEvaluator();
-    private readonly MinecraftArgumentBuilder builder;
+    private readonly RulesEvaluatorContext rulesContext;
+    private readonly IRulesEvaluator rulesEvaluator;
     private readonly MinecraftPath minecraftPath;
     private readonly MLaunchOption launchOption;
     
-    // make process that ready to launch game
     public Process CreateProcess()
     {
-        string arg = string.Join(" ", BuildArguments());
-        Process mc = new Process();
+        var arg = string.Join(" ", BuildArguments());
+        var mc = new Process();
         mc.StartInfo.FileName = launchOption.JavaPath!;
         mc.StartInfo.Arguments = arg;
         mc.StartInfo.WorkingDirectory = minecraftPath.BasePath;
@@ -68,14 +69,13 @@ public class MLaunch
     {        
         var classpaths = getClasspaths();
         var classpath = IOUtil.CombinePath(classpaths);
-        var nativePath = createNativePath();
         var session = launchOption.GetSession();
         var assetId = version.GetInheritedProperty(version => version.AssetIndex?.Id) ?? "legacy";
         
         var argDict = new Dictionary<string, string?>
         {
             { "library_directory"  , minecraftPath.Library },
-            { "natives_directory"  , nativePath },
+            { "natives_directory"  , launchOption.NativesDirectory },
             { "launcher_name"      , useNotNull(launchOption.GameLauncherName, "minecraft-launcher") },
             { "launcher_version"   , useNotNull(launchOption.GameLauncherVersion, "2") },
             { "classpath_separator", Path.PathSeparator.ToString() },
@@ -111,81 +111,85 @@ public class MLaunch
 
     private IEnumerable<string> buildJvmArguments(Dictionary<string, string?> argDict)
     {
+        var builder = new ProcessArgumentBuilder(rulesEvaluator, rulesContext);
+
         // version-specific jvm arguments
         var jvmArgs = version.ConcatInheritedCollection(v => v.JvmArguments);
-        foreach (var item in builder.Build(jvmArgs, argDict))
-            yield return item;
+        builder.AddArguments(jvmArgs, argDict);
         
         // default jvm arguments
-        if (launchOption.JVMArguments != null && launchOption.JVMArguments.Count() != 0)
+        if (launchOption.JVMArguments != null)
             foreach (var item in launchOption.JVMArguments)
-                yield return item;
+                builder.Add(item);
         else
-        {
-            if (launchOption.MaximumRamMb > 0)
-                yield return ("-Xmx" + launchOption.MaximumRamMb + "m");
-
-            if (launchOption.MinimumRamMb > 0)
-                yield return ("-Xms" + launchOption.MinimumRamMb + "m");
-            
             foreach (var item in DefaultJavaParameter)
-                yield return item;
-        }
+                builder.Add(item);
 
-        if (jvmArgs.Count() == 0)
+        // libraries
+        builder.TryAddKeyValue("-Djava.library.path", argDict["natives_directory"]);
+        if (!builder.CheckKeyAdded("-cp"))
         {
-            yield return ("-Djava.library.path=" + handleEmpty(argDict["natives_directory"]));
-            yield return ("-cp " + argDict["classpath"]);
+            builder.Add("-cp");
+            builder.AddRaw(argDict["classpath"]);
         }
 
+        // -Xmx, -Xms
+        if (!builder.CheckKeyAdded("-Xmx") && launchOption.MaximumRamMb > 0)
+            builder.Add("-Xmx" + launchOption.MaximumRamMb + "m");
+        if (!builder.CheckKeyAdded("-Xms") && launchOption.MinimumRamMb > 0)
+            builder.Add("-Xms" + launchOption.MinimumRamMb + "m");
+            
         // for macOS
         if (!string.IsNullOrEmpty(launchOption.DockName))
-            yield return ("-Xdock:name=" + handleEmpty(launchOption.DockName));
+            builder.TryAddKeyValue("-Xdock:name", launchOption.DockName);
         if (!string.IsNullOrEmpty(launchOption.DockIcon))
-            yield return ("-Xdock:icon=" + handleEmpty(launchOption.DockIcon));
+            builder.TryAddKeyValue("-Xdock:icon", launchOption.DockIcon);
 
         // logging
         var logging = version.GetInheritedProperty(v => v.Logging);
         if (!string.IsNullOrEmpty(logging?.Argument))
         {
-            var mappedArgs = builder.Build(new MArgument(logging.Argument), new Dictionary<string, string?>()
+            builder.AddArgument(new MArgument(logging.Argument), new Dictionary<string, string?>()
             {
                 { "path", minecraftPath.GetLogConfigFilePath(logging.LogFile?.Id ?? version.Id) }
             });
-            foreach (var item in mappedArgs)
-                yield return item;
         }
 
         // main class
         var mainClass = version.GetInheritedProperty(v => v.MainClass);
         if (!string.IsNullOrEmpty(mainClass))
-            yield return (mainClass);
+            builder.Add(mainClass);
+
+        return builder.Build();
     }
 
     private IEnumerable<string> buildGameArguments(Dictionary<string, string?> argDict)
     {
+        var builder = new ProcessArgumentBuilder(rulesEvaluator, rulesContext);
+
         // game arguments
         var gameArgs = version.ConcatInheritedCollection(v => v.GameArguments);
-        foreach (var item in builder.Build(gameArgs, argDict))
-            yield return item;
+        builder.AddArguments(gameArgs, argDict);
 
         // options
         if (!string.IsNullOrEmpty(launchOption.ServerIp))
         {
-            yield return ("--server " + handleEmpty(launchOption.ServerIp));
+            builder.AddRange("--server", launchOption.ServerIp);
 
             if (launchOption.ServerPort != DefaultServerPort)
-                yield return ("--port " + launchOption.ServerPort);
+                builder.AddRange("--port", launchOption.ServerPort.ToString());
         }
 
         if (launchOption.ScreenWidth > 0 && launchOption.ScreenHeight > 0)
         {
-            yield return ("--width " + launchOption.ScreenWidth);
-            yield return ("--height " + launchOption.ScreenHeight);
+            builder.AddRange("--width", launchOption.ScreenWidth.ToString());
+            builder.AddRange("--height", launchOption.ScreenHeight.ToString());
         }
 
-        if (launchOption.FullScreen)
-            yield return ("--fullscreen");
+        if (!builder.CheckKeyAdded("--fullscreen") && launchOption.FullScreen)
+            builder.Add("--fullscreen");
+
+        return builder.Build();
     }
 
     // make library files into jvm classpath string
@@ -195,7 +199,7 @@ public class MLaunch
         var libPaths = version
             .ConcatInheritedCollection(v => v.Libraries)
             .Where(lib => lib.CheckIsRequired("SIDE"))
-            .Where(lib => lib.Rules == null || rulesEvaluator.Match(lib.Rules, launchOption.RulesContext!))
+            .Where(lib => lib.Rules == null || rulesEvaluator.Match(lib.Rules, rulesContext))
             .Where(lib => lib.Artifact != null)
             .Select(lib => lib.GetLibraryPath());
 
@@ -203,16 +207,8 @@ public class MLaunch
             yield return item;
             
         // <version>.jar file
-        if (!string.IsNullOrEmpty(version.Jar)) // !!!!!!!!!!!!!!!!!!!!!!!!!
+        if (!string.IsNullOrEmpty(version.Jar)) // TODO: decide what Jar file should be used. current jar or parent jar
             yield return (minecraftPath.GetVersionJarPath(version.Jar));
-    }
-
-    private string createNativePath()
-    {
-        var native = new MNative(minecraftPath, version, rulesEvaluator, launchOption.RulesContext!);
-        native.CleanNatives();
-        var nativePath = native.ExtractNatives();
-        return nativePath;
     }
 
     // if input1 is null, return input2
@@ -222,16 +218,5 @@ public class MLaunch
             return input2;
         else
             return input1;
-    }
-
-    private string? handleEmpty(string? input)
-    {
-        if (input == null)
-            return null;
-        
-        if (input.Contains(" "))
-            return "\"" + input + "\"";
-        else
-            return input;
     }
 }

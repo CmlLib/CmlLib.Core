@@ -38,22 +38,6 @@ internal static class IOUtil
         return fileHash == compareHash;
     }
 
-    public static bool CheckSHA1(string path, string? compareHash)
-    {
-        if (string.IsNullOrEmpty(compareHash))
-            return true;
-
-        try
-        {
-            var fileHash = ComputeFileSHA1(path);
-            return fileHash == compareHash;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
     public static string ComputeFileSHA1(string path)
     {
 #pragma warning disable CS0618

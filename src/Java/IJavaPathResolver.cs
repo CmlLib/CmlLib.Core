@@ -4,8 +4,8 @@ namespace CmlLib.Core.Java;
 
 public interface IJavaPathResolver
 {
-    string[] GetInstalledJavaVersions();
-    string? GetDefaultJavaBinaryPath(LauncherOSRule os);
-    string GetJavaBinaryPath(JavaVersion javaVersionName, LauncherOSRule os);
-    string GetJavaDirPath(JavaVersion javaVersionName);
+    string[] GetInstalledJavaVersions(MinecraftPath path);
+    string? GetDefaultJavaBinaryPath(MinecraftPath path, RulesEvaluatorContext rules);
+    string GetJavaBinaryPath(MinecraftPath path, JavaVersion javaVersion, RulesEvaluatorContext rules);
+    string GetJavaDirPath(MinecraftPath path, JavaVersion javaVersion, RulesEvaluatorContext rules);
 }

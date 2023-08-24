@@ -2,13 +2,14 @@
 using CmlLib.Core.Rules;
 using CmlLib.Core.Version;
 
-namespace CmlLib.Core;
+namespace CmlLib.Core.ProcessBuilder;
 
 public class MLaunchOption
 {
     public MinecraftPath? Path { get; set; }
     public IVersion? StartVersion { get; set; }
     public MSession? Session { get; set; }
+    public string? NativesDirectory { get; set; }
     public RulesEvaluatorContext? RulesContext { get; set; }
 
     public string? JavaVersion { get; set; }
@@ -40,6 +41,7 @@ public class MLaunchOption
     internal IVersion GetStartVersion() => StartVersion!;
     internal MSession GetSession() => Session!;
     internal string GetJavaPath() => JavaPath!;
+    internal RulesEvaluatorContext GetRulesContext() => RulesContext!;
 
     internal void CheckValid()
     {

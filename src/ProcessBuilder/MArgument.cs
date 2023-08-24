@@ -1,6 +1,6 @@
 using CmlLib.Core.Rules;
 
-namespace CmlLib.Core.Launcher;
+namespace CmlLib.Core.ProcessBuilder;
 
 public class MArgument
 {

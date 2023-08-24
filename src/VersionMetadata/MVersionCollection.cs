@@ -41,15 +41,21 @@ public class VersionCollection : IEnumerable<IVersionMetadata>
     public IVersionMetadata this[int index] => (IVersionMetadata)Versions[index]!;
 
     public IVersionMetadata GetVersionMetadata(string name)
+    {   
+        if (TryGetVersionMetadata(name, out var version))
+            return version;
+        else
+            throw new KeyNotFoundException("Cannot find " + name);
+    }
+
+    public bool TryGetVersionMetadata(string name, out IVersionMetadata version)
     {
         if (name == null)
             throw new ArgumentNullException(nameof(name));
         
-        var versionMetadata = Versions[name] as IVersionMetadata;
-        if (versionMetadata == null)
-            throw new KeyNotFoundException("Cannot find " + name);
-
-        return versionMetadata;
+        var metadata = Versions[name] as IVersionMetadata;
+        version = metadata!;
+        return metadata != null;
     }
 
     public IVersionMetadata[] ToArray(MVersionSortOption option)

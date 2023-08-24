@@ -4,6 +4,7 @@ using CmlLib.Core.Files;
 using CmlLib.Core.Tasks;
 using CmlLib.Core.Version;
 using CmlLib.Core.Internals;
+using CmlLib.Core.Rules;
 
 namespace CmlLib.Core.FileExtractors;
 
@@ -29,7 +30,11 @@ public class AssetFileExtractor : IFileExtractor
         }
     }
 
-    public async ValueTask<IEnumerable<LinkedTaskHead>> Extract(MinecraftPath path, IVersion version)
+    public async ValueTask<IEnumerable<LinkedTaskHead>> Extract(
+        MinecraftPath path, 
+        IVersion version,
+        RulesEvaluatorContext rulesContext,
+        CancellationToken cancellationToken)
     {
         var assets = version.AssetIndex;
         if (assets == null ||

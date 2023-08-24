@@ -6,17 +6,14 @@ namespace CmlLib.Core.FileExtractors;
 
 public class LibraryFileExtractor : IFileExtractor
 {
-    private readonly RulesEvaluatorContext _rulesContext;
     private readonly IRulesEvaluator _rulesEvaluator;
     private readonly HttpClient _httpClient;
 
     public LibraryFileExtractor(
-        IRulesEvaluator rulesEvaluator, 
-        RulesEvaluatorContext context,
+        IRulesEvaluator rulesEvaluator,
         HttpClient httpClient)
     {
         _rulesEvaluator = rulesEvaluator;
-        _rulesContext = context;
         _httpClient = httpClient;
     }
 
@@ -33,21 +30,31 @@ public class LibraryFileExtractor : IFileExtractor
         }
     }
 
-    public ValueTask<IEnumerable<LinkedTaskHead>> Extract(MinecraftPath path, IVersion version)
+    public ValueTask<IEnumerable<LinkedTaskHead>> Extract(
+        MinecraftPath path, 
+        IVersion version,
+        RulesEvaluatorContext rulesContext,
+        CancellationToken cancellationToken)
     {
-        var result = extract(path, version);
+        var result = extract(path, version, rulesContext);
         return new ValueTask<IEnumerable<LinkedTaskHead>>(result);
     }
 
-    private IEnumerable<LinkedTaskHead> extract(MinecraftPath path, IVersion version)
+    private IEnumerable<LinkedTaskHead> extract(
+        MinecraftPath path, 
+        IVersion version,
+        RulesEvaluatorContext rulesContext)
     {
         return version.Libraries
             .Where(lib => lib.CheckIsRequired("SIDE"))
-            .Where(lib => lib.Rules == null || _rulesEvaluator.Match(lib.Rules, _rulesContext))
-            .SelectMany(lib => createLibraryTasks(path, lib));
+            .Where(lib => lib.Rules == null || _rulesEvaluator.Match(lib.Rules, rulesContext))
+            .SelectMany(lib => createLibraryTasks(path, lib, rulesContext));
     }
 
-    private IEnumerable<LinkedTaskHead> createLibraryTasks(MinecraftPath path, MLibrary library)
+    private IEnumerable<LinkedTaskHead> createLibraryTasks(
+        MinecraftPath path, 
+        MLibrary library,
+        RulesEvaluatorContext rulesContext)
     {
         // java library (*.jar)
         var artifact = library.Artifact;
@@ -67,10 +74,10 @@ public class LibraryFileExtractor : IFileExtractor
         }
 
         // native library (*.dll, *.so)
-        var native = library.GetNativeLibrary(_rulesContext.OS);
+        var native = library.GetNativeLibrary(rulesContext.OS);
         if (native != null)
         {
-            var libPath = library.GetNativeLibraryPath(_rulesContext.OS);
+            var libPath = library.GetNativeLibraryPath(rulesContext.OS);
             if (!string.IsNullOrEmpty(libPath))
             {
                 var file = new TaskFile(library.Name)

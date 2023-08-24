@@ -1,4 +1,5 @@
-﻿using CmlLib.Core.Tasks;
+﻿using CmlLib.Core.Rules;
+using CmlLib.Core.Tasks;
 using CmlLib.Core.Version;
 
 namespace CmlLib.Core.FileExtractors;
@@ -12,7 +13,11 @@ public class LogFileExtractor : IFileExtractor
         _httpClient = httpClient;
     }
 
-    public ValueTask<IEnumerable<LinkedTaskHead>> Extract(MinecraftPath path, IVersion version)
+    public ValueTask<IEnumerable<LinkedTaskHead>> Extract(
+        MinecraftPath path, 
+        IVersion version,
+        RulesEvaluatorContext rulesContext,
+        CancellationToken cancellationToken)
     {
         var result = extract(path, version);
         return new ValueTask<IEnumerable<LinkedTaskHead>>(result);

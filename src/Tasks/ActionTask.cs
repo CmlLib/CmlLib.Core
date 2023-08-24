@@ -2,9 +2,9 @@ namespace CmlLib.Core.Tasks;
 
 public class ActionTask : LinkedTask
 {
-    private readonly Func<ValueTask<LinkedTask?>> _action;
+    private readonly Func<ActionTask, ValueTask<LinkedTask?>> _action;
 
-    public ActionTask(string name, Func<ValueTask<LinkedTask?>> action)
+    public ActionTask(string name, Func<ActionTask, ValueTask<LinkedTask?>> action)
      : base(name) => 
         _action = action;
 
@@ -12,6 +12,6 @@ public class ActionTask : LinkedTask
         IProgress<ByteProgress>? progress,
         CancellationToken cancellationToken)
     {
-        return await _action.Invoke();
+        return await _action.Invoke(this);
     }
 }

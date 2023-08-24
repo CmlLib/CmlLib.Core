@@ -2,7 +2,7 @@
 using CmlLib.Core.VersionLoader;
 using CmlLib.Core.VersionMetadata;
 
-namespace CmlLib.Core.Installer.LiteLoader;
+namespace CmlLib.Core.ModLoaders.LiteLoader;
 
 // 1.8.9 freezing
 public class LiteLoaderInstaller

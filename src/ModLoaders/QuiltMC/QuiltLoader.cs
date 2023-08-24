@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace CmlLib.Core.Installer.QuiltMC
+namespace CmlLib.Core.ModLoaders.QuiltMC
 {
     public class QuiltLoader
     {

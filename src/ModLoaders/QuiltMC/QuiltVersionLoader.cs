@@ -3,7 +3,7 @@ using System.Text.Json;
 using CmlLib.Core.VersionLoader;
 using CmlLib.Core.VersionMetadata;
 
-namespace CmlLib.Core.Installer.QuiltMC;
+namespace CmlLib.Core.ModLoaders.QuiltMC;
 
 public class QuiltVersionLoader : IVersionLoader
 {

@@ -1,4 +1,4 @@
-namespace CmlLib.Core.Executors;
+namespace CmlLib.Core.Installers;
 
 public class SyncProgress<T> : IProgress<T>
 {
