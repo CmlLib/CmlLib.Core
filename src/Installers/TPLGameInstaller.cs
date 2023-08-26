@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Threading.Tasks.Dataflow;
 using CmlLib.Core.FileExtractors;
 using CmlLib.Core.Rules;
@@ -8,6 +9,17 @@ namespace CmlLib.Core.Installers;
 
 public class TPLGameInstaller : IGameInstaller
 {
+    private static int? _bestMaxParallelism;
+    public static int BestMaxParallelism => _bestMaxParallelism ??= getBestMaxParallelism();
+    public static int getBestMaxParallelism()
+    {
+        // 2 <= p <= 8
+        var p = Environment.ProcessorCount;
+        p = Math.Max(p, 2);
+        p = Math.Min(p, 8);
+        return p;
+    }
+
     private readonly int _maxParallelism;
 
     public TPLGameInstaller(int parallelism) => 
@@ -48,7 +60,8 @@ class TPLGameInstallerExecutor
     public event EventHandler<ByteProgress>? ByteProgress;
 
     private bool isStarted = false;
-    private Dictionary<string, long> sizeStorage = null!; // we don't use null-safety check since the performance is most important part here
+    private IDataflowBlock? extractionBlock;
+    private ConcurrentDictionary<string, long> sizeStorage = null!; // we don't use null-safety check since the performance is most important part here
     private ThreadLocal<Dictionary<string, ByteProgress>> progressStorage = null!;
     private CancellationToken CancellationToken;
     private int totalTasks = 0;
@@ -67,6 +80,7 @@ class TPLGameInstallerExecutor
 
         var extractBlock = createExtractBlock(cancellationToken);
         var executeBlock = createExecuteBlock(extractBlock.Completion);
+        extractionBlock = extractBlock;
         extractBlock.LinkTo(executeBlock);
 
         await Task.WhenAll(extractors.Select(extractor => extractBlock.SendAsync(extractor)));
@@ -80,7 +94,7 @@ class TPLGameInstallerExecutor
         while (!executeTask.IsCompleted)
         {
             reportByteProgress();
-            await Task.Delay(100);
+            await Task.Delay(200);
         }
         reportByteProgress();
         disposeResources();
@@ -88,7 +102,7 @@ class TPLGameInstallerExecutor
 
     private void initializeResources()
     {
-        sizeStorage = new Dictionary<string, long>();
+        sizeStorage = new ConcurrentDictionary<string, long>();
         progressStorage = new ThreadLocal<Dictionary<string, ByteProgress>>(
             () => new Dictionary<string, ByteProgress>(),
             true);
@@ -115,13 +129,15 @@ class TPLGameInstallerExecutor
                 {
                     totalBytes += kv.Value.TotalBytes;
                     progressedBytes += kv.Value.ProgressedBytes;
-                    sizeStorage.Remove(kv.Key);
+                    sizeStorage.TryRemove(kv.Key, out _);
                 }
             }
         }
 
         foreach (var kv in sizeStorage)
+        {
             totalBytes += kv.Value;
+        }
 
         fireByteProgress(totalBytes, progressedBytes);
     }
@@ -131,25 +147,23 @@ class TPLGameInstallerExecutor
         var buffer = new BufferBlock<LinkedTask>();
         var executor = new TransformBlock<LinkedTask, LinkedTask?>(async task =>
         {
-            long taskSize = 0;
             var progress = new SyncProgress<ByteProgress>(e =>
             {
                 lock (progressStorage.Value!)
                 {
                     progressStorage.Value![task.Name] = e;
                 }
-                taskSize = e.TotalBytes;
             });
 
             var nextTask = await task.Execute(progress, CancellationToken);
             if (nextTask == null)
             {
-                progress.Report(new ByteProgress
-                {
-                    TotalBytes = taskSize,
-                    ProgressedBytes = taskSize
-                });
                 fireFileProgress(task.Name, TaskStatus.Done);
+                var totalSize = task.LinkedSize + task.Size;
+                fireByteProgress(totalSize, totalSize);
+                Interlocked.Increment(ref proceed);
+                if (totalTasks == proceed && (extractionBlock?.Completion.IsCompleted ?? false))
+                    buffer.Complete();
             }
 
             return nextTask;
@@ -157,6 +171,10 @@ class TPLGameInstallerExecutor
         {
             MaxDegreeOfParallelism = _maxParallelism
         });
+
+        buffer.LinkTo(executor);
+        executor.LinkTo(buffer!, t => t != null);
+        executor.LinkTo(DataflowBlock.NullTarget<LinkedTask?>());
 
         return buffer;
     }

@@ -12,11 +12,11 @@ fi
 
 baseDir=$(dirname "$0")
 
-csprojCmlLib="${baseDir}/src/CmlLib.csproj"
+csprojCmlLib="${baseDir}/src/CmlLib.Core.csproj"
 csprojCmlLibCoreSample="${baseDir}/examples/console/CmlLibCoreSample.csproj"
 csprojCmlLibWinFormSample="${baseDir}/examples/winform/CmlLibWinFormSample.csproj"
 
-[ ! -f $csprojCmlLib ] && { echo "Cannot find CmlLib.csproj file"; exit; }
+[ ! -f $csprojCmlLib ] && { echo "Cannot find CmlLib.Core.csproj file"; exit; }
 [ ! -f $csprojCmlLibCoreSample ] && { echo "Cannot find CmlLibCoreSample.csproj file"; exit; }
 [ ! -f $csprojCmlLibWinFormSample ] && { echo "Cannot find CmlLibWinFormSample.csproj file"; exit; }
 

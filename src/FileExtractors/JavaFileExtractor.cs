@@ -179,7 +179,6 @@ public class JavaFileExtractor : IFileExtractor
 
         var checkTask = new FileCheckTask(file);
         checkTask.OnFalse = new DownloadTask(file, _httpClient);
-
         if (executable)
             checkTask.InsertNextTask(new ChmodTask(file.Name, file.Path));
 

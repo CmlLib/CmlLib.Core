@@ -28,7 +28,7 @@ public class PackageNameTest
 
     [Platform("Unix")]
     [TestCase("de.oceanlabs.mcp:mcp_config:1.16.2-20200812.004259:mappings", 
-        @"de/oceanlabs/mcp/mcp_config/1.16.2-20200812.004259/mcp_config-1.16.2-20200812.004259.jar")]
+        @"de/oceanlabs/mcp/mcp_config/1.16.2-20200812.004259/mcp_config-1.16.2-20200812.004259-mappings.jar")]
     [TestCase("net.java.dev.jna:platform:3.4.0", 
         @"net/java/dev/jna/platform/3.4.0/platform-3.4.0.jar")]
     public void TestGetPathUnix(string input, string exp)

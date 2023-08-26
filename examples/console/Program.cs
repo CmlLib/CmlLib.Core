@@ -1,145 +1,116 @@
-﻿using CmlLib.Core;
+﻿using System.Diagnostics;
+using CmlLib.Core;
 using CmlLib.Core.Auth;
-using CmlLib.Core.Downloader;
-using CmlLib.Core.Executors;
 using CmlLib.Core.FileExtractors;
-using CmlLib.Core.Java;
-using CmlLib.Core.Rules;
-using CmlLib.Core.Tasks;
+using CmlLib.Core.Installers;
+using CmlLib.Core.ProcessBuilder;
 using CmlLib.Core.VersionLoader;
-using System.Diagnostics;
 
 namespace CmlLibCoreSample;
 
 class Program
 {
-    public static readonly HttpClient HttpClient = new();
-
     public static async Task Main()
     {
-        //var t = new TPL();
-        //await t.Test();
-        //return;
-
         var p = new Program();
-
-        // Login
-        MSession session;
-        session = p.OfflineLogin(); // Login by username
-
-        // log login session information
-        Console.WriteLine("Success to login : {0} / {1} / {2}", session.Username, session.UUID, session.AccessToken);
-
-        // Launch
-        await p.Start(session);
+        await p.Start();
     }
 
-    MSession OfflineLogin()
+    private async Task Start()
     {
-        // Create fake session by username
-        return MSession.GetOfflineSession("tester123");
-    }
+        var sw = new Stopwatch();
 
-    async Task Start(MSession session)
-    {
-        var minecraftPath = new MinecraftPath();
-        var httpClient = new HttpClient();
-        var rulesEvaluator = new RulesEvaluator();
-        var javaPathResolver = new MinecraftJavaPathResolver(minecraftPath);
-        var rulesContext = new RulesEvaluatorContext(LauncherOSRule.Current);
-
-        var versionLoader = new VersionLoaderCollection()
+        // initialize launcher
+        var parameters = LauncherParameters.CreateDefault();
+        parameters.VersionLoader = new VersionLoaderCollection
         {
-            new LocalVersionLoader(minecraftPath),
-            //new MojangVersionLoader(httpClient),
+            new LocalVersionLoader(parameters.MinecraftPath!)
         };
+        var launcher = new MinecraftLauncher(parameters);
+        
+        // add event handler
+        launcher.FileProgressChanged += Launcher_FileProgressChanged;
+        launcher.ByteProgressChanged += Launcher_ByteProgressChanged;
 
-        var versions = await versionLoader.GetVersionMetadatasAsync();
+        // list versions
+        var versions = await launcher.GetAllVersionsAsync();
         foreach (var v in versions)
         {
             Console.WriteLine($"{v.Name}, {v.Type}, {v.ReleaseTime}");
         }
 
-        var version = await versions.GetAndSaveVersionAsync(
-            "1.16.5", minecraftPath);
+        // select version
+        Console.WriteLine("Select the version to launch: ");
+        Console.Write("> ");
+        //var startVersion = Console.ReadLine();
+        var startVersion = "1.20.1";
+        if (string.IsNullOrEmpty(startVersion))
+            return;
 
-        var extractors = FileExtractorCollection.CreateDefault(
-            httpClient, javaPathResolver, rulesEvaluator, rulesContext);
-
-        var installer = new TPLTaskExecutor(6);
-        installer.Progress += (s, e) => e.Print();
-
-        var sw = new Stopwatch();
+        // install
         sw.Start();
-        await installer.Install(extractors, minecraftPath, version);
+        await launcher.InstallAsync(startVersion);
         sw.Stop();
-        Console.WriteLine(sw.ElapsedMilliseconds);
-        
-        while (true)
+
+        // build process
+        var process = await launcher.BuildProcessAsync(startVersion, new MLaunchOption
         {
-            Console.ReadLine();
-            installer.PrintStatus();
+            Session = MSession.GetOfflineSession("username"),
+            JavaPath = "java"
+        });
+
+        // print debug information and start process
+        Console.WriteLine();
+        Console.WriteLine("Elapsed time to install: " + sw.Elapsed);
+        Console.WriteLine("Java:");
+        Console.WriteLine(process.StartInfo.FileName);
+        Console.WriteLine("Arguments:");
+        Console.WriteLine(process.StartInfo.Arguments);
+
+        var processWrapper = new ProcessWrapper(process);
+        processWrapper.OutputReceived += (s, e) => Console.WriteLine(e);
+        processWrapper.StartWithEvents();
+        var exitCode = await processWrapper.WaitForExitTaskAsync();
+        Console.WriteLine($"Exited with code {exitCode}");
+        Console.ReadLine();
+    }
+
+    private readonly object consoleLock = new object();
+    private string bottomText = "...";
+    private int previousProceed;
+    private int lastCursorLeft = 0;
+
+    // print installation progress to console
+    private void Launcher_FileProgressChanged(object? sender, InstallerProgressChangedEventArgs e)
+    {
+        lock (consoleLock)
+        {
+            if (previousProceed > e.ProceedTasks)
+                return;
+
+            Console.WriteLine($"[{e.ProceedTasks} / {e.TotalTasks}][{e.EventType}] {e.Name}");
+            printBottomProgress();
+
+            previousProceed = e.ProceedTasks;
         }
     }
 
-    private void printTask(LinkedTask? task)
+    private void Launcher_ByteProgressChanged(object? sender, ByteProgress e)
     {
-        while (task != null)
+        lock (consoleLock)
         {
-            Console.WriteLine(task.GetType().Name);
-            if (task is FileCheckTask fct)
-            {
-                Console.WriteLine(fct.Path);
-                Console.WriteLine(fct.Hash);
-                printTask(fct.OnTrue);
-                printTask(fct.OnFalse);
-            }
-            else if (task is DownloadTask dt)
-            {
-                Console.WriteLine(dt.Path);
-                Console.WriteLine(dt.Url);
-            }
-            Console.WriteLine();
-            task = task.NextTask;
+            var percent = (e.ProgressedBytes / (double)e.TotalBytes) * 100;
+            bottomText = $"{percent}% ({e.ProgressedBytes} bytes / {e.TotalBytes} bytes)";
+            printBottomProgress();
         }
     }
 
-    // Event Handling
-
-    // The code below has some tricks to display logs prettier.
-    // You can also use a simpler event handler
-
-    #region Pretty event handler
-
-    private void Downloader_ChangeProgress(object sender, System.ComponentModel.ProgressChangedEventArgs e)
+    private void printBottomProgress()
     {
-        var top = Console.CursorTop;
-        Console.SetCursorPosition(0, top);
-        // e.ProgressPercentage: 0~100
-        Console.Write($"{e.ProgressPercentage}%  ");
-        Console.SetCursorPosition(0, top);
+        bottomText.PadRight(lastCursorLeft);
+        Console.Write(bottomText);
+        lastCursorLeft = Console.CursorLeft;
+        Console.CursorLeft = 0;
     }
-
-    private void Downloader_ChangeFile(DownloadFileChangedEventArgs e)
-    {
-        // More information about DownloadFileChangedEventArgs
-        // https://github.com/AlphaBs/CmlLib.Core/wiki/Handling-Events#downloadfilechangedeventargs
-
-        Console.WriteLine("[{0}] ({2}/{3}) {1}   ", e.FileKind.ToString(), e.FileName, e.ProgressedFileCount, e.TotalFileCount);
-    }
-
-    #endregion
-
-    #region Simple event handler
-    //private void Downloader_ChangeProgress(object sender, System.ComponentModel.ProgressChangedEventArgs e)
-    //{
-    //    Console.WriteLine("{0}%", e.ProgressPercentage);
-    //}
-
-    //private void Downloader_ChangeFile(DownloadFileChangedEventArgs e)
-    //{
-    //    Console.WriteLine("[{0}] {1} - {2}/{3}", e.FileKind.ToString(), e.FileName, e.ProgressedFileCount, e.TotalFileCount);
-    //}
-    #endregion
 }
 

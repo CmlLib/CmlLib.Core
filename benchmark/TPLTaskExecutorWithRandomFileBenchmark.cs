@@ -42,7 +42,7 @@ public class TPLTaskExecutorWithRandomFileBenchmark
         Executor.ByteProgress += (s, e) => BytesProgressArgs = e;
 
         if (Verbose)
-            Executor.FileProgress += (s, e) => e.Print();
+            Executor.FileProgress += (s, e) => ExecutorsBenchmark.PrintProgress(e);
     }
 
     [IterationCleanup]

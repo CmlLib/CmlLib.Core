@@ -81,7 +81,6 @@ public class MinecraftProcessBuilder
             { "classpath_separator", Path.PathSeparator.ToString() },
             { "classpath"          , classpath },
 
-            { "auth_xuid"        , session.Xuid },
             { "auth_player_name" , session.Username },
             { "version_name"     , version.Id },
             { "game_directory"   , minecraftPath.BasePath },
@@ -201,14 +200,17 @@ public class MinecraftProcessBuilder
             .Where(lib => lib.CheckIsRequired("SIDE"))
             .Where(lib => lib.Rules == null || rulesEvaluator.Match(lib.Rules, rulesContext))
             .Where(lib => lib.Artifact != null)
-            .Select(lib => lib.GetLibraryPath());
+            .Select(lib => Path.Combine(minecraftPath.Library, lib.GetLibraryPath()));
 
         foreach (var item in libPaths)
             yield return item;
             
         // <version>.jar file
-        if (!string.IsNullOrEmpty(version.Jar)) // TODO: decide what Jar file should be used. current jar or parent jar
-            yield return (minecraftPath.GetVersionJarPath(version.Jar));
+        // TODO: decide what Jar file should be used. current jar or parent jar
+        var jar = version.GetInheritedProperty(v => v.Jar);
+        if (string.IsNullOrEmpty(jar))
+            jar = version.Id; 
+        yield return (minecraftPath.GetVersionJarPath(jar));
     }
 
     // if input1 is null, return input2

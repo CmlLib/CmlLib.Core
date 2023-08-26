@@ -40,7 +40,7 @@ public class TPLTaskExecutorWithDummyDownloaderBenchmark
                 lock (consoleLock)
                 {
                     Console.SetCursorPosition(0, Console.CursorTop - 1);
-                    e.Print();
+                    ExecutorsBenchmark.PrintProgress(e);
                     Console.WriteLine(bottomMsg);
                 }
             };

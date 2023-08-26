@@ -15,6 +15,8 @@ public abstract class LinkedTask
     }
 
     public string Name { get; set; }
+    public long LinkedSize { get; protected set; }
+    public long Size { get; protected set; }
     public LinkedTask? NextTask { get; private set; }
 
     public async ValueTask<LinkedTask?> Execute(
@@ -22,8 +24,13 @@ public abstract class LinkedTask
         CancellationToken cancellationToken)
     {
         var nextTask = await OnExecuted(progress, cancellationToken);
-        if (nextTask != null && nextTask.Name != this.Name)
-            throw new InvalidOperationException("Name should be same");
+        if (nextTask != null)
+        {
+            if (nextTask.Name != this.Name)
+                throw new InvalidOperationException("Name should be same");
+            nextTask.LinkedSize = LinkedSize + Size;
+        }
+        
         return nextTask;
     }
 

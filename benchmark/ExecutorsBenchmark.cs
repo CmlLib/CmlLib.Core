@@ -60,4 +60,12 @@ public class ExecutorsBenchmark
     //{
     //    await _thread.Benchmark();
     //}
+
+    public static void PrintProgress(TaskExecutorProgressChangedEventArgs e)
+    {
+        //if (status != TaskStatus.Done) return;
+        //if (proceed % 100 != 0) return;
+        var now = DateTime.Now.ToString("hh:mm:ss.fff");
+        Console.WriteLine($"[{now}][{e.ProceedTasks}/{e.TotalTasks}][{e.EventType}] {e.Name}");
+    }
 }

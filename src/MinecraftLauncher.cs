@@ -13,6 +13,11 @@ namespace CmlLib.Core;
 
 public class MinecraftLauncher
 {
+    private readonly Progress<InstallerProgressChangedEventArgs> _fileProgress;
+    private readonly Progress<ByteProgress> _byteProgress;
+    public event EventHandler<InstallerProgressChangedEventArgs>? FileProgressChanged;
+    public event EventHandler<ByteProgress>? ByteProgressChanged;
+
     public MinecraftPath MinecraftPath { get; }
     public IVersionLoader VersionLoader { get; }
     public IJavaPathResolver JavaPathResolver { get; }
@@ -21,35 +26,47 @@ public class MinecraftLauncher
     public INativeLibraryExtractor NativeLibraryExtractor { get; }
     public IRulesEvaluator RulesEvaluator { get; }
 
-    private readonly Progress<InstallerProgressChangedEventArgs> _fileProgress;
-    private readonly Progress<ByteProgress> _byteProgress;
-    public event EventHandler<InstallerProgressChangedEventArgs>? FileProgressEvent;
-    public event EventHandler<ByteProgress>? ByteProgressEvent;
-
-    public MinecraftLauncher(
-        MinecraftPath minecraftPath, 
-        IVersionLoader versionLoader, 
-        IJavaPathResolver javaPathResolver, 
-        FileExtractorCollection fileExtractors, 
-        IGameInstaller gameInstaller, 
-        INativeLibraryExtractor nativeLibraryExtractor, 
-        IRulesEvaluator rulesEvaluator)
-    {
-        MinecraftPath = minecraftPath;
-        VersionLoader = versionLoader;
-        JavaPathResolver = javaPathResolver;
-        FileExtractors = fileExtractors;
-        GameInstaller = gameInstaller;
-        NativeLibraryExtractor = nativeLibraryExtractor;
-        RulesEvaluator = rulesEvaluator;
-        RulesContext = new RulesEvaluatorContext(LauncherOSRule.Current);
-
-        _fileProgress = new Progress<InstallerProgressChangedEventArgs>(e => FileProgressEvent?.Invoke(this, e));
-        _byteProgress = new Progress<ByteProgress>(e => ByteProgressEvent?.Invoke(this, e));
-    }
-
     public RulesEvaluatorContext RulesContext { get; set; }
     public VersionCollection? Versions { get; private set; }
+
+    public MinecraftLauncher(string path) : this(WithMinecraftPath(new MinecraftPath(path)))
+    {
+
+    }
+
+    public MinecraftLauncher(MinecraftPath path) : this(WithMinecraftPath(path))
+    {
+
+    }
+
+    private static LauncherParameters WithMinecraftPath(MinecraftPath path)
+    {
+        var parameters = LauncherParameters.CreateDefault();
+        parameters.MinecraftPath = path;
+        return parameters;
+    }
+
+    public MinecraftLauncher(LauncherParameters parameters)
+    {
+        MinecraftPath = parameters.MinecraftPath
+            ?? throw new ArgumentException(nameof(parameters.MinecraftPath) + " was null");
+        VersionLoader = parameters.VersionLoader
+            ?? throw new ArgumentException(nameof(parameters.VersionLoader) + " was null");
+        JavaPathResolver = parameters.JavaPathResolver
+            ?? throw new ArgumentException(nameof(parameters.JavaPathResolver) + " was null");
+        FileExtractors = parameters.FileExtractors
+            ?? throw new ArgumentException(nameof(parameters.FileExtractors) + " was null");
+        GameInstaller = parameters.GameInstaller 
+            ?? throw new ArgumentException(nameof(parameters.GameInstaller) + " was null");
+        NativeLibraryExtractor = parameters.NativeLibraryExtractor
+            ?? throw new ArgumentException(nameof(parameters.NativeLibraryExtractor) + " was null");
+        RulesEvaluator = parameters.RulesEvaluator
+            ?? throw new ArgumentException(nameof(parameters.RulesEvaluator) + " was null");
+        RulesContext = new RulesEvaluatorContext(LauncherOSRule.Current);
+
+        _fileProgress = new Progress<InstallerProgressChangedEventArgs>(e => FileProgressChanged?.Invoke(this, e));
+        _byteProgress = new Progress<ByteProgress>(e => ByteProgressChanged?.Invoke(this, e));
+    }
 
     public async ValueTask<VersionCollection> GetAllVersionsAsync()
     {
@@ -95,22 +112,41 @@ public class MinecraftLauncher
             cancellationToken);
     }
 
+    // Install and build game process
+    public async ValueTask<Process> CreateProcessAsync(
+        string versionName,
+        MLaunchOption launchOption,
+        bool checkAndDownload = true)
+    {
+        if (checkAndDownload)
+        {
+            await InstallAsync(versionName, default);
+        }
+
+        return await BuildProcessAsync(versionName, launchOption);
+    }
+
+    public async ValueTask<Process> BuildProcessAsync(
+        string versionName, 
+        MLaunchOption launchOption)
+    {
+        var version = await GetVersionAsync(versionName);
+        return BuildProcess(version, launchOption);
+    }
+
     public Process BuildProcess(
         IVersion version, 
         MLaunchOption launchOption)
     {
-        launchOption.NativesDirectory = createNativePath(version);
-        setLaunchOption(version, launchOption);
+        launchOption.NativesDirectory ??= createNativePath(version);
+        launchOption.Path ??= MinecraftPath;
+        launchOption.StartVersion ??= version;
+        launchOption.JavaPath ??= GetJavaPath(version);
+        launchOption.RulesContext ??= RulesContext;
+
         var processBuilder = new MinecraftProcessBuilder(RulesEvaluator, launchOption);
         var process = processBuilder.CreateProcess();
         return process;
-    }
-
-    private void setLaunchOption(IVersion version, MLaunchOption option)
-    {
-        option.Path ??= MinecraftPath;
-        option.StartVersion ??= version;
-        option.JavaPath = GetJavaPath(version);
     }
 
     public string? GetJavaPath(IVersion version)
@@ -124,9 +160,11 @@ public class MinecraftLauncher
             RulesContext);
     }
 
-    public string? GetDefaultJavaPath() => JavaPathResolver
-        .GetDefaultJavaBinaryPath(MinecraftPath, RulesContext);
-
+    public string? GetDefaultJavaPath()
+    {
+        return JavaPathResolver.GetDefaultJavaBinaryPath(MinecraftPath, RulesContext);
+    }
+ 
     private string createNativePath(IVersion version)
     {
         NativeLibraryExtractor.Clean(MinecraftPath, version);

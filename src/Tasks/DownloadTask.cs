@@ -1,3 +1,5 @@
+using CmlLib.Core.Installers;
+
 namespace CmlLib.Core.Tasks;
 
 public class DownloadTask : LinkedTask
@@ -18,7 +20,6 @@ public class DownloadTask : LinkedTask
     protected HttpClient HttpClient;
     public string Path { get; }
     public string Url { get; }
-    public long Size { get; }
 
     protected async override ValueTask<LinkedTask?> OnExecuted(
         IProgress<ByteProgress>? progress,
@@ -32,12 +33,22 @@ public class DownloadTask : LinkedTask
         IProgress<ByteProgress>? progress,
         CancellationToken cancellationToken)
     {
+        IProgress<ByteProgress>? interceptedProgress = progress;
+        if (this.Size <= 0)
+        {
+            interceptedProgress = new SyncProgress<ByteProgress>(e =>
+            {
+                this.Size = e.TotalBytes;
+                progress?.Report(e);
+            });
+        }
+
         await HttpClientDownloadHelper.DownloadFileAsync(
-            HttpClient, 
-            Url, 
-            Size, 
+            HttpClient,
+            Url,
+            Size,
             Path,
-            progress,
+            interceptedProgress,
             cancellationToken);
     }
 }

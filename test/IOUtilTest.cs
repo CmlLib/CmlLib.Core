@@ -1,4 +1,4 @@
-﻿using CmlLib.Utils;
+﻿using CmlLib.Core.Internals;
 using NUnit.Framework;
 
 namespace CmlLib.Core.Test;

@@ -33,11 +33,12 @@ public class ProcessWrapper
         Process.BeginOutputReadLine();
     }
 
-    public Task WaitForExitTaskAsync()
+    public async Task<int> WaitForExitTaskAsync()
     {
-        return Task.Run(() =>
+        await Task.Run(() =>
         {
             Process.WaitForExit();
         });
+        return Process.ExitCode;
     }
 }
