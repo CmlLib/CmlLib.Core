@@ -69,6 +69,7 @@ public class AssetFileExtractor : IFileExtractor
                 await res.CopyToAsync(ms);
             } // dispose immediately
 
+            ms.Position = 0;
             using (var fs = File.Create(indexFilePath))
             {
                 await ms.CopyToAsync(fs);
@@ -120,11 +121,16 @@ public class AssetFileExtractor : IFileExtractor
             };
 
             var checkTask = new FileCheckTask(file);
-            checkTask.OnFalse = new DownloadTask(file, httpClient);
+            var downloadTask = new DownloadTask(file, httpClient);
+            var progressTask = ProgressTask.CreateDoneTask(file);
+            var copyTask = new FileCopyTask(prop.Name, hashPath, copyPath.ToArray());
 
-            if (copyPath.Count > 0)
-                checkTask.InsertNextTask(new FileCopyTask(prop.Name, hashPath, copyPath.ToArray()));
-            
+            checkTask.OnTrue = progressTask;
+            checkTask.OnFalse = downloadTask;
+
+            if (copyPath.Any())
+                downloadTask.InsertNextTask(copyTask);
+
             var taskHead = new LinkedTaskHead(checkTask, file);
             yield return taskHead;
         }

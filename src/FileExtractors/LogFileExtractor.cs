@@ -38,9 +38,11 @@ public class LogFileExtractor : IFileExtractor
         {
             Path = path.GetLogConfigFilePath(id),
             Url = url,
-            Hash = version.Logging?.LogFile?.GetSha1()
+            Hash = version.Logging?.LogFile?.GetSha1(),
+            Size = version.Logging?.LogFile?.Size ?? 0
         };
         var task = new FileCheckTask(file);
+        task.OnTrue = ProgressTask.CreateDoneTask(file);
         task.OnFalse = new DownloadTask(file, _httpClient);
         yield return new LinkedTaskHead(task, file);
     }

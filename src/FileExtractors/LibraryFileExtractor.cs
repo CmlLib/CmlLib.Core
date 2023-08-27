@@ -65,12 +65,11 @@ public class LibraryFileExtractor : IFileExtractor
             {
                 Path = Path.Combine(path.Library, libPath),
                 Url = createDownloadUrl(artifact.Url, libPath),
-                Hash = artifact.GetSha1()
+                Hash = artifact.GetSha1(),
+                Size = artifact.Size
             };
 
-            var task = new FileCheckTask(file);
-            task.OnFalse = new DownloadTask(file, _httpClient);
-            yield return new LinkedTaskHead(task, file);
+            yield return createTaskFromFile(file);
         }
 
         // native library (*.dll, *.so)
@@ -84,14 +83,20 @@ public class LibraryFileExtractor : IFileExtractor
                 {
                     Path = Path.Combine(path.Library, libPath),
                     Url = createDownloadUrl(native.Url, libPath),
-                    Hash = native.GetSha1()
+                    Hash = native.GetSha1(),
+                    Size = native.Size
                 };
-
-                var task = new FileCheckTask(file);
-                task.OnFalse = new DownloadTask(file, _httpClient);
-                yield return new LinkedTaskHead(task, file);
+                yield return createTaskFromFile(file);
             }
         }
+    }
+
+    private LinkedTaskHead createTaskFromFile(TaskFile file)
+    {
+        var task = new FileCheckTask(file);
+        task.OnTrue = ProgressTask.CreateDoneTask(file);
+        task.OnFalse = new DownloadTask(file, _httpClient);
+        return new LinkedTaskHead(task, file);
     }
 
     private string? createDownloadUrl(string? url, string path)

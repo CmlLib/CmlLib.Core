@@ -25,7 +25,7 @@ public class ClientFileExtractor : IFileExtractor
 
     private IEnumerable<LinkedTaskHead> extract(MinecraftPath path, IVersion version)
     {
-        var id = version.Jar;
+        var id = version.JarId;
         var url = version.Client?.Url;
         
         if (string.IsNullOrEmpty(url) || string.IsNullOrEmpty(id))
@@ -41,6 +41,7 @@ public class ClientFileExtractor : IFileExtractor
         };
 
         var checkTask = new FileCheckTask(file);
+        checkTask.OnTrue = ProgressTask.CreateDoneTask(file);
         checkTask.OnFalse = new DownloadTask(file, _httpClient);
 
         yield return new LinkedTaskHead(checkTask, file);

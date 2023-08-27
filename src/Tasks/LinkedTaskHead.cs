@@ -16,7 +16,6 @@ public struct LinkedTaskHead
         if (First == null)
             return new ValueTask<LinkedTask?>();
 
-        var context = new TaskExecutionContext(progress, cancellationToken);
         return First.Execute(progress, cancellationToken);
     }
 }

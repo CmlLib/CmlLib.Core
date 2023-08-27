@@ -22,6 +22,7 @@ public class JsonVersion : IVersion
     }
 
     public string Id { get; }
+    public string? JarId => getJarId();
 
     public string? InheritsFrom => _model.InheritsFrom;
 
@@ -56,6 +57,14 @@ public class JsonVersion : IVersion
 
     private MArgument[]? _jvmArgs = null;
     public MArgument[] JvmArguments => _jvmArgs ??= getJvmArguments();
+
+    private string? getJarId()
+    {
+        var jar = this.GetInheritedProperty(v => v.Jar);
+        if (string.IsNullOrEmpty(jar))
+            return Id;
+        return jar;
+    }
 
     private AssetMetadata? getAssetIndex()
     {

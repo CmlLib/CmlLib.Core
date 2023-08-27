@@ -33,22 +33,32 @@ public class DownloadTask : LinkedTask
         IProgress<ByteProgress>? progress,
         CancellationToken cancellationToken)
     {
-        IProgress<ByteProgress>? interceptedProgress = progress;
-        if (this.Size <= 0)
+        var interceptedProgress = new SyncProgress<ByteProgress>(e =>
         {
-            interceptedProgress = new SyncProgress<ByteProgress>(e =>
-            {
-                this.Size = e.TotalBytes;
-                progress?.Report(e);
-            });
-        }
+            this.Size = e.TotalBytes;
+            progress?.Report(e);
+        });
 
-        await HttpClientDownloadHelper.DownloadFileAsync(
-            HttpClient,
-            Url,
-            Size,
-            Path,
-            interceptedProgress,
-            cancellationToken);
+        for (int i = 3; i > 0; i--)
+        {
+            try
+            {
+                // TODO: handle duplicated file, example: e9833a1512b57bcf88ac4fdcc8df4e5a7e9d701d
+                await HttpClientDownloadHelper.DownloadFileAsync(
+                    HttpClient,
+                    Url,
+                    Size,
+                    Path,
+                    interceptedProgress,
+                    cancellationToken);
+                break;
+            }
+            catch (Exception)
+            {
+                if (i == 1)
+                    throw;
+                await Task.Delay(3000);
+            }
+        }
     }
 }

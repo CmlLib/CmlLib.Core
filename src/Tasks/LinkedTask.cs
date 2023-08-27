@@ -15,7 +15,6 @@ public abstract class LinkedTask
     }
 
     public string Name { get; set; }
-    public long LinkedSize { get; protected set; }
     public long Size { get; protected set; }
     public LinkedTask? NextTask { get; private set; }
 
@@ -28,7 +27,6 @@ public abstract class LinkedTask
         {
             if (nextTask.Name != this.Name)
                 throw new InvalidOperationException("Name should be same");
-            nextTask.LinkedSize = LinkedSize + Size;
         }
         
         return nextTask;

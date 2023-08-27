@@ -178,9 +178,15 @@ public class JavaFileExtractor : IFileExtractor
         };
 
         var checkTask = new FileCheckTask(file);
-        checkTask.OnFalse = new DownloadTask(file, _httpClient);
+        var downloadTask = new DownloadTask(file, _httpClient);
+        var chmodTask = new ChmodTask(file.Name, file.Path);
+        var progressTask = ProgressTask.CreateDoneTask(file);
+
+        checkTask.OnTrue = progressTask;
+        checkTask.OnFalse = downloadTask;
+
         if (executable)
-            checkTask.InsertNextTask(new ChmodTask(file.Name, file.Path));
+            downloadTask.InsertNextTask(chmodTask);
 
         return new LinkedTaskHead(checkTask, file);
     }

@@ -22,10 +22,11 @@ class Program
 
         // initialize launcher
         var parameters = LauncherParameters.CreateDefault();
-        parameters.VersionLoader = new VersionLoaderCollection
-        {
-            new LocalVersionLoader(parameters.MinecraftPath!)
-        };
+        //parameters.GameInstaller = new TPLGameInstaller(1);
+        //parameters.VersionLoader = new VersionLoaderCollection
+        //{
+        //    new LocalVersionLoader(parameters.MinecraftPath!)
+        //};
         var launcher = new MinecraftLauncher(parameters);
         
         // add event handler
@@ -66,7 +67,7 @@ class Program
         Console.WriteLine(process.StartInfo.FileName);
         Console.WriteLine("Arguments:");
         Console.WriteLine(process.StartInfo.Arguments);
-
+        return;
         var processWrapper = new ProcessWrapper(process);
         processWrapper.OutputReceived += (s, e) => Console.WriteLine(e);
         processWrapper.StartWithEvents();
@@ -79,6 +80,8 @@ class Program
     private string bottomText = "...";
     private int previousProceed;
     private int lastCursorLeft = 0;
+    private int lastUpdate = 0;
+    private long lastProgressed = 0;
 
     // print installation progress to console
     private void Launcher_FileProgressChanged(object? sender, InstallerProgressChangedEventArgs e)
@@ -88,7 +91,8 @@ class Program
             if (previousProceed > e.ProceedTasks)
                 return;
 
-            Console.WriteLine($"[{e.ProceedTasks} / {e.TotalTasks}][{e.EventType}] {e.Name}");
+            var msg = $"[{e.ProceedTasks} / {e.TotalTasks}][{e.EventType}] {e.Name}";
+            Console.WriteLine(msg.PadRight(lastCursorLeft));
             printBottomProgress();
 
             previousProceed = e.ProceedTasks;
@@ -100,7 +104,14 @@ class Program
         lock (consoleLock)
         {
             var percent = (e.ProgressedBytes / (double)e.TotalBytes) * 100;
-            bottomText = $"{percent}% ({e.ProgressedBytes} bytes / {e.TotalBytes} bytes)";
+            var total = e.TotalBytes.ToString().PadRight(12);
+            var progressed = e.ProgressedBytes.ToString().PadLeft(12);
+
+            var now = Environment.TickCount;
+            var speed = (e.ProgressedBytes - lastProgressed) / (double)(now - lastUpdate);
+            bottomText = $"==> {percent:F2}%, ({progressed} / {total}) bytes, {speed:F2} KB/s";
+            lastProgressed = e.ProgressedBytes;
+            lastUpdate = now;
             printBottomProgress();
         }
     }

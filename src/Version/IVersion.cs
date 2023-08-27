@@ -7,6 +7,7 @@ namespace CmlLib.Core.Version;
 public interface IVersion
 {
     string Id { get; }
+    string JarId { get; }
     string? InheritsFrom { get; }
     IVersion? ParentVersion { get; set; }
     AssetMetadata? AssetIndex { get; }
