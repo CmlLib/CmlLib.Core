@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using CmlLib.Core.Executors;
+using CmlLib.Core.Installers;
 using CmlLib.Core.Tasks;
 
 namespace CmlLib.Core.Benchmarks;

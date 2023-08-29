@@ -1,5 +1,6 @@
 using BenchmarkDotNet.Attributes;
 using CmlLib.Core.Executors;
+using CmlLib.Core.Installers;
 
 namespace CmlLib.Core.Benchmarks;
 
@@ -11,6 +12,7 @@ public class ExecutorsBenchmark
     LockBenchmark _lock;
     SemaphoreSlimBenchmark _semaphore;
     ThreadLocalBenchmark _thread;
+    NoLockBenchmark _nolock;
 
     [IterationSetup]
     public void IterationSetup()
@@ -29,6 +31,9 @@ public class ExecutorsBenchmark
 
         _thread = new ThreadLocalBenchmark();
         _thread.IterationSetup().Wait();
+
+        _nolock = new NoLockBenchmark();
+        _nolock.IterationSetup().Wait();
     }
 
     //[Benchmark(Baseline = true)]
@@ -49,11 +54,17 @@ public class ExecutorsBenchmark
         await _semaphore.Benchmark();
     }
 
-    [Benchmark(Baseline = true)]
-    public async Task StartQueue()
+    [Benchmark]
+    public async Task StartNoLock()
     {
-        await _queue.Benchmark();
+        await _nolock.Benchmark();
     }
+
+    //[Benchmark(Baseline = true)]
+    //public async Task StartQueue()
+    //{
+    //    await _queue.Benchmark();
+    //}
 
     //[Benchmark]
     //public async Task StartThread()
@@ -61,7 +72,7 @@ public class ExecutorsBenchmark
     //    await _thread.Benchmark();
     //}
 
-    public static void PrintProgress(TaskExecutorProgressChangedEventArgs e)
+    public static void PrintProgress(InstallerProgressChangedEventArgs e)
     {
         //if (status != TaskStatus.Done) return;
         //if (proceed % 100 != 0) return;

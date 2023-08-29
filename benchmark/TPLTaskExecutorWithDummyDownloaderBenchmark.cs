@@ -2,6 +2,7 @@ using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
 using CmlLib.Core.Executors;
 using CmlLib.Core.FileExtractors;
+using CmlLib.Core.Installers;
 using CmlLib.Core.Version;
 
 namespace CmlLib.Core.Benchmarks;
@@ -11,18 +12,13 @@ public class TPLTaskExecutorWithDummyDownloaderBenchmark
     private int parallelism = 6;
     private int extractorCount = 8;
 
-    public static bool Verbose = false;
-    public static TaskExecutorProgressChangedEventArgs? FileProgressArgs;
+    public static InstallerProgressChangedEventArgs? FileProgressArgs;
     public static ByteProgress BytesProgressArgs;
 
     private MinecraftPath MinecraftPath = new MinecraftPath();
     private IVersion DummyVersion = new DummyVersion();
     private DummyDownloaderExtractor[] Extractors;
-    private TPLTaskExecutor Executor;
-
-    private ByteProgress previousEvent;
-    private object consoleLock = new object();
-    private string? bottomMsg;
+    private TPLGameInstaller Executor;
 
     [IterationSetup]
     public void IterationSetup()
@@ -30,33 +26,7 @@ public class TPLTaskExecutorWithDummyDownloaderBenchmark
         Extractors = new DummyDownloaderExtractor[extractorCount];
         for (int i = 0; i < extractorCount; i++)
             Extractors[i] = new DummyDownloaderExtractor(i.ToString(), 1024, 1024*256);
-        Executor = new TPLTaskExecutor(parallelism);
-        Executor.FileProgress += (s, e) => FileProgressArgs = e;
-        Executor.ByteProgress += (s, e) => BytesProgressArgs = e;
-        if (Verbose)
-        {
-            Executor.FileProgress += (s, e) => 
-            {
-                lock (consoleLock)
-                {
-                    Console.SetCursorPosition(0, Console.CursorTop - 1);
-                    ExecutorsBenchmark.PrintProgress(e);
-                    Console.WriteLine(bottomMsg);
-                }
-            };
-            Executor.ByteProgress += (s, e) => 
-            {
-                lock (consoleLock)
-                {
-                    if (previousEvent.ProgressedBytes >= e.ProgressedBytes)
-                        return;
-                    previousEvent = e;
-                    bottomMsg = $"{e.ProgressedBytes} / {e.TotalBytes}          ";
-                    Console.SetCursorPosition(0, Console.CursorTop - 1);
-                    Console.WriteLine(bottomMsg);
-                }
-            };
-        }
+        Executor = new TPLGameInstaller(parallelism);
     }
 
     [Benchmark]
@@ -66,6 +36,9 @@ public class TPLTaskExecutorWithDummyDownloaderBenchmark
             Extractors, 
             MinecraftPath, 
             DummyVersion, 
+            TPLTaskExecutorWithDummyTaskBenchmark.RulesContext,
+            TPLTaskExecutorWithDummyTaskBenchmark.FileProgress,
+            TPLTaskExecutorWithDummyTaskBenchmark.ByteProgress,
             default);
     }
 }

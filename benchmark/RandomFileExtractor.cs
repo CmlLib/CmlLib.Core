@@ -1,4 +1,5 @@
 using CmlLib.Core.FileExtractors;
+using CmlLib.Core.Rules;
 using CmlLib.Core.Tasks;
 using CmlLib.Core.Version;
 
@@ -50,7 +51,7 @@ public class RandomFileExtractor : IFileExtractor
         Directory.Delete(_path);
     }
 
-    public ValueTask<IEnumerable<LinkedTaskHead>> Extract(MinecraftPath path, IVersion version)
+    public ValueTask<IEnumerable<LinkedTaskHead>> Extract(MinecraftPath path, IVersion version, RulesEvaluatorContext rulesContext, CancellationToken cancellationToken)
     {
         var result = extract();
         return new ValueTask<IEnumerable<LinkedTaskHead>>(result);

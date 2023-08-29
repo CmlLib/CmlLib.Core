@@ -2,6 +2,7 @@ using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
 using CmlLib.Core.Executors;
 using CmlLib.Core.FileExtractors;
+using CmlLib.Core.Installers;
 using CmlLib.Core.Version;
 
 namespace CmlLib.Core.Benchmarks;
@@ -14,13 +15,13 @@ public class TPLTaskExecutorWithRandomFileBenchmark
     private int parallelism = 6;
     private int extractorCount = 4;
 
-    public static TaskExecutorProgressChangedEventArgs? FileProgressArgs;
+    public static InstallerProgressChangedEventArgs? FileProgressArgs;
     public static ByteProgress BytesProgressArgs;
 
     private MinecraftPath MinecraftPath = new MinecraftPath();
     private IVersion DummyVersion = new DummyVersion();
     private RandomFileExtractor[] Extractors;
-    private TPLTaskExecutor Executor;
+    private TPLGameInstaller Executor;
 
     [GlobalSetup]
     public void GlobalSetup()
@@ -37,12 +38,7 @@ public class TPLTaskExecutorWithRandomFileBenchmark
             Extractors[i] = new RandomFileExtractor(path, 1024, 1024*1024/2);
             Extractors[i].Setup();
         }
-        Executor = new TPLTaskExecutor(parallelism);
-        Executor.FileProgress += (s, e) => FileProgressArgs = e;
-        Executor.ByteProgress += (s, e) => BytesProgressArgs = e;
-
-        if (Verbose)
-            Executor.FileProgress += (s, e) => ExecutorsBenchmark.PrintProgress(e);
+        Executor = new TPLGameInstaller(parallelism);
     }
 
     [IterationCleanup]
@@ -61,6 +57,9 @@ public class TPLTaskExecutorWithRandomFileBenchmark
             Extractors, 
             MinecraftPath, 
             DummyVersion,
+            TPLTaskExecutorWithDummyTaskBenchmark.RulesContext,
+            TPLTaskExecutorWithDummyTaskBenchmark.FileProgress,
+            TPLTaskExecutorWithDummyTaskBenchmark.ByteProgress,
             default);
     }
 }

@@ -1,4 +1,5 @@
 using CmlLib.Core.FileExtractors;
+using CmlLib.Core.Rules;
 using CmlLib.Core.Tasks;
 using CmlLib.Core.Version;
 
@@ -11,7 +12,7 @@ public class DummyTaskExtractor : IFileExtractor
     public DummyTaskExtractor(string prefix, int count) => 
         (_prefix, _count) = (prefix, count);
 
-    public ValueTask<IEnumerable<LinkedTaskHead>> Extract(MinecraftPath path, IVersion version)
+    public ValueTask<IEnumerable<LinkedTaskHead>> Extract(MinecraftPath path, IVersion version, RulesEvaluatorContext rulesContext, CancellationToken cancellationToken)
     {
         var r = extract();
         return new ValueTask<IEnumerable<LinkedTaskHead>>(r);

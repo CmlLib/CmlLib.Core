@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using CmlLib.Core.Tasks;
 using CmlLib.Core.Executors;
+using CmlLib.Core.Installers;
 
 namespace CmlLib.Core.Benchmarks;
 

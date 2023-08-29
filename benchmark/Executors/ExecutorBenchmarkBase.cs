@@ -1,5 +1,6 @@
 using System.Threading.Tasks.Dataflow;
 using BenchmarkDotNet.Attributes;
+using CmlLib.Core.Rules;
 using CmlLib.Core.Tasks;
 
 namespace CmlLib.Core.Benchmarks;
@@ -8,6 +9,7 @@ public abstract class ExecutorBenchmarkBase
 {
     public static ByteProgress LastEvent;
 
+    public RulesEvaluatorContext RulesContext = new RulesEvaluatorContext(LauncherOSRule.Current);
     public int MaxParallelism { get; set; } = 6;
     public string Name { get; set; } = "D";
     public int Count { get; set; } = 1024*2; // 256
@@ -26,7 +28,7 @@ public abstract class ExecutorBenchmarkBase
         var minecraftPath = new MinecraftPath();
         var version = new DummyVersion();
         var taskExtractor = new DummyDownloaderExtractor(Name, Count, Size);
-        var result = await taskExtractor.Extract(minecraftPath, version);
+        var result = await taskExtractor.Extract(minecraftPath, version, RulesContext, default);
 
         var list = new List<LinkedTask>();
         foreach (var head in result)
