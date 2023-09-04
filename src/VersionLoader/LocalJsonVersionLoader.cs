@@ -2,20 +2,20 @@
 
 namespace CmlLib.Core.VersionLoader;
 
-public class LocalVersionLoader : IVersionLoader
+public class LocalJsonVersionLoader : IVersionLoader
 {
-    public LocalVersionLoader(MinecraftPath path)
+    public LocalJsonVersionLoader(MinecraftPath path)
     {
         minecraftPath = path;
     }
 
     private readonly MinecraftPath minecraftPath;
 
-    public ValueTask<VersionCollection> GetVersionMetadatasAsync()
+    public ValueTask<VersionMetadataCollection> GetVersionMetadatasAsync()
     {
         var versions = getFromLocal(minecraftPath);
-        var collection = new VersionCollection(versions, null, null);
-        return new ValueTask<VersionCollection>(collection);
+        var collection = new VersionMetadataCollection(versions, null, null);
+        return new ValueTask<VersionMetadataCollection>(collection);
     }
 
     private IEnumerable<IVersionMetadata> getFromLocal(MinecraftPath path)

@@ -4,18 +4,18 @@ using System.Text.Json;
 
 namespace CmlLib.Core.VersionLoader;
 
-public class MojangVersionLoader : IVersionLoader
+public class MojangJsonVersionLoader : IVersionLoader
 {
     private readonly HttpClient _httpClient;
     private readonly string _endpoint;
 
-    public MojangVersionLoader(HttpClient httpClient) =>
+    public MojangJsonVersionLoader(HttpClient httpClient) =>
         (_httpClient, _endpoint) = (httpClient, MojangServer.Version);
 
-    public MojangVersionLoader(HttpClient httpClient, string endpoint) =>
+    public MojangJsonVersionLoader(HttpClient httpClient, string endpoint) =>
         (_httpClient, _endpoint) = (httpClient, endpoint);
 
-    public async ValueTask<VersionCollection> GetVersionMetadatasAsync()
+    public async ValueTask<VersionMetadataCollection> GetVersionMetadatasAsync()
     {
         var res = await _httpClient.GetStreamAsync(_endpoint)
             .ConfigureAwait(false);
@@ -41,6 +41,6 @@ public class MojangVersionLoader : IVersionLoader
             }
         }
 
-        return new VersionCollection(metadatas, latestReleaseId, latestSnapshotId);
+        return new VersionMetadataCollection(metadatas, latestReleaseId, latestSnapshotId);
     }
 }

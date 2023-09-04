@@ -1,20 +1,59 @@
+using System.Text.RegularExpressions;
+
 namespace CmlLib.Core.Rules;
 
 public class RulesEvaluator : IRulesEvaluator
 {
     public bool Match(IEnumerable<LauncherRule> rules, RulesEvaluatorContext context)
     {
-        return rules.Any(rule => match(rule, context));
+        var finalResult = false;
+        foreach (var rule in rules)
+        {
+            var isAllow = rule.Action == "allow";
+            var isOSMatch = matchOS(rule, context);
+            var isFeatureMatch = matchFeature(rule, context);
+            
+            if (isOSMatch && isFeatureMatch)
+                finalResult = isAllow;
+        }
+        return finalResult;
     }
 
-    private bool match(LauncherRule rule, RulesEvaluatorContext context)
+    private bool matchOS(LauncherRule rule, RulesEvaluatorContext context)
     {
-        var isAllow = rule.Action == "allow";
-        var isOSMatched = rule.OS != null && rule.OS.Match(context.OS);
+        bool isNameMatched = true;
+        if (!string.IsNullOrEmpty(rule.OS?.Name))
+            isNameMatched = rule.OS?.Name == context.OS?.Name;
 
-        if (isAllow)
-            return isOSMatched;
-        else
-            return !isOSMatched;
+        bool isArchMatched = true;
+        if (!string.IsNullOrEmpty(rule.OS?.Arch))
+            isArchMatched = rule.OS?.Arch == context.OS?.Arch;
+
+        bool isVersionMatched = true;
+        if (string.IsNullOrEmpty(context.OS?.Version))
+            isVersionMatched = true;
+        else if (!string.IsNullOrEmpty(rule.OS?.Version))
+            isVersionMatched = Regex.IsMatch(
+                context.OS.Version, 
+                rule.OS.Version, 
+                RegexOptions.None, 
+                TimeSpan.FromMilliseconds(100));
+
+        return isNameMatched && isArchMatched && isVersionMatched;
+    }
+
+    private bool matchFeature(LauncherRule rule, RulesEvaluatorContext context)
+    {
+        if (rule.Features == null)
+            return true;
+
+        foreach (var kv in rule.Features)
+        {
+            var isFeatured = context.Features?.Contains(kv.Key) ?? false;
+            if (isFeatured != kv.Value)
+                return false;
+        }
+
+        return true;
     }
 }

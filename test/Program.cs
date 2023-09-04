@@ -1,14 +1,14 @@
 ﻿#if TestSdk
 
-namespace CmlLib.Core.Test;
+using CmlLib.Core.Test.Installers;
 
-internal class Program
+var tester = new TPLGameInstallerTest();
+int count = 0;
+while (true)
 {
-    public static async Task Main()
-    {
-        var tester = new TPLGameInstallerTest();
-        await tester.test();
-    }
+    Console.WriteLine("try " + count);
+    await tester.TestByteProgressReachesTo100();
+    count++;
 }
 
 #endif

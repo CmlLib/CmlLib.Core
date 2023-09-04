@@ -16,7 +16,7 @@ public class LiteLoaderInstaller
     }
 
     private readonly MinecraftPath minecraftPath;
-    private VersionCollection? liteLoaderVersions;
+    private VersionMetadataCollection? liteLoaderVersions;
 
     public static string GetVersionName(string loaderVersion, string baseVersion)
     {
@@ -39,7 +39,7 @@ public class LiteLoaderInstaller
     // vanilla
     public async Task<string> InstallAsync(string liteLoaderVersion)
     {
-        var localVersionLoader = new LocalVersionLoader(minecraftPath);
+        var localVersionLoader = new LocalJsonVersionLoader(minecraftPath);
         var localVersions = await localVersionLoader.GetVersionMetadatasAsync()
             .ConfigureAwait(false);
         

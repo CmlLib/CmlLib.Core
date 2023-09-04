@@ -43,7 +43,6 @@ public class DownloadTask : LinkedTask
         {
             try
             {
-                // TODO: handle duplicated file, example: e9833a1512b57bcf88ac4fdcc8df4e5a7e9d701d
                 await HttpClientDownloadHelper.DownloadFileAsync(
                     HttpClient,
                     Url,

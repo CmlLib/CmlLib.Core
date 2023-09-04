@@ -2,9 +2,10 @@
 
 // Sort IVersionMetadata
 // TODO: measure performance and optimizing
-public class MVersionMetadataSorter
+// TODO: refactoring as IComparer
+public class VersionMetadataSorter
 {
-    public MVersionMetadataSorter(MVersionSortOption option)
+    public VersionMetadataSorter(MVersionSortOption option)
     {
         this.option = option;
 

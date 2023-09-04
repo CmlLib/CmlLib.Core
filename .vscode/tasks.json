@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/examples/console/CmlLibCoreSample.csproj",
+                "${workspaceFolder}/test/CmlLib.Core.Test.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -19,7 +19,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/examples/console/CmlLibCoreSample.csproj",
+                "${workspaceFolder}/test/CmlLib.Core.Test.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -33,7 +33,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/examples/console/CmlLibCoreSample.csproj"
+                "${workspaceFolder}/test/CmlLib.Core.Test.csproj"
             ],
             "problemMatcher": "$msCompile"
         }

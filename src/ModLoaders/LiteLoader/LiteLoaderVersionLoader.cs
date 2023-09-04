@@ -15,7 +15,7 @@ public class LiteLoaderVersionLoader : IVersionLoader
     public LiteLoaderVersionLoader(HttpClient httpClient) =>
         _httpClient = httpClient;
 
-    public async ValueTask<VersionCollection> GetVersionMetadatasAsync()
+    public async ValueTask<VersionMetadataCollection> GetVersionMetadatasAsync()
     {
         var res = await _httpClient.GetStringAsync(ManifestServer)
             .ConfigureAwait(false);
@@ -23,7 +23,7 @@ public class LiteLoaderVersionLoader : IVersionLoader
         return parseVersions(res);
     }
 
-    private VersionCollection parseVersions(string json)
+    private VersionMetadataCollection parseVersions(string json)
     {
         using var jsonDocument = JsonDocument.Parse(json);
         var root = jsonDocument.RootElement; 
@@ -58,6 +58,6 @@ public class LiteLoaderVersionLoader : IVersionLoader
             }
         }
 
-        return new VersionCollection(metadataList, null, null);
+        return new VersionMetadataCollection(metadataList, null, null);
     }
 }

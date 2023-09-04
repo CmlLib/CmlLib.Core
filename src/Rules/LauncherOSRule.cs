@@ -35,26 +35,20 @@ public record LauncherOSRule
         return new LauncherOSRule(name, arch);
     }
 
-    [JsonConstructor]
+    public LauncherOSRule()
+    {
+        
+    }
+
     public LauncherOSRule(string name, string arch) =>
         (Name, Arch) = (name, arch);
 
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     [JsonPropertyName("arch")]
-    public string Arch { get; set; }
+    public string? Arch { get; set; }
 
-    public bool Match(LauncherOSRule toMatch)
-    {
-        return isPropMatch(Name, toMatch.Name) &&
-               isPropMatch(Arch, toMatch.Arch);
-    }
-
-    private bool isPropMatch(string? rule, string? toMatch)
-    {
-        if (string.IsNullOrEmpty(rule))
-            return true;
-        return rule == toMatch;
-    }
+    [JsonPropertyName("version")]
+    public string? Version { get; set; }
 }

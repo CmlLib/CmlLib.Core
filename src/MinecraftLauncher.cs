@@ -27,7 +27,7 @@ public class MinecraftLauncher
     public IRulesEvaluator RulesEvaluator { get; }
 
     public RulesEvaluatorContext RulesContext { get; set; }
-    public VersionCollection? Versions { get; private set; }
+    public VersionMetadataCollection? Versions { get; private set; }
 
     public MinecraftLauncher(string path) : this(WithMinecraftPath(new MinecraftPath(path)))
     {
@@ -68,7 +68,7 @@ public class MinecraftLauncher
         _byteProgress = new Progress<ByteProgress>(e => ByteProgressChanged?.Invoke(this, e));
     }
 
-    public async ValueTask<VersionCollection> GetAllVersionsAsync()
+    public async ValueTask<VersionMetadataCollection> GetAllVersionsAsync()
     {
         Versions = await VersionLoader.GetVersionMetadatasAsync();
         return Versions;

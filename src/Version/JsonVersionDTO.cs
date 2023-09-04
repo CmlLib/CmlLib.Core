@@ -4,7 +4,7 @@ using CmlLib.Core.Java;
 
 namespace CmlLib.Core.Version;
 
-public class VersionJsonModel
+public class JsonVersionDTO
 {
     [JsonPropertyName("inheritsFrom")]
     public string? InheritsFrom { get; set; }

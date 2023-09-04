@@ -66,16 +66,14 @@ class TPLGameInstallerExecutor
     public event EventHandler<InstallerProgressChangedEventArgs>? FileProgress;
     public event EventHandler<ByteProgress>? ByteProgress;
 
-    public GameInstallerExceptionMode ExceptionMode { get; set; }
+    public GameInstallerExceptionMode ExceptionMode { get; set; } = GameInstallerExceptionMode.ThrowAggreateException;
 
-    // 각 스레드별 진행률의 변화량을 저장
     private ThreadLocal<ByteProgress> progressStorage = null!;
     private bool isStarted = false;
     private CancellationToken CancellationToken;
     private int totalTasks = 0;
     private int proceed = 0;
     private ConcurrentBag<Exception> exceptions = null!;
-    private HashSet<string> distinctStorage = null!;
 
     public async ValueTask Install(
         IEnumerable<IFileExtractor> extractors,
@@ -88,7 +86,8 @@ class TPLGameInstallerExecutor
         initializeResources();
         CancellationToken = cancellationToken;
 
-        var extractorBlock = createExtractBlock(cancellationToken);
+        var distinctStorage = new HashSet<string>();
+        var extractorBlock = createExtractBlock(distinctStorage, cancellationToken);
         var executeBlock = createExecuteBlock(extractorBlock.Completion);
         extractorBlock.LinkTo(executeBlock!, t => t != null);
         extractorBlock.LinkTo(DataflowBlock.NullTarget<LinkedTask?>());
@@ -97,19 +96,23 @@ class TPLGameInstallerExecutor
         extractorBlock.Complete();
         await extractorBlock.Completion;
 
-        if (proceed == totalTasks)
-            return;
+        distinctStorage.Clear();
 
-        var executeTask = executeBlock.Completion;
-        while (!executeTask.IsCompleted)
+        if (proceed != totalTasks)
         {
-            reportByteProgress();
-            await Task.Delay(200);
+            var executeTask = executeBlock.Completion;
+            while (!executeTask.IsCompleted)
+            {
+                reportByteProgress();
+                await Task.WhenAny(Task.Delay(200), executeTask);
+            }
         }
+
         reportByteProgress();
         disposeResources();
 
-        if (!exceptions.IsEmpty)
+        if (!exceptions.IsEmpty &&
+            ExceptionMode == GameInstallerExceptionMode.ThrowAggreateException)
         {
             throw new AggregateException(exceptions);
         }
@@ -119,7 +122,6 @@ class TPLGameInstallerExecutor
     {
         progressStorage = new ThreadLocal<ByteProgress>(() => new ByteProgress(), true);
         exceptions = new ConcurrentBag<Exception>();
-        distinctStorage = new HashSet<string>();
         totalTasks = 0;
         proceed = 0;
     }
@@ -128,11 +130,8 @@ class TPLGameInstallerExecutor
     {
         progressStorage.Dispose();
         progressStorage = null!;
-        distinctStorage.Clear();
-        distinctStorage = null!;
     }
 
-    // 스레드별 진행률의 변화량을 집계하여 총 진행률을 계산
     private void reportByteProgress()
     {
         long totalBytes = 0;
@@ -143,7 +142,6 @@ class TPLGameInstallerExecutor
             totalBytes += v.TotalBytes;
             progressedBytes += v.ProgressedBytes;
         }
-
         fireByteProgress(totalBytes, progressedBytes);
     }
 
@@ -170,19 +168,18 @@ class TPLGameInstallerExecutor
 
     private async Task<LinkedTask?> execute(LinkedTask task, Task extractTask, IDataflowBlock buffer)
     {
-        // 현재 task 의 진행률을 계산
-        var lastProgress = new ByteProgress
+        ByteProgress lastProgress = new ByteProgress
         {
             TotalBytes = task.Size,
             ProgressedBytes = 0
         };
+
         var progress = new SyncProgress<ByteProgress>(e =>
         {
-            // 진행률의 변화량을 더함
             progressStorage.Value = new ByteProgress
             {
-                TotalBytes = progressStorage.Value.TotalBytes + e.TotalBytes - lastProgress.TotalBytes,
-                ProgressedBytes = progressStorage.Value.ProgressedBytes + e.ProgressedBytes - lastProgress.ProgressedBytes
+                TotalBytes = progressStorage.Value.TotalBytes + (e.TotalBytes - lastProgress.TotalBytes),
+                ProgressedBytes = progressStorage.Value.ProgressedBytes + (e.ProgressedBytes - lastProgress.ProgressedBytes)
             };
             lastProgress = e;
         });
@@ -190,7 +187,7 @@ class TPLGameInstallerExecutor
         LinkedTask? nextTask = null;
         try
         {
-            nextTask = await task.Execute(progress, CancellationToken);
+            await task.Execute(progress, CancellationToken);
         }
         catch (Exception ex)
         {
@@ -202,16 +199,16 @@ class TPLGameInstallerExecutor
             }
         }
 
-        progress.Report(new ByteProgress // 남은 byte 수를 전부 채워줌
+        progress.Report(new ByteProgress
         {
             TotalBytes = lastProgress.TotalBytes,
-            ProgressedBytes = lastProgress.TotalBytes,
+            ProgressedBytes = lastProgress.TotalBytes
         });
 
         if (nextTask == null)
         {
-            fireFileProgress(task.Name, TaskStatus.Done);
             Interlocked.Increment(ref proceed);
+            fireFileProgress(task.Name, TaskStatus.Done);
             if (totalTasks == proceed && extractTask.IsCompleted)
                 buffer.Complete();
         }
@@ -219,7 +216,9 @@ class TPLGameInstallerExecutor
         return nextTask;
     }
 
-    private IPropagatorBlock<IFileExtractor, LinkedTask> createExtractBlock(CancellationToken cancellationToken)
+    private IPropagatorBlock<IFileExtractor, LinkedTask> createExtractBlock(
+        HashSet<string> distinctStorage,
+        CancellationToken cancellationToken)
     {
         var extractorBlock = new TransformManyBlock<IFileExtractor, LinkedTask>(async extractor =>
         {
@@ -231,12 +230,10 @@ class TPLGameInstallerExecutor
                 {
                     totalTasks++;
                     fireFileProgress(task.Name, TaskStatus.Queued);
-
-                    var storedProgress = progressStorage.Value;
                     progressStorage.Value = new ByteProgress
                     {
-                        TotalBytes = storedProgress.TotalBytes + task.File.Size,
-                        ProgressedBytes = 0
+                        TotalBytes = progressStorage.Value.TotalBytes + task.File.Size,
+                        ProgressedBytes = progressStorage.Value.ProgressedBytes
                     };
 
                     return task.First!;
@@ -254,16 +251,17 @@ class TPLGameInstallerExecutor
         FileProgress?.Invoke(this, new InstallerProgressChangedEventArgs(name, status)
         {
             TotalTasks = totalTasks,
-            ProceedTasks = proceed
+            ProgressedTasks = proceed
         });
     }
 
     private void fireByteProgress(long totalBytes, long progressedBytes)
     {
-        ByteProgress?.Invoke(this, new ByteProgress
+        var progress = new ByteProgress
         {
             TotalBytes = totalBytes,
             ProgressedBytes = progressedBytes
-        });
+        };
+        ByteProgress?.Invoke(this, progress);
     }
 }

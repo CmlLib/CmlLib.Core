@@ -2,7 +2,7 @@ using NUnit.Framework;
 using CmlLib.Core.Rules;
 using CmlLib.Core.ProcessBuilder;
 
-namespace CmlLib.Core.Test;
+namespace CmlLib.Core.Test.ProcessBuilder;
 
 [TestFixture]
 public class ProcessArgumentBuilderTest

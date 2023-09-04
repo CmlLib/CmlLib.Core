@@ -5,19 +5,18 @@ using CmlLib.Core.ProcessBuilder;
 
 namespace CmlLib.Core.Version;
 
-// JsonElement 의존성 빼고 parse 과정을 전부 JsonVersionParser 으로 이동
-
-public class JsonVersion : IVersion
+public class JsonVersion : IVersion, IDisposable
 {
     private readonly JsonVersionParserOptions _options;
-    private readonly JsonElement _json;
-    private readonly VersionJsonModel _model;
+    private readonly JsonDocument _json;
+    private readonly JsonVersionDTO _model;
 
-    public JsonVersion(JsonElement json, JsonVersionParserOptions options)
+    public JsonVersion(JsonDocument jsonDocument, JsonVersionParserOptions options)
     {
         _options = options;
-        _json = json;
-        _model = json.Deserialize<VersionJsonModel>() ?? throw new ArgumentNullException();
+        _json = jsonDocument;
+        _model = jsonDocument.RootElement.Deserialize<JsonVersionDTO>() ?? 
+            throw new ArgumentNullException();
         Id = _model.Id ?? throw new ArgumentException("Null Id");
     }
 
@@ -56,6 +55,7 @@ public class JsonVersion : IVersion
     public MArgument[] GameArguments => _gameArgs ??= getGameArguments();
 
     private MArgument[]? _jvmArgs = null;
+
     public MArgument[] JvmArguments => _jvmArgs ??= getJvmArguments();
 
     private string? getJarId()
@@ -83,7 +83,7 @@ public class JsonVersion : IVersion
     {
         try
         {
-            return _json
+            return _json.RootElement
                 .GetProperty("downloads")
                 .GetProperty(_options.Side)
                 .Deserialize<MFileMetadata>();
@@ -100,7 +100,7 @@ public class JsonVersion : IVersion
     {
         try
         {
-            var libProp = _json.GetProperty("libraries");
+            var libProp = _json.RootElement.GetProperty("libraries");
             var libList = new List<MLibrary>();
             foreach (var libJson in libProp.EnumerateArray())
             {
@@ -122,7 +122,7 @@ public class JsonVersion : IVersion
     {
         try
         {
-            return _json
+            return _json.RootElement
                 .GetProperty("logging")
                 .GetProperty(_options.Side)
                 .Deserialize<MLogFileMetadata>();
@@ -139,7 +139,7 @@ public class JsonVersion : IVersion
     {
         try
         {
-            var prop = _json
+            var prop = _json.RootElement
                 .GetProperty("arguments")
                 .GetProperty("game");
             return JsonArgumentParser.Parse(prop);
@@ -174,7 +174,7 @@ public class JsonVersion : IVersion
     {
         try
         {
-            var prop = _json
+            var prop = _json.RootElement
                 .GetProperty("arguments")
                 .GetProperty("jvm");
             return JsonArgumentParser.Parse(prop);
@@ -193,9 +193,14 @@ public class JsonVersion : IVersion
 
     public string? GetProperty(string key)
     {
-        if (_json.TryGetProperty(key, out var prop))
+        if (_json.RootElement.TryGetProperty(key, out var prop))
             return prop.GetString();
         else
             return null;
+    }
+
+    public void Dispose()
+    {
+        _json.Dispose();
     }
 }

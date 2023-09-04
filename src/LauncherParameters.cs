@@ -21,8 +21,8 @@ public class LauncherParameters
         parameters.RulesEvaluator = new RulesEvaluator();
         parameters.VersionLoader = new VersionLoaderCollection
         {
-            new LocalVersionLoader(parameters.MinecraftPath),
-            new MojangVersionLoader(httpClient)
+            new LocalJsonVersionLoader(parameters.MinecraftPath),
+            new MojangJsonVersionLoader(httpClient)
         };
         parameters.JavaPathResolver = new MinecraftJavaPathResolver();
         parameters.GameInstaller = new TPLGameInstaller(TPLGameInstaller.BestMaxParallelism);

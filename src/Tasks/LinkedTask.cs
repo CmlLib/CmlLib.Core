@@ -7,6 +7,7 @@ public abstract class LinkedTask
         if (string.IsNullOrEmpty(file.Name))
             throw new ArgumentException("file.Name was empty");
         this.Name = file.Name;
+        this.Size = file.Size;
     }
 
     public LinkedTask(string name)

@@ -22,7 +22,7 @@ public class FabricVersionLoader : IVersionLoader
         return $"fabric-loader-{loaderVersion}-{version}";
     }
 
-    public async ValueTask<VersionCollection> GetVersionMetadatasAsync()
+    public async ValueTask<VersionMetadataCollection> GetVersionMetadatasAsync()
     {
         if (string.IsNullOrEmpty(LoaderVersion))
         {
@@ -39,7 +39,7 @@ public class FabricVersionLoader : IVersionLoader
             .ConfigureAwait(false);
 
         var versions = parseVersions(res, LoaderVersion!);
-        return new VersionCollection(versions, null, null);
+        return new VersionMetadataCollection(versions, null, null);
     }
 
     private IEnumerable<IVersionMetadata> parseVersions(string res, string loader)

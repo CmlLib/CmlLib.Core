@@ -84,8 +84,8 @@ public class LegacyJavaFileExtractor : IFileExtractor
         var root = jsonDocument.RootElement;
 
         var javaUrl = root
-            .GetPropertyOrNull(LauncherOSRule.Current.Name)?
-            .GetPropertyOrNull(LauncherOSRule.Current.Arch)?
+            .GetPropertyOrNull(LauncherOSRule.Current.Name ?? string.Empty)?
+            .GetPropertyOrNull(LauncherOSRule.Current.Arch ?? string.Empty)?
             .GetPropertyOrNull("jre")?
             .GetPropertyValue("url");
 

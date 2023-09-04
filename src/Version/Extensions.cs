@@ -24,18 +24,37 @@ public static class Extensions
         return default;
     }
 
-    public static IEnumerable<T> ConcatInheritedCollection<T>(this IVersion self, Func<IVersion, IEnumerable<T>> prop)
+    public static IEnumerable<T> ConcatInheritedCollection<T>(
+        this IVersion self, 
+        Func<IVersion, IEnumerable<T>> prop,
+        int maxDepth = 10)
     {
-        IVersion? version = self;
-        while (version != null)
+        foreach (var version in enumerateFromParent(self, maxDepth))
         {
-            var value = prop.Invoke(version);
-            if (value != null)
+            foreach (var item in prop(version))
             {
-                foreach (var item in value)
-                    yield return item;
+                yield return item;
             }
-            version = version.ParentVersion;
+        }
+    }
+
+    private static IEnumerable<IVersion> enumerateFromParent(IVersion version, int maxDepth)
+    {
+        var stack = new Stack<IVersion>();
+
+        IVersion? v = version;
+        while (v != null)
+        {
+            if (stack.Count >= maxDepth)
+                throw new Exception();
+
+            stack.Push(v);
+            v = v.ParentVersion;
+        }
+
+        while (stack.Any())
+        {
+            yield return stack.Pop();
         }
     }
 }

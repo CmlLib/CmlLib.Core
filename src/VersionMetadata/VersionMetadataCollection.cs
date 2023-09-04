@@ -6,15 +6,15 @@ namespace CmlLib.Core.VersionMetadata;
 
 // Collection for IVersionMetadata
 // return IVersion object from IVersionMetadata
-public class VersionCollection : IEnumerable<IVersionMetadata>
+public class VersionMetadataCollection : IEnumerable<IVersionMetadata>
 {
-    public VersionCollection()
+    public VersionMetadataCollection()
         : this(Enumerable.Empty<IVersionMetadata>(), null, null)
     {
 
     }
 
-    public VersionCollection(
+    public VersionMetadataCollection(
         IEnumerable<IVersionMetadata> versions,
         string? latestRelease,
         string? latestSnapshot)
@@ -35,13 +35,14 @@ public class VersionCollection : IEnumerable<IVersionMetadata>
     // Use OrderedDictionary to keep version order
     protected OrderedDictionary Versions;
 
+    public int MaxDepth { get; set; } = 10;
     public string? LatestReleaseName { get; private set; }
     public string? LatestSnapshotName { get; private set; }
-    
+
     public IVersionMetadata this[int index] => (IVersionMetadata)Versions[index]!;
 
     public IVersionMetadata GetVersionMetadata(string name)
-    {   
+    {
         if (TryGetVersionMetadata(name, out var version))
             return version;
         else
@@ -52,7 +53,7 @@ public class VersionCollection : IEnumerable<IVersionMetadata>
     {
         if (name == null)
             throw new ArgumentNullException(nameof(name));
-        
+
         var metadata = Versions[name] as IVersionMetadata;
         version = metadata!;
         return metadata != null;
@@ -60,7 +61,7 @@ public class VersionCollection : IEnumerable<IVersionMetadata>
 
     public IVersionMetadata[] ToArray(MVersionSortOption option)
     {
-        var sorter = new MVersionMetadataSorter(option);
+        var sorter = new VersionMetadataSorter(option);
         return sorter.Sort(this);
     }
 
@@ -83,12 +84,12 @@ public class VersionCollection : IEnumerable<IVersionMetadata>
     }
 
     public Task<IVersion> GetVersionAsync(IVersionMetadata versionMetadata) =>
-        getVersionInternal(versionMetadata, null);
+        getVersionInternal(versionMetadata, null, new List<string>());
 
     public Task<IVersion> GetAndSaveVersionAsync(IVersionMetadata versionMetadata, MinecraftPath path) =>
-        getVersionInternal(versionMetadata, path);
+        getVersionInternal(versionMetadata, path, new List<string>());
 
-    private async Task<IVersion> getVersionInternal(IVersionMetadata versionMetadata, MinecraftPath? path)
+    private async Task<IVersion> getVersionInternal(IVersionMetadata versionMetadata, MinecraftPath? path, List<string> visited)
     {
         if (versionMetadata == null)
             throw new ArgumentNullException(nameof(versionMetadata));
@@ -99,22 +100,26 @@ public class VersionCollection : IEnumerable<IVersionMetadata>
         else
             version = await versionMetadata.GetAndSaveVersionAsync(path);
 
-        await inheritIfRequired(version, path);
+        await inheritIfRequired(version, path, visited);
         return version;
     }
 
-    private async Task inheritIfRequired(IVersion version, MinecraftPath? path)
+    private async Task inheritIfRequired(IVersion version, MinecraftPath? path, List<string> visited)
     {
-        if (!string.IsNullOrEmpty(version.InheritsFrom))
-        {
-            if (version.InheritsFrom == version.Id) // prevent StackOverFlowException
-                throw new InvalidDataException(
-                    "Invalid version json file : inheritFrom property is equal to id property.");
+        if (string.IsNullOrEmpty(version.InheritsFrom))
+            return;
+        if (version.InheritsFrom == version.Id)
+            return;
 
-            var baseVersionMetadata = GetVersionMetadata(version.InheritsFrom);
-            var baseVersion = await getVersionInternal(baseVersionMetadata, path);
-            version.ParentVersion = baseVersion;
-        }
+        if (visited.Contains(version.InheritsFrom))
+            throw new InvalidDataException(); // declare new exception
+        visited.Add(version.Id);
+        if (visited.Count >= MaxDepth)
+            throw new InvalidDataException(); // declare new exception
+
+        var baseVersionMetadata = GetVersionMetadata(version.InheritsFrom);
+        var baseVersion = await getVersionInternal(baseVersionMetadata, path, visited);
+        version.ParentVersion = baseVersion;
     }
 
     public void AddVersion(IVersionMetadata version)
@@ -125,7 +130,7 @@ public class VersionCollection : IEnumerable<IVersionMetadata>
     public bool Contains(string? versionName)
         => !string.IsNullOrEmpty(versionName) && Versions.Contains(versionName);
 
-    public void Merge(VersionCollection from)
+    public void Merge(VersionMetadataCollection from)
     {
         foreach (var item in from)
         {
@@ -146,7 +151,7 @@ public class VersionCollection : IEnumerable<IVersionMetadata>
         foreach (DictionaryEntry? item in Versions)
         {
             var entry = item.Value;
-            
+
             var version = (IVersionMetadata)entry.Value!;
             yield return version;
         }

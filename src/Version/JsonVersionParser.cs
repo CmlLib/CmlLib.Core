@@ -7,14 +7,14 @@ public static class JsonVersionParser
     public static IVersion ParseFromJsonString(string json, JsonVersionParserOptions options)
     {
         var document = JsonDocument.Parse(json);
-        return ParseFromJson(document.RootElement, options);
+        return ParseFromJson(document, options);
     }
 
-    public static IVersion ParseFromJson(JsonElement element, JsonVersionParserOptions options)
+    public static IVersion ParseFromJson(JsonDocument json, JsonVersionParserOptions options)
     {
         try
         {
-            return parseInternal(element, options);
+            return new JsonVersion(json, options);
         }
         catch (MVersionParseException)
         {
@@ -24,10 +24,5 @@ public static class JsonVersionParser
         {
             throw new MVersionParseException(ex);
         }
-    }
-
-    private static IVersion parseInternal(JsonElement root, JsonVersionParserOptions options)
-    {
-        return new JsonVersion(root, options);
     }
 }
