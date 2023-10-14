@@ -1,7 +1,4 @@
 ﻿using CmlLib.Core;
-using System;
-using System.IO;
-using System.Windows.Forms;
 
 namespace CmlLibWinFormSample
 {
@@ -11,6 +8,7 @@ namespace CmlLibWinFormSample
 
         public PathForm()
         {
+            this.MinecraftPath = new MinecraftPath();
             InitializeComponent();
         }
 
@@ -28,7 +26,7 @@ namespace CmlLibWinFormSample
                 apply(MinecraftPath);
         }
 
-        private void btnSetDefault_Click(object sender, EventArgs e)
+        private void btnSetDefault_Click(object? sender, EventArgs? e)
         {
             var defaultPath = MinecraftPath.GetOSDefaultPath();
             apply(new MinecraftPath(defaultPath));

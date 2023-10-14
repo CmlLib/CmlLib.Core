@@ -8,14 +8,14 @@ using CmlLib.Core.VersionLoader;
 
 namespace CmlLib.Core;
 
-public class LauncherParameters
+public class MinecraftLauncherParameters
 {
-    public static LauncherParameters CreateDefault() => 
+    public static MinecraftLauncherParameters CreateDefault() => 
         CreateDefault(HttpUtil.SharedHttpClient.Value);
 
-    public static LauncherParameters CreateDefault(HttpClient httpClient)
+    public static MinecraftLauncherParameters CreateDefault(HttpClient httpClient)
     {
-        var parameters = new LauncherParameters();
+        var parameters = new MinecraftLauncherParameters();
         parameters.HttpClient = httpClient;
         parameters.MinecraftPath = new MinecraftPath();
         parameters.RulesEvaluator = new RulesEvaluator();
@@ -35,12 +35,12 @@ public class LauncherParameters
         return parameters;
     }
 
-    public static LauncherParameters CreateEmpty()
+    public static MinecraftLauncherParameters CreateEmpty()
     {
-        return new LauncherParameters();
+        return new MinecraftLauncherParameters();
     }
 
-    private LauncherParameters()
+    private MinecraftLauncherParameters()
     {
 
     }

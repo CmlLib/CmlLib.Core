@@ -1,13 +1,10 @@
-﻿using System;
-using System.Windows.Forms;
-
-namespace CmlLibWinFormSample
+﻿namespace CmlLibWinFormSample
 {
     public partial class JavaForm : Form
     {
-        public string JavaBinaryPath { get; set; }
+        public string? JavaBinaryPath { get; set; }
 
-        public JavaForm(string javaPath)
+        public JavaForm(string? javaPath)
         {
             this.JavaBinaryPath = javaPath;
             InitializeComponent();

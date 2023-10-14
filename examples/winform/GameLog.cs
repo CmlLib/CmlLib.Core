@@ -33,7 +33,7 @@ namespace CmlLibWinFormSample
                 return;
 
             var sb = new StringBuilder();
-            while (logQueue.TryDequeue(out string msg))
+            while (logQueue.TryDequeue(out var msg))
             {
                 sb.AppendLine(msg);
             }

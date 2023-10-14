@@ -3,14 +3,14 @@ using CmlLib.Core.Auth;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
-using CmlLib.Core.Downloader;
-using CmlLib.Core.FileChecker;
 using CmlLib.Core.VersionMetadata;
+using CmlLib.Core.Installers;
 
 namespace CmlLibWinFormSample
 {
     public partial class MainForm : Form
     {
+        private readonly MSession session;
         private readonly HttpClient _httpClient = new();
 
         public MainForm(MSession session)
@@ -19,47 +19,50 @@ namespace CmlLibWinFormSample
             InitializeComponent();
         }
 
-        CMLauncher launcher;
-        readonly MSession session;
-        MinecraftPath gamePath; 
-        string javaPath;
+        MinecraftLauncher? launcher;
+        string? javaPath;
 
         private async void MainForm_Shown(object sender, EventArgs e)
         {
             lbLibraryVersion.Text = "CmlLib.Core " + getLibraryVersion();
             
             // Initialize launcher
-            var defaultPath = new MinecraftPath(MinecraftPath.GetOSDefaultPath());
-            await initializeLauncher(defaultPath);
+            await initializeLauncher(new MinecraftPath());
         }
 
         private async Task initializeLauncher(MinecraftPath path)
         {
             lbUsername.Text = session.Username;
             txtPath.Text = path.BasePath;
-            this.gamePath = path;
             
-            launcher = new CMLauncher(path, _httpClient);
-            launcher.FileChanged += Launcher_FileChanged;
-            launcher.ProgressChanged += Launcher_ProgressChanged;
-            await refreshVersions(null);
+            var parameters = MinecraftLauncherParameters.CreateDefault();
+            parameters.MinecraftPath = path;
+            parameters.HttpClient = _httpClient;
+
+            launcher = new MinecraftLauncher(parameters);
+            await refreshVersions();
         }
 
         private async void btnRefreshVersion_Click(object sender, EventArgs e)
         {
-            await refreshVersions(null);
+            await refreshVersions();
         }
 
-        private async Task refreshVersions(string showVersion)
+        private async Task refreshVersions(string? showVersion=null)
         {
-            cbVersion.Items.Clear();
+            if (launcher == null)
+            {
+                MessageBox.Show("Initialize the launcher first");
+                return;
+            }
 
+            cbVersion.Items.Clear();
             var versions = await launcher.GetAllVersionsAsync();
 
             bool showVersionExist = false;
             foreach (var item in versions)
             {
-                if (showVersion != null && item.Name == showVersion)
+                if (item.Name == showVersion)
                     showVersionExist = true;
                 cbVersion.Items.Add(item.Name);
             }
@@ -70,27 +73,35 @@ namespace CmlLibWinFormSample
                 cbVersion.Text = showVersion;
         }
 
-        private void btnSetLastVersion_Click(object sender, EventArgs e)
+        private void btnSetLastVersion_Click(object? sender, EventArgs? e)
         {
-            cbVersion.Text = launcher.Versions?.LatestReleaseName;
+            cbVersion.Text = launcher?.Versions?.LatestReleaseName;
         }
         
         private void btnSortFilter_Click(object sender, EventArgs e)
         {
+            if (launcher == null)
+            {
+                MessageBox.Show("Initialize the launcher first");
+                return;
+            }
             var form = new VersionSortOptionForm(launcher, new MVersionSortOption());
             form.ShowDialog();
-            
         }
 
         // Start Game
         private async void Btn_Launch_Click(object sender, EventArgs e)
         {
+            if (launcher == null)
+            {
+                MessageBox.Show("Initialize the launcher first");
+                return;
+            }
             if (session == null)
             {
                 MessageBox.Show("Login First");
                 return;
             }
-
             if (cbVersion.Text == "")
             {
                 MessageBox.Show("Select Version");
@@ -103,7 +114,7 @@ namespace CmlLibWinFormSample
             try
             {
                 // create LaunchOption
-                var launchOption = new MLaunchOption()
+                var launchOption = new CmlLib.Core.ProcessBuilder.MLaunchOption()
                 {
                     MaximumRamMb = int.Parse(TxtXmx.Text),
                     Session = this.session,
@@ -138,14 +149,6 @@ namespace CmlLibWinFormSample
                 if (!string.IsNullOrEmpty(Txt_JavaArgs.Text))
                     launchOption.JVMArguments = Txt_JavaArgs.Text.Split(' ');
 
-                if (rbParallelDownload.Checked)
-                {
-                    System.Net.ServicePointManager.DefaultConnectionLimit = 256;
-                    launcher.FileDownloader = new AsyncParallelDownloader(_httpClient);
-                }
-                else
-                    launcher.FileDownloader = new SequenceDownloader(_httpClient);
-
                 //if (cbSkipAssetsDownload.Checked)
                 //    launcher.GameFileCheckers.AssetFileChecker = null;
                 //else if (launcher.GameFileCheckers.AssetFileChecker == null)
@@ -170,15 +173,6 @@ namespace CmlLibWinFormSample
             catch (FormatException fex) // int.Parse exception
             {
                 MessageBox.Show("Failed to create MLaunchOption\n\n" + fex);
-            }
-            catch (MDownloadFileException mex) // download exception
-            {
-                MessageBox.Show(
-                    $"FileName : {mex.ExceptionFile.Name}\n" +
-                    $"FilePath : {mex.ExceptionFile.Path}\n" +
-                    $"FileUrl : {mex.ExceptionFile.Url}\n" +
-                    $"FileType : {mex.ExceptionFile.Type}\n\n" +
-                    mex.ToString());
             }
             catch (Win32Exception wex) // java exception
             {
@@ -208,21 +202,26 @@ namespace CmlLibWinFormSample
             Pb_Progress.Value = e.ProgressPercentage;
         }
 
-        private void Launcher_FileChanged(DownloadFileChangedEventArgs e)
+        private void Launcher_FileChanged(InstallerProgressChangedEventArgs e)
         {
             if (Thread.CurrentThread.ManagedThreadId != uiThreadId)
             {
                 Debug.WriteLine(e);
             }
-            Pb_File.Maximum = e.TotalFileCount;
-            Pb_File.Value = e.ProgressedFileCount;
-            Lv_Status.Text = $"{e.FileKind} : {e.FileName} ({e.ProgressedFileCount}/{e.TotalFileCount})";
+            Pb_File.Maximum = e.TotalTasks;
+            Pb_File.Value = e.ProgressedTasks;
+            Lv_Status.Text = $"[{e.EventType}][{e.ProgressedTasks}/{e.TotalTasks}] {e.Name}";
             //Debug.WriteLine(Lv_Status.Text);
         }
 
         private async void btnChangePath_Click(object sender, EventArgs e)
         {
-            var form = new PathForm(this.gamePath);
+            if (launcher == null)
+            {
+                MessageBox.Show("Initialize the launcher first");
+                return;
+            }
+            var form = new PathForm(launcher.MinecraftPath);
             form.ShowDialog();
             await initializeLauncher(form.MinecraftPath);
         }
@@ -295,8 +294,12 @@ namespace CmlLibWinFormSample
 
         private void btnOptions_Click(object sender, EventArgs e)
         {
-            // options.txt
-            var path = System.IO.Path.Combine(gamePath.BasePath, "options.txt");
+            if (launcher == null)
+            {
+                MessageBox.Show("Initialize the launcher first");
+                return;
+            }
+            var path = Path.Combine(launcher.MinecraftPath.BasePath, "options.txt");
             var f = new GameOptions(path);
             f.Show();
         }
@@ -323,11 +326,11 @@ namespace CmlLibWinFormSample
             }
         }
 
-        private string getLibraryVersion()
+        private string? getLibraryVersion()
         {
             try
             {
-                return Assembly.GetAssembly(typeof(CMLauncher)).GetName().Version.ToString();
+                return Assembly.GetAssembly(typeof(MinecraftLauncher))?.GetName().Version?.ToString();
             }
             catch (Exception ex)
             {

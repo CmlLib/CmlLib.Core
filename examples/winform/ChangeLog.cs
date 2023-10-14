@@ -1,4 +1,4 @@
-﻿using CmlLib.Utils;
+﻿using CmlLib.Core.Utils;
 
 namespace CmlLibWinFormSample
 {
@@ -9,7 +9,7 @@ namespace CmlLibWinFormSample
             InitializeComponent();
         }
 
-        private Changelogs changelogs;
+        private Changelogs? changelogs;
         
         private async void ChangeLog_Load(object sender, EventArgs e)
         {
@@ -21,6 +21,12 @@ namespace CmlLibWinFormSample
         
         private async void btnLoad_Click(object sender, EventArgs e)
         {
+            if (changelogs == null)
+            {
+                MessageBox.Show("Changelogs was not loaded yet");
+                return;
+            }
+
             var version = listBox1.SelectedItem?.ToString();
             if (string.IsNullOrEmpty(version))
                 return;

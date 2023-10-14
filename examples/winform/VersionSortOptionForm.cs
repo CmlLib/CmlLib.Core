@@ -5,15 +5,15 @@ namespace CmlLibWinFormSample
 {
     public partial class VersionSortOptionForm : Form
     {
-        public VersionSortOptionForm(CMLauncher launcher, MVersionSortOption sortOption)
+        public VersionSortOptionForm(MinecraftLauncher launcher, MVersionSortOption sortOption)
         {
             this.sortOption = sortOption;
             this.launcher = launcher;
             InitializeComponent();
         }
 
-        private readonly CMLauncher launcher;
-        private MVersionCollection versions;
+        private readonly MinecraftLauncher launcher;
+        private VersionMetadataCollection? versions;
         public MVersionSortOption sortOption { get; private set; }
 
         private async void VersionSortOptionForm_Load(object sender, EventArgs e)
@@ -32,7 +32,7 @@ namespace CmlLibWinFormSample
             versions = await launcher.GetAllVersionsAsync();
         }
 
-        private MVersionSortOption buildSortOption()
+        private MVersionSortOption? buildSortOption()
         {
             var typeList = new List<MVersionType>();
             foreach (var item in txtTypeOrder.Text.Split('\n'))
@@ -89,7 +89,7 @@ namespace CmlLibWinFormSample
         private void btnPreview_Click(object sender, EventArgs e)
         {
             var option = buildSortOption();
-            if (option == null)
+            if (option == null || versions == null)
                 return;
 
             listPreview.Items.Clear();
@@ -102,7 +102,11 @@ namespace CmlLibWinFormSample
 
         private void btnClose_Click(object sender, EventArgs e)
         {
-            sortOption = buildSortOption();
+            var option = buildSortOption();
+            if (option == null)
+                return;
+
+            sortOption = option;
             this.Close();
         }
 

@@ -1,6 +1,4 @@
-﻿using CmlLib.Utils;
-using System;
-using System.Windows.Forms;
+﻿using CmlLib.Core.Utils;
 
 namespace CmlLibWinFormSample
 {
@@ -14,7 +12,7 @@ namespace CmlLibWinFormSample
             InitializeComponent();
         }
 
-        GameOptionsFile optionFile;
+        GameOptionsFile? optionFile;
 
         private void GameOptions_Load(object sender, EventArgs e)
         {
@@ -22,7 +20,7 @@ namespace CmlLibWinFormSample
             btnLoad_Click(null, null);
         }
 
-        private void btnLoad_Click(object sender, EventArgs e)
+        private void btnLoad_Click(object? sender, EventArgs? e)
         {
             this.Path = txtPath.Text;
 
@@ -62,6 +60,12 @@ namespace CmlLibWinFormSample
 
         private void btnSave_Click(object sender, EventArgs e)
         {
+            if (optionFile == null)
+            {
+                MessageBox.Show("Load the option file first");
+                return;
+            }
+
             foreach (ListViewItem item in listView1.Items)
             {
                 optionFile.SetRawValue(item.Text, item.SubItems[1].Text);

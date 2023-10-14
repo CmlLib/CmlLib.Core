@@ -7,6 +7,7 @@ namespace CmlLib.Core.Benchmarks;
 [MemoryDiagnoser(false)]
 public class ExecutorsBenchmark
 {
+    #nullable disable
     ConcurrentDictionaryBenchmark _concurrent;
     ConcurrentQueueBenchmark _queue;
     LockBenchmark _lock;
@@ -77,6 +78,6 @@ public class ExecutorsBenchmark
         //if (status != TaskStatus.Done) return;
         //if (proceed % 100 != 0) return;
         var now = DateTime.Now.ToString("hh:mm:ss.fff");
-        Console.WriteLine($"[{now}][{e.ProceedTasks}/{e.TotalTasks}][{e.EventType}] {e.Name}");
+        Console.WriteLine($"[{now}][{e.ProgressedTasks}/{e.TotalTasks}][{e.EventType}] {e.Name}");
     }
 }

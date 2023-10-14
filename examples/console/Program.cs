@@ -21,7 +21,7 @@ class Program
         var sw = new Stopwatch();
 
         // initialize launcher
-        var parameters = LauncherParameters.CreateDefault();
+        var parameters = MinecraftLauncherParameters.CreateDefault();
         //parameters.GameInstaller = new TPLGameInstaller(1);
         //parameters.VersionLoader = new VersionLoaderCollection
         //{
@@ -88,14 +88,14 @@ class Program
     {
         lock (consoleLock)
         {
-            if (previousProceed > e.ProceedTasks)
+            if (previousProceed > e.ProgressedTasks)
                 return;
 
-            var msg = $"[{e.ProceedTasks} / {e.TotalTasks}][{e.EventType}] {e.Name}";
+            var msg = $"[{e.ProgressedTasks} / {e.TotalTasks}][{e.EventType}] {e.Name}";
             Console.WriteLine(msg.PadRight(lastCursorLeft));
             printBottomProgress();
 
-            previousProceed = e.ProceedTasks;
+            previousProceed = e.ProgressedTasks;
         }
     }
 

@@ -39,14 +39,14 @@ public class MinecraftLauncher
 
     }
 
-    private static LauncherParameters WithMinecraftPath(MinecraftPath path)
+    private static MinecraftLauncherParameters WithMinecraftPath(MinecraftPath path)
     {
-        var parameters = LauncherParameters.CreateDefault();
+        var parameters = MinecraftLauncherParameters.CreateDefault();
         parameters.MinecraftPath = path;
         return parameters;
     }
 
-    public MinecraftLauncher(LauncherParameters parameters)
+    public MinecraftLauncher(MinecraftLauncherParameters parameters)
     {
         MinecraftPath = parameters.MinecraftPath
             ?? throw new ArgumentException(nameof(parameters.MinecraftPath) + " was null");
