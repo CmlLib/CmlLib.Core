@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 
 namespace CmlLib.Core.Auth
 {
@@ -33,6 +34,7 @@ namespace CmlLib.Core.Auth
                 && !string.IsNullOrEmpty(UUID);
         }
 
+        [Obsolete("Use CreateOfflineSession(\"username\") instead. From 1.20.2, the game would not start up with the session created by this method.")]
         public static MSession GetOfflineSession(string username)
         {
             return new MSession
@@ -41,6 +43,19 @@ namespace CmlLib.Core.Auth
                 AccessToken = "access_token", 
                 UUID = "user_uuid",
                 UserType = "Mojang",
+                ClientToken = null
+            };
+        }
+
+        // Create offline session with valid UUID. Since 1.20.2, passing invalid UUID crashes the game
+        public static MSession CreateOfflineSession(string username)
+        {
+            return new MSession
+            {
+                Username = username,
+                AccessToken = "access_token",
+                UUID = Guid.NewGuid().ToString().Replace("-", ""), // create random valid UUID
+                UserType = "msa",
                 ClientToken = null
             };
         }

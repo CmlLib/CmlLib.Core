@@ -15,12 +15,7 @@ namespace CmlLibCoreSample
             var p = new Program();
 
             // Login
-            MSession session; // login session
-
-            // There are two login methods, one is using mojang email and password, and the other is using only username
-            // Choose one which you want.
-            session = p.PremiumLogin(); // Login by mojang email and password
-            //session = p.OfflineLogin(); // Login by username
+            MSession session = MSession.CreateOfflineSession("cmllib_tester");
 
             // log login session information
             Console.WriteLine("Success to login : {0} / {1} / {2}", session.Username, session.UUID, session.AccessToken);
@@ -28,46 +23,6 @@ namespace CmlLibCoreSample
             // Launch
             p.Start(session);
             //p.StartAsync(session).GetAwaiter().GetResult();
-        }
-
-        MSession PremiumLogin()
-        {
-            var login = new MLogin();
-
-            // TryAutoLogin() reads the login cache file and check validation.
-            // If the cached session is invalid, it refreshes the session automatically.
-            // Refreshing the session doesn't always succeed, so you have to handle this.
-            Console.WriteLine("Attempting to automatically log in.");
-            var response = login.TryAutoLogin();
-
-            if (!response.IsSuccess) // if cached session is invalid and failed to refresh token
-            {
-                Console.WriteLine("Auto login failed: {0}", response.Result.ToString());
-
-                Console.WriteLine("Input your Mojang email: ");
-                var email = Console.ReadLine();
-                Console.WriteLine("Input your Mojang password: ");
-                var pw = Console.ReadLine();
-
-                response = login.Authenticate(email, pw);
-
-                if (!response.IsSuccess)
-                {
-                    // session.Message contains a detailed error message. It can be null or an empty string.
-                    Console.WriteLine("failed to login. {0} : {1}", response.Result.ToString(), response.ErrorMessage);
-                    Console.ReadLine();
-                    Environment.Exit(0);
-                    return null;
-                }
-            }
-
-            return response.Session;
-        }
-
-        MSession OfflineLogin()
-        {
-            // Create fake session by username
-            return MSession.GetOfflineSession("tester123");
         }
 
         void Start(MSession session)
@@ -205,7 +160,7 @@ namespace CmlLibCoreSample
             var launchOption = new MLaunchOption
             {
                 MaximumRamMb = 1024,
-                Session = MSession.GetOfflineSession("hello"), // Login Session. ex) Session = MSession.GetOfflineSession("hello")
+                Session = MSession.CreateOfflineSession("hello"), // Login Session. ex) Session = MSession.GetOfflineSession("hello")
 
                 //ScreenWidth = 1600,
                 //ScreenHeigth = 900,

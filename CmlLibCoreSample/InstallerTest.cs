@@ -94,7 +94,7 @@ namespace CmlLibCoreSample
             // start
             var process = await launcher.CreateProcessAsync(startVersionName, new MLaunchOption
             {
-                Session = MSession.GetOfflineSession("liteloadertester"),
+                Session = MSession.CreateOfflineSession("liteloadertester"),
                 MaximumRamMb = 2048
             });
 
