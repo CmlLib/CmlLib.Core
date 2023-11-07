@@ -161,6 +161,10 @@ namespace CmlLib.Core
             // options
             if (!string.IsNullOrEmpty(launchOption.ServerIp))
             {
+                if (launchOption.ServerPort != DefaultServerPort)
+                    args.Add("--quickPlayMultiplayer " + $"{launchOption.ServerIp}:{launchOption.ServerPort}");
+                else
+                    args.Add("--quickPlayMultiplayer " + $"{launchOption.ServerIp}");
                 args.Add("--server " + handleEmpty(launchOption.ServerIp));
 
                 if (launchOption.ServerPort != DefaultServerPort)
