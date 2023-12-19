@@ -30,6 +30,7 @@ namespace CmlLib.Core
         public string? VersionType { get; set; }
         public string? GameLauncherName { get; set; }
         public string? GameLauncherVersion { get; set; }
+        public OsType OsType { get; set; } = OsType.Undefined;
 
         internal MinecraftPath GetMinecraftPath() => Path!;
         internal MVersion GetStartVersion() => StartVersion!;

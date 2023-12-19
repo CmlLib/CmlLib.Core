@@ -20,8 +20,8 @@ namespace CmlLib.Core
         public static readonly string OSX = "osx";
         public static readonly string Linux = "linux";
 
-        public static string OSName { get; private set; }
-        public static string Arch { get; private set; }
+        public static string OSName { get; internal set; }
+        public static string Arch { get; internal set; }
 
         private static string getOSName()
         {
@@ -30,7 +30,7 @@ namespace CmlLib.Core
             var osType = Environment.OSVersion.Platform;
 
             if (osType == PlatformID.MacOSX)
-                return OSX;
+                return OsX;
             else if (osType == PlatformID.Unix)
                 return Linux;
             else
@@ -83,7 +83,7 @@ namespace CmlLib.Core
         {
             if (job == null)
                 return false;
-            
+
             foreach (var os in job)
             {
                 if (os.Key == "name" && os.Value?.ToString() == OSName)

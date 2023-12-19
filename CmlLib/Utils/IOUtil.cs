@@ -16,7 +16,7 @@ namespace CmlLib.Utils
                 .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
                 .TrimEnd(Path.DirectorySeparatorChar);
         }
-        
+
         public static void DeleteDirectory(string targetDir)
         {
             try
@@ -44,7 +44,7 @@ namespace CmlLib.Utils
 
         public static string CombinePath(string[] paths)
         {
-            return string.Join(Path.PathSeparator.ToString(),
+            return string.Join(";",
                 paths.Select(x =>
                 {
                     string path = Path.GetFullPath(x);
@@ -92,7 +92,7 @@ namespace CmlLib.Utils
         {
             if (string.IsNullOrEmpty(compareHash))
                 return true;
-            
+
             try
             {
                 string fileHash;
@@ -141,7 +141,7 @@ namespace CmlLib.Utils
         }
 
         #region Async File IO
-        
+
         // from .NET Framework reference source code
         // If we use the path-taking constructors we will not have FileOptions.Asynchronous set and
         // we will have asynchronous file access faked by the thread pool. We want the real thing.
@@ -153,7 +153,7 @@ namespace CmlLib.Utils
 
             return stream;
         }
-        
+
         public static FileStream AsyncWriteStream(string path, bool append)
         {
             FileStream stream = new FileStream(
@@ -162,7 +162,7 @@ namespace CmlLib.Utils
 
             return stream;
         }
-        
+
         public static StreamReader AsyncStreamReader(string path, Encoding encoding)
         {
             FileStream stream = AsyncReadStream(path);
@@ -194,14 +194,14 @@ namespace CmlLib.Utils
             await writer.WriteAsync(content).ConfigureAwait(false); // **MUST be awaited in this scope**
             await writer.FlushAsync().ConfigureAwait(false);
         }
-        
+
         public static async Task CopyFileAsync(string sourceFile, string destinationFile)
         {
             using var sourceStream = AsyncReadStream(sourceFile);
             using var destinationStream = AsyncWriteStream(destinationFile, false);
-            
+
             await sourceStream.CopyToAsync(destinationStream).ConfigureAwait(false);
-        
+
             await destinationStream.FlushAsync().ConfigureAwait(false);
         }
 

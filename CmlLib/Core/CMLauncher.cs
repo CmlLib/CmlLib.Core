@@ -38,17 +38,17 @@ namespace CmlLib.Core
         public event DownloadFileChangedHandler? FileChanged;
         public event ProgressChangedEventHandler? ProgressChanged;
         public event EventHandler<string>? LogOutput;
-        
+
         private readonly IProgress<DownloadFileChangedEventArgs> pFileChanged;
         private readonly IProgress<ProgressChangedEventArgs> pProgressChanged;
 
         public MinecraftPath MinecraftPath { get; private set; }
         public MVersionCollection? Versions { get; private set; }
         public IVersionLoader VersionLoader { get; set; }
-        
+
         public FileCheckerCollection GameFileCheckers { get; private set; }
         public IDownloader? FileDownloader { get; set; }
-        
+
         public IJavaPathResolver JavaPathResolver { get; set; }
 
         public MVersionCollection GetAllVersions()
@@ -81,7 +81,7 @@ namespace CmlLib.Core
                 .ConfigureAwait(false);
             return version;
         }
-        
+
         public string CheckForge(string mcversion, string forgeversion, string java)
         {
             if (Versions == null)
@@ -195,7 +195,7 @@ namespace CmlLib.Core
 
             return CreateProcess(versionName, option);
         }
-        
+
         public Process CreateProcess(string versionName, MLaunchOption option, bool checkAndDownload=true)
             => CreateProcess(GetVersion(versionName), option, checkAndDownload);
 
@@ -203,38 +203,58 @@ namespace CmlLib.Core
         public Process CreateProcess(MVersion version, MLaunchOption option, bool checkAndDownload=true)
         {
             option.StartVersion = version;
-            
+
             if (checkAndDownload)
                 CheckAndDownload(option.StartVersion);
-            
+
             return CreateProcess(option);
         }
 
-        public async Task<Process> CreateProcessAsync(string versionName, MLaunchOption option, 
+        public async Task<Process> CreateProcessAsync(string versionName, MLaunchOption option,
             bool checkAndDownload=true)
         {
             var version = await GetVersionAsync(versionName).ConfigureAwait(false);
             return await CreateProcessAsync(version, option, checkAndDownload).ConfigureAwait(false);
         }
 
-        public async Task<Process> CreateProcessAsync(MVersion version, MLaunchOption option, 
+        public async Task<Process> CreateProcessAsync(MVersion version, MLaunchOption option,
             bool checkAndDownload=true)
         {
             option.StartVersion = version;
-            
+
+            if (option.OsType != OsType.Undefined)
+            {
+                switch (option.OsType)
+                {
+                    case OsType.Undefined:
+                        break;
+                    case OsType.Linux:
+                        MRule.OSName = MRule.Linux;
+                        break;
+                    case OsType.OsX:
+                        MRule.OSName = MRule.OSX;
+                        break;
+                    case OsType.Windows:
+                        MRule.OSName = MRule.Windows;
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
             if (checkAndDownload)
                 await CheckAndDownloadAsync(option.StartVersion).ConfigureAwait(false);
-            
+
             return await CreateProcessAsync(option).ConfigureAwait(false);
         }
-        
+
         public Process CreateProcess(MLaunchOption option)
         {
             checkLaunchOption(option);
             var launch = new MLaunch(option);
             return launch.GetProcess();
         }
-        
+
         public async Task<Process> CreateProcessAsync(MLaunchOption option)
         {
             checkLaunchOption(option);
@@ -268,7 +288,7 @@ namespace CmlLib.Core
                 else if (!string.IsNullOrEmpty(option.JavaVersion))
                     option.StartVersion.JavaVersion = option.JavaVersion;
                 else if (string.IsNullOrEmpty(option.StartVersion.JavaBinaryPath))
-                    option.StartVersion.JavaBinaryPath = 
+                    option.StartVersion.JavaBinaryPath =
                         GetJavaPath(option.StartVersion) ?? GetDefaultJavaPath();
             }
         }
@@ -277,7 +297,7 @@ namespace CmlLib.Core
         {
             if (string.IsNullOrEmpty(version.JavaVersion))
                 return null;
-            
+
             return JavaPathResolver.GetJavaBinaryPath(version.JavaVersion, MRule.OSName);
         }
 
