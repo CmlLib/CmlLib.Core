@@ -39,7 +39,7 @@ namespace CmlLib.Utils
         {
             return Task.Run(() =>
             {
-                Process.WaitForExit();
+               Process.WaitForExit();
             });
         }
     }

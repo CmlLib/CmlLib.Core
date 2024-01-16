@@ -93,18 +93,19 @@ namespace CmlLib.Core
                 { "classpath", classpath },
 
                 { "auth_player_name" , session.Username },
+                { "auth_uuid"        , session.UUID },
+                { "auth_access_token", session.AccessToken },
+                { "auth_xuid"        , session.Xuid ?? "xuid" },
+                { "user_type"        , session.UserType ?? "Mojang" },
+                { "auth_session"     , session.AccessToken },
+
                 { "version_name"     , version.Id },
                 { "game_directory"   , minecraftPath.BasePath },
                 { "assets_root"      , minecraftPath.Assets },
                 { "assets_index_name", version.AssetId ?? "legacy" },
-                { "auth_uuid"        , session.UUID },
-                { "auth_access_token", session.AccessToken },
                 { "user_properties"  , "{}" },
-                { "auth_xuid"        , session.Xuid ?? "xuid" },
                 { "clientid"         , launchOption.ClientId ?? "clientId" },
-                { "user_type"        , session.UserType ?? "Mojang" },
                 { "game_assets"      , minecraftPath.GetAssetLegacyPath(version.AssetId ?? "legacy") },
-                { "auth_session"     , session.AccessToken },
                 { "version_type"     , useNotNull(launchOption.VersionType, version.TypeStr) }
             };
 

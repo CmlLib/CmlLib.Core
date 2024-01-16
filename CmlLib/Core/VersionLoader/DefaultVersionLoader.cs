@@ -22,17 +22,17 @@ namespace CmlLib.Core.VersionLoader
 
             //below code could break the order of version list
             //mojangVersions.Merge(localVersions);
-            
+
             // normal order: local versions before mojang versions
             // local 1.16.~~
             // local 1.15.~~
             // mojang 1.14.~~
-            
+
             localVersions.Merge(mojangVersions);
             return localVersions;
         }
-
         public async Task<MVersionCollection> GetVersionMetadatasAsync()
+
         {
             var localVersionLoader = new LocalVersionLoader(MinecraftPath);
             var mojangVersionLoader = new MojangVersionLoader();

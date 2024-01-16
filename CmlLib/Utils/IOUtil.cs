@@ -148,7 +148,7 @@ namespace CmlLib.Utils
         public static FileStream AsyncReadStream(string path)
         {
             FileStream stream = new FileStream(
-                path, FileMode.Open, FileAccess.Read, FileShare.Read, DefaultBufferSize,
+                path, FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read, DefaultBufferSize,
                 FileOptions.Asynchronous | FileOptions.SequentialScan);
 
             return stream;

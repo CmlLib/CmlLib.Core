@@ -77,9 +77,8 @@ namespace CmlLib.Core
             if (Versions == null)
                 await GetAllVersionsAsync().ConfigureAwait(false);
 
-            var version = await Versions!.GetVersionAsync(versionName)
+            return await Versions!.GetVersionAsync(versionName)
                 .ConfigureAwait(false);
-            return version;
         }
 
         public string CheckForge(string mcversion, string forgeversion, string java)
@@ -214,6 +213,7 @@ namespace CmlLib.Core
             bool checkAndDownload=true)
         {
             var version = await GetVersionAsync(versionName).ConfigureAwait(false);
+
             return await CreateProcessAsync(version, option, checkAndDownload).ConfigureAwait(false);
         }
 

@@ -10,9 +10,9 @@ namespace CmlLib.Core.VersionMetadata
     {
         protected StringVersionMetadata(string id) : base(id)
         {
-            
+
         }
-        
+
         protected abstract string ReadMetadata();
         protected abstract Task<string> ReadMetadataAsync();
 
@@ -23,7 +23,7 @@ namespace CmlLib.Core.VersionMetadata
 
             var metadataPath = path.GetVersionJsonPath(Name);
 
-            // check if target path and current path are same 
+            // check if target path and current path are same
             if (IsLocalVersion && !string.IsNullOrEmpty(Path))
             {
                 var result = string.Compare(IOUtil.NormalizePath(Path), metadataPath,
@@ -32,7 +32,7 @@ namespace CmlLib.Core.VersionMetadata
                 if (result == 0) // same path
                     return null;
             }
-            
+
             var directoryPath = System.IO.Path.GetDirectoryName(metadataPath);
             if (!string.IsNullOrEmpty(directoryPath))
                 Directory.CreateDirectory(directoryPath);
@@ -46,7 +46,7 @@ namespace CmlLib.Core.VersionMetadata
             if (!string.IsNullOrEmpty(metadataPath))
                 File.WriteAllText(metadataPath, metadata);
         }
-        
+
         protected virtual Task SaveMetadataAsync(string metadata, MinecraftPath path)
         {
             var metadataPath = prepareSaveMetadata(path);
@@ -55,12 +55,13 @@ namespace CmlLib.Core.VersionMetadata
             else
                 return Task.CompletedTask;
         }
-        
+
         // note: sync flag
         // https://docs.microsoft.com/en-us/archive/msdn-magazine/2015/july/async-programming-brownfield-async-development#the-flag-argument-hack
         private async Task<MVersion?> getAsync(MinecraftPath? savePath, bool parse, bool sync)
         {
             string metadataJson;
+
             if (sync)
                 metadataJson = ReadMetadata();
             else
@@ -76,10 +77,10 @@ namespace CmlLib.Core.VersionMetadata
 
             return parse ? MVersionParser.ParseFromJson(metadataJson) : null;
         }
-        
+
         public override MVersion GetVersion()
             => getAsync(null, true, true).GetAwaiter().GetResult()!;
-        
+
 
         public override MVersion GetVersion(MinecraftPath savePath)
             => getAsync(savePath, true, true).GetAwaiter().GetResult()!;

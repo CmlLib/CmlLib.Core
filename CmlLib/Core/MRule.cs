@@ -23,7 +23,7 @@ namespace CmlLib.Core
         public static string OSName { get; internal set; }
         public static string Arch { get; internal set; }
 
-        private static string getOSName()
+        public static string getOSName()
         {
             // RuntimeInformation does not work in .NET Framework
 #if NETFRAMEWORK
