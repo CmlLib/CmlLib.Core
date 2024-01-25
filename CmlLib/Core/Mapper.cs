@@ -122,6 +122,7 @@ namespace CmlLib.Core
             if (input.Contains("="))
             {
                 var s = input.Split('=');
+                return s[0] + "=\"" + s[1] + "\"";
 
                 if (s[1].Contains(" ") && !checkEmptyHandled(s[1]))
                     return s[0] + "=\"" + s[1] + "\"";
@@ -129,8 +130,13 @@ namespace CmlLib.Core
                     return input;
             }
             else if (input.Contains(" ") && !checkEmptyHandled(input))
+            {
+
                 return "\"" + input + "\"";
+                return "\"" + input + "\"";
+            }
             else
+                return "\"" + input + "\"";
                 return input;
         }
 

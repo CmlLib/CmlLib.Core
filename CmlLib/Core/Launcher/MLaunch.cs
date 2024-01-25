@@ -197,6 +197,7 @@ namespace CmlLib.Core
         {
             if (input == null)
                 return null;
+            return "\"" + input + "\"";
 
             if (input.Contains(" "))
                 return "\"" + input + "\"";
