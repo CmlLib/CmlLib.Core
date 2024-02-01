@@ -1,6 +1,6 @@
 ﻿using CmlLib.Core.Auth;
+using CmlLib.Core.Auth.Microsoft;
 using System;
-using System.Threading;
 using System.Windows.Forms;
 
 namespace CmlLibWinFormSample
@@ -12,151 +12,69 @@ namespace CmlLibWinFormSample
             InitializeComponent();
         }
 
-        MLogin login = new MLogin();
+        JELoginHandler loginHandler;
+        MSession session;
 
-        private void LoginForm_Load(object sender, EventArgs e)
+        private async void LoginForm_Load(object sender, EventArgs e)
         {
-            btnAutoLogin_Click(null, null);
-        }
+            this.Enabled = false;
 
-        private void btnAutoLogin_Click(object sender, EventArgs e)
-        {
-            gMojangLogin.Enabled = false;
-            gOfflineLogin.Enabled = false;
+            loginHandler = JELoginHandlerBuilder.BuildDefault();
 
-            var th = new Thread(() =>
+            try
             {
-                var result = login.TryAutoLogin();
-
-                if (result.Result != MLoginResult.Success)
-                {
-                    MessageBox.Show($"Failed to AutoLogin : {result.Result}\n{result.ErrorMessage}");
-                    Invoke(new Action(() =>
-                    {
-                        gMojangLogin.Enabled = true;
-                        gOfflineLogin.Enabled = true;
-                    }));
-                    return;
-                }
-
-                MessageBox.Show("Auto Login Success!");
-                Invoke(new Action(() =>
-                {
-                    gMojangLogin.Enabled = true;
-                    gOfflineLogin.Enabled = true;
-
-                    btnAutoLogin.Enabled = false;
-                    btnLogin.Enabled = false;
-                    btnAutoLoginMojangLauncher.Enabled = false;
-                    btnLogin.Text = "Auto Login\nSuccess";
-
-                    UpdateSession(result.Session);
-                }));
-            });
-            th.Start();
-        }
-
-        private void btnAutoLoginMojangLauncher_Click(object sender, EventArgs e)
-        {
-            gMojangLogin.Enabled = false;
-            gOfflineLogin.Enabled = false;
-
-            var th = new Thread(() =>
+                session = await loginHandler.AuthenticateSilently();
+                txtXboxUsername.Text = session.Username;
+            }
+            catch (Exception ex)
             {
-                var result = login.TryAutoLoginFromMojangLauncher();
-
-                if (result.Result != MLoginResult.Success)
-                {
-                    MessageBox.Show($"Failed to AutoLogin : {result.Result}\n{result.ErrorMessage}");
-                    Invoke(new Action(() =>
-                    {
-                        gMojangLogin.Enabled = true;
-                        gOfflineLogin.Enabled = true;
-                    }));
-                    return;
-                }
-
-                MessageBox.Show("Auto Login Success!");
-                Invoke(new Action(() =>
-                {
-                    gMojangLogin.Enabled = true;
-                    gOfflineLogin.Enabled = true;
-
-                    btnAutoLogin.Enabled = false;
-                    btnAutoLoginMojangLauncher.Enabled = false;
-                    btnLogin.Enabled = false;
-                    btnLogin.Text = "Auto Login\nSuccess";
-
-                    UpdateSession(result.Session);
-                }));
-            });
-            th.Start();
-        }
-
-        private void btnLogin_Click(object sender, EventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(txtEmail.Text) || string.IsNullOrWhiteSpace(txtPassword.Text))
-            {
-                MessageBox.Show("Empty Textbox");
-                return;
+                Console.WriteLine(ex);
             }
 
-            gMojangLogin.Enabled = false;
-            gOfflineLogin.Enabled = false;
-
-            var th = new Thread(new ThreadStart(delegate
-            {
-                var result = login.Authenticate(txtEmail.Text, txtPassword.Text);
-                if (result.Result == MLoginResult.Success)
-                {
-                    MessageBox.Show("Login Success"); // Success Login
-                    Invoke(new Action(() =>
-                    {
-                        UpdateSession(result.Session);
-                    }));
-                }
-                else
-                {
-                    MessageBox.Show(result.Result.ToString() + "\n" + result.ErrorMessage); // Failed to login. Show error message
-                    Invoke(new Action(() =>
-                    {
-                        gMojangLogin.Enabled = true;
-                        gOfflineLogin.Enabled = true;
-                    }));
-                }
-            }));
-            th.Start();
+            this.Enabled = true;
         }
 
-        private void btnSignout_Click(object sender, EventArgs e)
+        private async void btnAddNewAccount_Click(object sender, EventArgs e)
         {
-            var result = login.Signout(txtEmail.Text, txtPassword.Text);
-            if (result)
+            this.Enabled = false;
+            try
             {
-                MessageBox.Show("Success");
-                gMojangLogin.Enabled = true;
+                session = await loginHandler.AuthenticateInteractively();
+                txtXboxUsername.Text = session.Username;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+            this.Enabled = true;
+        }
+
+        private async void btnSignout_Click(object sender, EventArgs e)
+        {
+            this.Enabled = false;
+            try
+            {
+                await loginHandler.SignoutWithBrowser();
+                session = null;
+                txtXboxUsername.Clear();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+            this.Enabled = true;
+        }
+
+        private void btnXboxLogin_Click(object sender, EventArgs e)
+        {
+            if (session == null)
+            {
+                MessageBox.Show("Click 'Add a new account' first");
             }
             else
-                MessageBox.Show("Fail");
-        }
-
-        private void btnInvalidate_Click(object sender, EventArgs e)
-        {
-            var result = login.Invalidate();
-            if (result)
             {
-                MessageBox.Show("Success");
-                gMojangLogin.Enabled = true;
+                UpdateSession(session);
             }
-            else
-                MessageBox.Show("Fail");
-        }
-
-        private void btnDeleteToken_Click(object sender, EventArgs e)
-        {
-            login.DeleteTokenFile();
-            MessageBox.Show("Success");
-            gMojangLogin.Enabled = true;
         }
 
         private void btnOfflineLogin_Click(object sender, EventArgs e)
