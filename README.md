@@ -13,7 +13,7 @@
 CmlLib.Core is a Minecraft launcher library for .NET\
 Supports all versions, Forge, and any custom version
 
-[한국어 문서](https://alphabs.gitbook.io/cmllib/v/ko/cmllib.core/cmllib)
+[한국어 문서](https://alphabs.gitbook.io/cmllib/v/ko/cmllib.core/cmllib.core)
 
 [简体中文 README](https://github.com/AlphaBs/CmlLib.Core/blob/master/docs/README-chs.md)
 
@@ -23,31 +23,20 @@ Supports all versions, Forge, and any custom version
 * Mojang Authentication
 * Microsoft Xbox Live Login
 * Download the game files from the Mojang file server
-* Launch any version (tested up to 1.18.2)
+* Launch any version (tested up to 1.20.1)
 * Launch Forge, Optifine, FabricMC, LiteLoader or any other custom version
 * Install Java runtime
 * Install LiteLoader, FabricMC
 * Launch with options (direct server connecting, screen resolution)
 * Cross-platform (Windows, Linux, macOS)
 
-[Go to the wiki for all features](https://alphabs.gitbook.io/cmllib/cmllib.core/cmllib)
-
-## Install
-
-Install the [CmlLib.Core Nuget package](https://www.nuget.org/packages/CmlLib.Core)
-
-Write this at the top of your source code:
-
-```csharp
-using CmlLib.Core;
-using CmlLib.Core.Auth;
-```
+[Go to the wiki for all features](https://alphabs.gitbook.io/cmllib/cmllib.core/cmllib.core)
 
 ## Documentation
 
-**[Official documentation](https://alphabs.gitbook.io/cmllib/cmllib.core/cmllib)**
+**[Official documentation](https://alphabs.gitbook.io/cmllib/cmllib.core/cmllib.core)**
 
-**[한국어 문서](https://alphabs.gitbook.io/cmllib/v/ko/cmllib.core/cmllib)**
+**[한국어 문서](https://alphabs.gitbook.io/cmllib/v/ko/cmllib.core/cmllib.core)**
 
 ## Example
 
