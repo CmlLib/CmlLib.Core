@@ -4,6 +4,7 @@ using CmlLib.Core.Executors;
 using CmlLib.Core.FileExtractors;
 using CmlLib.Core.Installers;
 using CmlLib.Core.Rules;
+using CmlLib.Core.Tasks;
 using CmlLib.Core.Version;
 
 namespace CmlLib.Core.Benchmarks;
@@ -51,6 +52,7 @@ public class TPLTaskExecutorWithDummyTaskBenchmark
     private int parallelism = 6;
     private int extractorCount = 8;
 
+    private ITaskFactory TaskFactory = new CmlLib.Core.Tasks.TaskFactory(new HttpClient());
     private MinecraftPath MinecraftPath = new MinecraftPath();
     private IVersion DummyVersion = new DummyVersion();
     private DummyTaskExtractor[] Extractors;
@@ -69,6 +71,7 @@ public class TPLTaskExecutorWithDummyTaskBenchmark
     public async Task Benchmark()
     {
         await Executor.Install(
+            TaskFactory,
             Extractors,
             MinecraftPath,
             DummyVersion,

@@ -26,6 +26,7 @@ public class TPLGameInstaller : IGameInstaller
         _maxParallelism = parallelism;
 
     public async ValueTask Install(
+        ITaskFactory taskFactory,
         IEnumerable<IFileExtractor> extractors,
         MinecraftPath path,
         IVersion version,
@@ -34,7 +35,7 @@ public class TPLGameInstaller : IGameInstaller
         IProgress<ByteProgress>? byteProgress,
         CancellationToken cancellationToken)
     {
-        var executor = new TPLGameInstallerExecutor(_maxParallelism, path, version, rulesContext);
+        var executor = new TPLGameInstallerExecutor(_maxParallelism, taskFactory, path, version, rulesContext);
         executor.FileProgress += (s, e) => fileProgress?.Report(e);
         executor.ByteProgress += (s, e) => byteProgress?.Report(e);
         await executor.Install(extractors, cancellationToken);
@@ -51,17 +52,19 @@ public enum GameInstallerExceptionMode
 class TPLGameInstallerExecutor
 {
     private readonly int _maxParallelism;
+    private readonly ITaskFactory _taskFactory;
     private readonly MinecraftPath _path;
     private readonly IVersion _version;
     private readonly RulesEvaluatorContext _rulesContext;
 
     public TPLGameInstallerExecutor(
         int parallelism,
+        ITaskFactory taskFactory,
         MinecraftPath path,
         IVersion version,
         RulesEvaluatorContext rulesContext) =>
-        (_maxParallelism, _path, _version, _rulesContext) =
-        (parallelism, path, version, rulesContext);
+        (_maxParallelism, _taskFactory, _path, _version, _rulesContext) =
+        (parallelism, taskFactory, path, version, rulesContext);
 
     public event EventHandler<InstallerProgressChangedEventArgs>? FileProgress;
     public event EventHandler<ByteProgress>? ByteProgress;
@@ -222,7 +225,7 @@ class TPLGameInstallerExecutor
     {
         var extractorBlock = new TransformManyBlock<IFileExtractor, LinkedTask>(async extractor =>
         {
-            var tasks = await extractor.Extract(_path, _version, _rulesContext, cancellationToken);
+            var tasks = await extractor.Extract(_taskFactory, _path, _version, _rulesContext, cancellationToken);
             return tasks
                 .Where(task => task.First != null)
                 .Where(task => string.IsNullOrEmpty(task.File.Path) || distinctStorage.Add(task.File.Path))

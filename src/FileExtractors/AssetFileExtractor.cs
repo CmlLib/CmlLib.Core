@@ -1,10 +1,10 @@
-﻿using System.Diagnostics;
-using System.Text.Json;
-using CmlLib.Core.Files;
-using CmlLib.Core.Tasks;
-using CmlLib.Core.Version;
+﻿using CmlLib.Core.Files;
 using CmlLib.Core.Internals;
 using CmlLib.Core.Rules;
+using CmlLib.Core.Tasks;
+using CmlLib.Core.Version;
+using System.Diagnostics;
+using System.Text.Json;
 
 namespace CmlLib.Core.FileExtractors;
 
@@ -17,50 +17,55 @@ public class AssetFileExtractor : IFileExtractor
         this.httpClient = client;
     }
 
-    private string assetServer = MojangServer.ResourceDownload;
-    public string AssetServer
-    {
-        get => assetServer;
-        set
-        {
-            if (value.Last() == '/')
-                assetServer = value;
-            else
-                assetServer = value + "/";
-        }
-    }
+    public string AssetServer { get; set; } = MojangServer.ResourceDownload;
 
     public async ValueTask<IEnumerable<LinkedTaskHead>> Extract(
-        MinecraftPath path, 
+        ITaskFactory taskFactory,
+        MinecraftPath path,
         IVersion version,
         RulesEvaluatorContext rulesContext,
         CancellationToken cancellationToken)
     {
-        var assets = version.AssetIndex;
-        if (assets == null ||
-            string.IsNullOrEmpty(assets.Id) ||
-            string.IsNullOrEmpty(assets.Url))
+        var assetIndex = await loadAssetIndex(path, version.AssetIndex);
+        if (assetIndex == null)
             return Enumerable.Empty<LinkedTaskHead>();
 
-        using var assetIndexStream = await createAssetIndexStream(path, assets);
-        var assetIndexJson = JsonDocument.Parse(assetIndexStream);
-        return extractFromAssetIndexJson(assetIndexJson, path, version);
+        return TaskExtractor.ExtractTasksFromAssetIndex(
+            taskFactory,
+            assetIndex, 
+            path, 
+            AssetServer,
+            dispose: true);
     }
 
-    // Check index file validation and download
-    private async ValueTask<Stream> createAssetIndexStream(MinecraftPath path, MFileMetadata assets)
+    private async ValueTask<IAssetIndex?> loadAssetIndex(MinecraftPath path, MFileMetadata? assets)
     {
-        Debug.Assert(!string.IsNullOrEmpty(assets?.Id));
-        Debug.Assert(!string.IsNullOrEmpty(assets?.Url));
+        if (assets == null ||
+            string.IsNullOrEmpty(assets?.Id))
+            return null;
+
+        using var assetIndexStream = await createAssetIndexStream(path, assets);
+        if (assetIndexStream == null)
+            return null;
+
+        var assetIndexJson = await JsonDocument.ParseAsync(assetIndexStream);
+        return new JsonAssetIndex(assets.Id, assetIndexJson);
+    }
+
+    private async ValueTask<Stream?> createAssetIndexStream(MinecraftPath path, MFileMetadata assets)
+    {
+        Debug.Assert(!string.IsNullOrEmpty(assets.Id));
 
         var indexFilePath = path.GetIndexFilePath(assets.Id);
-
         if (IOUtil.CheckFileValidation(indexFilePath, assets.Sha1))
         {
             return File.Open(indexFilePath, FileMode.Open);
         }
         else
         {
+            if (string.IsNullOrEmpty(assets.Url))
+                return null;
+
             IOUtil.CreateParentDirectory(indexFilePath);
 
             var ms = new MemoryStream();
@@ -80,59 +85,44 @@ public class AssetFileExtractor : IFileExtractor
         }
     }
 
-    private IEnumerable<LinkedTaskHead> extractFromAssetIndexJson(
-        JsonDocument _json, MinecraftPath path, IVersion version)
+    public static class TaskExtractor
     {
-        Debug.Assert(!string.IsNullOrEmpty(version.AssetIndex?.Id));
-
-        using var json = _json;
-        var root = json.RootElement;
-
-        var assetId = version.AssetIndex.Id;
-        var isVirtual = root.GetPropertyOrNull("virtual")?.GetBoolean() ?? false;
-        var mapResource = root.GetPropertyOrNull("map_to_resources")?.GetBoolean() ?? false;
-
-        if (!root.TryGetProperty("objects", out var objectsProp))
-            yield break;
-
-        var objects = objectsProp.EnumerateObject();
-        foreach (var prop in objects)
+        public static IEnumerable<LinkedTaskHead> ExtractTasksFromAssetIndex(
+            ITaskFactory taskFactory, IAssetIndex assetIndex, MinecraftPath path, string assetServer, bool dispose)
         {
-            var hash = prop.Value.GetPropertyValue("hash");
-            if (hash == null)
-                continue;
+            if (assetServer.Last() != '/')
+                assetServer += '/';
 
-            var hashName = hash.Substring(0, 2) + "/" + hash;
-            var hashPath = Path.Combine(path.GetAssetObjectPath(assetId), hashName);
-            long size = prop.Value.GetPropertyOrNull("size")?.GetInt64() ?? 0;
-
-            var copyPath = new List<string>(2);
-            if (isVirtual)
-                copyPath.Add(Path.Combine(path.GetAssetLegacyPath(assetId), prop.Name));
-            if (mapResource)
-                copyPath.Add(Path.Combine(path.Resource, prop.Name));
-
-            var file = new TaskFile(prop.Name)
+            foreach (var assetObject in assetIndex.EnumerateAssetObjects())
             {
-                Path = hashPath,
-                Hash = hash,
-                Size = size,
-                Url = AssetServer + hashName
-            };
+                var hashName = assetObject.Hash.Substring(0, 2) + "/" + assetObject.Hash;
+                var hashPath = Path.Combine(path.GetAssetObjectPath(assetIndex.Id), hashName);
 
-            var checkTask = new FileCheckTask(file);
-            var downloadTask = new DownloadTask(file, httpClient);
-            var progressTask = ProgressTask.CreateDoneTask(file);
-            var copyTask = new FileCopyTask(prop.Name, hashPath, copyPath.ToArray());
+                var copyPath = new List<string>(2);
+                if (assetIndex.IsVirtual)
+                    copyPath.Add(Path.Combine(path.GetAssetLegacyPath(assetIndex.Id), assetObject.Name));
+                if (assetIndex.MapToResources)
+                    copyPath.Add(Path.Combine(path.Resource, assetObject.Name));
 
-            checkTask.OnTrue = progressTask;
-            checkTask.OnFalse = downloadTask;
+                var file = new TaskFile(assetObject.Name)
+                {
+                    Path = hashPath,
+                    Hash = assetObject.Hash,
+                    Size = assetObject.Size,
+                    Url = assetServer + hashName
+                };
 
-            if (copyPath.Any())
-                downloadTask.InsertNextTask(copyTask);
+                yield return LinkedTaskBuilder.Create(file, taskFactory)
+                    .CheckFile(
+                        onSuccess => onSuccess.ReportDone(),
+                        onFail => onFail
+                            .Download()
+                            .ThenIf(copyPath.Any()).Then(new FileCopyTask(assetObject.Name, hashPath, copyPath.ToArray())))
+                    .BuildHead();
+            }
 
-            var taskHead = new LinkedTaskHead(checkTask, file);
-            yield return taskHead;
+            if (dispose && assetIndex is IDisposable disposableAssetIndex)
+                disposableAssetIndex.Dispose();
         }
     }
 }

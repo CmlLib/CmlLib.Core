@@ -5,6 +5,7 @@ using CmlLib.Core.Java;
 using CmlLib.Core.Natives;
 using CmlLib.Core.ProcessBuilder;
 using CmlLib.Core.Rules;
+using CmlLib.Core.Tasks;
 using CmlLib.Core.Version;
 using CmlLib.Core.VersionLoader;
 using CmlLib.Core.VersionMetadata;
@@ -21,6 +22,7 @@ public class MinecraftLauncher
     public MinecraftPath MinecraftPath { get; }
     public IVersionLoader VersionLoader { get; }
     public IJavaPathResolver JavaPathResolver { get; }
+    public ITaskFactory TaskFactory { get; }
     public FileExtractorCollection FileExtractors { get; }
     public IGameInstaller GameInstaller { get; }
     public INativeLibraryExtractor NativeLibraryExtractor { get; }
@@ -54,6 +56,8 @@ public class MinecraftLauncher
             ?? throw new ArgumentException(nameof(parameters.VersionLoader) + " was null");
         JavaPathResolver = parameters.JavaPathResolver
             ?? throw new ArgumentException(nameof(parameters.JavaPathResolver) + " was null");
+        TaskFactory = parameters.TaskFactory
+            ?? throw new ArgumentException(nameof(parameters.TaskFactory) + " was null");
         FileExtractors = parameters.FileExtractors
             ?? throw new ArgumentException(nameof(parameters.FileExtractors) + " was null");
         GameInstaller = parameters.GameInstaller 
@@ -103,6 +107,7 @@ public class MinecraftLauncher
         CancellationToken cancellationToken = default)
     {
         await GameInstaller.Install(
+            TaskFactory,
             FileExtractors, 
             MinecraftPath, 
             version, 
@@ -155,14 +160,13 @@ public class MinecraftLauncher
             return null;
 
         return JavaPathResolver.GetJavaBinaryPath(
-            MinecraftPath,
             version.JavaVersion.Value,
             RulesContext);
     }
 
     public string? GetDefaultJavaPath()
     {
-        return JavaPathResolver.GetDefaultJavaBinaryPath(MinecraftPath, RulesContext);
+        return JavaPathResolver.GetDefaultJavaBinaryPath(RulesContext);
     }
  
     private string createNativePath(IVersion version)

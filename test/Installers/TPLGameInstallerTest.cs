@@ -14,6 +14,7 @@ public class TPLGameInstallerTest
     private const int TaskCount = 128;
     private const int ExtractorCount = 4;
     private const long TaskSize = 128 * 32;
+    private readonly ITaskFactory TestTaskFactory = new CmlLib.Core.Tasks.TaskFactory(new HttpClient());
     private readonly RulesEvaluatorContext TestRulesContext = new RulesEvaluatorContext(LauncherOSRule.Current);
     private readonly MinecraftPath TestMinecraftPath = new Mock<MinecraftPath>().Object;
     private readonly IVersion TestVersion = new Mock<IVersion>().Object;
@@ -26,6 +27,7 @@ public class TPLGameInstallerTest
 
         var installer = createInstaller();
         await installer.Install(
+            TestTaskFactory,
             extractors,
             TestMinecraftPath,
             TestVersion,
@@ -53,6 +55,7 @@ public class TPLGameInstallerTest
 
         var installer = createInstaller();
         await installer.Install(
+            TestTaskFactory,
             extractors,
             TestMinecraftPath,
             TestVersion,
@@ -83,6 +86,7 @@ public class TPLGameInstallerTest
 
         var installer = createInstaller();
         await installer.Install(
+            TestTaskFactory,
             extractors,
             TestMinecraftPath,
             TestVersion,
@@ -117,6 +121,7 @@ public class TPLGameInstallerTest
 
         var installer = createInstaller();
         await installer.Install(
+            TestTaskFactory,
             extractors,
             TestMinecraftPath,
             TestVersion,
@@ -163,6 +168,7 @@ public class TPLGameInstallerTest
         {
             var mockExtractor = new Mock<IFileExtractor>();
             mockExtractor.Setup(e => e.Extract(
+                It.IsAny<ITaskFactory>(),
                 It.IsAny<MinecraftPath>(),
                 It.IsAny<IVersion>(),
                 It.IsAny<RulesEvaluatorContext>(),

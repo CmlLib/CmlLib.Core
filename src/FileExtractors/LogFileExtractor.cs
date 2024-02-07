@@ -6,24 +6,21 @@ namespace CmlLib.Core.FileExtractors;
 
 public class LogFileExtractor : IFileExtractor
 {
-    private readonly HttpClient _httpClient;
-
-    public LogFileExtractor(HttpClient httpClient)
-    {
-        _httpClient = httpClient;
-    }
-
     public ValueTask<IEnumerable<LinkedTaskHead>> Extract(
+        ITaskFactory taskFactory,
         MinecraftPath path, 
         IVersion version,
         RulesEvaluatorContext rulesContext,
         CancellationToken cancellationToken)
     {
-        var result = extract(path, version);
+        var result = extract(taskFactory, path, version);
         return new ValueTask<IEnumerable<LinkedTaskHead>>(result);
     }
 
-    private IEnumerable<LinkedTaskHead> extract(MinecraftPath path, IVersion version)
+    private IEnumerable<LinkedTaskHead> extract(
+        ITaskFactory taskFactory, 
+        MinecraftPath path, 
+        IVersion version)
     {
         if (version.Logging == null)
             yield break;
@@ -41,9 +38,7 @@ public class LogFileExtractor : IFileExtractor
             Hash = version.Logging?.LogFile?.GetSha1(),
             Size = version.Logging?.LogFile?.Size ?? 0
         };
-        var task = new FileCheckTask(file);
-        task.OnTrue = ProgressTask.CreateDoneTask(file);
-        task.OnFalse = new DownloadTask(file, _httpClient);
-        yield return new LinkedTaskHead(task, file);
+
+        yield return new LinkedTaskHead(taskFactory.CheckAndDownload(file), file);
     }
 }

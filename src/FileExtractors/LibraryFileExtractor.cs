@@ -6,15 +6,13 @@ namespace CmlLib.Core.FileExtractors;
 
 public class LibraryFileExtractor : IFileExtractor
 {
+    private readonly string _side;
     private readonly IRulesEvaluator _rulesEvaluator;
-    private readonly HttpClient _httpClient;
 
-    public LibraryFileExtractor(
-        IRulesEvaluator rulesEvaluator,
-        HttpClient httpClient)
+    public LibraryFileExtractor(string side, IRulesEvaluator rulesEvaluator)
     {
+        _side = side;
         _rulesEvaluator = rulesEvaluator;
-        _httpClient = httpClient;
     }
 
     private string libServer = MojangServer.Library;
@@ -31,27 +29,21 @@ public class LibraryFileExtractor : IFileExtractor
     }
 
     public ValueTask<IEnumerable<LinkedTaskHead>> Extract(
+        ITaskFactory taskFactory,
         MinecraftPath path, 
         IVersion version,
         RulesEvaluatorContext rulesContext,
         CancellationToken cancellationToken)
     {
-        var result = extract(path, version, rulesContext);
+        var result = version.Libraries
+            .Where(lib => lib.CheckIsRequired(_side))
+            .Where(lib => lib.Rules == null || _rulesEvaluator.Match(lib.Rules, rulesContext))
+            .SelectMany(lib => createLibraryTasks(taskFactory, path, lib, rulesContext));
         return new ValueTask<IEnumerable<LinkedTaskHead>>(result);
     }
 
-    private IEnumerable<LinkedTaskHead> extract(
-        MinecraftPath path, 
-        IVersion version,
-        RulesEvaluatorContext rulesContext)
-    {
-        return version.Libraries
-            .Where(lib => lib.CheckIsRequired("SIDE"))
-            .Where(lib => lib.Rules == null || _rulesEvaluator.Match(lib.Rules, rulesContext))
-            .SelectMany(lib => createLibraryTasks(path, lib, rulesContext));
-    }
-
     private IEnumerable<LinkedTaskHead> createLibraryTasks(
+        ITaskFactory taskFactory,
         MinecraftPath path, 
         MLibrary library,
         RulesEvaluatorContext rulesContext)
@@ -69,7 +61,7 @@ public class LibraryFileExtractor : IFileExtractor
                 Size = artifact.Size
             };
 
-            yield return createTaskFromFile(file);
+            yield return new LinkedTaskHead(taskFactory.CheckAndDownload(file), file);
         }
 
         // native library (*.dll, *.so)
@@ -86,17 +78,9 @@ public class LibraryFileExtractor : IFileExtractor
                     Hash = native.GetSha1(),
                     Size = native.Size
                 };
-                yield return createTaskFromFile(file);
+                yield return new LinkedTaskHead(taskFactory.CheckAndDownload(file), file);
             }
         }
-    }
-
-    private LinkedTaskHead createTaskFromFile(TaskFile file)
-    {
-        var task = new FileCheckTask(file);
-        task.OnTrue = ProgressTask.CreateDoneTask(file);
-        task.OnFalse = new DownloadTask(file, _httpClient);
-        return new LinkedTaskHead(task, file);
     }
 
     private string? createDownloadUrl(string? url, string path)

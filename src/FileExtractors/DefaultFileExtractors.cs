@@ -1,5 +1,6 @@
 using CmlLib.Core.Java;
 using CmlLib.Core.Rules;
+using CmlLib.Core.Version;
 
 namespace CmlLib.Core.FileExtractors;
 
@@ -11,11 +12,11 @@ public class DefaultFileExtractors
         IJavaPathResolver javaPathResolver)
     {
         var extractors = new DefaultFileExtractors();
-        extractors.Library = new LibraryFileExtractor(rulesEvaluator, httpClient);
+        extractors.Library = new LibraryFileExtractor(JsonVersionParserOptions.ClientSide, rulesEvaluator);
         extractors.Asset = new AssetFileExtractor(httpClient);
-        extractors.Client = new ClientFileExtractor(httpClient);
+        extractors.Client = new ClientFileExtractor();
         extractors.Java = new JavaFileExtractor(httpClient, javaPathResolver);
-        extractors.Log = new LogFileExtractor(httpClient);
+        extractors.Log = new LogFileExtractor();
         return extractors;
     }
 

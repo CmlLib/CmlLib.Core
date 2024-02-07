@@ -1,11 +1,9 @@
-﻿using System.ComponentModel;
+﻿using CmlLib.Core.Internals;
 using CmlLib.Core.Java;
-using System.Text.Json;
-using System.Net;
 using CmlLib.Core.Rules;
-using CmlLib.Core.Internals;
 using CmlLib.Core.Tasks;
 using CmlLib.Core.Version;
+using System.Text.Json;
 
 namespace CmlLib.Core.FileExtractors;
 
@@ -20,16 +18,18 @@ public class LegacyJavaFileExtractor : IFileExtractor
         (_httpClient, _javaPathResolver) = (httpClient, resolver);
 
     public ValueTask<IEnumerable<LinkedTaskHead>> Extract(
+        ITaskFactory taskFactory,
         MinecraftPath path, 
         IVersion version,
         RulesEvaluatorContext rulesContext,
         CancellationToken cancellationToken)
     {
-        var task = createTask(path, rulesContext, cancellationToken);
+        var task = createTask(taskFactory, path, rulesContext, cancellationToken);
         return new ValueTask<IEnumerable<LinkedTaskHead>>(new LinkedTaskHead[] { task });
     }
 
     private LinkedTaskHead createTask(
+        ITaskFactory taskFactory,
         MinecraftPath path,
         RulesEvaluatorContext rulesContext,
         CancellationToken cancellationToken)
@@ -40,35 +40,34 @@ public class LegacyJavaFileExtractor : IFileExtractor
             MajorVersion = 17
         };
 
-        var javaBinaryPath = _javaPathResolver.GetJavaBinaryPath(path, javaVersion, rulesContext);
-        var javaBinaryDir = _javaPathResolver.GetJavaDirPath(path, javaVersion, rulesContext);
+        var javaBinaryPath = _javaPathResolver.GetJavaBinaryPath(javaVersion, rulesContext);
+        var javaBinaryDir = _javaPathResolver.GetJavaDirPath(javaVersion, rulesContext);
         var file = new TaskFile(javaVersion.Component)
         {
             Path = javaBinaryPath
         };
 
-        var checkTask = new FileCheckTask(file);
-        var javaUrlTask = new ActionTask(file.Name, async task =>
-        {
-            var javaUrl = await GetJavaUrlAsync();
-            var zipPath = Path.Combine(Path.GetTempPath(), "jre.zip");
-            var lzmaFile = new TaskFile("jre.lzma")
-            {
-                Path = Path.Combine(Path.GetTempPath(), "jre.lzma"),
-                Url = javaUrl
-            };
+        return LinkedTaskBuilder.Create(file, taskFactory)
+            .CheckFile(
+                onSuccess => onSuccess.ReportDone(),
+                onFail => onFail.Then(new ActionTask(file.Name, async task =>
+                {
+                    var javaUrl = await GetJavaUrlAsync();
+                    var zipPath = Path.Combine(Path.GetTempPath(), "jre.zip");
+                    var lzmaFile = new TaskFile("jre.lzma")
+                    {
+                        Path = Path.Combine(Path.GetTempPath(), "jre.lzma"),
+                        Url = javaUrl
+                    };
 
-            var linkedTask = LinkedTask.LinkTasks(
-                new DownloadTask(lzmaFile, _httpClient),
-                new LZMADecompressTask("jre.lzma", lzmaFile.Path, zipPath),
-                new UnzipTask("jre.zip", zipPath, javaBinaryDir),
-                new ChmodTask(javaVersion.Component, javaBinaryPath)
-            );
-            return task.InsertNextTask(linkedTask!);
-        });
-
-        checkTask.OnFalse = javaUrlTask;
-        return new LinkedTaskHead(checkTask, file);
+                    return LinkedTaskBuilder.Create(lzmaFile, taskFactory)
+                        .Download()
+                        .Then(new LZMADecompressTask("jre.lzma", lzmaFile.Path, zipPath))
+                        .Then(new UnzipTask("jre.zip", zipPath, javaBinaryDir))
+                        .Then(new ChmodTask(javaVersion.Component, javaBinaryPath))
+                        .BuildTask();
+                })))
+            .BuildHead();
     }
 
     public async Task<string> GetJavaUrlAsync()

@@ -3,6 +3,7 @@ using BenchmarkDotNet.Engines;
 using CmlLib.Core.Executors;
 using CmlLib.Core.FileExtractors;
 using CmlLib.Core.Installers;
+using CmlLib.Core.Tasks;
 using CmlLib.Core.Version;
 
 namespace CmlLib.Core.Benchmarks;
@@ -15,6 +16,7 @@ public class TPLTaskExecutorWithDummyDownloaderBenchmark
     public static InstallerProgressChangedEventArgs? FileProgressArgs;
     public static ByteProgress BytesProgressArgs;
 
+    private ITaskFactory TaskFactory = new CmlLib.Core.Tasks.TaskFactory(new HttpClient());
     private MinecraftPath MinecraftPath = new MinecraftPath();
     private IVersion DummyVersion = new DummyVersion();
     private DummyDownloaderExtractor[] Extractors;
@@ -33,6 +35,7 @@ public class TPLTaskExecutorWithDummyDownloaderBenchmark
     public async Task Benchmark()
     {
         await Executor.Install(
+            TaskFactory,
             Extractors, 
             MinecraftPath, 
             DummyVersion, 

@@ -23,12 +23,14 @@ public record LauncherOSRule
         else
             name = Linux;
         
-        arch = RuntimeInformation.OSArchitecture switch // TODO: find exact value
+        // ${arch} : 32, 64
+        // rules/os/arch: x86
+        arch = RuntimeInformation.OSArchitecture switch
         {
             Architecture.X86 => "32",
             Architecture.X64 => "64",
             Architecture.Arm => "arm",
-            Architecture.Arm64 => "arm",
+            Architecture.Arm64 => "arm64",
             _ => ""
         };
 

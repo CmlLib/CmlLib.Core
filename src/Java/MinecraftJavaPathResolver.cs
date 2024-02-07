@@ -7,9 +7,16 @@ public class MinecraftJavaPathResolver : IJavaPathResolver
     public static readonly JavaVersion JreLegacyVersion = new JavaVersion("jre-legacy");
     public static readonly JavaVersion CmlLegacyVersion = new JavaVersion("m-legacy");
 
-    public string[] GetInstalledJavaVersions(MinecraftPath path)
+    private readonly MinecraftPath _path;
+
+    public MinecraftJavaPathResolver(MinecraftPath path)
     {
-        var dir = new DirectoryInfo(path.Runtime);
+        this._path = path;
+    }
+
+    public string[] GetInstalledJavaVersions()
+    {
+        var dir = new DirectoryInfo(_path.Runtime);
         if (!dir.Exists)
             return Array.Empty<string>();
 
@@ -18,36 +25,36 @@ public class MinecraftJavaPathResolver : IJavaPathResolver
             .ToArray();
     }
 
-    public string? GetDefaultJavaBinaryPath(MinecraftPath path, RulesEvaluatorContext rules)
+    public string? GetDefaultJavaBinaryPath(RulesEvaluatorContext rules)
     {
-        var javaVersions = GetInstalledJavaVersions(path);
+        var javaVersions = GetInstalledJavaVersions();
         string? javaPath = null;
         
         if (string.IsNullOrEmpty(javaPath) &&
             javaVersions.Contains(MinecraftJavaPathResolver.JreLegacyVersion.Component))
-            javaPath = GetJavaBinaryPath(path, MinecraftJavaPathResolver.JreLegacyVersion, rules);
+            javaPath = GetJavaBinaryPath(MinecraftJavaPathResolver.JreLegacyVersion, rules);
         
         if (string.IsNullOrEmpty(javaPath) &&
             javaVersions.Contains(MinecraftJavaPathResolver.CmlLegacyVersion.Component))
-            javaPath = GetJavaBinaryPath(path, MinecraftJavaPathResolver.CmlLegacyVersion, rules);
+            javaPath = GetJavaBinaryPath(MinecraftJavaPathResolver.CmlLegacyVersion, rules);
 
         if (string.IsNullOrEmpty(javaPath) && 
             javaVersions.Length > 0)
-            javaPath = GetJavaBinaryPath(path, new JavaVersion(javaVersions[0]), rules);
+            javaPath = GetJavaBinaryPath(new JavaVersion(javaVersions[0]), rules);
 
         return javaPath;
     }
     
-    public string GetJavaBinaryPath(MinecraftPath path, JavaVersion javaVersionName, RulesEvaluatorContext rules)
+    public string GetJavaBinaryPath(JavaVersion javaVersionName, RulesEvaluatorContext rules)
     {
         return Path.Combine(
-            GetJavaDirPath(path, javaVersionName, rules), 
+            GetJavaDirPath(javaVersionName, rules), 
             "bin", 
             GetJavaBinaryName(rules.OS));
     }
 
-    public string GetJavaDirPath(MinecraftPath path, JavaVersion javaVersionName, RulesEvaluatorContext rules) 
-        => Path.Combine(path.Runtime, javaVersionName.Component);
+    public string GetJavaDirPath(JavaVersion javaVersionName, RulesEvaluatorContext rules) 
+        => Path.Combine(_path.Runtime, javaVersionName.Component);
 
     public string GetJavaBinaryName(LauncherOSRule os)
     {

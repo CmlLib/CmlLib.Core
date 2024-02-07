@@ -6,24 +6,18 @@ namespace CmlLib.Core.FileExtractors;
 
 public class ClientFileExtractor : IFileExtractor
 {
-    private readonly HttpClient _httpClient;
-
-    public ClientFileExtractor(HttpClient httpClient)
-    {
-        _httpClient = httpClient;
-    }
-
     public ValueTask<IEnumerable<LinkedTaskHead>> Extract(
+        ITaskFactory taskFactory,
         MinecraftPath path, 
         IVersion version,
         RulesEvaluatorContext rulesContext,
         CancellationToken cancellationToken)
     {
-        var result = extract(path, version);
+        var result = extract(taskFactory, path, version);
         return new ValueTask<IEnumerable<LinkedTaskHead>>(result);
     }
 
-    private IEnumerable<LinkedTaskHead> extract(MinecraftPath path, IVersion version)
+    private IEnumerable<LinkedTaskHead> extract(ITaskFactory taskFactory, MinecraftPath path, IVersion version)
     {
         var id = version.JarId;
         var url = version.Client?.Url;
@@ -40,10 +34,6 @@ public class ClientFileExtractor : IFileExtractor
             Size = version.Client?.Size ?? 0
         };
 
-        var checkTask = new FileCheckTask(file);
-        checkTask.OnTrue = ProgressTask.CreateDoneTask(file);
-        checkTask.OnFalse = new DownloadTask(file, _httpClient);
-
-        yield return new LinkedTaskHead(checkTask, file);
+        yield return new LinkedTaskHead(taskFactory.CheckAndDownload(file), file);
     }
 }

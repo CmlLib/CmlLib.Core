@@ -1,4 +1,3 @@
-
 namespace CmlLib.Core.Rules;
 
 public interface IRulesEvaluator

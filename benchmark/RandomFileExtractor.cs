@@ -51,7 +51,7 @@ public class RandomFileExtractor : IFileExtractor
         Directory.Delete(_path);
     }
 
-    public ValueTask<IEnumerable<LinkedTaskHead>> Extract(MinecraftPath path, IVersion version, RulesEvaluatorContext rulesContext, CancellationToken cancellationToken)
+    public ValueTask<IEnumerable<LinkedTaskHead>> Extract(ITaskFactory taskFactory, MinecraftPath path, IVersion version, RulesEvaluatorContext rulesContext, CancellationToken cancellationToken)
     {
         var result = extract();
         return new ValueTask<IEnumerable<LinkedTaskHead>>(result);
