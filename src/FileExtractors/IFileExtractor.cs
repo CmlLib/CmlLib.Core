@@ -6,8 +6,7 @@ namespace CmlLib.Core.FileExtractors;
 
 public interface IFileExtractor
 {
-    ValueTask<IEnumerable<LinkedTaskHead>> Extract(
-        ITaskFactory taskFactory,
+    ValueTask<IEnumerable<GameFile>> Extract(
         MinecraftPath path,
         IVersion version,
         RulesEvaluatorContext rulesContext,

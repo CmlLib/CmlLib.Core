@@ -25,8 +25,6 @@ public class RandomFileExtractor : IFileExtractor
         for (int i = 0; i < _fileCount; i++)
         {
             var dummyFilePath = Path.Combine(_path, i + ".dat");
-            if (TPLTaskExecutorWithRandomFileBenchmark.Verbose)
-                Console.WriteLine(dummyFilePath);
             using var fs = File.Create(dummyFilePath);
 
             var bufferSize = 1024 * 8;
@@ -51,25 +49,23 @@ public class RandomFileExtractor : IFileExtractor
         Directory.Delete(_path);
     }
 
-    public ValueTask<IEnumerable<LinkedTaskHead>> Extract(ITaskFactory taskFactory, MinecraftPath path, IVersion version, RulesEvaluatorContext rulesContext, CancellationToken cancellationToken)
+    public ValueTask<IEnumerable<GameFile>> Extract(MinecraftPath path, IVersion version, RulesEvaluatorContext rulesContext, CancellationToken cancellationToken)
     {
         var result = extract();
-        return new ValueTask<IEnumerable<LinkedTaskHead>>(result);
+        return new ValueTask<IEnumerable<GameFile>>(result);
     }
 
-    private IEnumerable<LinkedTaskHead> extract()
+    private IEnumerable<GameFile> extract()
     {
         foreach (var filePath in Directory.GetFiles(_path))
         {
-            var file = new TaskFile(filePath)
+            var file = new GameFile(filePath)
             {
                 Path = filePath,
                 Hash = "-"
             };
 
-
-            var task = new FileCheckTask(file);
-            yield return new LinkedTaskHead(task, file);
+            yield return file;
         }
     }
 }

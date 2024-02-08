@@ -28,8 +28,7 @@ public class LibraryFileExtractor : IFileExtractor
         }
     }
 
-    public ValueTask<IEnumerable<LinkedTaskHead>> Extract(
-        ITaskFactory taskFactory,
+    public ValueTask<IEnumerable<GameFile>> Extract(
         MinecraftPath path, 
         IVersion version,
         RulesEvaluatorContext rulesContext,
@@ -38,12 +37,11 @@ public class LibraryFileExtractor : IFileExtractor
         var result = version.Libraries
             .Where(lib => lib.CheckIsRequired(_side))
             .Where(lib => lib.Rules == null || _rulesEvaluator.Match(lib.Rules, rulesContext))
-            .SelectMany(lib => createLibraryTasks(taskFactory, path, lib, rulesContext));
-        return new ValueTask<IEnumerable<LinkedTaskHead>>(result);
+            .SelectMany(lib => createLibraryTasks(path, lib, rulesContext));
+        return new ValueTask<IEnumerable<GameFile>>(result);
     }
 
-    private IEnumerable<LinkedTaskHead> createLibraryTasks(
-        ITaskFactory taskFactory,
+    private IEnumerable<GameFile> createLibraryTasks(
         MinecraftPath path, 
         MLibrary library,
         RulesEvaluatorContext rulesContext)
@@ -53,15 +51,13 @@ public class LibraryFileExtractor : IFileExtractor
         if (artifact != null)
         {
             var libPath = library.GetLibraryPath();
-            var file = new TaskFile(library.Name)
+            yield return new GameFile(library.Name)
             {
                 Path = Path.Combine(path.Library, libPath),
                 Url = createDownloadUrl(artifact.Url, libPath),
                 Hash = artifact.GetSha1(),
                 Size = artifact.Size
             };
-
-            yield return new LinkedTaskHead(taskFactory.CheckAndDownload(file), file);
         }
 
         // native library (*.dll, *.so)
@@ -71,14 +67,13 @@ public class LibraryFileExtractor : IFileExtractor
             var libPath = library.GetNativeLibraryPath(rulesContext.OS);
             if (!string.IsNullOrEmpty(libPath))
             {
-                var file = new TaskFile(library.Name)
+                yield return new GameFile(library.Name)
                 {
                     Path = Path.Combine(path.Library, libPath),
                     Url = createDownloadUrl(native.Url, libPath),
                     Hash = native.GetSha1(),
                     Size = native.Size
                 };
-                yield return new LinkedTaskHead(taskFactory.CheckAndDownload(file), file);
             }
         }
     }

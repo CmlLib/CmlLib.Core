@@ -22,7 +22,6 @@ public class MinecraftLauncher
     public MinecraftPath MinecraftPath { get; }
     public IVersionLoader VersionLoader { get; }
     public IJavaPathResolver JavaPathResolver { get; }
-    public ITaskFactory TaskFactory { get; }
     public FileExtractorCollection FileExtractors { get; }
     public IGameInstaller GameInstaller { get; }
     public INativeLibraryExtractor NativeLibraryExtractor { get; }
@@ -56,8 +55,6 @@ public class MinecraftLauncher
             ?? throw new ArgumentException(nameof(parameters.VersionLoader) + " was null");
         JavaPathResolver = parameters.JavaPathResolver
             ?? throw new ArgumentException(nameof(parameters.JavaPathResolver) + " was null");
-        TaskFactory = parameters.TaskFactory
-            ?? throw new ArgumentException(nameof(parameters.TaskFactory) + " was null");
         FileExtractors = parameters.FileExtractors
             ?? throw new ArgumentException(nameof(parameters.FileExtractors) + " was null");
         GameInstaller = parameters.GameInstaller 
@@ -94,24 +91,41 @@ public class MinecraftLauncher
         }
     }
 
+    public async ValueTask<IEnumerable<GameFile>> ExtractFiles(
+        string versionName,
+        CancellationToken cancellationToken = default)
+    {
+        var version = await GetVersionAsync(versionName);
+        return await ExtractFiles(version, cancellationToken);
+    }
+
+    public async ValueTask<IEnumerable<GameFile>> ExtractFiles(
+        IVersion version,
+        CancellationToken cancellationToken)
+    {
+        var files = new List<GameFile>();
+        foreach (var extractor in FileExtractors)
+        {
+            files.AddRange(await extractor.Extract(MinecraftPath, version, RulesContext, cancellationToken));
+        }
+        return files;
+    }
+
     public async ValueTask InstallAsync(
         string versionName, 
         CancellationToken cancellationToken = default)
     {
         var version = await GetVersionAsync(versionName);
-        await InstallAsync(version);
+        await InstallAsync(version, cancellationToken);
     }
 
     public async ValueTask InstallAsync(
         IVersion version,
         CancellationToken cancellationToken = default)
     {
+        var files = await ExtractFiles(version, cancellationToken);
         await GameInstaller.Install(
-            TaskFactory,
-            FileExtractors, 
-            MinecraftPath, 
-            version, 
-            RulesContext,
+            files,
             _fileProgress,
             _byteProgress,
             cancellationToken);

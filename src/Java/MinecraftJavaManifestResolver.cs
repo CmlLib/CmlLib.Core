@@ -65,7 +65,7 @@ public class MinecraftJavaManifestResolver
         if (components == null)
             return Enumerable.Empty<MinecraftJavaManifestMetadata>();
 
-        return enumerateComponents(os, components);
+        return enumerateComponents(os, components).ToArray();
     }
 
     private async Task<JsonDocument> requestJsonManifest()

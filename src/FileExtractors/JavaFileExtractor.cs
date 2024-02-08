@@ -21,8 +21,7 @@ public class JavaFileExtractor : IFileExtractor
         _javaPathResolver = javaPathResolver;
     }
 
-    public async ValueTask<IEnumerable<LinkedTaskHead>> Extract(
-        ITaskFactory taskFactory,
+    public async ValueTask<IEnumerable<GameFile>> Extract(
         MinecraftPath path,
         IVersion version,
         RulesEvaluatorContext rulesContext,
@@ -38,7 +37,6 @@ public class JavaFileExtractor : IFileExtractor
         manifestResolver.ManifestServer = JavaManifestServer;
 
         var extractor = new Extractor(
-            taskFactory, 
             _javaPathResolver, 
             rulesContext, 
             manifestResolver);
@@ -47,24 +45,21 @@ public class JavaFileExtractor : IFileExtractor
 
     public class Extractor
     {
-        private readonly ITaskFactory _taskFactory;
         private readonly IJavaPathResolver _javaPathResolver;
         private readonly RulesEvaluatorContext _rulesContext;
         private readonly MinecraftJavaManifestResolver _manifestResolver;
 
         public Extractor(
-            ITaskFactory taskFactory, 
             IJavaPathResolver javaPathResolver,
             RulesEvaluatorContext rulesContext, 
             MinecraftJavaManifestResolver manifestResolver)
         {
-            _taskFactory = taskFactory;
             _javaPathResolver = javaPathResolver;
             _rulesContext = rulesContext;
             _manifestResolver = manifestResolver;
         }
 
-        public async ValueTask<IEnumerable<LinkedTaskHead>> ExtractFromJavaVersion(
+        public async ValueTask<IEnumerable<GameFile>> ExtractFromJavaVersion(
             JavaVersion javaVersion, 
             CancellationToken cancellationToken)
         {
@@ -77,7 +72,7 @@ public class JavaFileExtractor : IFileExtractor
                 manifestUrl = findManifestUrl(manifests, MinecraftJavaPathResolver.JreLegacyVersion.Component);
 
             if (string.IsNullOrEmpty(manifestUrl))
-                return Enumerable.Empty<LinkedTaskHead>();
+                return Enumerable.Empty<GameFile>();
 
             var installPath = _javaPathResolver.GetJavaDirPath(javaVersion, _rulesContext);
             var files = await _manifestResolver.GetFilesFromManifest(manifestUrl, cancellationToken);
@@ -89,7 +84,7 @@ public class JavaFileExtractor : IFileExtractor
             return metadatas.FirstOrDefault(v => v.Component == component)?.Metadata?.Url;
         }
 
-        private IEnumerable<LinkedTaskHead> iterateFileToTask(
+        private IEnumerable<GameFile> iterateFileToTask(
             string path,
             IEnumerable<MinecraftJavaFile> files)
         {
@@ -100,7 +95,7 @@ public class JavaFileExtractor : IFileExtractor
                     var filePath = Path.Combine(path, javaFile.Name);
                     filePath = IOUtil.NormalizePath(filePath);
 
-                    var taskFile = new TaskFile(javaFile.Name)
+                    var gameFile = new GameFile(javaFile.Name)
                     {
                         Hash = javaFile.Sha1,
                         Path = filePath,
@@ -108,13 +103,10 @@ public class JavaFileExtractor : IFileExtractor
                         Size = javaFile.Size
                     };
 
-                    yield return LinkedTaskBuilder.Create(taskFile, _taskFactory)
-                        .CheckFile(
-                            onSuccess => onSuccess.ReportDone(),
-                            onFail => onFail
-                                .Download()
-                                .ThenIf(javaFile.Executable).Then(new ChmodTask(javaFile.Name, filePath)))
-                        .BuildHead();
+                    if (javaFile.Executable)
+                        gameFile.UpdateTask = new ChmodTask(NativeMethods.Chmod755);
+
+                    yield return gameFile;
                 }
             }
         }

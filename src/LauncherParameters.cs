@@ -26,14 +26,13 @@ public class MinecraftLauncherParameters
             new MojangJsonVersionLoader(httpClient)
         };
         parameters.JavaPathResolver = new MinecraftJavaPathResolver(parameters.MinecraftPath);
-        parameters.GameInstaller = new TPLGameInstaller(TPLGameInstaller.BestMaxParallelism);
+        parameters.GameInstaller = new BasicGameInstaller(httpClient);
         parameters.NativeLibraryExtractor = new NativeLibraryExtractor(parameters.RulesEvaluator);
         var extractors = DefaultFileExtractors.CreateDefault(
             parameters.HttpClient, 
             parameters.RulesEvaluator, 
             parameters.JavaPathResolver);
         parameters.FileExtractors = extractors.ToExtractorCollection();
-        parameters.TaskFactory = new Tasks.TaskFactory(httpClient);
         return parameters;
     }
 
@@ -58,7 +57,6 @@ public class MinecraftLauncherParameters
     public IVersionLoader? VersionLoader { get; set; }
     public IJavaPathResolver? JavaPathResolver { get; set; }
     public FileExtractorCollection? FileExtractors { get; set; }
-    public ITaskFactory? TaskFactory { get; set; }
     public IGameInstaller? GameInstaller { get; set; }
     public INativeLibraryExtractor? NativeLibraryExtractor { get; set; }
     public IRulesEvaluator? RulesEvaluator { get; set; }

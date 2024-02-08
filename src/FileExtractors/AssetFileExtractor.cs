@@ -19,8 +19,7 @@ public class AssetFileExtractor : IFileExtractor
 
     public string AssetServer { get; set; } = MojangServer.ResourceDownload;
 
-    public async ValueTask<IEnumerable<LinkedTaskHead>> Extract(
-        ITaskFactory taskFactory,
+    public async ValueTask<IEnumerable<GameFile>> Extract(
         MinecraftPath path,
         IVersion version,
         RulesEvaluatorContext rulesContext,
@@ -28,10 +27,9 @@ public class AssetFileExtractor : IFileExtractor
     {
         var assetIndex = await loadAssetIndex(path, version.AssetIndex);
         if (assetIndex == null)
-            return Enumerable.Empty<LinkedTaskHead>();
+            return Enumerable.Empty<GameFile>();
 
         return TaskExtractor.ExtractTasksFromAssetIndex(
-            taskFactory,
             assetIndex, 
             path, 
             AssetServer,
@@ -87,8 +85,8 @@ public class AssetFileExtractor : IFileExtractor
 
     public static class TaskExtractor
     {
-        public static IEnumerable<LinkedTaskHead> ExtractTasksFromAssetIndex(
-            ITaskFactory taskFactory, IAssetIndex assetIndex, MinecraftPath path, string assetServer, bool dispose)
+        public static IEnumerable<GameFile> ExtractTasksFromAssetIndex(
+            IAssetIndex assetIndex, MinecraftPath path, string assetServer, bool dispose)
         {
             if (assetServer.Last() != '/')
                 assetServer += '/';
@@ -104,7 +102,7 @@ public class AssetFileExtractor : IFileExtractor
                 if (assetIndex.MapToResources)
                     copyPath.Add(Path.Combine(path.Resource, assetObject.Name));
 
-                var file = new TaskFile(assetObject.Name)
+                var file = new GameFile(assetObject.Name)
                 {
                     Path = hashPath,
                     Hash = assetObject.Hash,
@@ -112,13 +110,10 @@ public class AssetFileExtractor : IFileExtractor
                     Url = assetServer + hashName
                 };
 
-                yield return LinkedTaskBuilder.Create(file, taskFactory)
-                    .CheckFile(
-                        onSuccess => onSuccess.ReportDone(),
-                        onFail => onFail
-                            .Download()
-                            .ThenIf(copyPath.Any()).Then(new FileCopyTask(assetObject.Name, hashPath, copyPath.ToArray())))
-                    .BuildHead();
+                if (copyPath.Any())
+                    file.UpdateTask = new FileCopyTask(copyPath);
+
+                yield return file;
             }
 
             if (dispose && assetIndex is IDisposable disposableAssetIndex)

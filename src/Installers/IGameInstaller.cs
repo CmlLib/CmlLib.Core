@@ -8,11 +8,7 @@ namespace CmlLib.Core.Installers;
 public interface IGameInstaller
 {
     ValueTask Install(
-        ITaskFactory taskFactory,
-        IEnumerable<IFileExtractor> extractors,
-        MinecraftPath path, 
-        IVersion version,
-        RulesEvaluatorContext rulesContext,
+        IEnumerable<GameFile> gameFiles,
         IProgress<InstallerProgressChangedEventArgs>? fileProgress,
         IProgress<ByteProgress>? byteProgress,
         CancellationToken cancellationToken);

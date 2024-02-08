@@ -17,64 +17,55 @@ public class LegacyJavaFileExtractor : IFileExtractor
         IJavaPathResolver resolver) => 
         (_httpClient, _javaPathResolver) = (httpClient, resolver);
 
-    public ValueTask<IEnumerable<LinkedTaskHead>> Extract(
-        ITaskFactory taskFactory,
+    public JavaVersion JavaVersion = new JavaVersion
+    {
+        Component = "m-legacy",
+        MajorVersion = 17
+    };
+
+    public async ValueTask<IEnumerable<GameFile>> Extract(
         MinecraftPath path, 
         IVersion version,
         RulesEvaluatorContext rulesContext,
         CancellationToken cancellationToken)
     {
-        var task = createTask(taskFactory, path, rulesContext, cancellationToken);
-        return new ValueTask<IEnumerable<LinkedTaskHead>>(new LinkedTaskHead[] { task });
+        var javaBinaryPath = _javaPathResolver.GetJavaBinaryPath(JavaVersion, rulesContext);
+        if (!File.Exists(javaBinaryPath))
+        {
+            return new [] { await createTask(rulesContext, cancellationToken) };
+        }
+        else
+        {
+            return Enumerable.Empty<GameFile>();
+        }
     }
 
-    private LinkedTaskHead createTask(
-        ITaskFactory taskFactory,
-        MinecraftPath path,
+    private async Task<GameFile> createTask(
         RulesEvaluatorContext rulesContext,
         CancellationToken cancellationToken)
     {
-        var javaVersion = new JavaVersion
+        var javaBinaryDir = _javaPathResolver.GetJavaDirPath(JavaVersion, rulesContext);
+
+        var javaUrl = await GetJavaUrlAsync(cancellationToken);
+        var lzmaFile = new GameFile("jre.lzma")
         {
-            Component = "m-legacy",
-            MajorVersion = 17
+            Path = Path.Combine(Path.GetTempPath(), "jre.lzma"),
+            Hash = "0", // since the file is temporary it should be always downloaded again
+            Url = javaUrl
         };
 
-        var javaBinaryPath = _javaPathResolver.GetJavaBinaryPath(javaVersion, rulesContext);
-        var javaBinaryDir = _javaPathResolver.GetJavaDirPath(javaVersion, rulesContext);
-        var file = new TaskFile(javaVersion.Component)
-        {
-            Path = javaBinaryPath
-        };
+        lzmaFile.UpdateTask = CompositeUpdateTask.Create(
+            new LegacyJavaExtractionTask(javaBinaryDir),
+            new ChmodTask(NativeMethods.Chmod755));
 
-        return LinkedTaskBuilder.Create(file, taskFactory)
-            .CheckFile(
-                onSuccess => onSuccess.ReportDone(),
-                onFail => onFail.Then(new ActionTask(file.Name, async task =>
-                {
-                    var javaUrl = await GetJavaUrlAsync();
-                    var zipPath = Path.Combine(Path.GetTempPath(), "jre.zip");
-                    var lzmaFile = new TaskFile("jre.lzma")
-                    {
-                        Path = Path.Combine(Path.GetTempPath(), "jre.lzma"),
-                        Url = javaUrl
-                    };
-
-                    return LinkedTaskBuilder.Create(lzmaFile, taskFactory)
-                        .Download()
-                        .Then(new LZMADecompressTask("jre.lzma", lzmaFile.Path, zipPath))
-                        .Then(new UnzipTask("jre.zip", zipPath, javaBinaryDir))
-                        .Then(new ChmodTask(javaVersion.Component, javaBinaryPath))
-                        .BuildTask();
-                })))
-            .BuildHead();
+        return lzmaFile;
     }
 
-    public async Task<string> GetJavaUrlAsync()
+    public async Task<string> GetJavaUrlAsync(CancellationToken cancellationToken)
     {
-        var json = await _httpClient.GetStringAsync(MojangServer.LauncherMeta)
-            .ConfigureAwait(false);
-        return parseLauncherMetadata(json);
+        var res = await _httpClient.GetAsync(MojangServer.LauncherMeta, cancellationToken);
+        var resStr = await res.Content.ReadAsStringAsync();
+        return parseLauncherMetadata(resStr);
     }
 
     private string parseLauncherMetadata(string json)

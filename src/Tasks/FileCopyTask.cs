@@ -2,22 +2,19 @@ using CmlLib.Core.Internals;
 
 namespace CmlLib.Core.Tasks;
 
-public class FileCopyTask : LinkedTask
+public class FileCopyTask : IUpdateTask
 {
-    public FileCopyTask(string name, string sourcePath, IEnumerable<string> destPaths) : base(name) =>
-        (SourcePath, DestinationPaths) = (sourcePath, destPaths.ToArray());
+    public FileCopyTask(IEnumerable<string> destPaths) =>
+        DestinationPaths = destPaths.ToArray();
 
-    public string SourcePath { get; }
     public string[] DestinationPaths { get; }
 
-    protected override ValueTask<LinkedTask?> OnExecuted(
-        IProgress<ByteProgress>? progress,
-        CancellationToken cancellationToken)
+    public ValueTask Execute(GameFile file, CancellationToken cancellationToken)
     {
-        if (!File.Exists(SourcePath))
+        if (string.IsNullOrEmpty(file.Path) || !File.Exists(file.Path))
             throw new InvalidOperationException("The source file does not exists");
 
-        var orgFile = new FileInfo(SourcePath);
+        var orgFile = new FileInfo(file.Path);
         foreach (var destination in DestinationPaths)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -30,6 +27,6 @@ public class FileCopyTask : LinkedTask
             }
         }
 
-        return new ValueTask<LinkedTask?>(NextTask);
+        return new ValueTask();
     }
 }

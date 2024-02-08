@@ -43,8 +43,8 @@ class Program
         // select version
         Console.WriteLine("Select the version to launch: ");
         Console.Write("> ");
-        //var startVersion = Console.ReadLine();
-        var startVersion = "1.20.1";
+        var startVersion = Console.ReadLine();
+        //var startVersion = "1.20.1";
         if (string.IsNullOrEmpty(startVersion))
             return;
 
@@ -91,7 +91,7 @@ class Program
             if (previousProceed > e.ProgressedTasks)
                 return;
 
-            var msg = $"[{e.ProgressedTasks} / {e.TotalTasks}][{e.EventType}] {e.Name}";
+            var msg = $"[{e.ProgressedTasks} / {e.TotalTasks}] {e.Name}";
             Console.WriteLine(msg.PadRight(lastCursorLeft));
             printBottomProgress();
 
@@ -103,15 +103,18 @@ class Program
     {
         lock (consoleLock)
         {
-            var percent = (e.ProgressedBytes / (double)e.TotalBytes) * 100;
-            var total = e.TotalBytes.ToString().PadRight(12);
-            var progressed = e.ProgressedBytes.ToString().PadLeft(12);
-
             var now = Environment.TickCount;
-            var speed = (e.ProgressedBytes - lastProgressed) / (double)(now - lastUpdate);
-            bottomText = $"==> {percent:F2}%, ({progressed} / {total}) bytes, {speed:F2} KB/s";
-            lastProgressed = e.ProgressedBytes;
-            lastUpdate = now;
+            if (Math.Abs(now - lastUpdate) >= 1000)
+            {
+                var percent = (e.ProgressedBytes / (double)e.TotalBytes) * 100;
+                var total = e.TotalBytes.ToString().PadRight(12);
+                var progressed = e.ProgressedBytes.ToString().PadLeft(12);
+
+                var speed = (e.ProgressedBytes - lastProgressed) / (double)(now - lastUpdate);
+                bottomText = $"==> {percent:F2}%, ({progressed} / {total}) bytes, {speed:F2} KB/s";
+                lastProgressed = e.ProgressedBytes;
+                lastUpdate = now;
+            }
             printBottomProgress();
         }
     }

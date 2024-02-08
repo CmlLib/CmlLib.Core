@@ -3,19 +3,20 @@ using CmlLib.Core.Internals;
 
 namespace CmlLib.Core.Tasks;
 
-public class ChmodTask : LinkedTask
+public class ChmodTask : IUpdateTask
 {
-    public string Path { get; private set; }
+    public ChmodTask(int mode) => Mode = mode;
 
-    public ChmodTask(string name, string path) : base(name) =>
-        Path = path;
+    public int Mode { get; }
 
-    protected override ValueTask<LinkedTask?> OnExecuted(
-        IProgress<ByteProgress>? progress,
+    public ValueTask Execute(
+        GameFile file,
         CancellationToken cancellationToken)
     {
+        if (string.IsNullOrEmpty(file.Path))
+            throw new InvalidOperationException();
         if (LauncherOSRule.Current.Name != LauncherOSRule.Windows)
-            NativeMethods.Chmod(Path, NativeMethods.Chmod755);
-        return new ValueTask<LinkedTask?>(NextTask);
+            NativeMethods.Chmod(file.Path, Mode);
+        return new ValueTask();
     }
 }
