@@ -91,7 +91,7 @@ public class MinecraftLauncher
         }
     }
 
-    public async ValueTask<IEnumerable<GameFile>> ExtractFiles(
+    public async ValueTask<IReadOnlyList<GameFile>> ExtractFiles(
         string versionName,
         CancellationToken cancellationToken = default)
     {
@@ -99,7 +99,7 @@ public class MinecraftLauncher
         return await ExtractFiles(version, cancellationToken);
     }
 
-    public async ValueTask<IEnumerable<GameFile>> ExtractFiles(
+    public async ValueTask<IReadOnlyList<GameFile>> ExtractFiles(
         IVersion version,
         CancellationToken cancellationToken)
     {

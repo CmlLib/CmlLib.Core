@@ -14,30 +14,23 @@ public class BasicGameInstaller : IGameInstaller
     }
 
     public async ValueTask Install(
-        IEnumerable<GameFile> gameFiles, 
+        IReadOnlyList<GameFile> gameFiles, 
         IProgress<InstallerProgressChangedEventArgs>? fileProgress, 
         IProgress<ByteProgress>? byteProgress, 
         CancellationToken cancellationToken)
     {
-        int totalTasks = gameFiles.Count();
-        int progressedTasks = 0;
         long totalBytes = gameFiles.Select(f => f.Size).Sum();
         long progressedBytes = 0;
 
-        foreach (var gameFile in gameFiles) 
+        for (int i = 0; i < gameFiles.Count; i++) 
         {
-            fileProgress?.Report(new InstallerProgressChangedEventArgs
-            {
-                TotalTasks = totalTasks,
-                ProgressedTasks = progressedTasks,
-                Name = gameFile.Name
-            });
+            var gameFile = gameFiles[i];
+            fireFileProgress(fileProgress, gameFiles.Count, i + 1, gameFile.Name);
 
             if (needUpdate(gameFile))
             {
                 long lastTotal = gameFile.Size;
                 long lastProgressed = 0;
-
                 var progressIntercepter = new SyncProgress<ByteProgress>(p =>
                 {
                     totalBytes += p.TotalBytes - lastTotal;
@@ -55,16 +48,9 @@ public class BasicGameInstaller : IGameInstaller
                 await download(gameFile, progressIntercepter, cancellationToken);
                 await gameFile.ExecuteUpdateTask(cancellationToken);
             }
-
-            progressedTasks++;
         }
 
-        fileProgress?.Report(new InstallerProgressChangedEventArgs
-        {
-            TotalTasks = totalTasks,
-            ProgressedTasks = totalTasks,
-            Name = gameFiles.LastOrDefault()?.Name
-        });
+        fireFileProgress(fileProgress, gameFiles.Count, gameFiles.Count, gameFiles.LastOrDefault()?.Name);
     }
 
     private bool needUpdate(GameFile file)
@@ -111,5 +97,19 @@ public class BasicGameInstaller : IGameInstaller
                 await Task.Delay(3000);
             }
         }
+    }
+
+    private void fireFileProgress(
+        IProgress<InstallerProgressChangedEventArgs>? progress,
+        int totalTasks,
+        int progressedTasks,
+        string? name)
+    {
+        progress?.Report(new InstallerProgressChangedEventArgs
+        {
+            TotalTasks = totalTasks,
+            ProgressedTasks = progressedTasks,
+            Name = name
+        });
     }
 }

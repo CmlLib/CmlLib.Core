@@ -1,6 +1,6 @@
 namespace CmlLib.Core.Installers;
 
-public struct InstallerProgressChangedEventArgs
+public class InstallerProgressChangedEventArgs
 {
     public int TotalTasks;
     public int ProgressedTasks;
