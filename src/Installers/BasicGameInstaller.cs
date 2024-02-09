@@ -1,33 +1,27 @@
-﻿using CmlLib.Core.Internals;
-using CmlLib.Core.Tasks;
-using System.Diagnostics;
+﻿using CmlLib.Core.Tasks;
 
 namespace CmlLib.Core.Installers;
 
-public class BasicGameInstaller : IGameInstaller
+public class BasicGameInstaller : GameInstallerBase
 {
-    private readonly HttpClient _httpClient;
-
-    public BasicGameInstaller(HttpClient httpClient)
+    public BasicGameInstaller(HttpClient httpClient) : base(httpClient)
     {
-        _httpClient = httpClient;
+        
     }
 
-    public async ValueTask Install(
-        IReadOnlyList<GameFile> gameFiles, 
-        IProgress<InstallerProgressChangedEventArgs>? fileProgress, 
-        IProgress<ByteProgress>? byteProgress, 
+    protected override async ValueTask Install(
+        IReadOnlyList<GameFile> gameFiles,
         CancellationToken cancellationToken)
     {
         long totalBytes = gameFiles.Select(f => f.Size).Sum();
         long progressedBytes = 0;
 
-        for (int i = 0; i < gameFiles.Count; i++) 
+        for (int i = 0; i < gameFiles.Count; i++)
         {
             var gameFile = gameFiles[i];
-            fireFileProgress(fileProgress, gameFiles.Count, i + 1, gameFile.Name);
+            FireFileProgress(gameFiles.Count, i, gameFile.Name, InstallerEventType.Queued);
 
-            if (needUpdate(gameFile))
+            if (NeedUpdate(gameFile))
             {
                 long lastTotal = gameFile.Size;
                 long lastProgressed = 0;
@@ -38,78 +32,14 @@ public class BasicGameInstaller : IGameInstaller
                     lastTotal = p.TotalBytes;
                     lastProgressed = p.ProgressedBytes;
 
-                    byteProgress?.Report(new ByteProgress
-                    {
-                        TotalBytes = totalBytes,
-                        ProgressedBytes = progressedBytes
-                    });
+                    FireByteProgress(totalBytes, progressedBytes);
                 });
 
-                await download(gameFile, progressIntercepter, cancellationToken);
+                await Download(gameFile, progressIntercepter, cancellationToken);
                 await gameFile.ExecuteUpdateTask(cancellationToken);
             }
+
+            FireFileProgress(gameFiles.Count, i + 1, gameFile.Name, InstallerEventType.Done);
         }
-
-        fireFileProgress(fileProgress, gameFiles.Count, gameFiles.Count, gameFiles.LastOrDefault()?.Name);
-    }
-
-    private bool needUpdate(GameFile file)
-    {
-        if (string.IsNullOrEmpty(file.Path))
-            return false;
-
-        if (!File.Exists(file.Path))
-            return true;
-
-        if (string.IsNullOrEmpty(file.Hash))
-            return false;
-
-        var realHash = IOUtil.ComputeFileSHA1(file.Path);
-        return realHash != file.Hash;
-    }
-
-    private async Task download(
-        GameFile file,
-        IProgress<ByteProgress>? progress,
-        CancellationToken cancellationToken)
-    {
-        Debug.Assert(!string.IsNullOrEmpty(file.Path));
-        if (string.IsNullOrEmpty(file.Url))
-            return;
-
-        for (int i = 3; i > 0; i--)
-        {
-            try
-            {
-                await HttpClientDownloadHelper.DownloadFileAsync(
-                    _httpClient,
-                    file.Url,
-                    file.Size,
-                    file.Path,
-                    progress,
-                    cancellationToken);
-                break;
-            }
-            catch (Exception)
-            {
-                if (i == 1)
-                    throw;
-                await Task.Delay(3000);
-            }
-        }
-    }
-
-    private void fireFileProgress(
-        IProgress<InstallerProgressChangedEventArgs>? progress,
-        int totalTasks,
-        int progressedTasks,
-        string? name)
-    {
-        progress?.Report(new InstallerProgressChangedEventArgs
-        {
-            TotalTasks = totalTasks,
-            ProgressedTasks = progressedTasks,
-            Name = name
-        });
     }
 }

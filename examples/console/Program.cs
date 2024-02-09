@@ -91,7 +91,7 @@ class Program
             if (previousProceed > e.ProgressedTasks)
                 return;
 
-            var msg = $"[{e.ProgressedTasks} / {e.TotalTasks}] {e.Name}";
+            var msg = $"[{e.ProgressedTasks} / {e.TotalTasks}][{e.EventType}] {e.Name}";
             Console.WriteLine(msg.PadRight(lastCursorLeft));
             printBottomProgress();
 
