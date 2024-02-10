@@ -21,8 +21,6 @@ public class BasicGameInstaller : GameInstallerBase
             var gameFile = gameFiles[i];
             FireFileProgress(gameFiles.Count, i, gameFile.Name, InstallerEventType.Queued);
 
-            if (NeedUpdate(gameFile))
-            {
                 long lastTotal = gameFile.Size;
                 long lastProgressed = 0;
                 var progressIntercepter = new SyncProgress<ByteProgress>(p =>
@@ -35,8 +33,18 @@ public class BasicGameInstaller : GameInstallerBase
                     FireByteProgress(totalBytes, progressedBytes);
                 });
 
+            if (NeedUpdate(gameFile))
+            {
                 await Download(gameFile, progressIntercepter, cancellationToken);
                 await gameFile.ExecuteUpdateTask(cancellationToken);
+            }
+            else
+            {
+                progressIntercepter.Report(new ByteProgress
+                {
+                    TotalBytes = gameFile.Size,
+                    ProgressedBytes = gameFile.Size
+                });
             }
 
             FireFileProgress(gameFiles.Count, i + 1, gameFile.Name, InstallerEventType.Done);
