@@ -67,7 +67,9 @@ public class ParallelGameInstaller : GameInstallerBase
             aggregateAndReportByteProgress();
             await Task.WhenAny(Task.Delay(500), lastBlock.Completion);
         }
-        aggregateAndReportByteProgress();
+
+        await lastBlock.Completion; // throw exception if exists
+        aggregateAndReportByteProgress(); // report 100%
 
         progressStorage.Dispose();
         progressStorage = null;
@@ -106,7 +108,7 @@ public class ParallelGameInstaller : GameInstallerBase
                 };
                 lastProgress = p;
             });
-
+            
             if (result.NeedUpdate)
             {
                 await Download(result.GameFile, progressIntercepter, cancellationToken);

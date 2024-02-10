@@ -1,0 +1,5 @@
+- [] 테스트케이스 더 자세하게 작성
+- [] MLaunchOption 에서 ExtraArguments 같은거 추가
+- [] master 브랜치에서 v3.4.0 으로 cherry-pick
+- [] ParallelGameInstaller 예외 처리방식 설정할 수 있게
+- [] RulesEvalutor 에서 ${arch} 와 os: 에서 쓰이는거 용도따라 바뀌게
