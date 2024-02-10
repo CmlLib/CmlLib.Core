@@ -6,6 +6,21 @@ namespace CmlLib.Core.Installers;
 
 public class ParallelGameInstaller : GameInstallerBase
 {
+    public static ParallelGameInstaller CreateAsCoreCount(HttpClient httpClient)
+    {
+        // 1 <= maxChecker <= 4
+        var maxChecker = Environment.ProcessorCount;
+        maxChecker = Math.Max(1, maxChecker);
+        maxChecker = Math.Min(4, maxChecker);
+
+        // 4 <= maxDownloader <= 6
+        var maxDownloader = Environment.ProcessorCount;
+        maxDownloader = Math.Max(4, maxDownloader);
+        maxDownloader = Math.Max(6, maxDownloader);
+
+        return new ParallelGameInstaller(maxChecker, maxDownloader, httpClient);
+    }
+
     public ParallelGameInstaller(
         int maxChecker,
         int maxDownloader,

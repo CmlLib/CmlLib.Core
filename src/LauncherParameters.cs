@@ -25,7 +25,7 @@ public class MinecraftLauncherParameters
             new MojangJsonVersionLoader(httpClient)
         };
         parameters.JavaPathResolver = new MinecraftJavaPathResolver(parameters.MinecraftPath);
-        parameters.GameInstaller = new ParallelGameInstaller(4, 4, httpClient);
+        parameters.GameInstaller = ParallelGameInstaller.CreateAsCoreCount(httpClient);
         parameters.NativeLibraryExtractor = new NativeLibraryExtractor(parameters.RulesEvaluator);
         var extractors = DefaultFileExtractors.CreateDefault(
             parameters.HttpClient, 
