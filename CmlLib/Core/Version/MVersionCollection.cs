@@ -45,7 +45,7 @@ namespace CmlLib.Core.Version
         public MVersionMetadata? LatestReleaseVersion { get; private set; }
         public MVersionMetadata? LatestSnapshotVersion { get; private set; }
         public MinecraftPath? MinecraftPath { get; private set; }
-        protected OrderedDictionary Versions;
+        protected OrderedDictionary Versions { get; set; }
 
         public MVersionMetadata this[int index] => (MVersionMetadata)Versions[index]!;
 

@@ -62,11 +62,11 @@ namespace CmlLib.Core.Installer
             var universalPath = installerObj["filePath"]?.ToString();
             if (string.IsNullOrEmpty(universalPath))
                 throw new InvalidOperationException("filePath property in installer was null");
-            
+
             var destPath = installerObj["path"]?.ToString();
             if (string.IsNullOrEmpty(destPath))
                 throw new InvalidOperationException("path property in installer was null");
-            
+
             extractUniversal(installerPath, universalPath, destPath); // old installer
 
             // download libraries and processors
@@ -74,7 +74,7 @@ namespace CmlLib.Core.Installer
 
             // mapping client data
             var installerData = installerObj["data"] as JObject;
-            var mapData = (installerData == null) 
+            var mapData = (installerData == null)
                 ? new Dictionary<string, string?>()
                 : mapping(installerData, "client", minecraftJar, installerPath);
 
@@ -144,7 +144,7 @@ namespace CmlLib.Core.Installer
                 throw new InvalidOperationException("no install_profile.json in installer");
             if (versionsJson == null)
                 throw new InvalidOperationException("no version.json in installer");
-            
+
             JToken profileObj;
             var installObj = JObject.Parse(installProfile); // installer info
             var versionInfo = installObj["versionInfo"]; // version profile
@@ -233,7 +233,7 @@ namespace CmlLib.Core.Installer
             var dirPath = Path.GetDirectoryName(universalPath);
             if (!string.IsNullOrEmpty(dirPath))
                 Directory.CreateDirectory(dirPath);
-            
+
             var dl = new WebDownload();
             dl.DownloadFile(universalUrl, universalPath);
         }
@@ -248,7 +248,7 @@ namespace CmlLib.Core.Installer
             {
                 var key = item.Key;
                 var value = item.Value?[kind]?.ToString();
-                
+
                 if (string.IsNullOrEmpty(value))
                     continue;
 
@@ -284,10 +284,10 @@ namespace CmlLib.Core.Installer
 
             var fileProgress = new Progress<DownloadFileChangedEventArgs>(
                 e => FileChanged?.Invoke(e));
-            
+
             var libraryChecker = new LibraryChecker();
             var lostLibrary = libraryChecker.CheckFiles(minecraftPath, libs.ToArray(), fileProgress);
-            
+
             if (lostLibrary != null)
                 downloader.DownloadFiles(lostLibrary, fileProgress, null);
         }
@@ -317,7 +317,7 @@ namespace CmlLib.Core.Installer
             {
                 if (item.Value == null)
                     continue;
-                
+
                 var key = Mapper.Interpolation(item.Key, mapData, true);
                 var value = Mapper.Interpolation(item.Value.ToString(), mapData, true);
 
@@ -357,7 +357,7 @@ namespace CmlLib.Core.Installer
                     var libNameString = libName?.ToString();
                     if (string.IsNullOrEmpty(libNameString))
                         continue;
-                    
+
                     var lib = Path.Combine(minecraftPath.Library,
                         PackageName.Parse(libNameString).GetPath());
                     classpath.Add(lib);
@@ -385,7 +385,7 @@ namespace CmlLib.Core.Installer
 
             if (args != null && args.Length > 0)
                 arg += " " + string.Join(" ", args);
-            
+
             var process = new Process();
             process.StartInfo = new ProcessStartInfo()
             {
