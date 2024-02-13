@@ -16,6 +16,7 @@ public class LegacyJavaExtractionTask : IUpdateTask
         if (string.IsNullOrEmpty(file.Path))
             throw new ArgumentException();
 
+        // jre.lzma (file.Path) -> jre.zip -> /extracTo
         var zipPath = Path.Combine(Path.GetTempPath(), "jre.zip");
         SevenZipWrapper.DecompressFileLZMA(file.Path, zipPath);
         SharpZipWrapper.Unzip(zipPath, ExtractTo, null, cancellationToken);

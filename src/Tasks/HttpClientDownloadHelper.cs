@@ -33,7 +33,7 @@ internal static class HttpClientDownloadHelper
         string url, 
         long size,
         Stream destination,
-        IProgress<ByteProgress>? progress = null, 
+        IProgress<ByteProgress>? progress = null, // it must report last progress (100%)
         CancellationToken cancellationToken = default)
     {
         // Get the http headers first to examine the content length

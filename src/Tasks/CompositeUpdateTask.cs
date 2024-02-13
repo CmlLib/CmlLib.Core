@@ -1,5 +1,4 @@
-﻿
-namespace CmlLib.Core.Tasks;
+﻿namespace CmlLib.Core.Tasks;
 
 public class CompositeUpdateTask : IUpdateTask
 {
