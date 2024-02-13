@@ -9,6 +9,11 @@ public record LauncherOSRule
     public const string OSX = "osx";
     public const string Linux = "linux";
 
+    public const string X86 = "32";
+    public const string X64 = "64";
+    public const string Arm = "arm";
+    public const string Arm64 = "arm64";
+
     private static LauncherOSRule? _current;
     public static LauncherOSRule Current => _current ??= createCurrent();
 
@@ -23,14 +28,12 @@ public record LauncherOSRule
         else
             name = Linux;
         
-        // ${arch} : 32, 64
-        // rules/os/arch: x86
         arch = RuntimeInformation.OSArchitecture switch
         {
-            Architecture.X86 => "32",
-            Architecture.X64 => "64",
-            Architecture.Arm => "arm",
-            Architecture.Arm64 => "arm64",
+            Architecture.X86 => X86,
+            Architecture.X64 => X64,
+            Architecture.Arm => Arm,
+            Architecture.Arm64 => Arm64,
             _ => ""
         };
 

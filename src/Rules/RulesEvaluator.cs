@@ -27,7 +27,7 @@ public class RulesEvaluator : IRulesEvaluator
 
         bool isArchMatched = true;
         if (!string.IsNullOrEmpty(rule.OS?.Arch))
-            isArchMatched = rule.OS?.Arch == context.OS?.Arch;
+            isArchMatched = rule.OS?.Arch == getArchForRule(context.OS?.Arch);
 
         bool isVersionMatched = true;
         if (string.IsNullOrEmpty(context.OS?.Version))
@@ -40,6 +40,16 @@ public class RulesEvaluator : IRulesEvaluator
                 TimeSpan.FromMilliseconds(100));
 
         return isNameMatched && isArchMatched && isVersionMatched;
+    }
+
+    private string? getArchForRule(string? arch)
+    {
+        if (arch == LauncherOSRule.X86)
+            return "x86";
+        else if (arch == LauncherOSRule.X64)
+            return "x64";
+        else
+            return arch;
     }
 
     private bool matchFeature(LauncherRule rule, RulesEvaluatorContext context)
