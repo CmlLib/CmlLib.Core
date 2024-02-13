@@ -153,13 +153,10 @@ public class JsonVersion : IVersion, IDisposable
             }
             else
             {
-                return new MArgument[]
-                {
-                    new MArgument()
-                    {
-                        Values = new string[] { args }
-                    }
-                };
+                return args
+                    .Split(' ')
+                    .Select(arg => new MArgument(arg))
+                    .ToArray();
             }
         }
         catch (Exception)
@@ -194,7 +191,7 @@ public class JsonVersion : IVersion, IDisposable
     public string? GetProperty(string key)
     {
         if (_json.RootElement.TryGetProperty(key, out var prop))
-            return prop.GetString();
+            return prop.ToString();
         else
             return null;
     }
