@@ -3,23 +3,21 @@ using CmlLib.Core.Test.Version;
 using CmlLib.Core.Version;
 using CmlLib.Core.VersionMetadata;
 using Moq;
-using NUnit.Framework;
 
 namespace CmlLib.Core.Test.VersionMetadata;
 
 public class VersionMetadataCollectionTest
 {
-    [Test]
-    public void TestGetVersionMetadata()
+    [Fact]
+    public void get_version_by_id()
     {
         var (collection, parent, child) = createMocks();
-
         var result = collection.GetVersionMetadata(parent.Id);
-        Assert.That(result.Name, Is.EqualTo("parent"));
+        Assert.Equal("parent", result.Name);
     }
 
-    [Test]
-    public void TestGetVersionMetadataException()
+    [Fact]
+    public void get_version_by_not_existing_id()
     {
         var (collection, parent, child) = createMocks();
 
@@ -29,34 +27,37 @@ public class VersionMetadataCollectionTest
         });
     }
 
-    [Test]
-    public void TestEnumerationOrder()
+    [Fact]
+    public void keep_enumeration_order()
     {
         var (collection, parent, child) = createMocks();
-
         var names = collection.Select(v => v.Name);
-        Assert.That(names, Is.EqualTo(new string[] { "parent", "child" }));
+        Assert.Equal(new [] { "parent", "child" }, names);
     }
 
-    [Test]
-    public async Task TestInheritance()
+    [Fact]
+    public async Task get_inherited_property()
     {
         var (collection, parent, child) = createMocks();
+        var version = await collection.GetVersionAsync("child");
+        Assert.Equal("child_assetindex", version.GetInheritedProperty(v => v.AssetIndex)?.Id);
+        Assert.Equal("parent_mainclass", version.GetInheritedProperty(v => v.MainClass));
+    }
 
-        var result = await collection.GetVersionAsync("child");
-        Assert.That(result, Is.EqualTo(child));
-        Assert.That(result.ParentVersion, Is.EqualTo(parent));
-        Assert.That(result.GetInheritedProperty(v => v.AssetIndex)?.Id, Is.EqualTo("child_assetindex"));
-        Assert.That(result.GetInheritedProperty(v => v.MainClass), Is.EqualTo("parent_mainclass"));
-
-        var concatArguments = result.ConcatInheritedCollection(v => v.GameArguments)
+    public async Task get_inherited_collection()
+    {
+        var (collection, parent, child) = createMocks();
+        var version = await collection.GetVersionAsync("child");
+        var concatArguments = version.ConcatInheritedCollection(v => v.GameArguments)
             .SelectMany(args => args.Values ?? Enumerable.Empty<string>())
             .ToArray();
-        Assert.That(concatArguments, Is.EqualTo(new string[] { "parent_arg", "child_arg" }));
+
+        // should keep the order
+        Assert.Equal(new []{ "parent_arg", "child_arg" }, concatArguments);
     }
 
-    [Test]
-    public void TestCircularInheritanceException()
+    [Fact]
+    public void throw_circular_inheritance()
     {
         var (collection, parent, child) = createMocks();
         parent.InheritsFrom = child.Id;
@@ -67,22 +68,26 @@ public class VersionMetadataCollectionTest
         });
     }
 
-    [Test]
-    public async Task TestSelfInheritance()
+    [Fact]
+    public async Task handle_self_inheritance()
     {
+        // Given
         var (collection, parent, child) = createMocks();
         child.InheritsFrom = child.Id;
 
-        var actual = await collection.GetVersionAsync("child");
-        Assert.That(actual.InheritsFrom, Is.EqualTo(child.Id));
-        Assert.Null(actual.ParentVersion);
+        // When
+        var selfInherited = await collection.GetVersionAsync("child");
+
+        // Then
+        Assert.Equal("child", selfInherited.InheritsFrom);
+        Assert.Null(selfInherited.ParentVersion);
     }
 
-    [Test]
-    public void TestNonExistInheritanceException()
+    [Fact]
+    public void throw_non_existent_parent_id()
     {
         var (collection, parent, child) = createMocks();
-        child.InheritsFrom = "NON_EXISTENCE_VERSION_ID";
+        child.InheritsFrom = "NON_EXISTENT_VERSION_ID";
 
         Assert.ThrowsAsync<KeyNotFoundException>(async () =>
         {
@@ -90,13 +95,13 @@ public class VersionMetadataCollectionTest
         });
     }
 
-    [Test]
-    public void TestInheritanceOverflow()
+    [Fact]
+    public void throw_too_deep_inheritance()
     {
-        var v1 = new MockVersion("v1");
-        var v2 = new MockVersion("v2");
-        var v3 = new MockVersion("v3");
-        var v4 = new MockVersion("v4");
+        var v1 = new DummyVersion("v1");
+        var v2 = new DummyVersion("v2");
+        var v3 = new DummyVersion("v3");
+        var v4 = new DummyVersion("v4");
 
         v4.InheritsFrom = v3.Id;
         v3.InheritsFrom = v2.Id;
@@ -118,13 +123,12 @@ public class VersionMetadataCollectionTest
         });
     }
 
-    [Test]
-    public void TestMerge()
+    private (VersionMetadataCollection, VersionMetadataCollection) createTestCollections()
     {
-        var v1 = createMockVersionMetadata(new MockVersion("v1"));
-        var v2 = createMockVersionMetadata(new MockVersion("v2"));
-        var v3 = createMockVersionMetadata(new MockVersion("v3"));
-        var v4 = createMockVersionMetadata(new MockVersion("v4"));
+        var v1 = createMockVersionMetadata(new DummyVersion("v1"));
+        var v2 = createMockVersionMetadata(new DummyVersion("v2"));
+        var v3 = createMockVersionMetadata(new DummyVersion("v3"));
+        var v4 = createMockVersionMetadata(new DummyVersion("v4"));
 
         var collection1 = new VersionMetadataCollection(new IVersionMetadata[]
         {
@@ -136,20 +140,29 @@ public class VersionMetadataCollectionTest
             v2, v3, v4
         }, "v2", "v4");
 
-        collection1.Merge(collection2);
-
-        Assert.That(
-            collection1.Select(v => v.Name), Is.EqualTo(
-            new string[] { "v1", "v2", "v3", "v4" }),
-            "Wrong order");
-        
-        Assert.That(collection1.LatestReleaseName, Is.EqualTo("v1"), "Wrong LatestReleaseName");
-        Assert.That(collection1.LatestSnapshotName, Is.EqualTo("v4"), "Wrong LatestSnapshotName");
+        return (collection1, collection2);
     }
 
-    private (VersionMetadataCollection, MockVersion, MockVersion) createMocks()
+    [Fact]
+    public void keep_enumeration_order_after_merging()
     {
-        var parent = new MockVersion("parent");
+        var (collection1, collection2) = createTestCollections();
+        collection1.Merge(collection2);
+        Assert.Equal(new [] { "v1", "v2", "v3", "v4" }, collection1.Select(v => v.Name));
+    }
+
+    [Fact]
+    public void merge_latest_version_names()
+    {
+        var (collection1, collection2) = createTestCollections();
+        collection1.Merge(collection2);
+        Assert.Equal("v1", collection1.LatestReleaseName);
+        Assert.Equal("v4", collection1.LatestSnapshotName);
+    }
+
+    private (VersionMetadataCollection, DummyVersion, DummyVersion) createMocks()
+    {
+        var parent = new DummyVersion("parent");
         parent.MainClass = "parent_mainclass";
         parent.AssetIndex = new Files.AssetMetadata
         {
@@ -160,7 +173,7 @@ public class VersionMetadataCollectionTest
             new MArgument("parent_arg")
         };
 
-        var child = new MockVersion("child");
+        var child = new DummyVersion("child");
         child.AssetIndex = new Files.AssetMetadata
         {
             Id = "child_assetindex"

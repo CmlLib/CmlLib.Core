@@ -1,32 +1,30 @@
 ﻿using CmlLib.Core.Internals;
-using NUnit.Framework;
 
 namespace CmlLib.Core.Test;
 
 public class IOUtilTest
 {
-    [Platform("Win")]
-    [TestCase(@"C:\\a/", @"C:\a")]
-    [TestCase(@"C:\\a\/b.txt", @"C:\a\b.txt")]
-    [TestCase(@"C:\/a\\b/\c.txt", @"C:\a\b\c.txt")]
-    [TestCase(@"/root/f1\.txt", @"C:\root\f1\.txt")]
+    [Theory(Skip = "Win")]
+    [InlineData(@"C:\\a/", @"C:\a")]
+    [InlineData(@"C:\\a\/b.txt", @"C:\a\b.txt")]
+    [InlineData(@"C:\/a\\b/\c.txt", @"C:\a\b\c.txt")]
+    [InlineData(@"/root/f1\.txt", @"C:\root\f1\.txt")]
     public void TestNormalizePathWin(string path, string expected)
     {
         var normalizedPath = IOUtil.NormalizePath(path);
-        Assert.AreEqual(expected, normalizedPath);
+        Assert.Equal(expected, normalizedPath);
     }
 
-    [Platform("Unix")]
-    [TestCase(@"/root/f1\.txt", @"/root/f1\.txt")]
-    [TestCase(@"/root/path1/", @"/root/path1")]
+    [Theory(Skip = "Unix")]
+    [InlineData(@"/root/f1\.txt", @"/root/f1\.txt")]
+    [InlineData(@"/root/path1/", @"/root/path1")]
     public void TestNormalizePathUnix(string path, string expected)
     {
         var normalizedPath = IOUtil.NormalizePath(path);
-        Assert.AreEqual(expected, normalizedPath);
+        Assert.Equal(expected, normalizedPath);
     }
 
-    [Platform("Win")]
-    [Test]
+    [Fact(Skip = "Win")]
     public void TestCombinePathWin()
     {
         var paths = new[]
@@ -35,11 +33,10 @@ public class IOUtilTest
         };
         var exp = @"C:\test\lib1.zip;""C:\test\lib space 2.zip""";
         
-        Assert.AreEqual(exp, IOUtil.CombinePath(paths));
+        Assert.Equal(exp, IOUtil.CombinePath(paths));
     }
 
-    [Platform("Unix")]
-    [Test]
+    [Fact(Skip = "Unix")]
     public void TestCombinePathUnix()
     {
         var paths = new[]
@@ -48,6 +45,6 @@ public class IOUtilTest
         };
         var exp = @"/root/f1.zip:""/root/f2 space sss.txt""";
         
-        Assert.AreEqual(exp, IOUtil.CombinePath(paths));
+        Assert.Equal(exp, IOUtil.CombinePath(paths));
     }
 }

@@ -2,7 +2,7 @@
 
 namespace CmlLib.Core.Files;
 
-public class MLogFileMetadata : MFileMetadata
+public class MLogFileMetadata
 {
     [JsonPropertyName("file")]
     public MFileMetadata? LogFile { get; set; }

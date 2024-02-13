@@ -5,9 +5,9 @@ using CmlLib.Core.Version;
 
 namespace CmlLib.Core.Test.Version;
 
-public class MockVersion : IVersion
+public class DummyVersion : IVersion
 {
-    public MockVersion(string id) => Id = id;
+    public DummyVersion(string id) => Id = id;
 
     public string Id { get; set; }
 
