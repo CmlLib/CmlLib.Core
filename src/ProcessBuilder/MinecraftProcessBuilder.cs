@@ -110,11 +110,11 @@ public class MinecraftProcessBuilder
 
     private IEnumerable<string> buildJvmArguments(Dictionary<string, string?> argDict)
     {
-        var builder = new ProcessArgumentBuilder(rulesEvaluator, rulesContext);
+        var builder = new ProcessArgumentBuilder();
 
         // version-specific jvm arguments
         var jvmArgs = version.ConcatInheritedCollection(v => v.JvmArguments);
-        builder.AddArguments(jvmArgs, argDict);
+        builder.AddRange(mapArguments(jvmArgs, argDict));
         
         // default jvm arguments
         if (launchOption.JVMArguments != null)
@@ -133,9 +133,9 @@ public class MinecraftProcessBuilder
         }
 
         // -Xmx, -Xms
-        if (!builder.CheckKeyAdded("-Xmx") && launchOption.MaximumRamMb > 0)
+        if (!checkXmxAdded(builder) && launchOption.MaximumRamMb > 0)
             builder.Add("-Xmx" + launchOption.MaximumRamMb + "m");
-        if (!builder.CheckKeyAdded("-Xms") && launchOption.MinimumRamMb > 0)
+        if (!checkXmsAdded(builder) && launchOption.MinimumRamMb > 0)
             builder.Add("-Xms" + launchOption.MinimumRamMb + "m");
             
         // for macOS
@@ -148,10 +148,10 @@ public class MinecraftProcessBuilder
         var logging = version.GetInheritedProperty(v => v.Logging);
         if (!string.IsNullOrEmpty(logging?.Argument))
         {
-            builder.AddArgument(new MArgument(logging.Argument), new Dictionary<string, string?>()
+            builder.AddRange(mapArgument(new MArgument(logging.Argument), new Dictionary<string, string?>()
             {
                 { "path", minecraftPath.GetLogConfigFilePath(logging.LogFile?.Id ?? version.Id) }
-            });
+            }));
         }
 
         // main class
@@ -162,13 +162,23 @@ public class MinecraftProcessBuilder
         return builder.Build();
     }
 
+    private bool checkXmxAdded(ProcessArgumentBuilder builder)
+    {
+        return builder.Keys.Any(k => k.StartsWith("-Xmx"));
+    }
+
+    private bool checkXmsAdded(ProcessArgumentBuilder builder)
+    {
+        return builder.Keys.Any(k => k.StartsWith("-Xms"));
+    }
+
     private IEnumerable<string> buildGameArguments(Dictionary<string, string?> argDict)
     {
-        var builder = new ProcessArgumentBuilder(rulesEvaluator, rulesContext);
+        var builder = new ProcessArgumentBuilder();
 
         // game arguments
         var gameArgs = version.ConcatInheritedCollection(v => v.GameArguments);
-        builder.AddArguments(gameArgs, argDict);
+        builder.AddRange(mapArguments(gameArgs, argDict));
 
         // options
         if (!string.IsNullOrEmpty(launchOption.ServerIp))
@@ -197,7 +207,7 @@ public class MinecraftProcessBuilder
         // libraries
         var libPaths = version
             .ConcatInheritedCollection(v => v.Libraries)
-            .Where(lib => lib.CheckIsRequired("SIDE"))
+            .Where(lib => lib.CheckIsRequired(JsonVersionParserOptions.ClientSide))
             .Where(lib => lib.Rules == null || rulesEvaluator.Match(lib.Rules, rulesContext))
             .Where(lib => lib.Artifact != null)
             .Select(lib => Path.Combine(minecraftPath.Library, lib.GetLibraryPath()));
@@ -220,5 +230,36 @@ public class MinecraftProcessBuilder
             return input2;
         else
             return input1;
+    }
+
+    private IEnumerable<string> mapArguments(IEnumerable<MArgument> arguments, Dictionary<string, string?> mapper)
+    {
+        foreach (var arg in arguments)
+        {
+            foreach (var mappedArg in mapArgument(arg, mapper))
+            {
+                yield return mappedArg;
+            }
+        }
+    }
+
+    private IEnumerable<string> mapArgument(MArgument arg, Dictionary<string, string?> mapper)
+    {
+        if (arg.Values == null)
+            yield break;
+
+        if (arg.Rules != null)
+        {
+            var isMatch = rulesEvaluator.Match(arg.Rules, rulesContext);
+            if (!isMatch)
+                yield break;
+        }
+
+        foreach (var value in arg.Values)
+        {
+            var mappedValue = Mapper.Interpolation(value, mapper);
+            if (!string.IsNullOrEmpty(mappedValue))
+                yield return mappedValue;
+        }
     }
 }

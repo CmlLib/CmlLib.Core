@@ -1,20 +1,11 @@
-using CmlLib.Core.Rules;
-
 namespace CmlLib.Core.ProcessBuilder;
 
 public class ProcessArgumentBuilder
 {
-    private readonly IRulesEvaluator _evaluator;
-    private readonly RulesEvaluatorContext _context;
     private readonly HashSet<string> _keys = new();
     private readonly List<string> _args = new();
 
-    public ProcessArgumentBuilder(IRulesEvaluator evaluator, RulesEvaluatorContext context)
-    {
-        _evaluator = evaluator;
-        _context = context;
-    }
-
+    public IEnumerable<string> Keys => _keys;
     public bool CheckKeyAdded(string key) => _keys.Contains(key);
 
     public void AddRaw(string? value)
@@ -66,7 +57,7 @@ public class ProcessArgumentBuilder
                         if (trimmed.Contains(" "))
                             throw new FormatException();
                         result = trimmed;
-                        addKey(k);
+                        _keys.Add(k);
                     }
                     else // contains '='
                     {
@@ -121,46 +112,8 @@ public class ProcessArgumentBuilder
         else
             result = $"{key}={escapeValue(value)}";
 
-        addKey(key);
+        _keys.Add(key);
         AddRaw(result);
-    }
-
-    private void addKey(string key)
-    {
-        if (key.StartsWith("-Xmx"))
-            _keys.Add("-Xmx");
-        else if (key.StartsWith("-Xms"))
-            _keys.Add("-Xms");
-        else
-            _keys.Add(key);
-    }
-
-    public void AddArguments(IEnumerable<MArgument> arguments, Dictionary<string, string?> mapper)
-    {
-        foreach (var arg in arguments)
-        {
-            AddArgument(arg, mapper);
-        }
-    }
-
-    public void AddArgument(MArgument arg, Dictionary<string, string?> mapper)
-    {
-        if (arg.Values == null)
-            return;
-
-        if (arg.Rules != null)
-        {
-            var isMatch = _evaluator.Match(arg.Rules, _context);
-            if (!isMatch)
-                return;
-        }
-
-        foreach (var value in arg.Values)
-        {
-            var mappedValue = Mapper.Interpolation(value, mapper);
-            if (!string.IsNullOrEmpty(mappedValue))
-                Add(mappedValue);
-        }
     }
 
     public string[] Build()
