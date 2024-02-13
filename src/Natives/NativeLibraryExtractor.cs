@@ -39,7 +39,7 @@ public class NativeLibraryExtractor : INativeLibraryExtractor
     {
         return version
             .ConcatInheritedCollection(v => v.Libraries)
-            .Where(lib => lib.CheckIsRequired("SIDE"))
+            .Where(lib => lib.IsClientRequired)
             .Where(lib => lib.Rules == null || rulesEvaluator.Match(lib.Rules, rulesContext))
             .Select(lib => lib.GetNativeLibraryPath(rulesContext.OS))
             .Where(libPath => !string.IsNullOrEmpty(libPath))
