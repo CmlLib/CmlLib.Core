@@ -16,7 +16,9 @@ public abstract class GameInstallerBase : IGameInstaller
     private volatile bool IsRunning = false;
     public bool CheckFileSize { get; set; } = false;
     public bool CheckFileChecksum { get; set; } = true;
+    public IEnumerable<string> ExcludeFiles { get; set; } = Enumerable.Empty<string>();
 
+    private HashSet<string> excludeSet = new();
     private IProgress<InstallerProgressChangedEventArgs>? FileProgress;
     private IProgress<ByteProgress>? ByteProgress;
 
@@ -32,6 +34,10 @@ public abstract class GameInstallerBase : IGameInstaller
         IsRunning = true;
         this.FileProgress = fileProgress;
         this.ByteProgress = byteProgress;
+
+        excludeSet.Clear();
+        foreach (var excludeFile in ExcludeFiles)
+            excludeSet.Add(excludeFile);
 
         await Install(gameFiles, cancellationToken);
         IsRunning = false;
@@ -80,6 +86,11 @@ public abstract class GameInstallerBase : IGameInstaller
             file.Path,
             progress,
             cancellationToken);
+    }
+
+    protected bool CheckExcludeFile(string path)
+    {
+        return excludeSet.Contains(path);
     }
 
     protected void FireFileProgress(

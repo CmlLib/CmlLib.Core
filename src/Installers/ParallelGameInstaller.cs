@@ -57,6 +57,13 @@ public class ParallelGameInstaller : GameInstallerBase
         for (int i = 0; i < totalFiles; i++)
         {
             var file = gameFiles[i];
+            if (CheckExcludeFile(file.Path ?? ""))
+            {
+                totalFiles--;
+                totalBytes -= file.Size;
+                continue;
+            }
+
             FireFileProgress(totalFiles, progressedFiles, file.Name, InstallerEventType.Queued);
             await firstBlock.SendAsync(file, cancellationToken);
         }

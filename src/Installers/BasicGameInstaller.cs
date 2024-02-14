@@ -28,7 +28,7 @@ public class BasicGameInstaller : GameInstallerBase
                 FireByteProgress(totalBytes, progressedBytes);
             });
 
-            if (NeedUpdate(gameFile))
+            if (NeedUpdate(gameFile) && !CheckExcludeFile(gameFile.Path ?? ""))
             {
                 await Download(gameFile, progress, cancellationToken);
                 await gameFile.ExecuteUpdateTask(cancellationToken);
