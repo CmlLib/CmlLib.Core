@@ -93,34 +93,24 @@ public class ParallelGameInstaller : GameInstallerBase
 
         var downloadBlock = new ActionBlock<(GameFile GameFile, bool NeedUpdate)>(async result =>
         {
-            var lastProgress = new ByteProgress
+            var progress = new ByteProgressDelta(initialSize: result.GameFile.Size, delta =>
             {
-                TotalBytes = result.GameFile.Size,
-                ProgressedBytes = 0
-            };
-
-            var progressIntercepter = new SyncProgress<ByteProgress>(p =>
-            {
+                var storedProgress = progressStorage.Value;
                 progressStorage.Value = new ByteProgress
                 {
-                    TotalBytes = progressStorage.Value.TotalBytes + (p.TotalBytes - lastProgress.TotalBytes),
-                    ProgressedBytes = progressStorage.Value.ProgressedBytes + (p.ProgressedBytes - lastProgress.ProgressedBytes)
+                    TotalBytes = storedProgress.TotalBytes + delta.TotalBytes,
+                    ProgressedBytes = storedProgress.ProgressedBytes + delta.ProgressedBytes
                 };
-                lastProgress = p;
             });
-            
+
             if (result.NeedUpdate)
             {
-                await Download(result.GameFile, progressIntercepter, cancellationToken);
+                await Download(result.GameFile, progress, cancellationToken);
                 await result.GameFile.ExecuteUpdateTask(cancellationToken);
             }
             else
             {
-                progressIntercepter.Report(new ByteProgress
-                {
-                    TotalBytes = result.GameFile.Size,
-                    ProgressedBytes = result.GameFile.Size
-                });
+                progress.ReportDone();
             }
 
             Interlocked.Increment(ref progressedFiles);

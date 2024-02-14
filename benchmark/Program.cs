@@ -1,5 +1,5 @@
-﻿using System.Diagnostics;
-using BenchmarkDotNet.Running;
+﻿using BenchmarkDotNet.Running;
+using CmlLib.Core.Benchmarks;
 
-Console.WriteLine("Hello, World!");
-//var summary = BenchmarkRunner.Run<ExecutorsBenchmark>();
+//Console.WriteLine("Hello, World!");
+var summary = BenchmarkRunner.Run<ThreadLocalBenchmark>();
