@@ -103,12 +103,17 @@ public class MinecraftLauncher
         IVersion version,
         CancellationToken cancellationToken)
     {
-        var files = new List<GameFile>();
+        // filter duplicated paths
+        var fileSet = new Dictionary<string, GameFile>();
         foreach (var extractor in FileExtractors)
         {
-            files.AddRange(await extractor.Extract(MinecraftPath, version, RulesContext, cancellationToken));
+            var files = await extractor.Extract(MinecraftPath, version, RulesContext, cancellationToken);
+            foreach (var file in files)
+            {
+                fileSet[file.Path ?? ""] = file;
+            }
         }
-        return files;
+        return fileSet.Values.ToList();
     }
 
     public async ValueTask InstallAsync(
