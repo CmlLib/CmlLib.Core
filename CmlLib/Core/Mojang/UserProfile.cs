@@ -1,8 +1,7 @@
-﻿namespace CmlLib.Core.Mojang
+﻿namespace CmlLib.Core.Mojang;
+
+public class UserProfile
 {
-    public class UserProfile
-    {
-        public string? UUID { get; set; }
-        public string? Name { get; set; }
-    }
+    public string? UUID { get; set; }
+    public string? Name { get; set; }
 }

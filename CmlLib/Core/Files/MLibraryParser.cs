@@ -1,98 +1,100 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using Newtonsoft.Json.Linq;
 
-namespace CmlLib.Core.Files
+namespace CmlLib.Core.Files;
+
+public class MLibraryParser
 {
-    public class MLibraryParser
+    public bool CheckOSRules { get; set; } = true;
+
+    public MLibrary[]? ParseJsonObject(JObject item)
     {
-        public bool CheckOSRules { get; set; } = true;
-
-        public MLibrary[]? ParseJsonObject(JObject item)
+        try
         {
-            try
+            var list = new List<MLibrary>(2);
+
+            var name = item["name"]?.ToString();
+            var isRequire = true;
+
+            // check rules array
+            var rules = item["rules"];
+            if (CheckOSRules && rules != null)
+                isRequire = MRule.CheckOSRequire((JArray)rules);
+
+            // forge clientreq
+            var req = item["clientreq"]?.ToString();
+            if (req != null && req.ToLower() != "true")
+                isRequire = false;
+
+            // support TLauncher
+            var artifact = item["artifact"] ?? item["downloads"]?["artifact"];
+            var classifiers = item["classifies"] ?? item["downloads"]?["classifiers"];
+            var natives = item["natives"];
+
+            // NATIVE library
+            if (natives != null)
             {
-                var list = new List<MLibrary>(2);
+                var nativeId = natives[MRule.OSName]?.ToString().Replace("${arch}", MRule.Arch);
 
-                var name = item["name"]?.ToString();
-                var isRequire = true;
-
-                // check rules array
-                var rules = item["rules"];
-                if (CheckOSRules && rules != null)
-                    isRequire = MRule.CheckOSRequire((JArray)rules);
-
-                // forge clientreq
-                var req = item["clientreq"]?.ToString();
-                if (req != null && req.ToLower() != "true")
-                    isRequire = false;
-
-                // support TLauncher
-                var artifact = item["artifact"] ?? item["downloads"]?["artifact"];
-                var classifiers = item["classifies"] ?? item["downloads"]?["classifiers"];
-                var natives = item["natives"];
-
-                // NATIVE library
-                if (natives != null)
+                if (classifiers != null && nativeId != null)
                 {
-                    var nativeId = natives[MRule.OSName]?.ToString().Replace("${arch}", MRule.Arch);
-
-                    if (classifiers != null && nativeId != null)
-                    {
-                        JToken? lObj = classifiers[nativeId] ?? classifiers[MRule.OSName];
-                        if (lObj != null)
-                            list.Add(createMLibrary(name, nativeId, isRequire, (JObject)lObj));
-                    }
-                    else
-                        list.Add(createMLibrary(name, nativeId, isRequire, new JObject()));
+                    var lObj = classifiers[nativeId] ?? classifiers[MRule.OSName];
+                    if (lObj != null)
+                        list.Add(createMLibrary(name, nativeId, isRequire, (JObject)lObj));
                 }
-
-                // COMMON library
-                if (artifact != null)
+                else
                 {
-                    MLibrary obj = createMLibrary(name, "", isRequire, (JObject)artifact);
-                    list.Add(obj);
+                    list.Add(createMLibrary(name, nativeId, isRequire, new JObject()));
                 }
-
-                // library
-                if (artifact == null && natives == null)
-                {
-                    MLibrary obj = createMLibrary(name, "", isRequire, item);
-                    list.Add(obj);
-                }
-
-                return list.ToArray();
             }
-            catch (Exception ex)
+
+            // COMMON library
+            if (artifact != null)
             {
-                System.Diagnostics.Debug.WriteLine(ex);
-                return null;
+                var obj = createMLibrary(name, "", isRequire, (JObject)artifact);
+                list.Add(obj);
             }
+
+            // library
+            if (artifact == null && natives == null)
+            {
+                var obj = createMLibrary(name, "", isRequire, item);
+                list.Add(obj);
+            }
+
+            return list.ToArray();
         }
-
-        private MLibrary createMLibrary(string? name, string? nativeId, bool require, JObject job)
+        catch (Exception ex)
         {
-            string? path = job["path"]?.ToString();
-            if (string.IsNullOrEmpty(path) && !string.IsNullOrEmpty(name))
-                path = PackageName.Parse(name).GetPath(nativeId);
-
-            var hash = job["sha1"] ?? job["checksums"]?[0];
-
-            long size = 0;
-            string? sizeStr = job["size"]?.ToString();
-            if (!string.IsNullOrEmpty(sizeStr))
-                long.TryParse(sizeStr, out size);
-
-            return new MLibrary
-            {
-                Hash = hash?.ToString(),
-                IsNative = !string.IsNullOrEmpty(nativeId),
-                Name = name,
-                Path = path,
-                Size = size,
-                Url = job["url"]?.ToString(),
-                IsRequire = require
-            };
+            Debug.WriteLine(ex);
+            return null;
         }
+    }
+
+    private MLibrary createMLibrary(string? name, string? nativeId, bool require, JObject job)
+    {
+        var path = job["path"]?.ToString();
+        if (string.IsNullOrEmpty(path) && !string.IsNullOrEmpty(name))
+            path = PackageName.Parse(name).GetPath(nativeId);
+
+        var hash = job["sha1"] ?? job["checksums"]?[0];
+
+        long size = 0;
+        var sizeStr = job["size"]?.ToString();
+        if (!string.IsNullOrEmpty(sizeStr))
+            long.TryParse(sizeStr, out size);
+
+        return new MLibrary
+        {
+            Hash = hash?.ToString(),
+            IsNative = !string.IsNullOrEmpty(nativeId),
+            Name = name,
+            Path = path,
+            Size = size,
+            Url = job["url"]?.ToString(),
+            IsRequire = require
+        };
     }
 }

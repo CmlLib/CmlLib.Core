@@ -1,74 +1,73 @@
 ﻿using System;
 using System.IO;
 
-namespace CmlLib.Core
+namespace CmlLib.Core;
+
+public class PackageName
 {
-    public class PackageName
+    private readonly string[] names;
+
+    private PackageName(string[] names)
     {
-        public static PackageName Parse(string name)
-        {
-            if (name == null)
-                throw new ArgumentNullException(nameof(name));
+        this.names = names;
+    }
 
-            var spliter = name.Split(':');
-            if (spliter.Length < 3)
-                throw new ArgumentException("invalid name");
+    public string this[int index] => names[index];
 
-            return new PackageName(spliter);
-        }
+    public string Package => names[0];
+    public string Name => names[1];
+    public string Version => names[2];
 
-        private PackageName(string[] names)
-        {
-            this.names = names;
-        }
+    public static PackageName Parse(string name)
+    {
+        if (name == null)
+            throw new ArgumentNullException(nameof(name));
 
-        private readonly string[] names;
+        var spliter = name.Split(':');
+        if (spliter.Length < 3)
+            throw new ArgumentException("invalid name");
 
-        public string this[int index] => names[index];
+        return new PackageName(spliter);
+    }
 
-        public string Package => names[0];
-        public string Name => names[1];
-        public string Version => names[2];
+    public string GetPath()
+    {
+        return GetPath("");
+    }
 
-        public string GetPath()
-        {
-            return GetPath("");
-        }
+    public string GetPath(string? nativeId)
+    {
+        return GetPath(nativeId, "jar");
+    }
 
-        public string GetPath(string? nativeId)
-        {
-            return GetPath(nativeId, "jar");
-        }
+    public string GetPath(string? nativeId, string extension)
+    {
+        // de.oceanlabs.mcp : mcp_config : 1.16.2-20200812.004259 : mappings
+        // de\oceanlabs\mcp \ mcp_config \ 1.16.2-20200812.004259 \ mcp_config-1.16.2-20200812.004259.zip
 
-        public string GetPath(string? nativeId, string extension)
-        {
-            // de.oceanlabs.mcp : mcp_config : 1.16.2-20200812.004259 : mappings
-            // de\oceanlabs\mcp \ mcp_config \ 1.16.2-20200812.004259 \ mcp_config-1.16.2-20200812.004259.zip
+        // [de.oceanlabs.mcp:mcp_config:1.16.2-20200812.004259@zip]
+        // \libraries\de\oceanlabs\mcp\mcp_config\1.16.2-20200812.004259\mcp_config-1.16.2-20200812.004259.zip
 
-            // [de.oceanlabs.mcp:mcp_config:1.16.2-20200812.004259@zip]
-            // \libraries\de\oceanlabs\mcp\mcp_config\1.16.2-20200812.004259\mcp_config-1.16.2-20200812.004259.zip
+        // [net.minecraft:client:1.16.2-20200812.004259:slim]
+        // /libraries\net\minecraft\client\1.16.2-20200812.004259\client-1.16.2-20200812.004259-slim.jar
 
-            // [net.minecraft:client:1.16.2-20200812.004259:slim]
-            // /libraries\net\minecraft\client\1.16.2-20200812.004259\client-1.16.2-20200812.004259-slim.jar
+        var filename = string.Join("-", names, 1, names.Length - 1);
 
-            string filename = string.Join("-", names, 1, names.Length - 1);
+        if (!string.IsNullOrEmpty(nativeId))
+            filename += "-" + nativeId;
+        filename += "." + extension;
 
-            if (!string.IsNullOrEmpty(nativeId))
-                filename += "-" + nativeId;
-            filename += "." + extension;
+        return Path.Combine(GetDirectory(), filename);
+    }
 
-            return Path.Combine(GetDirectory(), filename);
-        }
+    public string GetDirectory()
+    {
+        var dir = Package.Replace(".", "/");
+        return Path.Combine(dir, Name, Version);
+    }
 
-        public string GetDirectory()
-        {
-            string dir = Package.Replace(".", "/");
-            return Path.Combine(dir, Name, Version);
-        }
-
-        public string GetClassPath()
-        {
-            return Package + "." + Name;
-        }
+    public string GetClassPath()
+    {
+        return Package + "." + Name;
     }
 }

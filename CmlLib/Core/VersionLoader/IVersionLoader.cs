@@ -1,11 +1,10 @@
-﻿using CmlLib.Core.Version;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using CmlLib.Core.Version;
 
-namespace CmlLib.Core.VersionLoader
+namespace CmlLib.Core.VersionLoader;
+
+public interface IVersionLoader
 {
-    public interface IVersionLoader
-    {
-        Task<MVersionCollection> GetVersionMetadatasAsync();
-        MVersionCollection GetVersionMetadatas();
-    }
+    Task<MVersionCollection> GetVersionMetadatasAsync();
+    MVersionCollection GetVersionMetadatas();
 }

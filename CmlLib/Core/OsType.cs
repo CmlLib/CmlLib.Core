@@ -1,10 +1,9 @@
-namespace CmlLib.Core
+namespace CmlLib.Core;
+
+public enum OsType
 {
-    public enum OsType
-    {
-        Undefined = 0,
-        Linux = 1,
-        OsX = 2,
-        Windows = 3,
-    }
+    Undefined = 0,
+    Linux = 1,
+    OsX = 2,
+    Windows = 3
 }

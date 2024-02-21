@@ -2,34 +2,33 @@
 using System.Net;
 using System.Threading.Tasks;
 
-namespace CmlLib.Core.VersionMetadata
+namespace CmlLib.Core.VersionMetadata;
+
+public class WebVersionMetadata : StringVersionMetadata
 {
-    public class WebVersionMetadata : StringVersionMetadata
+    public WebVersionMetadata(string id) : base(id)
     {
-        public WebVersionMetadata(string id) : base(id)
-        {
-            IsLocalVersion = false;
-        }
+        IsLocalVersion = false;
+    }
 
-        protected override string ReadMetadata()
-        {
-            if (string.IsNullOrEmpty(Path))
-                throw new InvalidOperationException("Path property was null");
-            
-            // below code will throw ArgumentNullException when Path is null
-            using var wc = new WebClient();
-            return wc.DownloadString(Path);
-        }
+    protected override string ReadMetadata()
+    {
+        if (string.IsNullOrEmpty(Path))
+            throw new InvalidOperationException("Path property was null");
 
-        protected override async Task<string> ReadMetadataAsync()
-        {
-            if (string.IsNullOrEmpty(Path))
-                throw new InvalidOperationException("Path property was null");
-            
-            // below code will throw ArgumentNullException when Path is null
-            using var wc = new WebClient();
-            return await wc.DownloadStringTaskAsync(Path)
-                .ConfigureAwait(false);
-        }
+        // below code will throw ArgumentNullException when Path is null
+        using var wc = new WebClient();
+        return wc.DownloadString(Path);
+    }
+
+    protected override async Task<string> ReadMetadataAsync()
+    {
+        if (string.IsNullOrEmpty(Path))
+            throw new InvalidOperationException("Path property was null");
+
+        // below code will throw ArgumentNullException when Path is null
+        using var wc = new WebClient();
+        return await wc.DownloadStringTaskAsync(Path)
+            .ConfigureAwait(false);
     }
 }

@@ -1,66 +1,80 @@
-﻿using CmlLib.Core.Auth;
+﻿using System;
+using CmlLib.Core.Auth;
 using CmlLib.Core.Version;
-using System;
 
-namespace CmlLib.Core
+namespace CmlLib.Core;
+
+public class MLaunchOption
 {
-    public class MLaunchOption
+    public MinecraftPath? Path { get; set; }
+    public MVersion? StartVersion { get; set; }
+    public MSession? Session { get; set; }
+
+    public string? JavaVersion { get; set; }
+    public string? JavaPath { get; set; }
+    public int MaximumRamMb { get; set; } = 1024;
+    public int MinimumRamMb { get; set; }
+    public string[]? JVMArguments { get; set; }
+
+    public string? DockName { get; set; }
+    public string? DockIcon { get; set; }
+
+    public string? ServerIp { get; set; }
+    public int ServerPort { get; set; } = 25565;
+
+    public int ScreenWidth { get; set; }
+    public int ScreenHeight { get; set; }
+    public bool FullScreen { get; set; }
+
+    public string? ClientId { get; set; }
+    public string? VersionType { get; set; }
+    public string? GameLauncherName { get; set; }
+    public string? GameLauncherVersion { get; set; }
+    public OsType OsType { get; set; } = OsType.Undefined;
+
+    internal MinecraftPath GetMinecraftPath()
     {
-        public MinecraftPath? Path { get; set; }
-        public MVersion? StartVersion { get; set; }
-        public MSession? Session { get; set; }
+        return Path!;
+    }
 
-        public string? JavaVersion { get; set; }
-        public string? JavaPath { get; set; }
-        public int MaximumRamMb { get; set; } = 1024;
-        public int MinimumRamMb { get; set; }
-        public string[]? JVMArguments { get; set; }
+    internal MVersion GetStartVersion()
+    {
+        return StartVersion!;
+    }
 
-        public string? DockName { get; set; }
-        public string? DockIcon { get; set; }
+    internal MSession GetSession()
+    {
+        return Session!;
+    }
 
-        public string? ServerIp { get; set; }
-        public int ServerPort { get; set; } = 25565;
+    internal string GetJavaPath()
+    {
+        return JavaPath!;
+    }
 
-        public int ScreenWidth { get; set; }
-        public int ScreenHeight { get; set; }
-        public bool FullScreen { get; set; }
+    internal void CheckValid()
+    {
+        string? exMsg = null; // error message
 
-        public string? ClientId { get; set; }
-        public string? VersionType { get; set; }
-        public string? GameLauncherName { get; set; }
-        public string? GameLauncherVersion { get; set; }
-        public OsType OsType { get; set; } = OsType.Undefined;
+        if (Path == null)
+            exMsg = nameof(Path) + " is null";
 
-        internal MinecraftPath GetMinecraftPath() => Path!;
-        internal MVersion GetStartVersion() => StartVersion!;
-        internal MSession GetSession() => Session!;
-        internal string GetJavaPath() => JavaPath!;
+        if (StartVersion == null)
+            exMsg = "StartVersion is null";
 
-        internal void CheckValid()
-        {
-            string? exMsg = null; // error message
+        if (Session == null)
+            Session = MSession.CreateOfflineSession("tester123");
 
-            if (Path == null)
-                exMsg = nameof(Path) + " is null";
+        if (!Session.CheckIsValid())
+            exMsg = "Invalid Session";
 
-            if (StartVersion == null)
-                exMsg = "StartVersion is null";
+        if (ServerPort < 0 || ServerPort > 65535)
+            exMsg = "Invalid ServerPort";
 
-            if (Session == null)
-                Session = MSession.CreateOfflineSession("tester123");
+        if (ScreenWidth < 0 || ScreenHeight < 0)
+            exMsg = "Screen Size must be greater than or equal to zero.";
 
-            if (!Session.CheckIsValid())
-                exMsg = "Invalid Session";
-
-            if (ServerPort < 0 || ServerPort > 65535)
-                exMsg = "Invalid ServerPort";
-
-            if (ScreenWidth < 0 || ScreenHeight < 0)
-                exMsg = "Screen Size must be greater than or equal to zero.";
-
-            if (exMsg != null) // if launch option is invalid, throw exception
-                throw new ArgumentException(exMsg);
-        }
+        if (exMsg != null) // if launch option is invalid, throw exception
+            throw new ArgumentException(exMsg);
     }
 }

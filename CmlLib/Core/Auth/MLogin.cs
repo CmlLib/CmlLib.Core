@@ -1,350 +1,360 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.IO;
 using System.Net;
 using System.Text;
+using CmlLib.Core.MojangLauncher;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 // use new library:
 // https://github.com/CmlLib/MojangAPI
 
-namespace CmlLib.Core.Auth
+namespace CmlLib.Core.Auth;
+
+public enum MLoginResult
 {
-    public enum MLoginResult { Success, BadRequest, WrongAccount, NeedLogin, UnknownError, NoProfile }
+    Success,
+    BadRequest,
+    WrongAccount,
+    NeedLogin,
+    UnknownError,
+    NoProfile
+}
 
-    public class MLogin
+public class MLogin
+{
+    public static readonly string DefaultLoginSessionFile =
+        Path.Combine(MinecraftPath.GetOSDefaultPath(), "logintoken.json");
+
+    public MLogin() : this(DefaultLoginSessionFile)
     {
-        public static readonly string DefaultLoginSessionFile = Path.Combine(MinecraftPath.GetOSDefaultPath(), "logintoken.json");
+    }
 
-        public MLogin() : this(DefaultLoginSessionFile) { }
+    public MLogin(string sessionCacheFilePath)
+    {
+        SessionCacheFilePath = sessionCacheFilePath;
+    }
 
-        public MLogin(string sessionCacheFilePath)
+    public string SessionCacheFilePath { get; }
+    public bool SaveSession { get; set; } = true;
+
+    private string CreateNewClientToken()
+    {
+        return Guid.NewGuid().ToString().Replace("-", "");
+    }
+
+    private MSession createNewSession()
+    {
+        var session = new MSession();
+        if (SaveSession)
         {
-            SessionCacheFilePath = sessionCacheFilePath;
+            session.ClientToken = CreateNewClientToken();
+            writeSessionCache(session);
         }
 
-        public string SessionCacheFilePath { get; private set; }
-        public bool SaveSession { get; set; } = true;
+        return session;
+    }
 
-        private string CreateNewClientToken()
-        {
-            return Guid.NewGuid().ToString().Replace("-", "");
-        }
+    private void writeSessionCache(MSession session)
+    {
+        if (!SaveSession) return;
+        var directoryPath = Path.GetDirectoryName(SessionCacheFilePath);
+        if (!string.IsNullOrEmpty(directoryPath))
+            Directory.CreateDirectory(directoryPath);
 
-        private MSession createNewSession()
+        var json = JsonConvert.SerializeObject(session);
+        File.WriteAllText(SessionCacheFilePath, json, Encoding.UTF8);
+    }
+
+    public MSession ReadSessionCache()
+    {
+        if (File.Exists(SessionCacheFilePath))
         {
-            var session = new MSession();
-            if (SaveSession)
+            var fileData = File.ReadAllText(SessionCacheFilePath, Encoding.UTF8);
+            try
             {
-                session.ClientToken = CreateNewClientToken();
-                writeSessionCache(session);
-            }
-            return session;
-        }
-
-        private void writeSessionCache(MSession session)
-        {
-            if (!SaveSession) return;
-            var directoryPath = Path.GetDirectoryName(SessionCacheFilePath);
-            if (!string.IsNullOrEmpty(directoryPath))
-                Directory.CreateDirectory(directoryPath);
-
-            var json = JsonConvert.SerializeObject(session);
-            File.WriteAllText(SessionCacheFilePath, json, Encoding.UTF8);
-        }
-
-        public MSession ReadSessionCache()
-        {
-            if (File.Exists(SessionCacheFilePath))
-            {
-                var fileData = File.ReadAllText(SessionCacheFilePath, Encoding.UTF8);
-                try
+                var session = JsonConvert.DeserializeObject<MSession>(fileData, new JsonSerializerSettings
                 {
-                    var session = JsonConvert.DeserializeObject<MSession>(fileData, new JsonSerializerSettings
-                    {
-                        NullValueHandling = NullValueHandling.Ignore
-                    }) ?? new MSession();
+                    NullValueHandling = NullValueHandling.Ignore
+                }) ?? new MSession();
 
-                    if (SaveSession && string.IsNullOrEmpty(session.ClientToken))
-                        session.ClientToken = CreateNewClientToken();
+                if (SaveSession && string.IsNullOrEmpty(session.ClientToken))
+                    session.ClientToken = CreateNewClientToken();
 
-                    return session;
-                }
-                catch (JsonReaderException) // invalid json
-                {
-                    return createNewSession();
-                }
+                return session;
             }
-            else
+            catch (JsonReaderException) // invalid json
             {
                 return createNewSession();
             }
         }
 
-        private HttpWebResponse mojangRequest(string endpoint, string postdata)
-        {
-            HttpWebRequest http = WebRequest.CreateHttp(MojangServer.Auth + endpoint);
-            http.ContentType = "application/json";
-            http.Method = "POST";
-            
-            using StreamWriter req = new StreamWriter(http.GetRequestStream());
-            req.Write(postdata);
-            req.Flush();
+        return createNewSession();
+    }
 
-            HttpWebResponse res = http.GetResponseNoException();
-            return res;
+    private HttpWebResponse mojangRequest(string endpoint, string postdata)
+    {
+        var http = WebRequest.CreateHttp(MojangServer.Auth + endpoint);
+        http.ContentType = "application/json";
+        http.Method = "POST";
+
+        using var req = new StreamWriter(http.GetRequestStream());
+        req.Write(postdata);
+        req.Flush();
+
+        var res = http.GetResponseNoException();
+        return res;
+    }
+
+    private MLoginResponse parseSession(string json, string? clientToken)
+    {
+        var job = JObject.Parse(json); //json parse
+
+        var profile = job["selectedProfile"];
+        if (profile == null)
+        {
+            return new MLoginResponse(MLoginResult.NoProfile, null, null, json);
         }
 
-        private MLoginResponse parseSession(string json, string? clientToken)
+        var session = new MSession
         {
-            var job = JObject.Parse(json); //json parse
+            AccessToken = job["accessToken"]?.ToString(),
+            UUID = profile["id"]?.ToString(),
+            Username = profile["name"]?.ToString(),
+            UserType = "Mojang",
+            ClientToken = clientToken
+        };
 
-            var profile = job["selectedProfile"];
-            if (profile == null)
-                return new MLoginResponse(MLoginResult.NoProfile, null, null, json);
-            else
+        writeSessionCache(session);
+        return new MLoginResponse(MLoginResult.Success, session, null, null);
+    }
+
+    private MLoginResponse errorHandle(string json)
+    {
+        try
+        {
+            var job = JObject.Parse(json);
+
+            var error = job["error"]?.ToString() ?? ""; // error type
+            var errorMessage = job["message"]?.ToString() ?? ""; // detail error message
+            MLoginResult result;
+
+            switch (error)
             {
-                var session = new MSession
-                {
-                    AccessToken = job["accessToken"]?.ToString(),
-                    UUID = profile["id"]?.ToString(),
-                    Username = profile["name"]?.ToString(),
-                    UserType = "Mojang",
-                    ClientToken = clientToken
-                };
-
-                writeSessionCache(session);
-                return new MLoginResponse(MLoginResult.Success, session, null, null);
+                case "Method Not Allowed":
+                case "Not Found":
+                case "Unsupported Media Type":
+                    result = MLoginResult.BadRequest;
+                    break;
+                case "IllegalArgumentException":
+                case "ForbiddenOperationException":
+                    result = MLoginResult.WrongAccount;
+                    break;
+                default:
+                    result = MLoginResult.UnknownError;
+                    break;
             }
+
+            return new MLoginResponse(result, null, errorMessage, json);
         }
-
-        private MLoginResponse errorHandle(string json)
+        catch (Exception ex)
         {
-            try
-            {
-                JObject job = JObject.Parse(json);
-
-                string error = job["error"]?.ToString() ?? ""; // error type
-                string errorMessage = job["message"]?.ToString() ?? ""; // detail error message
-                MLoginResult result;
-
-                switch (error)
-                {
-                    case "Method Not Allowed":
-                    case "Not Found":
-                    case "Unsupported Media Type":
-                        result = MLoginResult.BadRequest;
-                        break;
-                    case "IllegalArgumentException":
-                    case "ForbiddenOperationException":
-                        result = MLoginResult.WrongAccount;
-                        break;
-                    default:
-                        result = MLoginResult.UnknownError;
-                        break;
-                }
-
-                return new MLoginResponse(result, null, errorMessage, json);
-            }
-            catch (Exception ex)
-            {
-                return new MLoginResponse(MLoginResult.UnknownError, null, ex.ToString(), json);
-            }
-        }
-
-        public MLoginResponse Authenticate(string id, string pw)
-        {
-            string? clientToken = ReadSessionCache().ClientToken;
-            return Authenticate(id, pw, clientToken);
-        }
-
-        public MLoginResponse Authenticate(string id, string pw, string? clientToken)
-        {
-            JObject req = new JObject
-            {
-                { "username", id },
-                { "password", pw },
-                { "clientToken", clientToken },
-                { "agent", new JObject
-                    {
-                        { "name", "Minecraft" },
-                        { "version", 1 }
-                    }
-                }
-            };
-
-            HttpWebResponse resHeader = mojangRequest("authenticate", req.ToString());
-
-            var stream = resHeader.GetResponseStream();
-            if (stream == null)
-                return new MLoginResponse(
-                    MLoginResult.UnknownError, 
-                    null, 
-                    "null response stream", 
-                    null);
-
-            using StreamReader res = new StreamReader(stream);
-            string rawResponse = res.ReadToEnd();
-            if (resHeader.StatusCode == HttpStatusCode.OK) // ResultCode == 200
-                return parseSession(rawResponse, clientToken);
-            else // fail to login
-                return errorHandle(rawResponse);
-        }
-
-        public MLoginResponse TryAutoLogin()
-        {
-            MSession session = ReadSessionCache();
-            return TryAutoLogin(session);
-        }
-
-        public MLoginResponse TryAutoLogin(MSession session)
-        {
-            try
-            {
-                MLoginResponse result = Validate(session);
-                if (result.Result != MLoginResult.Success)
-                    result = Refresh(session);
-                return result;
-            }
-            catch (Exception ex)
-            {
-                return new MLoginResponse(MLoginResult.UnknownError, null, ex.ToString(), null);
-            }
-        }
-
-        public MLoginResponse TryAutoLoginFromMojangLauncher()
-        {
-            var mojangAccounts = MojangLauncher.MojangLauncherAccounts.FromDefaultPath();
-            var activeAccount = mojangAccounts?.GetActiveAccount();
-
-            if (activeAccount == null)
-                return new MLoginResponse(MLoginResult.NeedLogin, null, null, null);
-            
-            return TryAutoLogin(activeAccount.ToSession());
-        }
-
-        public MLoginResponse TryAutoLoginFromMojangLauncher(string accountFilePath)
-        {
-            var mojangAccounts = MojangLauncher.MojangLauncherAccounts.FromFile(accountFilePath);
-            var activeAccount = mojangAccounts?.GetActiveAccount();
-
-            if (activeAccount == null)
-                return new MLoginResponse(MLoginResult.NeedLogin, null, null, null);
-            
-            return TryAutoLogin(activeAccount.ToSession());
-        }
-
-        public MLoginResponse Refresh()
-        {
-            MSession session = ReadSessionCache();
-            return Refresh(session);
-        }
-
-        public MLoginResponse Refresh(MSession session)
-        {
-            JObject req = new JObject
-                {
-                    { "accessToken", session.AccessToken },
-                    { "clientToken", session.ClientToken },
-                    { "selectedProfile", new JObject
-                        {
-                            { "id", session.UUID },
-                            { "name", session.Username }
-                        }
-                    }
-                };
-
-            HttpWebResponse resHeader = mojangRequest("refresh", req.ToString());
-            var stream = resHeader.GetResponseStream();
-            if (stream == null)
-                return new MLoginResponse(
-                    MLoginResult.UnknownError,
-                    null,
-                    "null response stream",
-                    null);
-                
-            using StreamReader res = new StreamReader(stream);
-            string rawResponse = res.ReadToEnd();
-
-            if ((int)resHeader.StatusCode / 100 == 2)
-                return parseSession(rawResponse, session.ClientToken);
-            else
-                return errorHandle(rawResponse);
-        }
-
-        public MLoginResponse Validate()
-        {
-            MSession session = ReadSessionCache();
-            return Validate(session);
-        }
-
-        public MLoginResponse Validate(MSession session)
-        {
-            JObject req = new JObject
-                {
-                    { "accessToken", session.AccessToken },
-                    { "clientToken", session.ClientToken }
-                };
-
-            HttpWebResponse resHeader = mojangRequest("validate", req.ToString());
-            if (resHeader.StatusCode == HttpStatusCode.NoContent) // StatusCode == 204
-                return new MLoginResponse(MLoginResult.Success, session, null, null);
-            else
-                return new MLoginResponse(MLoginResult.NeedLogin, null, null, null);
-        }
-
-        public void DeleteTokenFile()
-        {
-            if (File.Exists(SessionCacheFilePath))
-                File.Delete(SessionCacheFilePath);
-        }
-
-        public bool Invalidate()
-        {
-            MSession session = ReadSessionCache();
-            return Invalidate(session);
-        }
-
-        public bool Invalidate(MSession session)
-        {
-            JObject job = new JObject
-            {
-                { "accessToken", session.AccessToken },
-                { "clientToken", session.ClientToken }
-            };
-
-            HttpWebResponse res = mojangRequest("invalidate", job.ToString());
-            return res.StatusCode == HttpStatusCode.NoContent; // 204
-        }
-
-        public bool Signout(string id, string pw)
-        {
-            JObject job = new JObject
-            {
-                { "username", id },
-                { "password", pw }
-            };
-
-            HttpWebResponse res = mojangRequest("signout", job.ToString());
-            return res.StatusCode == HttpStatusCode.NoContent; // 204
+            return new MLoginResponse(MLoginResult.UnknownError, null, ex.ToString(), json);
         }
     }
 
-    internal static class HttpWebResponseExt
+    public MLoginResponse Authenticate(string id, string pw)
     {
-        public static HttpWebResponse GetResponseNoException(this HttpWebRequest req)
+        var clientToken = ReadSessionCache().ClientToken;
+        return Authenticate(id, pw, clientToken);
+    }
+
+    public MLoginResponse Authenticate(string id, string pw, string? clientToken)
+    {
+        var req = new JObject
         {
-            try
+            { "username", id },
+            { "password", pw },
+            { "clientToken", clientToken },
             {
-                return (HttpWebResponse)req.GetResponse();
+                "agent", new JObject
+                {
+                    { "name", "Minecraft" },
+                    { "version", 1 }
+                }
             }
-            catch (WebException we)
+        };
+
+        var resHeader = mojangRequest("authenticate", req.ToString());
+
+        var stream = resHeader.GetResponseStream();
+        if (stream == null)
+            return new MLoginResponse(
+                MLoginResult.UnknownError,
+                null,
+                "null response stream",
+                null);
+
+        using var res = new StreamReader(stream);
+        var rawResponse = res.ReadToEnd();
+        if (resHeader.StatusCode == HttpStatusCode.OK) // ResultCode == 200
+            return parseSession(rawResponse, clientToken);
+        // fail to login
+        return errorHandle(rawResponse);
+    }
+
+    public MLoginResponse TryAutoLogin()
+    {
+        var session = ReadSessionCache();
+        return TryAutoLogin(session);
+    }
+
+    public MLoginResponse TryAutoLogin(MSession session)
+    {
+        try
+        {
+            var result = Validate(session);
+            if (result.Result != MLoginResult.Success)
+                result = Refresh(session);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            return new MLoginResponse(MLoginResult.UnknownError, null, ex.ToString(), null);
+        }
+    }
+
+    public MLoginResponse TryAutoLoginFromMojangLauncher()
+    {
+        var mojangAccounts = MojangLauncherAccounts.FromDefaultPath();
+        var activeAccount = mojangAccounts?.GetActiveAccount();
+
+        if (activeAccount == null)
+            return new MLoginResponse(MLoginResult.NeedLogin, null, null, null);
+
+        return TryAutoLogin(activeAccount.ToSession());
+    }
+
+    public MLoginResponse TryAutoLoginFromMojangLauncher(string accountFilePath)
+    {
+        var mojangAccounts = MojangLauncherAccounts.FromFile(accountFilePath);
+        var activeAccount = mojangAccounts?.GetActiveAccount();
+
+        if (activeAccount == null)
+            return new MLoginResponse(MLoginResult.NeedLogin, null, null, null);
+
+        return TryAutoLogin(activeAccount.ToSession());
+    }
+
+    public MLoginResponse Refresh()
+    {
+        var session = ReadSessionCache();
+        return Refresh(session);
+    }
+
+    public MLoginResponse Refresh(MSession session)
+    {
+        var req = new JObject
+        {
+            { "accessToken", session.AccessToken },
+            { "clientToken", session.ClientToken },
             {
-                HttpWebResponse? resp = we.Response as HttpWebResponse;
-                if (resp == null)
-                    throw;
-                return resp;
+                "selectedProfile", new JObject
+                {
+                    { "id", session.UUID },
+                    { "name", session.Username }
+                }
             }
+        };
+
+        var resHeader = mojangRequest("refresh", req.ToString());
+        var stream = resHeader.GetResponseStream();
+        if (stream == null)
+            return new MLoginResponse(
+                MLoginResult.UnknownError,
+                null,
+                "null response stream",
+                null);
+
+        using var res = new StreamReader(stream);
+        var rawResponse = res.ReadToEnd();
+
+        if ((int)resHeader.StatusCode / 100 == 2)
+            return parseSession(rawResponse, session.ClientToken);
+        return errorHandle(rawResponse);
+    }
+
+    public MLoginResponse Validate()
+    {
+        var session = ReadSessionCache();
+        return Validate(session);
+    }
+
+    public MLoginResponse Validate(MSession session)
+    {
+        var req = new JObject
+        {
+            { "accessToken", session.AccessToken },
+            { "clientToken", session.ClientToken }
+        };
+
+        var resHeader = mojangRequest("validate", req.ToString());
+        if (resHeader.StatusCode == HttpStatusCode.NoContent) // StatusCode == 204
+            return new MLoginResponse(MLoginResult.Success, session, null, null);
+        return new MLoginResponse(MLoginResult.NeedLogin, null, null, null);
+    }
+
+    public void DeleteTokenFile()
+    {
+        if (File.Exists(SessionCacheFilePath))
+            File.Delete(SessionCacheFilePath);
+    }
+
+    public bool Invalidate()
+    {
+        var session = ReadSessionCache();
+        return Invalidate(session);
+    }
+
+    public bool Invalidate(MSession session)
+    {
+        var job = new JObject
+        {
+            { "accessToken", session.AccessToken },
+            { "clientToken", session.ClientToken }
+        };
+
+        var res = mojangRequest("invalidate", job.ToString());
+        return res.StatusCode == HttpStatusCode.NoContent; // 204
+    }
+
+    public bool Signout(string id, string pw)
+    {
+        var job = new JObject
+        {
+            { "username", id },
+            { "password", pw }
+        };
+
+        var res = mojangRequest("signout", job.ToString());
+        return res.StatusCode == HttpStatusCode.NoContent; // 204
+    }
+}
+
+internal static class HttpWebResponseExt
+{
+    public static HttpWebResponse GetResponseNoException(this HttpWebRequest req)
+    {
+        try
+        {
+            return (HttpWebResponse)req.GetResponse();
+        }
+        catch (WebException we)
+        {
+            var resp = we.Response as HttpWebResponse;
+            if (resp == null)
+                throw;
+            return resp;
         }
     }
 }
