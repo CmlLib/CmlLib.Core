@@ -44,21 +44,19 @@ public class LegacyJavaFileExtractor : IFileExtractor
         RulesEvaluatorContext rulesContext,
         CancellationToken cancellationToken)
     {
+        var javaBinaryPath = _javaPathResolver.GetJavaBinaryPath(JavaVersion, rulesContext);
         var javaBinaryDir = _javaPathResolver.GetJavaDirPath(JavaVersion, rulesContext);
 
         var javaUrl = await GetJavaUrlAsync(cancellationToken);
-        var lzmaFile = new GameFile("jre.lzma")
+        return new GameFile("jre.lzma")
         {
             Path = Path.Combine(Path.GetTempPath(), "jre.lzma"),
             Hash = "0", // since the file is temporary it should be always downloaded again
-            Url = javaUrl
+            Url = javaUrl,
+            UpdateTask = CompositeUpdateTask.Create(
+                new LegacyJavaExtractionTask(javaBinaryDir),
+                new ChmodTask(NativeMethods.Chmod755, javaBinaryPath))
         };
-
-        lzmaFile.UpdateTask = CompositeUpdateTask.Create(
-            new LegacyJavaExtractionTask(javaBinaryDir),
-            new ChmodTask(NativeMethods.Chmod755));
-
-        return lzmaFile;
     }
 
     public async Task<string> GetJavaUrlAsync(CancellationToken cancellationToken)
