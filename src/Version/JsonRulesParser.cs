@@ -5,7 +5,7 @@ namespace CmlLib.Core.Version;
 
 public static class JsonRulesParser
 {
-    public static LauncherRule[] Parse(JsonElement element)
+    public static IReadOnlyCollection<LauncherRule> Parse(JsonElement element)
     {
         var list = new List<LauncherRule>();
 

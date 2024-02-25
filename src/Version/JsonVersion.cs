@@ -35,8 +35,8 @@ public class JsonVersion : IVersion, IDisposable
 
     public JavaVersion? JavaVersion => _model.JavaVersion;
 
-    private MLibrary[]? _libs = null;
-    public MLibrary[] Libraries => _libs ??= getLibraries();
+    private IReadOnlyCollection<MLibrary>? _libs = null;
+    public IReadOnlyCollection<MLibrary> Libraries => _libs ??= getLibraries();
 
     public string? Jar => _model.Jar;
 
@@ -51,12 +51,12 @@ public class JsonVersion : IVersion, IDisposable
 
     public string? Type => _model.Type;
 
-    private MArgument[]? _gameArgs = null;
-    public MArgument[] GameArguments => _gameArgs ??= getGameArguments();
+    private IReadOnlyCollection<MArgument>? _gameArgs = null;
+    public IReadOnlyCollection<MArgument> GameArguments => _gameArgs ??= getGameArguments();
 
-    private MArgument[]? _jvmArgs = null;
+    private IReadOnlyCollection<MArgument>? _jvmArgs = null;
 
-    public MArgument[] JvmArguments => _jvmArgs ??= getJvmArguments();
+    public IReadOnlyCollection<MArgument> JvmArguments => _jvmArgs ??= getJvmArguments();
 
     private string? getJarId()
     {
@@ -96,7 +96,7 @@ public class JsonVersion : IVersion, IDisposable
         }
     }
 
-    private MLibrary[] getLibraries()
+    private IReadOnlyCollection<MLibrary> getLibraries()
     {
         try
         {
@@ -108,7 +108,7 @@ public class JsonVersion : IVersion, IDisposable
                 if (lib != null)
                     libList.Add(lib);
             }
-            return libList.ToArray();
+            return libList;
         }
         catch (Exception)
         {
@@ -135,7 +135,7 @@ public class JsonVersion : IVersion, IDisposable
         }
     }
 
-    private MArgument[] getGameArguments()
+    private IReadOnlyCollection<MArgument> getGameArguments()
     {
         try
         {
@@ -167,7 +167,7 @@ public class JsonVersion : IVersion, IDisposable
         }
     }
 
-    private MArgument[] getJvmArguments()
+    private IReadOnlyCollection<MArgument> getJvmArguments()
     {
         try
         {

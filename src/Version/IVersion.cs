@@ -13,12 +13,12 @@ public interface IVersion
     AssetMetadata? AssetIndex { get; }
     MFileMetadata? Client { get; }
     JavaVersion? JavaVersion { get; }
-    MLibrary[] Libraries { get; }
+    IReadOnlyCollection<MLibrary> Libraries { get; }
     string? Jar { get; }
     MLogFileMetadata? Logging { get; }
     string? MainClass { get; }
-    MArgument[] GameArguments { get; }
-    MArgument[] JvmArguments { get; }
+    IReadOnlyCollection<MArgument> GameArguments { get; }
+    IReadOnlyCollection<MArgument> JvmArguments { get; }
     DateTime ReleaseTime { get; }
     string? Type { get; }
 

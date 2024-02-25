@@ -14,6 +14,6 @@ public class MArgument
         Values = new string[] { arg };
     }
 
-    public string[]? Values { get; set; }
-    public LauncherRule[]? Rules { get; set; }
+    public IReadOnlyCollection<string> Values { get; set; } = Array.Empty<string>();
+    public IReadOnlyCollection<LauncherRule> Rules { get; set; } = Array.Empty<LauncherRule>();
 }

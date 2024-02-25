@@ -16,7 +16,7 @@ public class MLaunchOption
     public string? JavaPath { get; set; }
     public int MaximumRamMb { get; set; } = 1024;
     public int MinimumRamMb { get; set; }
-    public string[]? JVMArguments { get; set; }
+    public IEnumerable<string> JVMArguments { get; set; } = Enumerable.Empty<string>();
 
     public string? DockName { get; set; }
     public string? DockIcon { get; set; }

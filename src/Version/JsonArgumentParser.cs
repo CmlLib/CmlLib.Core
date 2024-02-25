@@ -6,7 +6,7 @@ namespace CmlLib.Core.Version;
 
 public static class JsonArgumentParser
 {
-    public static MArgument[] Parse(JsonElement element)
+    public static IReadOnlyCollection<MArgument> Parse(JsonElement element)
     {
         var list = new List<MArgument>();
         foreach (var item in element.EnumerateArray())
@@ -67,7 +67,7 @@ public static class JsonArgumentParser
             }
         }
 
-        if (arg.Values == null || arg.Values.Length == 0)
+        if (arg.Values == null || arg.Values.Count == 0)
             return null;
         return arg;
     }

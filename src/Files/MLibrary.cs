@@ -11,7 +11,7 @@ public record MLibrary
     public MFileMetadata? Artifact { get; set; }
     public Dictionary<string, MFileMetadata>? Classifiers { get; set; }
     public Dictionary<string, string>? Natives { get; set; }
-    public LauncherRule[]? Rules { get; set; }
+    public IReadOnlyCollection<LauncherRule> Rules { get; set; } = Array.Empty<LauncherRule>();
     public string Name { get; set; }
     public bool IsServerRequired { get; set; } = true;
     public bool IsClientRequired { get; set; } = true;

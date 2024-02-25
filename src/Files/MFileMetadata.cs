@@ -17,7 +17,7 @@ public class MFileMetadata
     public string? Sha1 { get; set; }
 
     [JsonPropertyName("checksums")]
-    public string[]? Checksums { get; set; }
+    public IReadOnlyCollection<string>? Checksums { get; set; }
 
     [JsonPropertyName("size")]
     public long Size { get; set; }

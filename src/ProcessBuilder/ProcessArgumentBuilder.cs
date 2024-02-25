@@ -116,9 +116,9 @@ public class ProcessArgumentBuilder
         AddRaw(result);
     }
 
-    public string[] Build()
+    public IReadOnlyCollection<string> Build()
     {
-        return _args.ToArray();
+        return _args;
     }
 
     private string escapeValue(string value)

@@ -8,5 +8,5 @@ public class RulesEvaluatorContext
     }
 
     public LauncherOSRule OS { get; set; }
-    public string[]? Features { get; set; }
+    public IEnumerable<string> Features { get; set; } = Enumerable.Empty<string>();
 }

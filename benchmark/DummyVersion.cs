@@ -19,7 +19,7 @@ public class DummyVersion : IVersion
 
     public JavaVersion? JavaVersion => throw new NotImplementedException();
 
-    public MLibrary[] Libraries => throw new NotImplementedException();
+    public IReadOnlyCollection<MLibrary> Libraries => throw new NotImplementedException();
 
     public string? Jar => throw new NotImplementedException();
 
@@ -27,9 +27,9 @@ public class DummyVersion : IVersion
 
     public string? MainClass => throw new NotImplementedException();
 
-    public MArgument[] GameArguments => throw new NotImplementedException();
+    public IReadOnlyCollection<MArgument> GameArguments => throw new NotImplementedException();
 
-    public MArgument[] JvmArguments => throw new NotImplementedException();
+    public IReadOnlyCollection<MArgument> JvmArguments => throw new NotImplementedException();
 
     public DateTime ReleaseTime => throw new NotImplementedException();
 
