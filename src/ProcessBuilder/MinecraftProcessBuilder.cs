@@ -28,10 +28,14 @@ public class MinecraftProcessBuilder
     {
         option.CheckValid();
 
+        Debug.Assert(option.StartVersion != null);
+        Debug.Assert(option.Path != null);
+        Debug.Assert(option.RulesContext != null);
+
         launchOption = option;
-        version = option.GetStartVersion();
-        minecraftPath = option.GetMinecraftPath();
-        rulesContext = option.GetRulesContext();
+        version = option.StartVersion;
+        minecraftPath = option.Path;
+        rulesContext = option.RulesContext;
         rulesEvaluator = evaluator;
     }
 
@@ -66,10 +70,11 @@ public class MinecraftProcessBuilder
     }
 
     private Dictionary<string, string?> buildArgumentDictionary()
-    {        
+    {
+        Debug.Assert(launchOption.Session != null);
+
         var classpaths = getClasspaths();
         var classpath = IOUtil.CombinePath(classpaths);
-        var session = launchOption.GetSession();
         var assetId = version.GetInheritedProperty(version => version.AssetIndex?.Id) ?? "legacy";
         
         var argDict = new Dictionary<string, string?>
@@ -81,19 +86,19 @@ public class MinecraftProcessBuilder
             { "classpath_separator", Path.PathSeparator.ToString() },
             { "classpath"          , classpath },
 
-            { "auth_player_name" , session.Username },
+            { "auth_player_name" , launchOption.Session.Username },
             { "version_name"     , version.Id },
             { "game_directory"   , minecraftPath.BasePath },
             { "assets_root"      , minecraftPath.Assets },
             { "assets_index_name", assetId },
-            { "auth_uuid"        , session.UUID },
-            { "auth_access_token", session.AccessToken },
+            { "auth_uuid"        , launchOption.Session.UUID },
+            { "auth_access_token", launchOption.Session.AccessToken },
             { "user_properties"  , "{}" },
-            { "auth_xuid"        , session.Xuid ?? "xuid" },
+            { "auth_xuid"        , launchOption.Session.Xuid ?? "xuid" },
             { "clientid"         , launchOption.ClientId ?? "clientId" },
-            { "user_type"        , session.UserType ?? "Mojang" },
+            { "user_type"        , launchOption.Session.UserType ?? "Mojang" },
             { "game_assets"      , minecraftPath.GetAssetLegacyPath(assetId) },
-            { "auth_session"     , session.AccessToken },
+            { "auth_session"     , launchOption.Session.AccessToken },
             { "version_type"     , useNotNull(launchOption.VersionType, version.Type) },
         };
 
@@ -112,17 +117,25 @@ public class MinecraftProcessBuilder
     {
         var builder = new ProcessArgumentBuilder();
 
-        // version-specific jvm arguments
-        var jvmArgs = version.ConcatInheritedCollection(v => v.JvmArguments);
-        builder.AddRange(mapArguments(jvmArgs, argDict));
-        
-        // default jvm arguments
-        if (launchOption.JVMArguments != null)
-            foreach (var item in launchOption.JVMArguments)
-                builder.Add(item);
+        if (launchOption.JvmArgumentOverrides != null)
+        {
+            // override all jvm arguments
+            // even if necessary arguments are missing (-cp, -Djava.library.path),
+            // the builder will still add the necessary arguments
+            builder.AddRange(mapArguments(launchOption.JvmArgumentOverrides, argDict));
+        }
         else
-            foreach (var item in DefaultJavaParameter)
-                builder.Add(item);
+        {
+            // version-specific jvm arguments
+            var jvmArgs = version.ConcatInheritedCollection(v => v.JvmArguments);
+            builder.AddRange(mapArguments(jvmArgs, argDict));
+
+            // default jvm arguments
+            builder.AddRange(DefaultJavaParameter);
+        }
+
+        // add extra jvm arguments
+        builder.AddRange(mapArguments(launchOption.ExtraJvmArguments, argDict));
 
         // libraries
         builder.TryAddKeyValue("-Djava.library.path", argDict["natives_directory"]);
@@ -180,21 +193,29 @@ public class MinecraftProcessBuilder
         var gameArgs = version.ConcatInheritedCollection(v => v.GameArguments);
         builder.AddRange(mapArguments(gameArgs, argDict));
 
-        // options
+        // add extra game arguments
+        builder.AddRange(mapArguments(launchOption.ExtraGameArguments, argDict));
+
+        // server
         if (!string.IsNullOrEmpty(launchOption.ServerIp))
         {
-            builder.AddRange("--server", launchOption.ServerIp);
+            if (!builder.CheckKeyAdded("--server"))
+                builder.AddRange("--server", launchOption.ServerIp);
 
-            if (launchOption.ServerPort != DefaultServerPort)
+            if (launchOption.ServerPort != DefaultServerPort && !builder.CheckKeyAdded("--port"))
                 builder.AddRange("--port", launchOption.ServerPort.ToString());
         }
 
+        // screen size
         if (launchOption.ScreenWidth > 0 && launchOption.ScreenHeight > 0)
         {
-            builder.AddRange("--width", launchOption.ScreenWidth.ToString());
-            builder.AddRange("--height", launchOption.ScreenHeight.ToString());
+            if (!builder.CheckKeyAdded("--width"))
+                builder.AddRange("--width", launchOption.ScreenWidth.ToString());
+            if (!builder.CheckKeyAdded("--height"))
+                builder.AddRange("--height", launchOption.ScreenHeight.ToString());
         }
 
+        // fullscreen
         if (!builder.CheckKeyAdded("--fullscreen") && launchOption.FullScreen)
             builder.Add("--fullscreen");
 

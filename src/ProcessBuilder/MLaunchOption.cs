@@ -6,6 +6,9 @@ namespace CmlLib.Core.ProcessBuilder;
 
 public class MLaunchOption
 {
+    private static readonly Lazy<IReadOnlyDictionary<string, string>> EmptyDictionary =
+        new Lazy<IReadOnlyDictionary<string, string>>(() => new Dictionary<string, string>());
+
     public MinecraftPath? Path { get; set; }
     public IVersion? StartVersion { get; set; }
     public MSession? Session { get; set; }
@@ -16,7 +19,6 @@ public class MLaunchOption
     public string? JavaPath { get; set; }
     public int MaximumRamMb { get; set; } = 1024;
     public int MinimumRamMb { get; set; }
-    public IEnumerable<string> JVMArguments { get; set; } = Enumerable.Empty<string>();
 
     public string? DockName { get; set; }
     public string? DockIcon { get; set; }
@@ -35,13 +37,10 @@ public class MLaunchOption
 
     public string? UserProperties { get; set; }
 
-    public Dictionary<string, string>? ArgumentDictionary { get; set; }
-
-    internal MinecraftPath GetMinecraftPath() => Path!;
-    internal IVersion GetStartVersion() => StartVersion!;
-    internal MSession GetSession() => Session!;
-    internal string GetJavaPath() => JavaPath!;
-    internal RulesEvaluatorContext GetRulesContext() => RulesContext!;
+    public IReadOnlyDictionary<string, string> ArgumentDictionary { get; set; } = EmptyDictionary.Value;
+    public IEnumerable<MArgument>? JvmArgumentOverrides { get; set; }
+    public IEnumerable<MArgument> ExtraJvmArguments { get; set; } = Enumerable.Empty<MArgument>();
+    public IEnumerable<MArgument> ExtraGameArguments { get; set; } = Enumerable.Empty<MArgument>();
 
     internal void CheckValid()
     {

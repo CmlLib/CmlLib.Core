@@ -1,4 +1,4 @@
-- [ ] MLaunchOption 에서 ExtraArguments 같은거 추가
+- [x] MLaunchOption 에서 ExtraArguments 같은거 추가
 - [ ] master 브랜치에서 v3.4.0 으로 cherry-pick
 - [x] RulesEvalutor 에서 ${arch} 와 os: 에서 쓰이는거 용도따라 바뀌게
 - [x] GameInstaller 에서 중복 파일 확인

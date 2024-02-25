@@ -4,6 +4,11 @@ namespace CmlLib.Core.ProcessBuilder;
 
 public class MArgument
 {
+    public static IEnumerable<MArgument> FromStrings(IEnumerable<string> args)
+    {
+        return args.Select(arg => new MArgument(arg));
+    }
+
     public MArgument()
     {
 
