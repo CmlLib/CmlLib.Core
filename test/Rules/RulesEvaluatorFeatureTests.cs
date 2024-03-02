@@ -13,22 +13,22 @@ public class RulesEvaluatorFeatureTest
     [Fact]
     public void allow_empty_feature()
     {
-        allow(new string[] {}, new LauncherRule[]
-        {
+        allow([],
+        [
             new LauncherRule
             {
                 Action = "allow",
                 OS = TestOS,
                 Features = new Dictionary<string, bool>()
             }
-        });
+        ]);
     }
 
     [Fact]
     public void allow_one_feature()
     {
-        allow(new string[] { "demo" }, new LauncherRule[]
-        {
+        allow(["demo"],
+        [
             new LauncherRule
             {
                 Action = "allow",
@@ -38,14 +38,14 @@ public class RulesEvaluatorFeatureTest
                     ["demo"] = true
                 }
             }
-        });
+        ]);
     }
 
     [Fact]
     public void allow_not_ruled_feature()
     {
-        allow(new string[] { "demo" }, new LauncherRule[]
-        {
+        allow(["demo"],
+        [
             new LauncherRule
             {
                 Action = "allow",
@@ -55,14 +55,14 @@ public class RulesEvaluatorFeatureTest
                     ["fullscreen"] = false
                 }
             }
-        });
+        ]);
     }
 
     [Fact]
     public void disallow_no_feature()
     {
-        disallow(new string[] { "demo" }, new LauncherRule[]
-        {
+        disallow(["demo"],
+        [
             new LauncherRule
             {
                 Action = "allow",
@@ -72,14 +72,14 @@ public class RulesEvaluatorFeatureTest
                     ["fullscreen"] = true
                 }                
             }
-        });
+        ]);
     }
 
     [Fact]
     public void disallow_disallowed_feature()
     {
-        disallow(new string[] { "demo" }, new LauncherRule[]
-        {
+        disallow(["demo"],
+        [
             new LauncherRule
             {
                 Action = "allow",
@@ -89,15 +89,15 @@ public class RulesEvaluatorFeatureTest
                     ["demo"] = false
                 }                
             }
-        });
+        ]);
     }
 
     [Theory]
     [InlineData("demo", "cmllib")]
     public void allow_two_features(string input1, string input2)
     {
-        allow(new string[] { input1, input2 }, new LauncherRule[]
-        {
+        allow([input1, input2],
+        [
             new LauncherRule
             {
                 Action = "allow",
@@ -109,15 +109,15 @@ public class RulesEvaluatorFeatureTest
                     ["cmllib"] = true
                 }
             }
-        });
+        ]);
     }
 
     [Theory]
     [InlineData("demo", "not_included_feature")]
     public void allow_included_feature_and_not_included_featre(string input1, string input2)
     {
-        allow(new string[] { input1, input2 }, new LauncherRule[]
-        {
+        allow([input1, input2],
+        [
             new LauncherRule
             {
                 Action = "allow",
@@ -129,7 +129,7 @@ public class RulesEvaluatorFeatureTest
                     ["cmllib"] = false
                 }
             }
-        });
+        ]);
     }
 
     [Theory]
@@ -137,8 +137,8 @@ public class RulesEvaluatorFeatureTest
     [InlineData("fullscreen", "cmllib")]
     public void disallow_two_features(string input1, string input2)
     {
-        disallow(new string[] { input1, input2 }, new LauncherRule[]
-        {
+        disallow([input1, input2],
+        [
             new LauncherRule
             {
                 Action = "allow",
@@ -150,7 +150,7 @@ public class RulesEvaluatorFeatureTest
                     ["cmllib"] = true
                 }
             }
-        });
+        ]);
     }
 
     [Fact]
@@ -161,9 +161,9 @@ public class RulesEvaluatorFeatureTest
         {
             Name = "windows", Arch = "x86"
         });
-        context.Features = new string[] { "feature1" };
-        var result = evaluator.Match(new LauncherRule[]
-        {
+        context.Features = ["feature1"];
+        var result = evaluator.Match(
+        [
             new LauncherRule
             {
                 Action = "allow",
@@ -177,7 +177,7 @@ public class RulesEvaluatorFeatureTest
                     ["feature2"] = false
                 }
             }
-        }, context);
+        ], context);
         Assert.False(result);
     }
 

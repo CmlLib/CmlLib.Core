@@ -102,18 +102,14 @@ public class AssetFileExtractor : IFileExtractor
                 if (assetIndex.MapToResources)
                     copyPath.Add(IOUtil.NormalizePath(Path.Combine(path.Resource, assetObject.Name)));
 
-                var file = new GameFile(assetObject.Name)
+                yield return new GameFile(assetObject.Name)
                 {
                     Path = hashPath,
                     Hash = assetObject.Hash,
                     Size = assetObject.Size,
-                    Url = assetServer + hashName
+                    Url = assetServer + hashName,
+                    UpdateTask = copyPath.Any() ? new FileCopyTask(copyPath) : null
                 };
-
-                if (copyPath.Any())
-                    file.UpdateTask = new FileCopyTask(copyPath);
-
-                yield return file;
             }
 
             if (dispose && assetIndex is IDisposable disposableAssetIndex)

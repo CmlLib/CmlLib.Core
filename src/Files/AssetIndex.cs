@@ -53,16 +53,7 @@ public class JsonAssetIndex : IAssetIndex, IDisposable
     public void Dispose() => _json.Dispose();
 }
 
-public class AssetObject
-{
-    public AssetObject(string name, string hash, long size)
-    {
-        Name = name;
-        Hash = hash;
-        Size = size;
-    }
-
-    public string Name { get; }
-    public string Hash { get; }
-    public long Size { get; }
-}
+public record AssetObject(
+    string Name, 
+    string Hash, 
+    long Size);

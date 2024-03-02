@@ -2,7 +2,7 @@
 
 namespace CmlLib.Core.Files;
 
-public class MFileMetadata
+public record MFileMetadata
 {   
     [JsonPropertyName("id")]
     public string? Id { get; set; }

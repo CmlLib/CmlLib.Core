@@ -109,18 +109,14 @@ public class JavaFileExtractor : IFileExtractor
             var filePath = Path.Combine(path, javaFile.Name);
             filePath = IOUtil.NormalizePath(filePath);
 
-            var gameFile = new GameFile(javaFile.Name)
+            return new GameFile(javaFile.Name)
             {
                 Hash = javaFile.Sha1,
                 Path = filePath,
                 Url = javaFile.Url,
-                Size = javaFile.Size
+                Size = javaFile.Size,
+                UpdateTask = javaFile.Executable ? new ChmodTask(NativeMethods.Chmod755) : null
             };
-
-            if (javaFile.Executable)
-                gameFile.UpdateTask = new ChmodTask(NativeMethods.Chmod755);
-
-            return gameFile;
         }
     }
 }

@@ -1,16 +1,18 @@
-namespace CmlLib.Core.Tasks;
+using CmlLib.Core.Tasks;
 
-public class GameFile
+namespace CmlLib.Core.Files;
+
+public record GameFile
 {
     public GameFile(string name) => 
         Name = name;
 
     public string Name { get; }
-    public string? Path { get; set; }
-    public string? Hash { get; set; }
-    public string? Url { get; set; }
-    public long Size { get; set; }
-    public IUpdateTask? UpdateTask { get; set; }
+    public string? Path { get; init; }
+    public string? Hash { get; init; }
+    public string? Url { get; init; }
+    public long Size { get; init; }
+    public IUpdateTask? UpdateTask { get; init; }
 
     public async ValueTask ExecuteUpdateTask(CancellationToken cancellationToken)
     {

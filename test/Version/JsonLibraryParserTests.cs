@@ -1,4 +1,5 @@
 using System.Text.Json;
+using CmlLib.Core.Files;
 using CmlLib.Core.Version;
 
 namespace CmlLib.Core.Test.Version;
@@ -24,13 +25,18 @@ public class JsonLibraryParserTests
 """;
 
         using var jsonDocument = JsonDocument.Parse(json);
-        var lib = JsonLibraryParser.Parse(jsonDocument.RootElement);
-
-        Assert.Equal("net.minecraft:launchwrapper:1.5", lib?.Name);
-        Assert.Equal("net/minecraft/launchwrapper/1.5/launchwrapper-1.5.jar", lib?.Artifact?.Path);
-        Assert.Equal("5150b9c2951f0fde987ce9c33496e26add1de224", lib?.Artifact?.Sha1);
-        Assert.Equal(27787, lib?.Artifact?.Size);
-        Assert.Equal("https://libraries.minecraft.net/net/minecraft/launchwrapper/1.5/launchwrapper-1.5.jar", lib?.Artifact?.Url);
+        var result = JsonLibraryParser.Parse(jsonDocument.RootElement);
+        var expected = new MLibrary("net.minecraft:launchwrapper:1.5")
+        {
+            Artifact = new MFileMetadata
+            {
+                Path = "net/minecraft/launchwrapper/1.5/launchwrapper-1.5.jar",
+                Sha1 = "5150b9c2951f0fde987ce9c33496e26add1de224",
+                Size = 27787,
+                Url = "https://libraries.minecraft.net/net/minecraft/launchwrapper/1.5/launchwrapper-1.5.jar",
+            }
+        };
+        Assert.Equal(expected, result);
     }
 
     [Fact]
@@ -126,11 +132,14 @@ public class JsonLibraryParserTests
         using var jsonDocument = JsonDocument.Parse(json);
         var lib = JsonLibraryParser.Parse(jsonDocument.RootElement);
         var nativeLib = lib?.GetNativeLibrary(new Core.Rules.LauncherOSRule("windows", "64"));
-
-        Assert.Equal("org/lwjgl/lwjgl/lwjgl-platform/2.9.0/lwjgl-platform-2.9.0-natives-windows.jar", nativeLib?.Path);
-        Assert.Equal("3f11873dc8e84c854ec7c5a8fd2e869f8aaef764", nativeLib?.Sha1);
-        Assert.Equal(609967, nativeLib?.Size);
-        Assert.Equal("https://libraries.minecraft.net/org/lwjgl/lwjgl/lwjgl-platform/2.9.0/lwjgl-platform-2.9.0-natives-windows.jar", nativeLib?.Url);
+        var expected = new MFileMetadata
+        {
+            Path = "org/lwjgl/lwjgl/lwjgl-platform/2.9.0/lwjgl-platform-2.9.0-natives-windows.jar",
+            Sha1 = "3f11873dc8e84c854ec7c5a8fd2e869f8aaef764",
+            Size = 609967,
+            Url = "https://libraries.minecraft.net/org/lwjgl/lwjgl/lwjgl-platform/2.9.0/lwjgl-platform-2.9.0-natives-windows.jar"
+        };
+        Assert.Equal(expected, nativeLib);
     }
 
     [Fact]

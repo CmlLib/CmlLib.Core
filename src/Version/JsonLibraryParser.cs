@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using CmlLib.Core.Files;
 using CmlLib.Core.Internals;
+using CmlLib.Core.Rules;
 
 namespace CmlLib.Core.Version;
 
@@ -11,20 +12,21 @@ public static class JsonLibraryParser
         var name = element.GetPropertyValue("name");
         if (string.IsNullOrEmpty(name))
             return null;
-
-        var library = new MLibrary(name);
         
         // rules
+        IReadOnlyCollection<LauncherRule> rules;
         if (element.TryGetProperty("rules", out var rulesProp))
-            library.Rules = JsonRulesParser.Parse(rulesProp);
+            rules = JsonRulesParser.Parse(rulesProp);
+        else
+            rules = Array.Empty<LauncherRule>();
 
         // forge serverreq, clientreq
-        library.IsServerRequired = element
+        var isServerRequired = element
             .GetPropertyOrNull("serverreq")?
             .GetBoolean() ?? 
             true; // default value is true
         
-        library.IsClientRequired = element
+        var isClientRequired = element
             .GetPropertyOrNull("clientreq")?
             .GetBoolean() ?? 
             true; // default value is true
@@ -33,21 +35,28 @@ public static class JsonLibraryParser
         var artifact = element.GetPropertyOrNull("artifact") ?? 
                        element.GetPropertyOrNull("downloads")?.GetPropertyOrNull("artifact") ??
                        element;
-        library.Artifact = artifact.Deserialize<MFileMetadata>();
 
         // classifiers
-        var classifiers = element.GetPropertyOrNull("classifies") ?? 
+        IReadOnlyDictionary<string, MFileMetadata>? classifiers = null;
+        var classifiersProp = element.GetPropertyOrNull("classifies") ?? 
                           element.GetPropertyOrNull("downloads")?.GetPropertyOrNull("classifiers");
-        if (classifiers.HasValue)
-            library.Classifiers = classifiers.Value.Deserialize<Dictionary<string, MFileMetadata>>();
+        if (classifiersProp.HasValue)
+            classifiers = classifiersProp.Value.Deserialize<Dictionary<string, MFileMetadata>>();
 
         // natives
-        var natives = element.GetPropertyOrNull("natives");
-        if (natives.HasValue)
-        {
-            library.Natives = natives.Value.Deserialize<Dictionary<string, string>>();
-        }
+        IReadOnlyDictionary<string, string>? natives = null;
+        var nativesProp = element.GetPropertyOrNull("natives");
+        if (nativesProp.HasValue)
+            natives = nativesProp.Value.Deserialize<Dictionary<string, string>>();
 
-        return library;
+        return new MLibrary(name)
+        {
+            Artifact = artifact.Deserialize<MFileMetadata>(),
+            Classifiers = classifiers,
+            Natives = natives,
+            Rules = rules,
+            IsClientRequired = isClientRequired,
+            IsServerRequired = isServerRequired
+        };
     }
 }

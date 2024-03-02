@@ -2,6 +2,7 @@
 using CmlLib.Core.Java;
 using CmlLib.Core.Rules;
 using CmlLib.Core.Tasks;
+using CmlLib.Core.Files;
 using CmlLib.Core.Version;
 using System.Text.Json;
 

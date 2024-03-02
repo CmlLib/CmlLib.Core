@@ -1,4 +1,6 @@
-﻿namespace CmlLib.Core.Tasks;
+﻿using CmlLib.Core.Files;
+
+namespace CmlLib.Core.Tasks;
 
 public interface IUpdateTask
 {

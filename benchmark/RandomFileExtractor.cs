@@ -1,6 +1,6 @@
 using CmlLib.Core.FileExtractors;
 using CmlLib.Core.Rules;
-using CmlLib.Core.Tasks;
+using CmlLib.Core.Files;
 using CmlLib.Core.Version;
 
 namespace CmlLib.Core.Benchmarks;

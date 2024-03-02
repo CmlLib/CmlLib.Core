@@ -11,9 +11,13 @@
 - [x] LegacyJava 버그: task의 file이 실제 java binary 을 나타내지 않음
 - [ ] 4.0.0 으로 올릴지 3.4.0 으로 올릴지 결정
 - [ ] Memory 위에서 mutable 한 IVersion 구현
+- [ ] JvmArgumentOverrides 에서 띄어쓰기 포함되어있으면 어떡하지? 예시: 
+-Darg="hi -cp"
+- [x] introduce record type: AssetObject
 
 # Flow
 
+```
    { JsonVersionLoader }
              |
     JsonVersionMetadata
@@ -44,3 +48,4 @@
 |-------------------------|
              |
           Process
+```

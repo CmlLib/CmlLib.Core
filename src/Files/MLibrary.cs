@@ -8,13 +8,13 @@ public record MLibrary
     public MLibrary(string name) => 
         Name = name;
 
-    public MFileMetadata? Artifact { get; set; }
-    public Dictionary<string, MFileMetadata>? Classifiers { get; set; }
-    public Dictionary<string, string>? Natives { get; set; }
-    public IReadOnlyCollection<LauncherRule> Rules { get; set; } = Array.Empty<LauncherRule>();
-    public string Name { get; set; }
-    public bool IsServerRequired { get; set; } = true;
-    public bool IsClientRequired { get; set; } = true;
+    public MFileMetadata? Artifact { get; init; }
+    public IReadOnlyDictionary<string, MFileMetadata>? Classifiers { get; init; }
+    public IReadOnlyDictionary<string, string>? Natives { get; init; }
+    public IReadOnlyCollection<LauncherRule> Rules { get; init; } = Array.Empty<LauncherRule>();
+    public string Name { get; }
+    public bool IsServerRequired { get; init; } = true;
+    public bool IsClientRequired { get; init; } = true;
 
     public bool CheckIsRequired(string side)
     {
