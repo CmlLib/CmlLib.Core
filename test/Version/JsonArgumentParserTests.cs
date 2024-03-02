@@ -30,8 +30,8 @@ public class JsonArgumentParserTests
         var parsedArgs = version.GameArguments
             .SelectMany(arg => arg.Values ?? Enumerable.Empty<string>())
             .ToArray();
-        Assert.Equal(new[]
-        {
+        Assert.Equal(
+        [
             "--username",
             "${auth_player_name}",
             "--version",
@@ -50,7 +50,7 @@ public class JsonArgumentParserTests
             "${user_properties}",
             "--userType",
             "${user_type}"
-        }, parsedArgs);
+        ], parsedArgs);
     }
 
     [Fact]
@@ -177,11 +177,11 @@ public class JsonArgumentParserTests
 
         var version = JsonVersionParser.ParseFromJsonString(json, options);
         
-        var parsedArgs = version.JvmArguments
+        var parsedArgs = version.GameArguments
             .SelectMany(arg => arg.Values ?? Enumerable.Empty<string>())
             .ToArray();
-        Assert.Equal(new [] 
-        {
+        Assert.Equal(
+        [
             "--username",
             "${auth_player_name}",
             "--version",
@@ -217,7 +217,7 @@ public class JsonArgumentParserTests
             "${quickPlayMultiplayer}",
             "--quickPlayRealms",
             "${quickPlayRealms}"
-        }, parsedArgs);
+        ], parsedArgs);
     }
 
     [Fact]
@@ -299,8 +299,8 @@ public class JsonArgumentParserTests
         var parsedArgs = version.JvmArguments
             .SelectMany(args => args.Values ?? Enumerable.Empty<string>())
             .ToArray();
-        Assert.Equal(new []
-        {
+        Assert.Equal(
+        [
             "-XstartOnFirstThread",
             "-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump",
             "-Dos.name=Windows 10",
@@ -314,6 +314,6 @@ public class JsonArgumentParserTests
             "-Dminecraft.launcher.version=${launcher_version}",
             "-cp",
             "${classpath}"
-        }, parsedArgs);
+        ], parsedArgs);
     }
 }

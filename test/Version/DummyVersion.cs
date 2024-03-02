@@ -21,7 +21,7 @@ public class DummyVersion : IVersion
 
     public JavaVersion? JavaVersion { get; set; }
 
-    public MLibrary[] Libraries { get; set; } = new MLibrary[0];
+    public IReadOnlyCollection<MLibrary> Libraries { get; set; } = Array.Empty<MLibrary>();
 
     public string? Jar { get; set; }
 
@@ -29,9 +29,9 @@ public class DummyVersion : IVersion
 
     public string? MainClass { get; set; }
 
-    public MArgument[] GameArguments { get; set; } = new MArgument[0];
+    public IReadOnlyCollection<MArgument> GameArguments { get; set; } = Array.Empty<MArgument>();
 
-    public MArgument[] JvmArguments { get; set; } = new MArgument[0];
+    public IReadOnlyCollection<MArgument> JvmArguments { get; set; } = Array.Empty<MArgument>();
 
     public DateTime ReleaseTime { get; set; }
 

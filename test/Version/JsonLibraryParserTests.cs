@@ -66,7 +66,7 @@ public class JsonLibraryParserTests
         using var jsonDocument = JsonDocument.Parse(json);
         var lib = JsonLibraryParser.Parse(jsonDocument.RootElement);
 
-        Assert.Equal(2, lib?.Rules?.Length);
+        Assert.Equal(2, lib?.Rules?.Count);
     }
 
     [Fact]
