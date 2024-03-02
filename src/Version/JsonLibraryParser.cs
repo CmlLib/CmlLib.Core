@@ -32,14 +32,16 @@ public static class JsonLibraryParser
             true; // default value is true
             
         // artifact
-        var artifact = element.GetPropertyOrNull("artifact") ?? 
-                       element.GetPropertyOrNull("downloads")?.GetPropertyOrNull("artifact") ??
-                       element;
+        MFileMetadata? artifact = null;
+        var artifactProp = element.GetPropertyOrNull("artifact") ?? 
+                           element.GetPropertyOrNull("downloads")?.GetPropertyOrNull("artifact");
+        if (artifactProp.HasValue)
+            artifact = artifactProp.Value.Deserialize<MFileMetadata>();
 
         // classifiers
         IReadOnlyDictionary<string, MFileMetadata>? classifiers = null;
         var classifiersProp = element.GetPropertyOrNull("classifies") ?? 
-                          element.GetPropertyOrNull("downloads")?.GetPropertyOrNull("classifiers");
+                              element.GetPropertyOrNull("downloads")?.GetPropertyOrNull("classifiers");
         if (classifiersProp.HasValue)
             classifiers = classifiersProp.Value.Deserialize<Dictionary<string, MFileMetadata>>();
 
@@ -51,7 +53,7 @@ public static class JsonLibraryParser
 
         return new MLibrary(name)
         {
-            Artifact = artifact.Deserialize<MFileMetadata>(),
+            Artifact = artifact,
             Classifiers = classifiers,
             Natives = natives,
             Rules = rules,
