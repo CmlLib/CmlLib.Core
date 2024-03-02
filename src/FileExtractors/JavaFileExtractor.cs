@@ -37,8 +37,8 @@ public class JavaFileExtractor : IFileExtractor
         manifestResolver.ManifestServer = JavaManifestServer;
 
         var extractor = new Extractor(
-            _javaPathResolver, 
-            rulesContext, 
+            _javaPathResolver,
+            rulesContext,
             manifestResolver);
         return await extractor.ExtractFromJavaVersion(javaVersion, cancellationToken);
     }
@@ -51,7 +51,7 @@ public class JavaFileExtractor : IFileExtractor
 
         public Extractor(
             IJavaPathResolver javaPathResolver,
-            RulesEvaluatorContext rulesContext, 
+            RulesEvaluatorContext rulesContext,
             MinecraftJavaManifestResolver manifestResolver)
         {
             _javaPathResolver = javaPathResolver;
@@ -60,31 +60,37 @@ public class JavaFileExtractor : IFileExtractor
         }
 
         public async ValueTask<IEnumerable<GameFile>> ExtractFromJavaVersion(
-            JavaVersion javaVersion, 
+            JavaVersion javaVersion,
             CancellationToken cancellationToken)
+        {
+            var manifestUrl = await findManifestUrl(javaVersion);
+            if (string.IsNullOrEmpty(manifestUrl))
+                return Enumerable.Empty<GameFile>();
+                
+            var installPath = _javaPathResolver.GetJavaDirPath(javaVersion, _rulesContext);
+            var files = await _manifestResolver.GetFilesFromManifest(manifestUrl, cancellationToken);
+            return extractFiles(installPath, files);
+        }
+
+        private async ValueTask<string?> findManifestUrl(JavaVersion javaVersion)
         {
             var osName = MinecraftJavaManifestResolver.GetOSNameForJava(_rulesContext.OS) ?? "";
             var manifests = await _manifestResolver.GetManifestsForOS(osName);
-            var manifestUrl = findManifestUrl(manifests, javaVersion.Component);
+            var manifestUrl = findManifestUrlFromMetadatas(manifests, javaVersion.Component);
 
             if (string.IsNullOrEmpty(manifestUrl) &&
                 javaVersion.Component != MinecraftJavaPathResolver.JreLegacyVersion.Component)
-                manifestUrl = findManifestUrl(manifests, MinecraftJavaPathResolver.JreLegacyVersion.Component);
+                manifestUrl = findManifestUrlFromMetadatas(manifests, MinecraftJavaPathResolver.JreLegacyVersion.Component);
 
-            if (string.IsNullOrEmpty(manifestUrl))
-                return Enumerable.Empty<GameFile>();
-
-            var installPath = _javaPathResolver.GetJavaDirPath(javaVersion, _rulesContext);
-            var files = await _manifestResolver.GetFilesFromManifest(manifestUrl, cancellationToken);
-            return iterateFileToTask(installPath, files);
+            return manifestUrl;
         }
 
-        private string? findManifestUrl(IEnumerable<MinecraftJavaManifestMetadata> metadatas, string component)
+        private string? findManifestUrlFromMetadatas(IEnumerable<MinecraftJavaManifestMetadata> metadatas, string component)
         {
             return metadatas.FirstOrDefault(v => v.Component == component)?.Metadata?.Url;
         }
 
-        private IEnumerable<GameFile> iterateFileToTask(
+        private IEnumerable<GameFile> extractFiles(
             string path,
             IEnumerable<MinecraftJavaFile> files)
         {
@@ -92,23 +98,29 @@ public class JavaFileExtractor : IFileExtractor
             {
                 if (javaFile.Type == "file")
                 {
-                    var filePath = Path.Combine(path, javaFile.Name);
-                    filePath = IOUtil.NormalizePath(filePath);
-
-                    var gameFile = new GameFile(javaFile.Name)
-                    {
-                        Hash = javaFile.Sha1,
-                        Path = filePath,
-                        Url = javaFile.Url,
-                        Size = javaFile.Size
-                    };
-
-                    if (javaFile.Executable)
-                        gameFile.UpdateTask = new ChmodTask(NativeMethods.Chmod755);
-
+                    var gameFile = extractFile(path, javaFile);
                     yield return gameFile;
                 }
             }
+        }
+
+        private GameFile extractFile(string path, MinecraftJavaFile javaFile)
+        {
+            var filePath = Path.Combine(path, javaFile.Name);
+            filePath = IOUtil.NormalizePath(filePath);
+
+            var gameFile = new GameFile(javaFile.Name)
+            {
+                Hash = javaFile.Sha1,
+                Path = filePath,
+                Url = javaFile.Url,
+                Size = javaFile.Size
+            };
+
+            if (javaFile.Executable)
+                gameFile.UpdateTask = new ChmodTask(NativeMethods.Chmod755);
+
+            return gameFile;
         }
     }
 }

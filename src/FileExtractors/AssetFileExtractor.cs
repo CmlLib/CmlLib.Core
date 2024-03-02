@@ -29,7 +29,7 @@ public class AssetFileExtractor : IFileExtractor
         if (assetIndex == null)
             return Enumerable.Empty<GameFile>();
 
-        return TaskExtractor.ExtractTasksFromAssetIndex(
+        return Extractor.ExtractTasksFromAssetIndex(
             assetIndex, 
             path, 
             AssetServer,
@@ -83,7 +83,7 @@ public class AssetFileExtractor : IFileExtractor
         }
     }
 
-    public static class TaskExtractor
+    public static class Extractor
     {
         public static IEnumerable<GameFile> ExtractTasksFromAssetIndex(
             IAssetIndex assetIndex, MinecraftPath path, string assetServer, bool dispose)
@@ -94,13 +94,13 @@ public class AssetFileExtractor : IFileExtractor
             foreach (var assetObject in assetIndex.EnumerateAssetObjects())
             {
                 var hashName = assetObject.Hash.Substring(0, 2) + "/" + assetObject.Hash;
-                var hashPath = Path.Combine(path.GetAssetObjectPath(assetIndex.Id), hashName);
+                var hashPath = IOUtil.NormalizePath(Path.Combine(path.GetAssetObjectPath(assetIndex.Id), hashName));
 
                 var copyPath = new List<string>(2);
                 if (assetIndex.IsVirtual)
-                    copyPath.Add(Path.Combine(path.GetAssetLegacyPath(assetIndex.Id), assetObject.Name));
+                    copyPath.Add(IOUtil.NormalizePath(Path.Combine(path.GetAssetLegacyPath(assetIndex.Id), assetObject.Name)));
                 if (assetIndex.MapToResources)
-                    copyPath.Add(Path.Combine(path.Resource, assetObject.Name));
+                    copyPath.Add(IOUtil.NormalizePath(Path.Combine(path.Resource, assetObject.Name)));
 
                 var file = new GameFile(assetObject.Name)
                 {

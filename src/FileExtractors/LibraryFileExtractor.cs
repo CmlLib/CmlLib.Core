@@ -1,4 +1,5 @@
-﻿using CmlLib.Core.Rules;
+﻿using CmlLib.Core.Internals;
+using CmlLib.Core.Rules;
 using CmlLib.Core.Tasks;
 using CmlLib.Core.Version;
 
@@ -15,21 +16,10 @@ public class LibraryFileExtractor : IFileExtractor
         _rulesEvaluator = rulesEvaluator;
     }
 
-    private string libServer = MojangServer.Library;
-    public string LibraryServer
-    {
-        get => libServer;
-        set
-        {
-            if (value.Last() == '/')
-                libServer = value;
-            else
-                libServer = value + "/";
-        }
-    }
+    public string LibraryServer { get; set; } = MojangServer.Library;
 
     public ValueTask<IEnumerable<GameFile>> Extract(
-        MinecraftPath path, 
+        MinecraftPath path,
         IVersion version,
         RulesEvaluatorContext rulesContext,
         CancellationToken cancellationToken)
@@ -37,59 +27,66 @@ public class LibraryFileExtractor : IFileExtractor
         var result = version.Libraries
             .Where(lib => lib.CheckIsRequired(_side))
             .Where(lib => lib.Rules == null || _rulesEvaluator.Match(lib.Rules, rulesContext))
-            .SelectMany(lib => createLibraryTasks(path, lib, rulesContext));
+            .SelectMany(lib => Extractor.ExtractTasks(LibraryServer, path, lib, rulesContext));
         return new ValueTask<IEnumerable<GameFile>>(result);
     }
 
-    private IEnumerable<GameFile> createLibraryTasks(
-        MinecraftPath path, 
-        MLibrary library,
-        RulesEvaluatorContext rulesContext)
+    public static class Extractor
     {
-        // java library (*.jar)
-        var artifact = library.Artifact;
-        if (artifact != null)
+        public static IEnumerable<GameFile> ExtractTasks(
+            string libraryServer,
+            MinecraftPath path,
+            MLibrary library,
+            RulesEvaluatorContext rulesContext)
         {
-            var libPath = library.GetLibraryPath();
-            yield return new GameFile(library.Name)
-            {
-                Path = Path.Combine(path.Library, libPath),
-                Url = createDownloadUrl(artifact.Url, libPath),
-                Hash = artifact.GetSha1(),
-                Size = artifact.Size
-            };
-        }
+            if (!libraryServer.EndsWith("/"))
+                libraryServer += '/';
 
-        // native library (*.dll, *.so)
-        var native = library.GetNativeLibrary(rulesContext.OS);
-        if (native != null)
-        {
-            var libPath = library.GetNativeLibraryPath(rulesContext.OS);
-            if (!string.IsNullOrEmpty(libPath))
+            // java library (*.jar)
+            var artifact = library.Artifact;
+            if (artifact != null)
             {
+                var libPath = library.GetLibraryPath();
                 yield return new GameFile(library.Name)
                 {
-                    Path = Path.Combine(path.Library, libPath),
-                    Url = createDownloadUrl(native.Url, libPath),
-                    Hash = native.GetSha1(),
-                    Size = native.Size
+                    Path = IOUtil.NormalizePath(Path.Combine(path.Library, libPath)),
+                    Url = createDownloadUrl(libraryServer, artifact.Url, libPath),
+                    Hash = artifact.GetSha1(),
+                    Size = artifact.Size
                 };
             }
+
+            // native library (*.dll, *.so)
+            var native = library.GetNativeLibrary(rulesContext.OS);
+            if (native != null)
+            {
+                var libPath = library.GetNativeLibraryPath(rulesContext.OS);
+                if (!string.IsNullOrEmpty(libPath))
+                {
+                    yield return new GameFile(library.Name)
+                    {
+                        Path = IOUtil.NormalizePath(Path.Combine(path.Library, libPath)),
+                        Url = createDownloadUrl(libraryServer, native.Url, libPath),
+                        Hash = native.GetSha1(),
+                        Size = native.Size
+                    };
+                }
+            }
         }
-    }
 
-    private string? createDownloadUrl(string? url, string path)
-    {
-        if (string.IsNullOrEmpty(url) && string.IsNullOrEmpty(path))
-            return null;
+        private static string? createDownloadUrl(string server, string? url, string path)
+        {
+            if (string.IsNullOrEmpty(url) && string.IsNullOrEmpty(path))
+                return null;
 
-        if (url == null)
-            url = LibraryServer + path;
-        else if (url == "")
-            url = null;
-        else if (url.Split('/').Last() == "")
-            url += path.Replace("\\", "/");
+            if (url == null)
+                url = server + path;
+            else if (url == "")
+                url = null;
+            else if (url.Split('/').Last() == "")
+                url += path.Replace("\\", "/");
 
-        return url;
+            return url;
+        }
     }
 }
