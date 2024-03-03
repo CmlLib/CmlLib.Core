@@ -24,7 +24,7 @@ public abstract class GameInstallerBase : IGameInstaller
     private IProgress<ByteProgress>? ByteProgress;
 
     public async ValueTask Install(
-        IReadOnlyList<GameFile> gameFiles,
+        IEnumerable<GameFile> gameFiles,
         IProgress<InstallerProgressChangedEventArgs>? fileProgress,
         IProgress<ByteProgress>? byteProgress,
         CancellationToken cancellationToken)
@@ -38,13 +38,15 @@ public abstract class GameInstallerBase : IGameInstaller
 
         excludeSet.Clear();
         foreach (var excludeFile in ExcludeFiles)
+        {
             excludeSet.Add(excludeFile);
+        }
 
         await Install(gameFiles, cancellationToken);
         IsRunning = false;
     }
 
-    protected abstract ValueTask Install(IReadOnlyList<GameFile> gameFiles, CancellationToken cancellationToken);
+    protected abstract ValueTask Install(IEnumerable<GameFile> gameFiles, CancellationToken cancellationToken);
 
     protected bool NeedUpdate(GameFile file)
     {
@@ -89,7 +91,7 @@ public abstract class GameInstallerBase : IGameInstaller
             cancellationToken);
     }
 
-    protected bool CheckExcludeFile(string path)
+    protected bool IsExcludedPath(string path)
     {
         return excludeSet.Contains(path);
     }

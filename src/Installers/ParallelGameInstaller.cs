@@ -41,31 +41,32 @@ public class ParallelGameInstaller : GameInstallerBase
     ThreadLocal<ByteProgress>? progressStorage;
     int totalFiles = 0;
     int progressedFiles = 0;
-    long totalBytes = 0;
 
     protected override async ValueTask Install(
-        IReadOnlyList<GameFile> gameFiles,
+        IEnumerable<GameFile> gameFiles,
         CancellationToken cancellationToken)
     {
-        totalFiles = gameFiles.Count;
-        progressedFiles = 0;
-        totalBytes = gameFiles.Select(f => f.Size).Sum();
         progressStorage = new ThreadLocal<ByteProgress>(
             () => new ByteProgress(), true);
+        totalFiles = 0;
+        progressedFiles = 0;
 
         var (firstBlock, lastBlock) = buildBlock(cancellationToken);
-        for (int i = 0; i < totalFiles; i++)
-        {
-            var file = gameFiles[i];
-            if (CheckExcludeFile(file.Path ?? ""))
-            {
-                totalFiles--;
-                totalBytes -= file.Size;
-                continue;
-            }
 
-            FireFileProgress(totalFiles, progressedFiles, file.Name, InstallerEventType.Queued);
-            await firstBlock.SendAsync(file, cancellationToken);
+        var queue = new HashSet<GameFile>(GameFilePathComparer.Default);
+        foreach (var gameFile in gameFiles)
+        {
+            if (!queue.Add(gameFile))
+                continue;
+
+            if (IsExcludedPath(gameFile.Path ?? ""))
+                continue;
+
+            addProgressToStorage(gameFile.Size, 0);
+            Interlocked.Increment(ref totalFiles);
+
+            FireFileProgress(totalFiles, progressedFiles, gameFile.Name, InstallerEventType.Queued);
+            await firstBlock.SendAsync(gameFile, cancellationToken);
         }
         firstBlock.Complete();
 
@@ -93,22 +94,13 @@ public class ParallelGameInstaller : GameInstallerBase
         new ExecutionDataflowBlockOptions
         {
             CancellationToken = cancellationToken,
-            MaxDegreeOfParallelism = MaxChecker
+            MaxDegreeOfParallelism = MaxChecker,
+            EnsureOrdered = false
         });
-
-        var buffer = new BufferBlock<(GameFile, bool)>();
-
         var downloadBlock = new ActionBlock<(GameFile GameFile, bool NeedUpdate)>(async result =>
         {
             var progress = new ByteProgressDelta(initialSize: result.GameFile.Size, delta =>
-            {
-                var storedProgress = progressStorage.Value;
-                progressStorage.Value = new ByteProgress
-                {
-                    TotalBytes = storedProgress.TotalBytes + delta.TotalBytes,
-                    ProgressedBytes = storedProgress.ProgressedBytes + delta.ProgressedBytes
-                };
-            });
+                addProgressToStorage(delta.TotalBytes, delta.ProgressedBytes));
 
             if (result.NeedUpdate)
             {
@@ -126,21 +118,32 @@ public class ParallelGameInstaller : GameInstallerBase
         new ExecutionDataflowBlockOptions
         {
             CancellationToken = cancellationToken,
-            MaxDegreeOfParallelism = MaxDownloader
+            MaxDegreeOfParallelism = MaxDownloader,
+            BoundedCapacity = 1000,
+            EnsureOrdered = false
         });
 
         var linkOptions = new DataflowLinkOptions { PropagateCompletion = true };
-        checkBlock.LinkTo(buffer, linkOptions);
-        buffer.LinkTo(downloadBlock, linkOptions);
+        checkBlock.LinkTo(downloadBlock, linkOptions);
 
         return (checkBlock, downloadBlock);
+    }
+
+    private void addProgressToStorage(long totalBytes, long progressedBytes)
+    {
+        var storedProgress = progressStorage!.Value;
+        progressStorage.Value = new ByteProgress
+        {
+            TotalBytes = storedProgress.TotalBytes + totalBytes,
+            ProgressedBytes = storedProgress.ProgressedBytes + progressedBytes
+        };
     }
 
     private void aggregateAndReportByteProgress()
     {
         Debug.Assert(progressStorage != null);
 
-        long aggregatedTotalBytes = totalBytes;
+        long aggregatedTotalBytes = 0;
         long aggregatedProgressedBytes = 0;
         foreach (var progress in progressStorage.Values)
         {

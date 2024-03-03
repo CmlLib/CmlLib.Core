@@ -10,17 +10,30 @@ public class BasicGameInstaller : GameInstallerBase
     }
 
     protected override async ValueTask Install(
-        IReadOnlyList<GameFile> gameFiles,
+        IEnumerable<GameFile> gameFiles,
         CancellationToken cancellationToken)
     {
-        long totalBytes = gameFiles.Select(f => f.Size).Sum();
+        long totalBytes = 0;
         long progressedBytes = 0;
 
-        for (int i = 0; i < gameFiles.Count; i++)
+        // queue files
+        var queue = new HashSet<GameFile>(GameFilePathComparer.Default);
+        foreach (var gameFile in gameFiles)
         {
-            var gameFile = gameFiles[i];
-            FireFileProgress(gameFiles.Count, i, gameFile.Name, InstallerEventType.Queued);
+            if (!queue.Add(gameFile))
+                continue;
+            
+            if (IsExcludedPath(gameFile.Path ?? ""))
+                continue;
 
+            totalBytes += gameFile.Size;
+            FireFileProgress(queue.Count, 0, gameFile.Name, InstallerEventType.Queued);
+        }
+
+        // process files
+        int progressed = 0;
+        foreach (var gameFile in queue)
+        {
             var progress = new ByteProgressDelta(initialSize: gameFile.Size, delta =>
             {
                 totalBytes += delta.TotalBytes;
@@ -28,7 +41,7 @@ public class BasicGameInstaller : GameInstallerBase
                 FireByteProgress(totalBytes, progressedBytes);
             });
 
-            if (NeedUpdate(gameFile) && !CheckExcludeFile(gameFile.Path ?? ""))
+            if (NeedUpdate(gameFile))
             {
                 await Download(gameFile, progress, cancellationToken);
                 await gameFile.ExecuteUpdateTask(cancellationToken);
@@ -38,7 +51,8 @@ public class BasicGameInstaller : GameInstallerBase
                 progress.ReportDone();
             }
 
-            FireFileProgress(gameFiles.Count, i + 1, gameFile.Name, InstallerEventType.Done);
+            progressed++;
+            FireFileProgress(queue.Count, progressed, gameFile.Name, InstallerEventType.Done);
         }
     }
 }

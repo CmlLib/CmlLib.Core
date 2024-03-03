@@ -5,6 +5,7 @@ using CmlLib.Core.FileExtractors;
 using CmlLib.Core.Installers;
 using CmlLib.Core.ProcessBuilder;
 using CmlLib.Core.VersionLoader;
+using CmlLib.Core.VersionMetadata;
 
 namespace CmlLibCoreSample;
 
@@ -22,35 +23,37 @@ class Program
 
         // initialize launcher
         var parameters = MinecraftLauncherParameters.CreateDefault();
-        //parameters.GameInstaller = new TPLGameInstaller(1);
-        //parameters.VersionLoader = new VersionLoaderCollection
-        //{
-        //    new LocalVersionLoader(parameters.MinecraftPath!)
-        //};
         var launcher = new MinecraftLauncher(parameters);
         
         // add event handler
-        launcher.FileProgressChanged += Launcher_FileProgressChanged;
-        launcher.ByteProgressChanged += Launcher_ByteProgressChanged;
+        //launcher.FileProgressChanged += Launcher_FileProgressChanged;
+        //launcher.ByteProgressChanged += Launcher_ByteProgressChanged;
 
         // list versions
         var versions = await launcher.GetAllVersionsAsync();
         foreach (var v in versions)
         {
-            Console.WriteLine($"{v.Name}, {v.Type}, {v.ReleaseTime}");
+            //if (v.GetVersionType() == MVersionType.Release)
+            {
+                Console.WriteLine($"{v.Name}, {v.Type}, {v.ReleaseTime}");
+                //await v.SaveVersionAsync(launcher.MinecraftPath);
+            }
         }
 
         // select version
         Console.WriteLine("Select the version to launch: ");
         Console.Write("> ");
-        var startVersion = Console.ReadLine();
-        //var startVersion = "1.20.1";
+        //var startVersion = Console.ReadLine();
+        var startVersion = "1.20.1";
         if (string.IsNullOrEmpty(startVersion))
             return;
 
         // install
         sw.Start();
-        await launcher.InstallAsync(startVersion);
+        await launcher.InstallAsync(
+            startVersion, 
+            new SyncProgress<InstallerProgressChangedEventArgs>(e => Launcher_FileProgressChanged(null, e)), 
+            new SyncProgress<ByteProgress>(e => Launcher_ByteProgressChanged(null, e)));
         sw.Stop();
 
         // build process

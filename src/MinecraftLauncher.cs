@@ -14,8 +14,8 @@ namespace CmlLib.Core;
 
 public class MinecraftLauncher
 {
-    private readonly Progress<InstallerProgressChangedEventArgs> _fileProgress;
-    private readonly Progress<ByteProgress> _byteProgress;
+    private readonly IProgress<InstallerProgressChangedEventArgs> _fileProgress;
+    private readonly IProgress<ByteProgress> _byteProgress;
     public event EventHandler<InstallerProgressChangedEventArgs>? FileProgressChanged;
     public event EventHandler<ByteProgress>? ByteProgressChanged;
 
@@ -91,7 +91,7 @@ public class MinecraftLauncher
         }
     }
 
-    public async ValueTask<IReadOnlyList<GameFile>> ExtractFiles(
+    public async ValueTask<IEnumerable<GameFile>> ExtractFiles(
         string versionName,
         CancellationToken cancellationToken = default)
     {
@@ -99,40 +99,50 @@ public class MinecraftLauncher
         return await ExtractFiles(version, cancellationToken);
     }
 
-    public async ValueTask<IReadOnlyList<GameFile>> ExtractFiles(
+    public async ValueTask<IEnumerable<GameFile>> ExtractFiles(
         IVersion version,
         CancellationToken cancellationToken)
     {
-        // filter duplicated paths
-        var fileSet = new Dictionary<string, GameFile>();
+        var allFiles = Enumerable.Empty<GameFile>();
         foreach (var extractor in FileExtractors)
         {
             var files = await extractor.Extract(MinecraftPath, version, RulesContext, cancellationToken);
-            foreach (var file in files)
-            {
-                fileSet[file.Path ?? ""] = file;
-            }
+            allFiles = allFiles.Concat(files);
         }
-        return fileSet.Values.ToList();
+        return allFiles;
     }
+
+    public ValueTask InstallAsync(
+        string versionName, 
+        CancellationToken cancellationToken = default) =>
+        InstallAsync(versionName, null, null, cancellationToken);
 
     public async ValueTask InstallAsync(
         string versionName, 
+        IProgress<InstallerProgressChangedEventArgs>? fileProgress,
+        IProgress<ByteProgress>? byteProgress,
         CancellationToken cancellationToken = default)
     {
         var version = await GetVersionAsync(versionName);
-        await InstallAsync(version, cancellationToken);
+        await InstallAsync(version, fileProgress, byteProgress, cancellationToken);
     }
+
+    public ValueTask InstallAsync(
+        IVersion version,
+        CancellationToken cancellationToken = default) =>
+        InstallAsync(version, null, null, cancellationToken);
 
     public async ValueTask InstallAsync(
         IVersion version,
+        IProgress<InstallerProgressChangedEventArgs>? fileProgress,
+        IProgress<ByteProgress>? byteProgress,
         CancellationToken cancellationToken = default)
     {
         var files = await ExtractFiles(version, cancellationToken);
         await GameInstaller.Install(
             files,
-            _fileProgress,
-            _byteProgress,
+            fileProgress ?? _fileProgress,
+            byteProgress ?? _byteProgress,
             cancellationToken);
     }
 
