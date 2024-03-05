@@ -20,8 +20,8 @@ public static class MRule
             Arch = "32";
     }
 
-    public static string OSName { get; internal set; }
-    public static string Arch { get; internal set; }
+    public static string OSName { get; set; }
+    public static string Arch { get; set; }
 
     public static string getOSName()
     {
