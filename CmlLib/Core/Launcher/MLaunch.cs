@@ -37,9 +37,9 @@ public class MLaunch
         minecraftPath = option.GetMinecraftPath();
     }
 
-    public Process GetProcess()
+    public Process GetProcess(bool needForce)
     {
-        var arg = string.Join(" ", CreateArg());
+        var arg = string.Join(" ", CreateArg(needForce));
         var mc = new Process();
         mc.StartInfo.FileName =
             useNotNull(launchOption.GetStartVersion().JavaBinaryPath, launchOption.GetJavaPath()) ?? "";
@@ -68,22 +68,22 @@ public class MLaunch
         return classpathStr;
     }
 
-    private string createNativePath(MVersion version)
+    private string createNativePath(MVersion version, bool needForce)
     {
         var native = new MNative(minecraftPath, version);
         native.CleanNatives();
-        var nativePath = native.ExtractNatives();
+        var nativePath = native.ExtractNatives(needForce);
         return nativePath;
     }
 
     [Time]
-    public string[] CreateArg()
+    public string[] CreateArg(bool needForce)
     {
         var version = launchOption.GetStartVersion();
         var args = new List<string>();
 
         var classpath = createClassPath(version);
-        var nativePath = createNativePath(version);
+        var nativePath = createNativePath(version, needForce);
         var session = launchOption.GetSession();
 
         var argDict = new Dictionary<string, string?>

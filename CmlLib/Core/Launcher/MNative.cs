@@ -18,19 +18,21 @@ public class MNative
     }
 
     [Time]
-    public string ExtractNatives()
+    public string ExtractNatives(bool needForce)
     {
         var path = gamePath.GetNativePath(version.Id);
         Directory.CreateDirectory(path);
 
         if (version.Libraries == null) return path;
 
+
+
         foreach (var item in version.Libraries)
             // do not ignore exception
-            if (item.IsRequire && item.IsNative && !string.IsNullOrEmpty(item.Path))
+            if (item is { IsRequire: true, IsNative: true } && !string.IsNullOrEmpty(item.Path))
             {
                 var zPath = Path.Combine(gamePath.Library, item.Path);
-                if (File.Exists(zPath))
+                if (File.Exists(zPath) && needForce)
                 {
                     var z = new SharpZip(zPath);
                     z.Unzip(path);
