@@ -71,7 +71,7 @@ public class MLaunch
     private string createNativePath(MVersion version, bool needForce)
     {
         var native = new MNative(minecraftPath, version);
-        native.CleanNatives();
+        // native.CleanNatives();
         var nativePath = native.ExtractNatives(needForce);
         return nativePath;
     }
