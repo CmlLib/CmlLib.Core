@@ -6,13 +6,25 @@ namespace CmlLib.Core
 {
     public class MLaunchOption
     {
+        public MLaunchOption()
+        {
+            if (MRule.Arch == "64")
+            {
+                MaximumRamMb = 2048;
+            }
+            else
+            {
+                MaximumRamMb = 1024;
+            }
+        }
+
         public MinecraftPath? Path { get; set; }
         public MVersion? StartVersion { get; set; }
         public MSession? Session { get; set; }
 
         public string? JavaVersion { get; set; }
         public string? JavaPath { get; set; }
-        public int MaximumRamMb { get; set; } = 1024;
+        public int MaximumRamMb { get; set; }
         public int MinimumRamMb { get; set; }
         public string[]? JVMArguments { get; set; }
 

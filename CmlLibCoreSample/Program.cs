@@ -65,9 +65,9 @@ namespace CmlLibCoreSample
 
             var launchOption = new MLaunchOption
             {
-                MaximumRamMb = 1024,
                 Session = session,
-
+                
+                //MaximumRamMb = 2048,
                 //ScreenWidth = 1600,
                 //ScreenHeight = 900,
                 //ServerIp = "mc.hypixel.net",
