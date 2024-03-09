@@ -12,7 +12,7 @@ namespace CmlLib.Core
         private const int DefaultServerPort = 25565;
 
         public static readonly string SupportVersion = "1.17.1";
-        public readonly static string[] DefaultJavaParameter = 
+        public readonly static string[] DefaultJavaParameter =
             {
                 "-XX:+UnlockExperimentalVMOptions",
                 "-XX:+UseG1GC",
@@ -33,12 +33,12 @@ namespace CmlLib.Core
 
         private readonly MinecraftPath minecraftPath;
         private readonly MLaunchOption launchOption;
-        
+
         public Process GetProcess()
         {
             string arg = string.Join(" ", CreateArg());
             Process mc = new Process();
-            mc.StartInfo.FileName = 
+            mc.StartInfo.FileName =
                 useNotNull(launchOption.GetStartVersion().JavaBinaryPath, launchOption.GetJavaPath()) ?? "";
             mc.StartInfo.Arguments = arg;
             mc.StartInfo.WorkingDirectory = minecraftPath.BasePath;
@@ -48,20 +48,29 @@ namespace CmlLib.Core
 
         private string createClassPath(MVersion version)
         {
-            var classpath = new List<string>(version.Libraries?.Length ?? 1);
-
-            if (version.Libraries != null)
+            IEnumerable<string> getLibraryPaths()
             {
-                var libraries = version.Libraries
-                    .Where(lib => lib.IsRequire && !lib.IsNative && !string.IsNullOrEmpty(lib.Path))
-                    .Select(lib => Path.GetFullPath(Path.Combine(minecraftPath.Library, lib.Path!)));
-                classpath.AddRange(libraries);
+                var set = new HashSet<string>();
+
+                if (version.Libraries != null)
+                {
+                    var libraries = version.Libraries
+                        .Where(lib => lib.IsRequire && !lib.IsNative && !string.IsNullOrEmpty(lib.Path))
+                        .Select(lib => Path.GetFullPath(Path.Combine(minecraftPath.Library, lib.Path!)))
+                        .Where(lib => set.Add(lib));
+                    foreach (var lib in libraries)
+                        yield return lib;
+                }
+
+                if (!string.IsNullOrEmpty(version.Jar))
+                {
+                    var jar = minecraftPath.GetVersionJarPath(version.Jar);
+                    if (set.Add(jar))
+                        yield return jar;
+                }
             }
 
-            if (!string.IsNullOrEmpty(version.Jar))
-                classpath.Add(minecraftPath.GetVersionJarPath(version.Jar));
-
-            var classpathStr = IOUtil.CombinePath(classpath.ToArray());
+            var classpathStr = IOUtil.CombinePath(getLibraryPaths());
             return classpathStr;
         }
 
@@ -78,11 +87,11 @@ namespace CmlLib.Core
         {
             MVersion version = launchOption.GetStartVersion();
             var args = new List<string>();
-            
+
             var classpath = createClassPath(version);
             var nativePath = createNativePath(version);
             var session = launchOption.GetSession();
-            
+
             var argDict = new Dictionary<string, string?>
             {
                 { "library_directory", minecraftPath.Library },
@@ -91,7 +100,7 @@ namespace CmlLib.Core
                 { "launcher_version", useNotNull(launchOption.GameLauncherVersion, "2") },
                 { "classpath_separator", Path.PathSeparator.ToString() },
                 { "classpath", classpath },
-                
+
                 { "auth_player_name" , session.Username },
                 { "version_name"     , version.Id },
                 { "game_directory"   , minecraftPath.BasePath },
@@ -109,11 +118,11 @@ namespace CmlLib.Core
             };
 
             // JVM argument
-            
+
             // version-specific jvm arguments
             if (version.JvmArguments != null)
                 args.AddRange(Mapper.MapInterpolation(version.JvmArguments, argDict));
-            
+
             // default jvm arguments
             if (launchOption.JVMArguments != null)
                 args.AddRange(launchOption.JVMArguments);
@@ -124,7 +133,7 @@ namespace CmlLib.Core
 
                 if (launchOption.MinimumRamMb > 0)
                     args.Add("-Xms" + launchOption.MinimumRamMb + "m");
-                
+
                 args.AddRange(DefaultJavaParameter);
             }
 
@@ -196,7 +205,7 @@ namespace CmlLib.Core
         {
             if (input == null)
                 return null;
-            
+
             if (input.Contains(" "))
                 return "\"" + input + "\"";
             else

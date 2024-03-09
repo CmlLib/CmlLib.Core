@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -42,7 +44,7 @@ namespace CmlLib.Utils
             }
         }
 
-        public static string CombinePath(string[] paths)
+        public static string CombinePath(IEnumerable<string> paths)
         {
             return string.Join(Path.PathSeparator.ToString(),
                 paths.Select(x =>
