@@ -316,4 +316,77 @@ public class JsonArgumentParserTests
             "${classpath}"
         ], parsedArgs);
     }
+
+    public readonly static string forge_arguments = """
+{
+    "id": "1.16.5-forge-36.2.0",
+    "arguments": {
+        "game": [
+            "--launchTarget",
+            "fmlclient",
+            "--fml.forgeVersion",
+            "36.2.0",
+            "--fml.mcVersion",
+            "1.16.5",
+            "--fml.forgeGroup",
+            "net.minecraftforge",
+            "--fml.mcpVersion",
+            "20210115.111550"
+        ],
+        "jvm": [
+            "-XX:+IgnoreUnrecognizedVMOptions",
+            "--add-exports=java.base/sun.security.util=ALL-UNNAMED",
+            "--add-exports=jdk.naming.dns/com.sun.jndi.dns=java.naming",
+            "--add-opens=java.base/java.util.jar=ALL-UNNAMED"
+        ]
+    }
+}
+""";
+
+    public readonly static string forge_arguments_2 = """
+{
+    "id": "1.17.1-forge-37.0.48",
+    "arguments": {
+        "game": [
+            "--launchTarget",
+            "forgeclient",
+            "--fml.forgeVersion",
+            "37.0.48",
+            "--fml.mcVersion",
+            "1.17.1",
+            "--fml.forgeGroup",
+            "net.minecraftforge",
+            "--fml.mcpVersion",
+            "20210706.113038"
+        ],
+        "jvm": [
+            "-DignoreList=bootstraplauncher,securejarhandler,asm-commons,asm-util,asm-analysis,asm-tree,asm,client-extra,fmlcore,javafmllanguage,mclanguage,forge-,${version_name}.jar",
+            "-DmergeModules=jna-5.8.0.jar,jna-platform-58.0.jar,java-objc-bridge-1.0.0.jar",
+            "-DlibraryDirectory=${library_directory}",
+            "-p",
+            "${library_directory}/cpw/mods/bootstraplauncher/0.1.17/bootstraplauncher-0.1.17.jar${classpath_separator}${library_directory}/cpw/mods/securejarhandler/0.9.46/securejarhandler-0.9.46.jar${classpath_separator}${library_directory}/org/ow2/asm/asm-commons/9.1/asm-commons-9.1.jar${classpath_separator}${library_directory}/org/ow2/asm/asm-util/9.1/asm-util-9.1.jar${classpath_separator}${library_directory}/org/ow2/asm/asm-analysis/9.1/asm-analysis-9.1.jar${classpath_separator}${library_directory}/org/ow2/asm/asm-tree/9.1/asm-tree-9.1.jar${classpath_separator}${library_directory}/org/ow2/asm/asm/9.1/asm-9.1.jar",
+            "--add-modules",
+            "ALL-MODULE-PATH",
+            "--add-opens",
+            "java.base/java.util.jar=cpw.mods.securejarhandler",
+            "--add-exports",
+            "java.base/sun.security.util=cpw.mods.securejarhandler",
+            "--add-exports",
+            "jdk.naming.dns/com.sun.jndi.dns=java.naming"
+        ]
+    },
+}
+""";
+
+    public readonly static string fabric_loader_arguments = """
+{
+    "id": "fabric-loader-0.13.3-1.18.2",
+    "arguments": {
+        "game": [],
+        "jvm": [
+            "-DFabricMcEmu= net.minecraft.client.main.Main "
+        ]
+    },
+}
+""";
 }

@@ -272,4 +272,122 @@ public class JsonLibraryParserTests
         var javaLib = lib?.Artifact;
         Assert.Equal("org/lwjgl/lwjgl/lwjgl-platform/2.9.4-nightly-20150209/lwjgl-platform-2.9.4-nightly-20150209.jar", javaLib?.Path);
     }
+
+    // 1.7.10-Forge10.13.4.1558-1.7.10
+    public static readonly string java_library_with_url = """
+{
+    "name": "net.minecraftforge:forge:1.7.10-10.13.4.1558-1.7.10",
+	"url": "http://files.minecraftforge.net/maven/"
+}
+""";
+
+    [Fact]
+    public void parse_java_library_with_url()
+    {
+        using var jsonDocument = JsonDocument.Parse(java_library_with_url);
+        var lib = JsonLibraryParser.Parse(jsonDocument.RootElement);
+        Assert.Null(lib?.Classifiers);
+        Assert.Equal("net.minecraftforge:forge:1.7.10-10.13.4.1558-1.7.10", lib?.Name);
+        Assert.Equal("http://files.minecraftforge.net/maven/", lib?.Artifact?.Url);
+        Assert.Null(lib?.Artifact?.Path);
+        Assert.Null(lib?.Artifact?.GetSha1());
+    }
+
+    // 1.7.10-Forge10.13.4.1558-1.7.10
+    public static readonly string java_library_with_url_checksums = """
+{
+    "name": "com.typesafe.akka:akka-actor_2.11:2.3.3",
+    "url": "http://files.minecraftforge.net/maven/",
+    "checksums": [
+        "ed62e9fc709ca0f2ff1a3220daa8b70a2870078e",
+        "25a86ccfdb6f6dfe08971f4825d0a01be83a6f2e"
+    ],
+    "serverreq": true,
+    "clientreq": true
+}
+""";
+
+    public static readonly string java_library_with_url_checksums_2 = """
+{
+	"name": "org.ow2.asm:asm-all:5.2",
+	"url": "https://maven.minecraftforge.net/",
+	"checksums": [
+	    "2ea49e08b876bbd33e0a7ce75c8f371d29e1f10a"
+	],
+	"serverreq": true,
+	"clientreq": true
+}
+""";
+
+    [Fact]
+    public void parse_java_library_with_url_checksums()
+    {
+        using var jsonDocument = JsonDocument.Parse(java_library_with_url_checksums);
+        var lib = JsonLibraryParser.Parse(jsonDocument.RootElement);
+        Assert.Equal("com.typesafe.akka:akka-actor_2.11:2.3.3", lib?.Name);
+        Assert.Equal("http://files.minecraftforge.net/maven/", lib?.Artifact?.Url);
+        Assert.Equal(["ed62e9fc709ca0f2ff1a3220daa8b70a2870078e", "25a86ccfdb6f6dfe08971f4825d0a01be83a6f2e"], lib?.Artifact?.Checksums);
+        Assert.Null(lib?.Artifact?.Path);
+        Assert.Null(lib?.Classifiers);
+    }
+
+    // 1.8.9-forge1.8.9-11.15.1.1722
+    public static readonly string java_library_with_only_name = """
+{
+	"name": "java3d:vecmath:1.5.2",
+	"clientreq": true,
+    "serverreq": true
+}
+""";
+
+    // 1.8.9-OptiFine_HD_U_M5
+    public static readonly string java_library_with_only_name_2 = """
+{
+    "name": "optifine:OptiFine:1.8.9_HD_U_M5"
+}
+""";
+
+    [Fact]
+    public void parse_java_library_with_only_name()
+    {
+        using var jsonDocument = JsonDocument.Parse(java_library_with_only_name);
+        var lib = JsonLibraryParser.Parse(jsonDocument.RootElement);
+        Assert.Equal("java3d:vecmath:1.5.2", lib?.Name);
+        Assert.Null(lib?.Artifact?.Url);
+        Assert.Null(lib?.Artifact?.Path);
+        Assert.Null(lib?.Classifiers);
+    }
+
+    // 1.12.2-forge-14.23.5.2854
+    public static readonly string java_library_with_empty_url = """
+{
+    "name": "net.minecraftforge:forge:1.12.2-14.23.5.2854",
+    "downloads": {
+        "artifact": {
+            "path": "net/minecraftforge/forge/1.12.2-14.23.5.2854/forge-1.12.2-14.23.5.2854.jar",
+            "url": "",
+            "sha1": "762f5cb227a8dd88cfd3949033c78f24030b36aa",
+            "size": 4464068
+        }
+    }
+}
+""";
+
+    [Fact]
+    public void parse_java_library_with_empty_url()
+    {
+        using var jsonDocument = JsonDocument.Parse(java_library_with_empty_url);
+        var lib = JsonLibraryParser.Parse(jsonDocument.RootElement);
+        var expected = new MLibrary("net.minecraftforge:forge:1.12.2-14.23.5.2854")
+        {
+            Artifact = new MFileMetadata
+            {
+                Path = "net/minecraftforge/forge/1.12.2-14.23.5.2854/forge-1.12.2-14.23.5.2854.jar",
+                Url = "",
+                Sha1 = "762f5cb227a8dd88cfd3949033c78f24030b36aa",
+                Size = 4464068
+            }
+        };
+        Assert.Equal(expected, lib);
+    }
 }

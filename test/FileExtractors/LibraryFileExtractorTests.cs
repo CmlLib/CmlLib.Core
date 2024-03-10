@@ -86,6 +86,61 @@ public class LibraryFileExtractorTests
         Assert.Equal([javaLibrary, nativeLibrary], result.ToHashSet());
     }
 
+    [Fact]
+    public void extract_java_library_with_url()
+    {
+        var library = parseLibrary(JsonLibraryParserTests.java_library_with_url);
+        var result = LibraryFileExtractor.Extractor.ExtractTasks(TestServer, TestPath, library, TestWindows);
+        var expected = new GameFile("net.minecraftforge:forge:1.7.10-10.13.4.1558-1.7.10")
+        {
+            Path = IOUtil.NormalizePath("libraries/net/minecraftforge/forge/1.7.10-10.13.4.1558-1.7.10/forge-1.7.10-10.13.4.1558-1.7.10.jar"),
+            Url = "http://files.minecraftforge.net/maven/net/minecraftforge/forge/1.7.10-10.13.4.1558-1.7.10/forge-1.7.10-10.13.4.1558-1.7.10.jar"
+        };
+        Assert.Equal([expected], result);
+    }
+
+    [Fact]
+    public void extract_java_library_with_url_checksums()
+    {
+        var library = parseLibrary(JsonLibraryParserTests.java_library_with_url_checksums);
+        var result = LibraryFileExtractor.Extractor.ExtractTasks(TestServer, TestPath, library, TestWindows);
+        var expected = new GameFile("com.typesafe.akka:akka-actor_2.11:2.3.3")
+        {
+            Path = IOUtil.NormalizePath("libraries/com/typesafe/akka/akka-actor_2.11/2.3.3/akka-actor_2.11-2.3.3.jar"),
+            Url = "http://files.minecraftforge.net/maven/com/typesafe/akka/akka-actor_2.11/2.3.3/akka-actor_2.11-2.3.3.jar",
+            Hash = "ed62e9fc709ca0f2ff1a3220daa8b70a2870078e",
+        };
+        Assert.Equal([expected], result);
+    }
+
+    [Fact]
+    public void extract_java_library_with_only_name()
+    {
+        var library = parseLibrary(JsonLibraryParserTests.java_library_with_only_name);
+        var result = LibraryFileExtractor.Extractor.ExtractTasks(TestServer, TestPath, library, TestWindows);
+        var expected = new GameFile("java3d:vecmath:1.5.2")
+        {
+            Path = IOUtil.NormalizePath("libraries/java3d/vecmath/1.5.2/vecmath-1.5.2.jar"),
+            Url = "https://libraryserver/java3d/vecmath/1.5.2/vecmath-1.5.2.jar"
+        };
+        Assert.Equal([expected], result);
+    }
+
+    [Fact]
+    public void extract_java_library_with_empty_url()
+    {
+        var library = parseLibrary(JsonLibraryParserTests.java_library_with_empty_url);
+        var result = LibraryFileExtractor.Extractor.ExtractTasks(TestServer, TestPath, library, TestWindows);
+        var expected = new GameFile("net.minecraftforge:forge:1.12.2-14.23.5.2854")
+        {
+            Path = IOUtil.NormalizePath("libraries/net/minecraftforge/forge/1.12.2-14.23.5.2854/forge-1.12.2-14.23.5.2854.jar"),
+            Url = null,
+            Hash = "762f5cb227a8dd88cfd3949033c78f24030b36aa",
+            Size = 4464068
+        };
+        Assert.Equal([expected], result);
+    }
+
     private static MLibrary parseLibrary(string json)
     {
         using var jsonDocument = JsonDocument.Parse(json);
