@@ -51,6 +51,13 @@ public static class JsonLibraryParser
         if (nativesProp.HasValue)
             natives = nativesProp.Value.Deserialize<Dictionary<string, string>>();
 
+        // some libraries (forge, optifine, fabric) lack 'artifacts' or 'classifiers' property;
+        // instead they have metadata properties directly
+        if (artifact == null && classifiers == null)
+        {
+            artifact = element.Deserialize<MFileMetadata>();
+        }
+
         return new MLibrary(name)
         {
             Artifact = artifact,
