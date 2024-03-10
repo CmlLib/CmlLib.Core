@@ -56,10 +56,13 @@ public class ParallelGameInstaller : GameInstallerBase
         var queue = new HashSet<GameFile>(GameFilePathComparer.Default);
         foreach (var gameFile in gameFiles)
         {
+            if (string.IsNullOrEmpty(gameFile.Url) || string.IsNullOrEmpty(gameFile.Path))
+                continue;
+
             if (!queue.Add(gameFile))
                 continue;
 
-            if (IsExcludedPath(gameFile.Path ?? ""))
+            if (IsExcludedPath(gameFile.Path))
                 continue;
 
             addProgressToStorage(gameFile.Size, 0);
