@@ -10,9 +10,13 @@ public abstract class JsonVersionMetadata : IVersionMetadata
 {
     public JsonVersionMetadata(JsonVersionMetadataModel model)
     {
-        if (string.IsNullOrEmpty(model.Name))
-            throw new ArgumentNullException(nameof(model.Name));
-        Name = model.Name;
+        if (!string.IsNullOrEmpty(model.Id))
+            Name = model.Id;
+        else if (!string.IsNullOrEmpty(model.Name))
+            Name = model.Name;
+        else
+            throw new ArgumentNullException(nameof(model.Id));
+
         Type = model.Type;
         ReleaseTime = model.ReleaseTime;
     }
@@ -20,7 +24,7 @@ public abstract class JsonVersionMetadata : IVersionMetadata
     public bool IsSaved { get; set; }
     public string Name { get; }
     public string? Type { get; }
-    public DateTime? ReleaseTime { get; }
+    public DateTimeOffset ReleaseTime { get; }
 
 
     public override bool Equals(object? obj)

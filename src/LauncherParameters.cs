@@ -5,6 +5,7 @@ using CmlLib.Core.Java;
 using CmlLib.Core.Natives;
 using CmlLib.Core.Rules;
 using CmlLib.Core.VersionLoader;
+using CmlLib.Core.VersionMetadata;
 
 namespace CmlLib.Core;
 
@@ -19,11 +20,7 @@ public class MinecraftLauncherParameters
         parameters.HttpClient = httpClient;
         parameters.MinecraftPath = new MinecraftPath();
         parameters.RulesEvaluator = new RulesEvaluator();
-        parameters.VersionLoader = new VersionLoaderCollection
-        {
-            new LocalJsonVersionLoader(parameters.MinecraftPath),
-            new MojangJsonVersionLoader(httpClient)
-        };
+        parameters.VersionLoader = new MojangJsonVersionLoaderV2(parameters.MinecraftPath, httpClient);
         parameters.JavaPathResolver = new MinecraftJavaPathResolver(parameters.MinecraftPath);
         parameters.GameInstaller = ParallelGameInstaller.CreateAsCoreCount(httpClient);
         parameters.NativeLibraryExtractor = new NativeLibraryExtractor(parameters.RulesEvaluator);

@@ -17,30 +17,16 @@ public class MojangJsonVersionLoader : IVersionLoader
 
     public async ValueTask<VersionMetadataCollection> GetVersionMetadatasAsync()
     {
-        var res = await _httpClient.GetStreamAsync(_endpoint)
-            .ConfigureAwait(false);
+        var manifest = await GetManifestAsync();
+        return new VersionMetadataCollection(
+            manifest?.Versions?.Select(v => new MojangVersionMetadata(v, _httpClient)) ?? [], 
+            manifest?.Latest?.Release, 
+            manifest?.Latest?.Snapshot);
+    }
 
-        using var jsonDocument = await JsonDocument.ParseAsync(res);
-        var root = jsonDocument.RootElement;
-        
-        var latestReleaseId = root.GetPropertyOrNull("latest")?.GetPropertyValue("release");
-        var latestSnapshotId = root.GetPropertyOrNull("latest")?.GetPropertyValue("snapshot");
-
-        var metadatas = new List<IVersionMetadata>();
-        if (root.TryGetProperty("versions", out var versions) && 
-            versions.ValueKind == JsonValueKind.Array)
-        {
-            foreach (var t in versions.EnumerateArray())
-            {
-                var metadataModel = t.Deserialize<JsonVersionMetadataModel>();
-                if (metadataModel == null)
-                    continue;
-
-                var metadata = new MojangVersionMetadata(metadataModel, _httpClient);
-                metadatas.Add(metadata);
-            }
-        }
-
-        return new VersionMetadataCollection(metadatas, latestReleaseId, latestSnapshotId);
+    public async Task<JsonVersionManifestModel?> GetManifestAsync()
+    {
+        using var res = await _httpClient.GetStreamAsync(_endpoint);
+        return await JsonSerializer.DeserializeAsync<JsonVersionManifestModel>(res);
     }
 }

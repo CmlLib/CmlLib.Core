@@ -25,20 +25,9 @@ public class VersionMetadataSorter
         }
 
         propertyOptions = propertyList.ToArray();
-        
-        switch (option.NullReleaseDateSortOption)
-        {
-            case MVersionNullReleaseDateSortOption.AsLatest:
-                defaultDateTime = DateTime.MaxValue;
-                break;
-            case MVersionNullReleaseDateSortOption.AsOldest:
-                defaultDateTime = DateTime.MinValue;
-                break;
-        }
     }
 
     private readonly MVersionSortPropertyOption[] propertyOptions;
-    private readonly DateTime defaultDateTime;
     private readonly Dictionary<MVersionType, int> typePriority;
     private readonly MVersionSortOption option;
 
@@ -96,9 +85,7 @@ public class VersionMetadataSorter
 
     private int compareReleaseDate(IVersionMetadata v1, IVersionMetadata v2)
     {
-        var v1DateTime = v1.ReleaseTime ?? defaultDateTime;
-        var v2DateTime = v2.ReleaseTime ?? defaultDateTime;
-        var result = DateTime.Compare(v1DateTime, v2DateTime);
+        var result = DateTimeOffset.Compare(v1.ReleaseTime, v2.ReleaseTime);
         if (!option.AscendingPropertyOrder)
             result *= -1;
         return result;

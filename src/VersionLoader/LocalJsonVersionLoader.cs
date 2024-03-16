@@ -13,14 +13,25 @@ public class LocalJsonVersionLoader : IVersionLoader
 
     public ValueTask<VersionMetadataCollection> GetVersionMetadatasAsync()
     {
-        var versions = getFromLocal(minecraftPath);
+        var versions = GetVersionNameAndPaths()
+            .Select(nameAndPath => toMetadata(nameAndPath.Item1, nameAndPath.Item2));
         var collection = new VersionMetadataCollection(versions, null, null);
         return new ValueTask<VersionMetadataCollection>(collection);
     }
 
-    private IEnumerable<IVersionMetadata> getFromLocal(MinecraftPath path)
+    private IVersionMetadata toMetadata(string name, string path)
     {
-        var versionDirectory = new DirectoryInfo(path.Versions);
+        var model = new JsonVersionMetadataModel
+        {
+            Id = name,
+            Type = "local",
+        };
+        return new LocalVersionMetadata(model, path);
+    }
+
+    public IEnumerable<(string, string)> GetVersionNameAndPaths()
+    {
+        var versionDirectory = new DirectoryInfo(minecraftPath.Versions);
         if (!versionDirectory.Exists)
             yield break;
         
@@ -29,13 +40,7 @@ public class LocalJsonVersionLoader : IVersionLoader
         {
             var filepath = Path.Combine(dir.FullName, dir.Name + ".json");
             if (!File.Exists(filepath)) continue;
-
-            var model = new JsonVersionMetadataModel
-            {
-                Name = dir.Name,
-                Type = "local",
-            };
-            yield return new LocalVersionMetadata(model, filepath);
+            yield return (dir.Name, filepath);
         }
     }
 }

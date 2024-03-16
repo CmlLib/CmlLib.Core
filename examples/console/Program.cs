@@ -43,8 +43,8 @@ class Program
         // select version
         Console.WriteLine("Select the version to launch: ");
         Console.Write("> ");
-        //var startVersion = Console.ReadLine();
-        var startVersion = "1.20.1";
+        var startVersion = Console.ReadLine();
+        //var startVersion = "1.20.1";
         if (string.IsNullOrEmpty(startVersion))
             return;
 

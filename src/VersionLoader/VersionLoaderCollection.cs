@@ -20,7 +20,7 @@ public class VersionLoaderCollection : IVersionLoader, ICollection<IVersionLoade
 
     // ICollection implementation
     public int Count => _collection.Count();
-    public bool IsReadOnly => throw new NotImplementedException();
+    public bool IsReadOnly => false;
     public void Add(IVersionLoader item) => _collection.Add(item);
     public void Clear() => _collection.Clear();
     public bool Contains(IVersionLoader item) => _collection.Contains(item);

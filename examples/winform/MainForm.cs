@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Reflection;
 using CmlLib.Core.VersionMetadata;
 using CmlLib.Core.Installers;
+using CmlLib.Core.ProcessBuilder;
 
 namespace CmlLibWinFormSample
 {
@@ -147,7 +148,7 @@ namespace CmlLibWinFormSample
                 }
 
                 if (!string.IsNullOrEmpty(Txt_JavaArgs.Text))
-                    launchOption.JVMArguments = Txt_JavaArgs.Text.Split(' ');
+                    launchOption.JvmArgumentOverrides = new [] { MArgument.FromCommandLine(Txt_JavaArgs.Text) };
 
                 //if (cbSkipAssetsDownload.Checked)
                 //    launcher.GameFileCheckers.AssetFileChecker = null;
