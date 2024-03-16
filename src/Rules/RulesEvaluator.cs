@@ -7,8 +7,10 @@ public class RulesEvaluator : IRulesEvaluator
     public bool Match(IEnumerable<LauncherRule> rules, RulesEvaluatorContext context)
     {
         var finalResult = false;
+        var isAny = false;
         foreach (var rule in rules)
         {
+            isAny = true;
             var isAllow = rule.Action == "allow";
             var isOSMatch = matchOS(rule, context);
             var isFeatureMatch = matchFeature(rule, context);
@@ -16,7 +18,7 @@ public class RulesEvaluator : IRulesEvaluator
             if (isOSMatch && isFeatureMatch)
                 finalResult = isAllow;
         }
-        return finalResult;
+        return isAny ? finalResult : true;
     }
 
     private bool matchOS(LauncherRule rule, RulesEvaluatorContext context)

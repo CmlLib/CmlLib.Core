@@ -11,6 +11,19 @@ public class RulesEvaluatorOSTest
     [InlineData(LauncherOSRule.Linux, LauncherOSRule.X64)]
     [InlineData(LauncherOSRule.OSX, LauncherOSRule.X86)]
     [InlineData(LauncherOSRule.OSX, LauncherOSRule.X64)]
+    public void allow_empty(string osname, string arch)
+    {
+        var result = testOSRule(osname, arch, []);
+        Assert.True(result);
+    }    
+
+    [Theory]
+    [InlineData(LauncherOSRule.Windows, LauncherOSRule.X86)]
+    [InlineData(LauncherOSRule.Windows, LauncherOSRule.X64)]
+    [InlineData(LauncherOSRule.Linux, LauncherOSRule.X86)]
+    [InlineData(LauncherOSRule.Linux, LauncherOSRule.X64)]
+    [InlineData(LauncherOSRule.OSX, LauncherOSRule.X86)]
+    [InlineData(LauncherOSRule.OSX, LauncherOSRule.X64)]
     public void allow_no_rule(string osname, string arch)
     {
         var result = testOSRule(osname, arch, new LauncherRule[]
