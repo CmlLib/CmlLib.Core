@@ -9,11 +9,29 @@ public class MLaunchOption
     private static readonly Lazy<IReadOnlyDictionary<string, string>> EmptyDictionary =
         new Lazy<IReadOnlyDictionary<string, string>>(() => new Dictionary<string, string>());
 
+    public readonly static MArgument[] DefaultJvmArguments =
+    [
+        new MArgument 
+        { 
+            Values = 
+            [
+                "-XX:+UnlockExperimentalVMOptions",
+                "-XX:+UseG1GC",
+                "-XX:G1NewSizePercent=20",
+                "-XX:G1ReservePercent=20",
+                "-XX:MaxGCPauseMillis=50",
+                "-XX:G1HeapRegionSize=16M",
+                "-Dlog4j2.formatMsgNoLookups=true" 
+            ]
+        }
+    ];
+
     public MinecraftPath? Path { get; set; }
     public IVersion? StartVersion { get; set; }
     public MSession? Session { get; set; }
     public string? NativesDirectory { get; set; }
     public RulesEvaluatorContext? RulesContext { get; set; }
+    public string PathSeparator { get; set; } = System.IO.Path.PathSeparator.ToString();
 
     public string? JavaVersion { get; set; }
     public string? JavaPath { get; set; }
@@ -32,14 +50,13 @@ public class MLaunchOption
 
     public string? ClientId { get; set; }
     public string? VersionType { get; set; }
-    public string? GameLauncherName { get; set; }
-    public string? GameLauncherVersion { get; set; }
-
-    public string? UserProperties { get; set; }
+    public string? GameLauncherName { get; set; } = "minecraft-launcher";
+    public string? GameLauncherVersion { get; set; } = "2";
+    public string? UserProperties { get; set; } = "{}";
 
     public IReadOnlyDictionary<string, string> ArgumentDictionary { get; set; } = EmptyDictionary.Value;
     public IEnumerable<MArgument>? JvmArgumentOverrides { get; set; }
-    public IEnumerable<MArgument> ExtraJvmArguments { get; set; } = Enumerable.Empty<MArgument>();
+    public IEnumerable<MArgument> ExtraJvmArguments { get; set; } = DefaultJvmArguments;
     public IEnumerable<MArgument> ExtraGameArguments { get; set; } = Enumerable.Empty<MArgument>();
 
     internal void CheckValid()

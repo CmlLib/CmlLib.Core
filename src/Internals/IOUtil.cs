@@ -18,15 +18,9 @@ internal static class IOUtil
 
     public static string CombinePath(IEnumerable<string> paths)
     {
-        return string.Join(Path.PathSeparator.ToString(),
-            paths.Select(x =>
-            {
-                string path = Path.GetFullPath(x);
-                if (path.Contains(' '))
-                    return "\"" + path + "\"";
-                else
-                    return path;
-            }));
+        return string.Join(
+            Path.PathSeparator.ToString(),
+            paths.Select(Path.GetFullPath));
     }
 
     public static bool CheckFileValidation(string path, string? compareHash)

@@ -57,7 +57,7 @@ public class MinecraftLauncher
             ?? throw new ArgumentException(nameof(parameters.JavaPathResolver) + " was null");
         FileExtractors = parameters.FileExtractors
             ?? throw new ArgumentException(nameof(parameters.FileExtractors) + " was null");
-        GameInstaller = parameters.GameInstaller 
+        GameInstaller = parameters.GameInstaller
             ?? throw new ArgumentException(nameof(parameters.GameInstaller) + " was null");
         NativeLibraryExtractor = parameters.NativeLibraryExtractor
             ?? throw new ArgumentException(nameof(parameters.NativeLibraryExtractor) + " was null");
@@ -113,12 +113,12 @@ public class MinecraftLauncher
     }
 
     public ValueTask InstallAsync(
-        string versionName, 
+        string versionName,
         CancellationToken cancellationToken = default) =>
         InstallAsync(versionName, null, null, cancellationToken);
 
     public async ValueTask InstallAsync(
-        string versionName, 
+        string versionName,
         IProgress<InstallerProgressChangedEventArgs>? fileProgress,
         IProgress<ByteProgress>? byteProgress,
         CancellationToken cancellationToken = default)
@@ -146,22 +146,8 @@ public class MinecraftLauncher
             cancellationToken);
     }
 
-    // Install and build game process
-    public async ValueTask<Process> CreateProcessAsync(
-        string versionName,
-        MLaunchOption launchOption,
-        bool checkAndDownload = true)
-    {
-        if (checkAndDownload)
-        {
-            await InstallAsync(versionName, default);
-        }
-
-        return await BuildProcessAsync(versionName, launchOption);
-    }
-
     public async ValueTask<Process> BuildProcessAsync(
-        string versionName, 
+        string versionName,
         MLaunchOption launchOption)
     {
         var version = await GetVersionAsync(versionName);
@@ -169,7 +155,7 @@ public class MinecraftLauncher
     }
 
     public Process BuildProcess(
-        IVersion version, 
+        IVersion version,
         MLaunchOption launchOption)
     {
         launchOption.NativesDirectory ??= createNativePath(version);
@@ -197,10 +183,32 @@ public class MinecraftLauncher
     {
         return JavaPathResolver.GetDefaultJavaBinaryPath(RulesContext);
     }
- 
+
     private string createNativePath(IVersion version)
     {
         NativeLibraryExtractor.Clean(MinecraftPath, version);
         return NativeLibraryExtractor.Extract(MinecraftPath, version, RulesContext);
     }
+
+    public ValueTask<Process> InstallAndBuildProcessAsync(
+        string versionName,
+        MLaunchOption launchOption,
+        CancellationToken cancellationToken = default) =>
+        InstallAndBuildProcessAsync(versionName, launchOption, null, null, cancellationToken);
+
+    public async ValueTask<Process> InstallAndBuildProcessAsync(
+        string versionName,
+        MLaunchOption launchOption,
+        IProgress<InstallerProgressChangedEventArgs>? fileProgress,
+        IProgress<ByteProgress>? byteProgress,
+        CancellationToken cancellationToken = default)
+    {
+        var version = await GetVersionAsync(versionName);
+        await InstallAsync(version, fileProgress, byteProgress, cancellationToken);
+        return BuildProcess(version, launchOption);
+    }
+
+    // legacy api
+    public ValueTask<Process> CreateProcessAsync(string versionName, MLaunchOption launchOption) =>
+        InstallAndBuildProcessAsync(versionName, launchOption, null, null, default);
 }

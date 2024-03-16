@@ -1,3 +1,5 @@
+using CmlLib.Core.ProcessBuilder;
+using CmlLib.Core.Rules;
 using CmlLib.Core.Version;
 
 namespace CmlLib.Core.Test.Version;
@@ -10,6 +12,21 @@ public class JsonArgumentParserTests
         SkipError = false
     };
 
+    private static string[] getArguments(IEnumerable<MArgument> args)
+    {
+        var dict = new Dictionary<string, string?>();
+        return args
+            .SelectMany(arg => arg.InterpolateValues(dict))
+            .ToArray();
+    }
+
+    public static readonly string vanilla_arg_string = """
+{
+    "id": "1.7.10",
+    "minecraftArguments": "--username ${auth_player_name} --version ${version_name} --gameDir ${game_directory} --assetsDir ${assets_root} --assetIndex ${assets_index_name} --uuid ${auth_uuid} --accessToken ${auth_access_token} --userProperties ${user_properties} --userType ${user_type}"
+}
+""";
+
     [Fact]
     public void parse_from_vanilla_arg_string()
     {
@@ -18,18 +35,8 @@ public class JsonArgumentParserTests
         // release 1.7.2 ~  : add --uuid, --accessToken
         // release 1.7.10 ~ : add --assetIndex, --userProperties, --userType
 
-        var json = """
-{
-    "id": "1.7.10",
-    "minecraftArguments": "--username ${auth_player_name} --version ${version_name} --gameDir ${game_directory} --assetsDir ${assets_root} --assetIndex ${assets_index_name} --uuid ${auth_uuid} --accessToken ${auth_access_token} --userProperties ${user_properties} --userType ${user_type}"
-}
-""";
-
-        var version = JsonVersionParser.ParseFromJsonString(json, options);
-
-        var parsedArgs = version.GameArguments
-            .SelectMany(arg => arg.Values ?? Enumerable.Empty<string>())
-            .ToArray();
+        var version = JsonVersionParser.ParseFromJsonString(vanilla_arg_string, options);
+        var parsedArgs = getArguments(version.GameArguments);
         Assert.Equal(
         [
             "--username",
@@ -53,14 +60,7 @@ public class JsonArgumentParserTests
         ], parsedArgs);
     }
 
-    [Fact]
-    public void parse_from_vanilla_game_arg_array() // 1.13 ~
-    {
-        // release 1.13 ~
-        // release 1.19 ~ : add --clientId ${clientid} --xuid ${auth_xuid}
-        // release 1.20 ~ : add --quickPlayPath, --quickPlaySingleplayer, --quickPlayMultiplayer, --quickPlayRealms
-
-        var json = """
+    public static readonly string vanilla_game_arg_array = """
 {
     "id": "1.13",
     "arguments": {
@@ -175,11 +175,15 @@ public class JsonArgumentParserTests
 }
 """;
 
-        var version = JsonVersionParser.ParseFromJsonString(json, options);
-        
-        var parsedArgs = version.GameArguments
-            .SelectMany(arg => arg.Values ?? Enumerable.Empty<string>())
-            .ToArray();
+    [Fact]
+    public void parse_from_vanilla_game_arg_array() // 1.13 ~
+    {
+        // release 1.13 ~
+        // release 1.19 ~ : add --clientId ${clientid} --xuid ${auth_xuid}
+        // release 1.20 ~ : add --quickPlayPath, --quickPlaySingleplayer, --quickPlayMultiplayer, --quickPlayRealms
+
+        var version = JsonVersionParser.ParseFromJsonString(vanilla_game_arg_array, options);
+        var parsedArgs = getArguments(version.GameArguments);
         Assert.Equal(
         [
             "--username",
@@ -220,13 +224,7 @@ public class JsonArgumentParserTests
         ], parsedArgs);
     }
 
-    [Fact]
-    public void parse_from_vanilla_jvm_arg_array()
-    {
-        // release 1.13 ~
-        // release 1.20 ~ : add -Djna.tmpdir=, -Dorg.lwjgl.system.SharedLibraryExtractPath, -Dio.netty.native.workdir
-
-        var json = """
+    public static readonly string vanilla_jvm_arg_array = """
 {
     "id": "1.13",
     "arguments": {
@@ -294,11 +292,15 @@ public class JsonArgumentParserTests
 }
 """;
 
-        var version = JsonVersionParser.ParseFromJsonString(json, options);
+    [Fact]
+    public void parse_from_vanilla_jvm_arg_array()
+    {
+        // release 1.13 ~
+        // release 1.20 ~ : add -Djna.tmpdir=, -Dorg.lwjgl.system.SharedLibraryExtractPath, -Dio.netty.native.workdir
 
-        var parsedArgs = version.JvmArguments
-            .SelectMany(args => args.Values ?? Enumerable.Empty<string>())
-            .ToArray();
+        var version = JsonVersionParser.ParseFromJsonString(vanilla_jvm_arg_array, options);
+
+        var parsedArgs = getArguments(version.JvmArguments);
         Assert.Equal(
         [
             "-XstartOnFirstThread",
@@ -313,7 +315,7 @@ public class JsonArgumentParserTests
             "-Dminecraft.launcher.brand=${launcher_name}",
             "-Dminecraft.launcher.version=${launcher_version}",
             "-cp",
-            "${classpath}"
+            "${classpath}",
         ], parsedArgs);
     }
 
@@ -342,6 +344,32 @@ public class JsonArgumentParserTests
     }
 }
 """;
+
+    [Fact]
+    public void parse_forge_arguments()
+    {
+        var version = JsonVersionParser.ParseFromJsonString(forge_arguments, options);
+        Assert.Equal(
+        [
+            "--launchTarget",
+            "fmlclient",
+            "--fml.forgeVersion",
+            "36.2.0",
+            "--fml.mcVersion",
+            "1.16.5",
+            "--fml.forgeGroup",
+            "net.minecraftforge",
+            "--fml.mcpVersion",
+            "20210115.111550"
+        ], getArguments(version.GameArguments));
+        Assert.Equal(
+        [
+            "-XX:+IgnoreUnrecognizedVMOptions",
+            "--add-exports=java.base/sun.security.util=ALL-UNNAMED",
+            "--add-exports=jdk.naming.dns/com.sun.jndi.dns=java.naming",
+            "--add-opens=java.base/java.util.jar=ALL-UNNAMED"
+        ], getArguments(version.JvmArguments));
+    }
 
     public readonly static string forge_arguments_2 = """
 {
@@ -374,9 +402,44 @@ public class JsonArgumentParserTests
             "--add-exports",
             "jdk.naming.dns/com.sun.jndi.dns=java.naming"
         ]
-    },
+    }
 }
 """;
+
+    [Fact]
+    public void parse_forge_arguments_2()
+    {
+        var version = JsonVersionParser.ParseFromJsonString(forge_arguments_2, options);
+        Assert.Equal(
+        [
+            "--launchTarget",
+            "forgeclient",
+            "--fml.forgeVersion",
+            "37.0.48",
+            "--fml.mcVersion",
+            "1.17.1",
+            "--fml.forgeGroup",
+            "net.minecraftforge",
+            "--fml.mcpVersion",
+            "20210706.113038"
+        ], getArguments(version.GameArguments));
+        Assert.Equal(
+        [
+            "-DignoreList=bootstraplauncher,securejarhandler,asm-commons,asm-util,asm-analysis,asm-tree,asm,client-extra,fmlcore,javafmllanguage,mclanguage,forge-,${version_name}.jar",
+            "-DmergeModules=jna-5.8.0.jar,jna-platform-58.0.jar,java-objc-bridge-1.0.0.jar",
+            "-DlibraryDirectory=${library_directory}",
+            "-p",
+            "${library_directory}/cpw/mods/bootstraplauncher/0.1.17/bootstraplauncher-0.1.17.jar${classpath_separator}${library_directory}/cpw/mods/securejarhandler/0.9.46/securejarhandler-0.9.46.jar${classpath_separator}${library_directory}/org/ow2/asm/asm-commons/9.1/asm-commons-9.1.jar${classpath_separator}${library_directory}/org/ow2/asm/asm-util/9.1/asm-util-9.1.jar${classpath_separator}${library_directory}/org/ow2/asm/asm-analysis/9.1/asm-analysis-9.1.jar${classpath_separator}${library_directory}/org/ow2/asm/asm-tree/9.1/asm-tree-9.1.jar${classpath_separator}${library_directory}/org/ow2/asm/asm/9.1/asm-9.1.jar",
+            "--add-modules",
+            "ALL-MODULE-PATH",
+            "--add-opens",
+            "java.base/java.util.jar=cpw.mods.securejarhandler",
+            "--add-exports",
+            "java.base/sun.security.util=cpw.mods.securejarhandler",
+            "--add-exports",
+            "jdk.naming.dns/com.sun.jndi.dns=java.naming"
+        ], getArguments(version.JvmArguments));
+    }
 
     public readonly static string fabric_loader_arguments = """
 {
@@ -386,7 +449,15 @@ public class JsonArgumentParserTests
         "jvm": [
             "-DFabricMcEmu= net.minecraft.client.main.Main "
         ]
-    },
+    }
 }
 """;
+
+    [Fact]
+    public void parse_fabric_loader_arguments()
+    {
+        var version = JsonVersionParser.ParseFromJsonString(fabric_loader_arguments, options);
+        Assert.Empty(getArguments(version.GameArguments));
+        Assert.Equal(["-DFabricMcEmu= net.minecraft.client.main.Main "], getArguments(version.JvmArguments));
+    }
 }

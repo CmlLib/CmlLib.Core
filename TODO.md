@@ -1,12 +1,17 @@
-- [ ] master 브랜치에서 v3.4.0 으로 cherry-pick
-- [ ] MArgument 유닛테스트
+- [ ] 라이트로더 패브릭 tlauncher 등등 확장가능하게 테스트 케이스 작성
+- [ ] LibraryFileExtractorTests 에서 실제 url 에 파일 존재하는지, 실제 인스톨러는 어디다 설치하는지 확인
 - [ ] MLaunch 통합 테스트 작성. 주요 버전 파싱, 최종 argument 확인
-- [ ] 포지 라이트로더 옵티파인 패브릭 tlauncher 커스텀클라이언트 등등 확장가능하게 테스트 케이스 작성
-- [ ] 4.0.0 으로 올릴지 3.4.0 으로 올릴지 결정
 - [ ] Memory 위에서 mutable 한 IVersion 구현
-- [ ] JvmArgumentOverrides 에서 띄어쓰기 포함되어있으면 어떡하지? 예시: -Darg="hi -cp"
-- [ ] { "name": "name" } 이런식으로 name 만 있는것도 GameFile 로 추출해야하나? 이전버전 어떻게했나 확인해보고 수정
 - [ ] MojangVersionLoader v2 구현
+- [ ] master 브랜치에서 v3.4.0 으로 cherry-pick
+- [ ] 자동화된 e2e test runner 만들기
+- [ ] quickPlayServer, serverip, 같은 feature 자동설정
+- [x] MArgument 유닛테스트
+- [x] 포지 옵티파인 iconic-mixed vexed
+- [x] { "name": "name" } 이런식으로 name 만 있는것도 GameFile 로 추출해야하나? 이전버전 어떻게했나 확인해보고 수정 -> 추출했음
+- [x] Path 가 비어있는 파일, Url 이 비어있는 파일은 큐잉하지 않고 스킵
+- [x] JvmArgumentOverrides 에서 띄어쓰기 포함되어있으면 어떡하지? 예시: -Darg="hi -cp" -> CommandLineParser
+- [x] 4.0.0 으로 올릴지 3.4.0 으로 올릴지 결정 -> 4.0.0 으로 올리고 레거시 쓸때없는거 다 지우고 바꾸고 가는게 좋을듯
 - [x] GameInstaller 에서 IReadOnlyCollection 아니라 IEnumerable 받도록
 - [x] MLaunchOption 에서 ExtraArguments 같은거 추가
 - [x] RulesEvalutor 에서 ${arch} 와 os: 에서 쓰이는거 용도따라 바뀌게
