@@ -1,11 +1,11 @@
 - [ ] 라이트로더 패브릭 tlauncher 등등 확장가능하게 테스트 케이스 작성
-- [ ] LibraryFileExtractorTests 에서 실제 url 에 파일 존재하는지, 실제 인스톨러는 어디다 설치하는지 확인
+- [ ] MojangLauncher 와 호환성 확인: LibraryFileExtractorTests 에서 실제 url 에 파일 존재하는지, 실제 인스톨러는 어디다 설치하는지 확인
 - [ ] MLaunch 통합 테스트 작성. 주요 버전 파싱, 최종 argument 확인
 - [ ] Memory 위에서 mutable 한 IVersion 구현
-- [ ] MojangVersionLoader v2 구현
 - [ ] master 브랜치에서 v3.4.0 으로 cherry-pick
-- [ ] 자동화된 e2e test runner 만들기
-- [ ] quickPlayServer, serverip, 같은 feature 자동설정
+- [x] 자동화된 e2e test runner 만들기
+- [x] quickPlayServer, serverip, 같은 feature 자동설정
+- [x] MojangVersionLoader v2 구현
 - [x] MArgument 유닛테스트
 - [x] 포지 옵티파인 iconic-mixed vexed
 - [x] { "name": "name" } 이런식으로 name 만 있는것도 GameFile 로 추출해야하나? 이전버전 어떻게했나 확인해보고 수정 -> 추출했음

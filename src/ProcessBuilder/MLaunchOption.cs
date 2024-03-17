@@ -23,6 +23,51 @@ public class MLaunchOption
                 "-XX:G1HeapRegionSize=16M",
                 "-Dlog4j2.formatMsgNoLookups=true" 
             ]
+        },
+        new MArgument
+        {
+            Values = ["-XstartOnFirstThread"],
+            Rules = 
+            [
+                new LauncherRule
+                {
+                    Action = "allow",
+                    OS = new LauncherOSRule
+                    {
+                        Name = "osx"
+                    }
+                }
+            ]
+        },
+        new MArgument
+        {
+            Values = ["-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump"],
+            Rules = 
+            [
+                new LauncherRule
+                {
+                    Action = "allow",
+                    OS = new LauncherOSRule
+                    {
+                        Name = "windows"
+                    }
+                }
+            ]
+        },
+        new MArgument
+        {
+            Values = ["-Xss1M"],
+            Rules = 
+            [
+                new LauncherRule
+                {
+                    Action = "allow",
+                    OS = new LauncherOSRule
+                    {
+                        Arch = "x86"
+                    }
+                }
+            ]
         }
     ];
 
@@ -41,12 +86,17 @@ public class MLaunchOption
     public string? DockName { get; set; }
     public string? DockIcon { get; set; }
 
-    public string? ServerIp { get; set; }
-    public int ServerPort { get; set; } = 25565;
-
+    public bool IsDemo { get; set; }
     public int ScreenWidth { get; set; }
     public int ScreenHeight { get; set; }
     public bool FullScreen { get; set; }
+    public string? QuickPlayPath { get; set; }
+    public string? QuickPlaySingleplayer { get; set; }
+    public string? QuickPlayRealms { get; set; }
+
+    // QuickPlayMultiplayer
+    public string? ServerIp { get; set; }
+    public int ServerPort { get; set; } = 25565;
 
     public string? ClientId { get; set; }
     public string? VersionType { get; set; }

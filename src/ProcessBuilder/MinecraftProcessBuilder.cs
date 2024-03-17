@@ -1,15 +1,12 @@
 ﻿using CmlLib.Core.Rules;
 using CmlLib.Core.Version;
 using CmlLib.Core.Internals;
-using CmlLib.Core.CommandParser;
 using System.Diagnostics;
 
 namespace CmlLib.Core.ProcessBuilder;
 
 public class MinecraftProcessBuilder
 {
-    private const int DefaultServerPort = 25565;
-
     public MinecraftProcessBuilder(
         IRulesEvaluator evaluator, 
         MLaunchOption option)
@@ -23,12 +20,10 @@ public class MinecraftProcessBuilder
         launchOption = option;
         version = option.StartVersion;
         minecraftPath = option.Path;
-        rulesContext = option.RulesContext;
         rulesEvaluator = evaluator;
     }
 
     private readonly IVersion version;
-    private readonly RulesEvaluatorContext rulesContext;
     private readonly IRulesEvaluator rulesEvaluator;
     private readonly MinecraftPath minecraftPath;
     private readonly MLaunchOption launchOption;
@@ -46,18 +41,63 @@ public class MinecraftProcessBuilder
 
     public string BuildArguments()
     {
-        var builder = new CommandLineBuilder();
-        var argDict = buildArgumentDictionary();
-        addJvmArguments(builder, argDict);
-        addGameArguments(builder, argDict);
+        Debug.Assert(launchOption.RulesContext != null);
+
+        var context = addFeatures(launchOption.RulesContext);
+        var argDict = buildArgumentDictionary(context);
+
+        var builder = new MinecraftArgumentBuilder(rulesEvaluator, context, argDict);
+        addJvmArguments(builder);
+        addGameArguments(builder);
         return builder.Build();
     }
 
-    private Dictionary<string, string?> buildArgumentDictionary()
+    private RulesEvaluatorContext addFeatures(RulesEvaluatorContext context)
+    {
+        var featureSet = new HashSet<string>(context.Features);
+
+        if (launchOption.IsDemo)
+        {
+            featureSet.Add("is_demo_user");
+        }
+
+        if (launchOption.ScreenWidth > 0 && 
+            launchOption.ScreenHeight > 0)
+        {
+            featureSet.Add("has_custom_resolution");
+        }
+
+        if (!string.IsNullOrEmpty(launchOption.QuickPlayPath))
+        {
+            featureSet.Add("has_quick_plays_support");
+        }
+
+        if (!string.IsNullOrEmpty(launchOption.QuickPlaySingleplayer))
+        {
+            featureSet.Add("is_quick_play_singleplayer");
+        }
+
+        if (!string.IsNullOrEmpty(launchOption.ServerIp))
+        {
+            featureSet.Add("is_quick_play_multiplayer");
+        }
+
+        if (!string.IsNullOrEmpty(launchOption.QuickPlayRealms))
+        {
+            featureSet.Add("is_quick_play_realms");
+        }
+
+        return new RulesEvaluatorContext(context.OS)
+        {
+            Features = featureSet
+        };
+    }
+
+    private IReadOnlyDictionary<string, string?> buildArgumentDictionary(RulesEvaluatorContext context)
     {
         Debug.Assert(launchOption.Session != null);
 
-        var classpaths = getClasspaths();
+        var classpaths = getClasspaths(context);
         var classpath = IOUtil.CombinePath(classpaths);
         var assetId = version.GetInheritedProperty(version => version.AssetIndex?.Id) ?? "legacy";
         
@@ -84,6 +124,13 @@ public class MinecraftProcessBuilder
             { "game_assets"      , minecraftPath.GetAssetLegacyPath(assetId) },
             { "auth_session"     , launchOption.Session.AccessToken },
             { "version_type"     , launchOption.VersionType ?? version.Type },
+
+            { "resolution_width"     , launchOption.ScreenWidth.ToString() },
+            { "resolution_height"    , launchOption.ScreenHeight.ToString() },
+            { "quickPlayPath"        , launchOption.QuickPlayPath },
+            { "quickPlaySingleplayer", launchOption.QuickPlaySingleplayer },
+            { "quickPlayMultiplayer" , createAddress(launchOption.ServerIp, launchOption.ServerPort) },
+            { "quickPlayRealms"      , launchOption.QuickPlayRealms }
         };
 
         if (launchOption.ArgumentDictionary != null)
@@ -98,13 +145,13 @@ public class MinecraftProcessBuilder
     }
 
     // make library files into jvm classpath string
-    private IEnumerable<string> getClasspaths()
+    private IEnumerable<string> getClasspaths(RulesEvaluatorContext context)
     {
         // libraries
         var libPaths = version
             .ConcatInheritedCollection(v => v.Libraries)
             .Where(lib => lib.CheckIsRequired(JsonVersionParserOptions.ClientSide))
-            .Where(lib => lib.Rules == null || rulesEvaluator.Match(lib.Rules, rulesContext))
+            .Where(lib => lib.Rules == null || rulesEvaluator.Match(lib.Rules, context))
             .Where(lib => lib.Artifact != null)
             .Select(lib => Path.Combine(minecraftPath.Library, lib.GetLibraryPath()));
 
@@ -119,53 +166,62 @@ public class MinecraftProcessBuilder
         yield return minecraftPath.GetVersionJarPath(jar);
     }
 
-    private void addJvmArguments(CommandLineBuilder builder, Dictionary<string, string?> argDict)
+    private string? createAddress(string? ip, int port)
+    {
+        if (port == MinecraftArgumentBuilder.DefaultServerPort)
+            return ip;
+        else
+            return ip + ":" + port;
+    }
+
+    private void addJvmArguments(MinecraftArgumentBuilder builder)
     {
         if (launchOption.JvmArgumentOverrides != null)
         {
             // override all jvm arguments
             // even if necessary arguments are missing (-cp, -Djava.library.path),
             // the builder will still add the necessary arguments
-            builder.AddArguments(getArguments(launchOption.JvmArgumentOverrides, argDict));
+            builder.AddArguments(launchOption.JvmArgumentOverrides);
         }
         else
         {
             // version-specific jvm arguments
             var jvmArgs = version.ConcatInheritedCollection(v => v.JvmArguments);
-            builder.AddArguments(getArguments(jvmArgs, argDict));
+            builder.AddArguments(jvmArgs);
+
+            // add extra jvm arguments
+            builder.AddArguments(launchOption.ExtraJvmArguments);
         }
 
-        // add extra jvm arguments
-        builder.AddArguments(getArguments(launchOption.ExtraJvmArguments, argDict));
-
         // native library
-        if (!builder.ContainsKey("-Djava.library.path"))
-            builder.AddArguments(["-Djava.library.path", argDict["natives_directory"] ?? ""]);
+        builder.TryAddNativesDirectory();
 
         // classpath
-        if (!builder.ContainsKey("-cp"))
-            builder.AddArguments(["-cp", argDict["classpath"] ?? ""]);
+        builder.TryAddClassPath();
 
-        // -Xmx, -Xms
-        if (!builder.ContainsXmx() && launchOption.MaximumRamMb > 0)
-            builder.AddArguments(["-Xmx" + launchOption.MaximumRamMb + "m"]);
-        if (!builder.ContainsXms() && launchOption.MinimumRamMb > 0)
-            builder.AddArguments(["-Xms" + launchOption.MinimumRamMb + "m"]);
+        // -Xmx
+        if (launchOption.MaximumRamMb > 0)
+            builder.TryAddXmx(launchOption.MaximumRamMb);
+
+        // -Xms
+        if (launchOption.MinimumRamMb > 0)
+            builder.TryAddXms(launchOption.MinimumRamMb);
             
         // for macOS
-        if (!string.IsNullOrEmpty(launchOption.DockName) && !builder.ContainsKey("-Xdock:name"))
-            builder.AddArguments(["-Xdock:name", launchOption.DockName]);
-        if (!string.IsNullOrEmpty(launchOption.DockIcon) && !builder.ContainsKey("-Xdock:icon"))
-            builder.AddArguments(["-Xdock:icon", launchOption.DockIcon]);
+        if (!string.IsNullOrEmpty(launchOption.DockName))
+            builder.TryAddDockName(launchOption.DockName);
+        if (!string.IsNullOrEmpty(launchOption.DockIcon))
+            builder.TryAddDockIcon(launchOption.DockIcon);
 
         // logging
         var logging = version.GetInheritedProperty(v => v.Logging);
         if (!string.IsNullOrEmpty(logging?.Argument))
         {
-            builder.AddArguments(getArguments([new MArgument(logging.Argument)], new Dictionary<string, string?>()
+            var logArguments = MArgument.FromCommandLine(logging.Argument);
+            builder.AddArguments([logArguments], new Dictionary<string, string?>()
             {
                 { "path", minecraftPath.GetLogConfigFilePath(logging.LogFile?.Id ?? version.Id) }
-            }));
+            });
         }
 
         // main class
@@ -174,43 +230,29 @@ public class MinecraftProcessBuilder
             builder.AddArguments([mainClass]);
     }
 
-    private void addGameArguments(CommandLineBuilder builder, Dictionary<string, string?> argDict)
+    private void addGameArguments(MinecraftArgumentBuilder builder)
     {
         // game arguments
         var gameArgs = version.ConcatInheritedCollection(v => v.GameArguments);
-        builder.AddArguments(getArguments(gameArgs, argDict));
+        builder.AddArguments(gameArgs);
 
         // add extra game arguments
-        builder.AddArguments(getArguments(launchOption.ExtraGameArguments, argDict));
+        builder.AddArguments(launchOption.ExtraGameArguments);
 
-        // server
-        if (!string.IsNullOrEmpty(launchOption.ServerIp))
-        {
-            if (!builder.ContainsKey("--server"))
-                builder.AddArguments(["--server", launchOption.ServerIp]);
-
-            if (launchOption.ServerPort != DefaultServerPort && !builder.ContainsKey("--port"))
-                builder.AddArguments(["--port", launchOption.ServerPort.ToString()]);
-        }
+        // demo
+        if (launchOption.IsDemo)
+            builder.SetDemo();
 
         // screen size
         if (launchOption.ScreenWidth > 0 && launchOption.ScreenHeight > 0)
-        {
-            if (!builder.ContainsKey("--width"))
-                builder.AddArguments(["--width", launchOption.ScreenWidth.ToString()]);
-            if (!builder.ContainsKey("--height"))
-                builder.AddArguments(["--height", launchOption.ScreenHeight.ToString()]);
-        }
+            builder.TryAddScreenResolution(launchOption.ScreenWidth, launchOption.ScreenHeight);
+
+        // quickPlayMultiplayer
+        if (!string.IsNullOrEmpty(launchOption.ServerIp))
+            builder.TryAddQuickPlayMultiplayer(launchOption.ServerIp, launchOption.ServerPort);
 
         // fullscreen
-        if (!builder.ContainsKey("--fullscreen") && launchOption.FullScreen)
-            builder.AddArguments(["--fullscreen"]);
-    }
-
-    private IEnumerable<string> getArguments(IEnumerable<MArgument> args, IReadOnlyDictionary<string, string?> varDict)
-    {
-        return args
-            .Where(arg => rulesEvaluator.Match(arg.Rules, rulesContext))
-            .SelectMany(arg => arg.InterpolateValues(varDict));
+        if (launchOption.FullScreen)
+            builder.SetFullscreen();
     }
 }
