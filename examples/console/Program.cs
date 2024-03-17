@@ -1,11 +1,8 @@
 ﻿using System.Diagnostics;
 using CmlLib.Core;
 using CmlLib.Core.Auth;
-using CmlLib.Core.FileExtractors;
 using CmlLib.Core.Installers;
 using CmlLib.Core.ProcessBuilder;
-using CmlLib.Core.VersionLoader;
-using CmlLib.Core.VersionMetadata;
 
 namespace CmlLibCoreSample;
 
@@ -13,6 +10,34 @@ class Program
 {
     public static async Task Main()
     {
+        var tester = new LauncherTester("a");
+        await tester.Start(new [] 
+        {
+            "1.0",
+            "1.2.5",
+            "1.3.2",
+            "1.4.7",
+            "1.5.2",
+            "1.6.4",
+            "1.7.2",
+            "1.7.4",
+            "1.7.10",
+            "1.8.9",
+            "1.9.4",
+            "1.10.2",
+            "1.11.2",
+            "1.12.2",
+            "1.13.2",
+            "1.14.4",
+            "1.15.2",
+            "1.16.5",
+            "1.17.1",
+            "1.18.2",
+            "1.19.4",
+            "1.20.4"
+        });
+        return;
+
         var p = new Program();
         await p.Start();
     }
