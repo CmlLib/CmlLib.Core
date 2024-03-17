@@ -25,7 +25,10 @@ public class MinecraftArgumentBuilder
 
 
     public void AddArguments(IEnumerable<string> args) =>
-        _builder.AddArguments(args);
+        _builder.AddArguments(getArguments(args, _varDict));
+
+    public void AddArguments(IEnumerable<string> args, IReadOnlyDictionary<string, string?> varDict) =>
+        _builder.AddArguments(getArguments(args, varDict));
 
     public void AddArguments(IEnumerable<MArgument> args) =>
         _builder.AddArguments(getArguments(args, _varDict));
@@ -41,6 +44,11 @@ public class MinecraftArgumentBuilder
         return args
             .Where(arg => _evaluator.Match(arg.Rules, _context))
             .SelectMany(arg => arg.InterpolateValues(varDict));
+    }
+
+    private IEnumerable<string> getArguments(IEnumerable<string> args, IReadOnlyDictionary<string, string?> varDict)
+    {
+        return args.Select(arg => Mapper.InterpolateVariables(arg, varDict));
     }
 
     public bool ContainsXmx()
