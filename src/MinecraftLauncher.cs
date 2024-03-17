@@ -161,7 +161,7 @@ public class MinecraftLauncher
         launchOption.NativesDirectory ??= createNativePath(version);
         launchOption.Path ??= MinecraftPath;
         launchOption.StartVersion ??= version;
-        launchOption.JavaPath ??= GetJavaPath(version);
+        launchOption.JavaPath ??= GetJavaPath(version) ?? GetDefaultJavaPath();
         launchOption.RulesContext ??= RulesContext;
 
         var processBuilder = new MinecraftProcessBuilder(RulesEvaluator, launchOption);
