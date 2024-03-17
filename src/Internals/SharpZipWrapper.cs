@@ -23,8 +23,19 @@ internal static class SharpZipWrapper
             IOUtil.CreateParentDirectory(fullPath);
             var fileName = Path.GetFileName(fullPath);
 
-            using var output = File.Create(fullPath);
-            s.CopyTo(output);
+            try
+            {
+                using var output = File.Create(fullPath);
+                s.CopyTo(output);
+            }
+            catch (IOException)
+            {
+                // just skip
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // just skip 
+            }
 
             progress?.Report(new ByteProgress
             {
