@@ -64,7 +64,7 @@ public partial class MLaunchOption
             exMsg = "StartVersion is null";
 
         if (Session == null)
-            Session = MSession.GetOfflineSession("tester123");
+            Session = MSession.CreateOfflineSession("tester123");
 
         if (!Session.CheckIsValid())
             exMsg = "Invalid Session";

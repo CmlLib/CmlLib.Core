@@ -33,15 +33,28 @@ public class MSession
             && !string.IsNullOrEmpty(UUID);
     }
 
-    public static MSession GetOfflineSession(string username)
+    public static MSession CreateLegacyOfflineSession(string username)
     {
         return new MSession
         {
-            Username = username, 
-            AccessToken = "access_token", 
+            Username = username,
+            AccessToken = "access_token",
             UUID = "user_uuid",
             UserType = "Mojang",
             ClientToken = null
         };
     }
+
+    public static MSession CreateOfflineSession(string username)
+    {
+        return new MSession
+        {
+            Username = username,
+            AccessToken = "access_token",
+            UUID = Guid.NewGuid().ToString().Replace("-", ""), // create random valid UUID
+            UserType = "msa",
+            ClientToken = null
+        };
+    }
+
 }

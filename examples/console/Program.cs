@@ -85,7 +85,7 @@ class Program
         // build process
         var process = await launcher.BuildProcessAsync(startVersion, new MLaunchOption
         {
-            Session = MSession.GetOfflineSession("username"),
+            Session = MSession.CreateOfflineSession("username"),
             JavaPath = "java"
         });
 

@@ -40,7 +40,7 @@ namespace CmlLibWinFormSample
 
         private void btnOfflineLogin_Click(object sender, EventArgs e)
         {
-            UpdateSession(MSession.GetOfflineSession(txtUsername.Text));
+            UpdateSession(MSession.CreateOfflineSession(txtUsername.Text));
         }
 
         private void UpdateSession(MSession session)
