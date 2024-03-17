@@ -4,72 +4,10 @@ using CmlLib.Core.Version;
 
 namespace CmlLib.Core.ProcessBuilder;
 
-public class MLaunchOption
+public partial class MLaunchOption
 {
     private static readonly Lazy<IReadOnlyDictionary<string, string>> EmptyDictionary =
         new Lazy<IReadOnlyDictionary<string, string>>(() => new Dictionary<string, string>());
-
-    public readonly static MArgument[] DefaultJvmArguments =
-    [
-        new MArgument 
-        { 
-            Values = 
-            [
-                "-XX:+UnlockExperimentalVMOptions",
-                "-XX:+UseG1GC",
-                "-XX:G1NewSizePercent=20",
-                "-XX:G1ReservePercent=20",
-                "-XX:MaxGCPauseMillis=50",
-                "-XX:G1HeapRegionSize=16M",
-                "-Dlog4j2.formatMsgNoLookups=true" 
-            ]
-        },
-        new MArgument
-        {
-            Values = ["-XstartOnFirstThread"],
-            Rules = 
-            [
-                new LauncherRule
-                {
-                    Action = "allow",
-                    OS = new LauncherOSRule
-                    {
-                        Name = "osx"
-                    }
-                }
-            ]
-        },
-        new MArgument
-        {
-            Values = ["-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump"],
-            Rules = 
-            [
-                new LauncherRule
-                {
-                    Action = "allow",
-                    OS = new LauncherOSRule
-                    {
-                        Name = "windows"
-                    }
-                }
-            ]
-        },
-        new MArgument
-        {
-            Values = ["-Xss1M"],
-            Rules = 
-            [
-                new LauncherRule
-                {
-                    Action = "allow",
-                    OS = new LauncherOSRule
-                    {
-                        Arch = "x86"
-                    }
-                }
-            ]
-        }
-    ];
 
     public MinecraftPath? Path { get; set; }
     public IVersion? StartVersion { get; set; }
@@ -106,12 +44,15 @@ public class MLaunchOption
 
     public IReadOnlyDictionary<string, string> ArgumentDictionary { get; set; } = EmptyDictionary.Value;
     public IEnumerable<MArgument>? JvmArgumentOverrides { get; set; }
-    public IEnumerable<MArgument> ExtraJvmArguments { get; set; } = DefaultJvmArguments;
+    public IEnumerable<MArgument> ExtraJvmArguments { get; set; } = DefaultExtraJvmArguments;
     public IEnumerable<MArgument> ExtraGameArguments { get; set; } = Enumerable.Empty<MArgument>();
 
     internal void CheckValid()
     {
         string? exMsg = null; // error message
+
+        if (string.IsNullOrEmpty(JavaPath))
+            exMsg = "JavaPath is null";
 
         if (RulesContext == null)
             exMsg = "RulesContext is null";

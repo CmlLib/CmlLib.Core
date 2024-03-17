@@ -186,8 +186,11 @@ public class MinecraftProcessBuilder
         else
         {
             // version-specific jvm arguments
-            var jvmArgs = version.ConcatInheritedCollection(v => v.JvmArguments);
-            builder.AddArguments(jvmArgs);
+            var jvmArgs = version.ConcatInheritedCollection(v => v.JvmArguments).ToList();
+            if (jvmArgs.Any())
+                builder.AddArguments(jvmArgs);
+            else
+                builder.AddArguments(MLaunchOption.DefaultJvmArguments);
 
             // add extra jvm arguments
             builder.AddArguments(launchOption.ExtraJvmArguments);
