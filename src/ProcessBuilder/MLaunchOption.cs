@@ -9,6 +9,14 @@ public partial class MLaunchOption
     private static readonly Lazy<IReadOnlyDictionary<string, string>> EmptyDictionary =
         new Lazy<IReadOnlyDictionary<string, string>>(() => new Dictionary<string, string>());
 
+    public MLaunchOption()
+    {
+        if (LauncherOSRule.Current.Arch == LauncherOSRule.X64)
+            MaximumRamMb = 2048;
+        else
+            MaximumRamMb = 1024;
+    }
+
     public MinecraftPath? Path { get; set; }
     public IVersion? StartVersion { get; set; }
     public MSession? Session { get; set; }
@@ -18,7 +26,7 @@ public partial class MLaunchOption
 
     public string? JavaVersion { get; set; }
     public string? JavaPath { get; set; }
-    public int MaximumRamMb { get; set; } = 1024;
+    public int MaximumRamMb { get; set; }
     public int MinimumRamMb { get; set; }
 
     public string? DockName { get; set; }
@@ -74,6 +82,12 @@ public partial class MLaunchOption
 
         if (ScreenWidth < 0 || ScreenHeight < 0)
             exMsg = "Screen Size must be greater than or equal to zero.";
+
+        if (MaximumRamMb < 0)
+            exMsg = "MaximumRamMb must be greater than or equal to zero.";
+
+        if (MinimumRamMb < 0)
+            exMsg = "MinimumRamMb must be greater than or equal to zero.";
 
         if (exMsg != null) // if launch option is invalid, throw exception
             throw new ArgumentException(exMsg);
