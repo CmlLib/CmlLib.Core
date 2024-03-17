@@ -155,8 +155,13 @@ public class MinecraftProcessBuilder
             .Where(lib => lib.Artifact != null)
             .Select(lib => Path.Combine(minecraftPath.Library, lib.GetLibraryPath()));
 
+        // filter duplicated paths
+        var pathSet = new HashSet<string>();
         foreach (var item in libPaths)
-            yield return item;
+        {
+            if (pathSet.Add(item))
+                yield return item;
+        }
             
         // <version>.jar file
         // TODO: decide what Jar file should be used. current jar or parent jar
