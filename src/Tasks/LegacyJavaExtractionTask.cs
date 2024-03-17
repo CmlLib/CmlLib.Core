@@ -15,7 +15,7 @@ public class LegacyJavaExtractionTask : IUpdateTask
     public ValueTask Execute(GameFile file, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(file.Path))
-            throw new ArgumentException();
+            throw new InvalidOperationException();
 
         // jre.lzma (file.Path) -> jre.zip -> /extracTo
         var zipPath = Path.Combine(Path.GetTempPath(), "jre.zip");

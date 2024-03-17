@@ -18,10 +18,11 @@ public class ChmodTask : IUpdateTask
         GameFile file,
         CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(file.Path))
+        var target = _filePath ?? file.Path;
+        if (string.IsNullOrEmpty(target))
             throw new InvalidOperationException();
         if (LauncherOSRule.Current.Name != LauncherOSRule.Windows)
-            NativeMethods.Chmod(_filePath ?? file.Path, Mode);
+            NativeMethods.Chmod(target, Mode);
         return new ValueTask();
     }
 }

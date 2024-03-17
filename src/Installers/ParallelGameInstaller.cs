@@ -112,6 +112,7 @@ public class ParallelGameInstaller : GameInstallerBase
             }
             else
             {
+                await result.GameFile.ExecuteUpdateTask(cancellationToken);
                 progress.ReportDone();
             }
 

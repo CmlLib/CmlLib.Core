@@ -51,6 +51,7 @@ public class BasicGameInstaller : GameInstallerBase
             }
             else
             {
+                await gameFile.ExecuteUpdateTask(cancellationToken);
                 progress.ReportDone();
             }
 
