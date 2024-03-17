@@ -10,6 +10,10 @@ class Program
 {
     public static async Task Main()
     {
+        var p = new Program();
+        await p.Start();
+        return;
+
         var tester = new LauncherTester("a");
         await tester.Start(new [] 
         {
@@ -37,9 +41,6 @@ class Program
             "1.20.4"
         });
         return;
-
-        var p = new Program();
-        await p.Start();
     }
 
     private async Task Start()

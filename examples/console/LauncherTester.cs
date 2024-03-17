@@ -16,7 +16,7 @@ public class LauncherTester
     }
 
     public string Id { get; }
-    public int AliveTimeSec = 30;
+    public int AliveTimeSec = 10;
     public string OutputDirectory = "./outputs";
 
     private StreamWriter? currentOutputStream;
@@ -53,7 +53,7 @@ public class LauncherTester
 
     private string getOutputPath(string targetVersion)
     {
-        return Path.Combine(OutputDirectory, Id, targetVersion);
+        return Path.Combine(OutputDirectory, Id, targetVersion + ".log");
     }
 
     private async Task startTest(string version)
@@ -67,7 +67,7 @@ public class LauncherTester
             version, 
             new MLaunchOption
             {
-                JavaPath = "java"
+                //JavaPath = "java"
             }, 
             new SyncProgress<InstallerProgressChangedEventArgs>(f => lastFileProgress = f),
             new SyncProgress<ByteProgress>(f => lastByteProgress = f));
@@ -82,7 +82,9 @@ public class LauncherTester
         }
 
         var process = await launcherTask;
+        Console.WriteLine(process.StartInfo.FileName);
         Console.WriteLine(process.StartInfo.Arguments);
+        writeOutput(process.StartInfo.FileName);
         writeOutput(process.StartInfo.Arguments);
 
         Console.WriteLine($"Launch: {version}");
@@ -136,6 +138,6 @@ public class LauncherTester
         currentOutputStream.Flush();
         currentOutputStream.Dispose();
         Directory.CreateDirectory(Path.GetDirectoryName(getOutputPath(version))!);
-        File.Move(currentOutputPath, getOutputPath(version) + ".txt");
+        File.Move(currentOutputPath, getOutputPath(version));
     }
 }

@@ -4,10 +4,10 @@
 - [ ] Memory 위에서 mutable 한 IVersion 구현
 - [ ] master 브랜치에서 v3.4.0 으로 cherry-pick
 - [ ] IUpdateTask 항상 실행해야 할듯 
-- [ ] -Dos.name= 이거 추가하기
 - [ ] LauncherTester 에서 자주 쓰는 버전들 미리추가 예를들면 1.12.2 1.14.4 1.16.5 1.20.4 그리고 3D shockwave 같은것들도
-- [ ] DefaultJvmArguments 이거 필요할듯
 - [ ] disableMultiplayer 같은 option 도 추가
+- [x] -Dos.name= 이거 추가하기
+- [x] DefaultJvmArguments 이거 필요할듯
 - [x] 자동화된 e2e test runner 만들기
 - [x] quickPlayServer, serverip, 같은 feature 자동설정
 - [x] MojangVersionLoader v2 구현
