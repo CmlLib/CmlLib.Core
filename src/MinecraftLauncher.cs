@@ -30,6 +30,11 @@ public class MinecraftLauncher
     public RulesEvaluatorContext RulesContext { get; set; }
     public VersionMetadataCollection? Versions { get; private set; }
 
+    public MinecraftLauncher() : this(WithMinecraftPath(new MinecraftPath()))
+    {
+        
+    }
+
     public MinecraftLauncher(string path) : this(WithMinecraftPath(new MinecraftPath(path)))
     {
 
@@ -65,8 +70,8 @@ public class MinecraftLauncher
             ?? throw new ArgumentException(nameof(parameters.RulesEvaluator) + " was null");
         RulesContext = new RulesEvaluatorContext(LauncherOSRule.Current);
 
-        _fileProgress = new Progress<InstallerProgressChangedEventArgs>(e => FileProgressChanged?.Invoke(this, e));
-        _byteProgress = new Progress<ByteProgress>(e => ByteProgressChanged?.Invoke(this, e));
+        _fileProgress = new SyncProgress<InstallerProgressChangedEventArgs>(e => FileProgressChanged?.Invoke(this, e));
+        _byteProgress = new SyncProgress<ByteProgress>(e => ByteProgressChanged?.Invoke(this, e));
     }
 
     public async ValueTask<VersionMetadataCollection> GetAllVersionsAsync()

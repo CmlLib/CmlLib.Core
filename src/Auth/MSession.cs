@@ -57,4 +57,7 @@ public class MSession
         };
     }
 
+    // legacy api
+    [Obsolete("Use CreateOfflineSession(\"username\") instead.")]
+    public static MSession GetOfflineSession(string username) => CreateOfflineSession(username);
 }
