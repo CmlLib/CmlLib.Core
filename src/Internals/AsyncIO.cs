@@ -1,5 +1,3 @@
-using System.Text;
-
 namespace CmlLib.Core.Internals;
 
 internal static class AsyncIO
@@ -30,45 +28,9 @@ internal static class AsyncIO
         return stream;
     }
 
-    public static StreamReader AsyncStreamReader(string path, Encoding encoding)
+    public static async Task WriteFileAsync(string path, Stream stream)
     {
-        FileStream stream = AsyncReadStream(path);
-        return new StreamReader(stream, encoding, detectEncodingFromByteOrderMarks: false);
-    }
-
-    public static StreamWriter AsyncStreamWriter(string path, Encoding encoding, bool append)
-    {
-        FileStream stream = AsyncWriteStream(path, append);
-        return new StreamWriter(stream, encoding);
-    }
-
-    // In .NET Standard 2.0, There is no File.ReadFileTextAsync. so I copied it from .NET Core source code
-    public static async Task<string> ReadFileAsync(string path)
-    {
-        using var reader = AsyncStreamReader(path, Encoding.UTF8);
-        var content = await reader.ReadToEndAsync()
-            .ConfigureAwait(false); // **MUST be awaited in this scope**
-        await reader.BaseStream.FlushAsync().ConfigureAwait(false);
-        return content;
-    }
-
-    // In .NET Standard 2.0, There is no File.WriteFileTextAsync. so I copied it from .NET Core source code
-    public static async Task WriteFileAsync(string path, string content)
-    {
-        // UTF8 with BOM might not be recognized by minecraft. not tested
-        var encoder = new UTF8Encoding(false);
-        using var writer = AsyncStreamWriter(path, encoder, false);
-        await writer.WriteAsync(content).ConfigureAwait(false); // **MUST be awaited in this scope**
-        await writer.FlushAsync().ConfigureAwait(false);
-    }
-
-    public static async Task CopyFileAsync(string sourceFile, string destinationFile)
-    {
-        using var sourceStream = AsyncReadStream(sourceFile);
-        using var destinationStream = AsyncWriteStream(destinationFile, false);
-
-        await sourceStream.CopyToAsync(destinationStream).ConfigureAwait(false);
-
-        await destinationStream.FlushAsync().ConfigureAwait(false);
+        using var writer = AsyncWriteStream(path, false);
+        await stream.CopyToAsync(writer);
     }
 }

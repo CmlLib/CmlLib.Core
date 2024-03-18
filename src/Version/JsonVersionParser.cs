@@ -10,6 +10,12 @@ public static class JsonVersionParser
         return ParseFromJson(document, options);
     }
 
+    public static IVersion ParseFromJsonStream(Stream stream, JsonVersionParserOptions options)
+    {
+        var document = JsonDocument.Parse(stream);
+        return ParseFromJson(document, options);
+    }
+
     public static IVersion ParseFromJson(JsonDocument json, JsonVersionParserOptions options)
     {
         try
