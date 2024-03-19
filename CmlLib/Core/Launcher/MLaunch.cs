@@ -119,7 +119,7 @@ public class MLaunch
             args.AddRange(Mapper.MapInterpolation(version.JvmArguments, argDict));
 
         // default jvm arguments
-        if (launchOption.JVMArguments != null)
+        if (launchOption.JVMArguments != null && launchOption.JVMArguments.Any())
         {
             args.AddRange(launchOption.JVMArguments);
         }
