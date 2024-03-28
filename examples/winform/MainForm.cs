@@ -20,6 +20,7 @@ namespace CmlLibWinFormSample
             InitializeComponent();
         }
 
+        CancellationToken cancellationToken = default;
         MinecraftLauncher? launcher;
         string? javaPath;
 
@@ -163,7 +164,12 @@ namespace CmlLibWinFormSample
                 //if (launcher.GameFileCheckers.LibraryFileChecker != null)
                 //    launcher.GameFileCheckers.LibraryFileChecker.CheckHash = !cbSkipHashCheck.Checked;
 
-                var process = await launcher.CreateProcessAsync(cbVersion.Text, launchOption); // Create Arguments and Process
+                var process = await launcher.InstallAndBuildProcessAsync(
+                    cbVersion.Text, 
+                    launchOption,
+                    new Progress<InstallerProgressChangedEventArgs>(Launcher_FileChanged),
+                    new Progress<ByteProgress>(Launcher_ProgressChanged),
+                    cancellationToken); // Create Arguments and Process
 
                 // process.Start(); // Just start game, or
                 StartProcess(process); // Start Process with debug options
@@ -189,30 +195,25 @@ namespace CmlLibWinFormSample
                 setUIEnabled(true);
             }
         }
-        
-        private int uiThreadId = Thread.CurrentThread.ManagedThreadId;
 
-        // Event Handler. Show download progress
-        private void Launcher_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        int lastProgress = 0;
+        private void Launcher_ProgressChanged(ByteProgress e)
         {
-            if (Thread.CurrentThread.ManagedThreadId != uiThreadId)
+            var progress = (int)(e.ProgressedBytes / (double)e.TotalBytes * 100);
+            if (progress >= 0 && progress <= 100 && progress != lastProgress)
             {
-                Debug.WriteLine(e);
+                lastProgress = progress;
+                Pb_Progress.Value = progress;
+                Pb_Progress.Maximum = 100;
             }
-            Pb_Progress.Maximum = 100;
-            Pb_Progress.Value = e.ProgressPercentage;
         }
 
         private void Launcher_FileChanged(InstallerProgressChangedEventArgs e)
         {
-            if (Thread.CurrentThread.ManagedThreadId != uiThreadId)
+            if (e.EventType == InstallerEventType.Done)
             {
-                Debug.WriteLine(e);
+                Lv_Status.Text = $"[{e.ProgressedTasks}/{e.TotalTasks}] {e.Name}";
             }
-            Pb_File.Maximum = e.TotalTasks;
-            Pb_File.Value = e.ProgressedTasks;
-            Lv_Status.Text = $"[{e.EventType}][{e.ProgressedTasks}/{e.TotalTasks}] {e.Name}";
-            //Debug.WriteLine(Lv_Status.Text);
         }
 
         private async void btnChangePath_Click(object sender, EventArgs e)

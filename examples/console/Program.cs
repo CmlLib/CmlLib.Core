@@ -10,12 +10,12 @@ class Program
 {
     public static async Task Main()
     {
-        var p = new Program();
-        await p.Start();
-        return;
+        //var p = new Program();
+        //await p.Start();
+        //return;
 
-        var tester = new LauncherTester("a");
-        await tester.Start(new [] 
+        var tester = new LauncherTester("b");
+        await tester.Start(new[]
         {
             "1.0",
             "1.2.5",
@@ -38,7 +38,34 @@ class Program
             "1.17.1",
             "1.18.2",
             "1.19.4",
-            "1.20.4"
+            "1.20.4",
+            "1.7.10-Forge10.13.4.1558-1.7.10",
+            "1.7.10-Forge10.13.4.1614-1.7.10",
+            "1.8.9-forge1.8.9-11.15.1.1722",
+            "1.8.9-OptiFine_HD_U_M5",
+            "1.12.2-forge1.12.2-14.23.4.2705",
+            "1.12.2-forge1.12.2-14.23.5.2847",
+            "1.12.2-forge-14.23.5.2854",
+            "1.12.2-forge-14.23.5.2860",
+            "1.12.2-OptiFine_HD_U_G5",
+            "1.16.1-forge-32.0.47",
+            "1.16.5-forge-36.2.0",
+            "1.16.5-forge-36.2.34",
+            "1.16.5-OptiFine_HD_U_G8",
+            "1.17.1-forge-37.0.48",
+            "1.17.1-forge-37.0.75",
+            "1.17.1-OptiFine_HD_U_G9",
+            "1.18.1-forge-39.0.5",
+            "1.18.1-forge-39.1.2",
+            "1.18.1-OptiFine_HD_U_H4",
+            "1.18.2-forge-40.0.41",
+            "1.19.4-forge-45.1.0",
+            "1.20.1-forge-47.1.0",
+            "1.20.2-forge-48.0.40",
+            "1.20.4-forge-49.0.31",
+            "3D Shareware v1.34",
+            "fabric-loader-0.13.3-1.18.2",
+            "neoforge-20.4.196"
         });
         return;
     }

@@ -11,7 +11,7 @@ public class LauncherTester
     public LauncherTester(string id)
     {
         Id = id;
-        var path = new MinecraftPath();
+        var path = new MinecraftPath("C:\\Users\\ksi12\\AppData\\Roaming\\minecraft test");
         _launcher = new MinecraftLauncher(path);
     }
 
@@ -54,6 +54,11 @@ public class LauncherTester
     private string getOutputPath(string targetVersion)
     {
         return Path.Combine(OutputDirectory, Id, targetVersion + ".log");
+    }
+
+    private string getCrashedOutputPath(string targetVersion)
+    {
+        return Path.Combine(OutputDirectory, Id, targetVersion + ".crash.log");
     }
 
     private async Task startTest(string version)
@@ -101,15 +106,15 @@ public class LauncherTester
         if (process.HasExited)
         {
             Console.WriteLine($"Crashed: {version}");
+            completeCrashedOutput(version);
         }
         else
         {
             process.Kill();
             writeOutput($"!!! Success: has been alive for {AliveTimeSec}, kill it");
             Console.WriteLine($"Success: {version}, has been alive for {AliveTimeSec} seconds");
+            completeSuccessfulOutput(version);
         }
-
-        completeOutput(version);
     }
 
     private void prepareOutput(string version)
@@ -128,7 +133,20 @@ public class LauncherTester
         currentOutputStream.WriteLine(msg);
     }
 
-    private void completeOutput(string version)
+    private void completeSuccessfulOutput(string version)
+    {
+        if (string.IsNullOrEmpty(currentOutputPath))
+            return;
+        if (currentOutputStream == null)
+            return;
+
+        currentOutputStream.Flush();
+        currentOutputStream.Dispose();
+        Directory.CreateDirectory(Path.GetDirectoryName(getOutputPath(version))!);
+        File.Move(currentOutputPath, getOutputPath(version));
+    }
+
+    private void completeCrashedOutput(string version)
     {
         if (string.IsNullOrEmpty(currentOutputPath))
             return;
