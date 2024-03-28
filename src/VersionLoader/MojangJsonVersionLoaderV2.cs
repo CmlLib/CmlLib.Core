@@ -98,6 +98,7 @@ public class MojangJsonVersionLoaderV2 : IVersionLoader
             var buffer = new MemoryStream();
             await res.CopyToAsync(buffer);
 
+            IOUtil.CreateParentDirectory(_localManifestPath);
             using var saveTo = File.Create(_localManifestPath);
             await buffer.CopyToAsync(saveTo);
 
