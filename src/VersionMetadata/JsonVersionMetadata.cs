@@ -26,7 +26,6 @@ public abstract class JsonVersionMetadata : IVersionMetadata
     public string? Type { get; }
     public DateTimeOffset ReleaseTime { get; }
 
-
     public override bool Equals(object? obj)
     {
         if (obj == null)
@@ -56,34 +55,33 @@ public abstract class JsonVersionMetadata : IVersionMetadata
     /// Get actual version data as string
     /// </summary>
     /// <returns>Version metadata</returns>
-    protected abstract ValueTask<string> GetVersionJsonString();
+    protected abstract ValueTask<Stream> GetVersionJsonStream();
 
     public async Task<IVersion> GetVersionAsync()
     {
-        var metadataJson = await GetVersionJsonString().ConfigureAwait(false);
-        return JsonVersionParser.ParseFromJsonString(metadataJson, new JsonVersionParserOptions());
+        using var versionStream = await GetVersionJsonStream().ConfigureAwait(false);
+        return JsonVersionParser.ParseFromJsonStream(versionStream, new JsonVersionParserOptions());
     }
 
     public async Task<IVersion> GetAndSaveVersionAsync(MinecraftPath path)
     {
-        var metadataJson = await GetVersionJsonString().ConfigureAwait(false);
-        var version = JsonVersionParser.ParseFromJsonString(metadataJson, new JsonVersionParserOptions());
-        await saveMetdataJson(path, metadataJson);
+        using var versionStream = await GetVersionJsonStream().ConfigureAwait(false);
+        var version = JsonVersionParser.ParseFromJsonStream(versionStream, new JsonVersionParserOptions());
+        await saveMetdataJson(path, versionStream);
         return version;
     }
 
     public async Task SaveVersionAsync(MinecraftPath path)
     {
-        var metadataJson = await GetVersionJsonString().ConfigureAwait(false);
-        await saveMetdataJson(path, metadataJson);
+        using var versionStream = await GetVersionJsonStream().ConfigureAwait(false);
+        await saveMetdataJson(path, versionStream);
     }
 
-    private async Task saveMetdataJson(MinecraftPath path, string json)
+    private async Task saveMetdataJson(MinecraftPath path, Stream stream)
     {
-        if (IsSaved)
-            return;
+        if (IsSaved) return;
         var metadataPath = path.GetVersionJsonPath(Name);
         IOUtil.CreateParentDirectory(metadataPath);
-        await AsyncIO.WriteFileAsync(metadataPath, json).ConfigureAwait(false);
+        await AsyncIO.WriteFileAsync(metadataPath, stream);
     }
 }

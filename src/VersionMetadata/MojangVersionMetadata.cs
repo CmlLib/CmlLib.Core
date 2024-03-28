@@ -17,9 +17,9 @@ public class MojangVersionMetadata : JsonVersionMetadata
         Url = model.Url;
     }
 
-    protected override async ValueTask<string> GetVersionJsonString()
+    protected override async ValueTask<Stream> GetVersionJsonStream()
     {
-        return await _httpClient.GetStringAsync(Url)
+        return await _httpClient.GetStreamAsync(Url)
             .ConfigureAwait(false);
     }
 }

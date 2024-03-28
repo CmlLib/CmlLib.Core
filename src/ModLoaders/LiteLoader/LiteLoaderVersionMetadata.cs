@@ -118,11 +118,10 @@ public class LiteLoaderVersionMetadata : JsonVersionMetadata
         return versionName;
     }
 
-    protected override ValueTask<string> GetVersionJsonString()
+    protected override ValueTask<Stream> GetVersionJsonStream()
     {
-        using var ms = new MemoryStream();
-        using var writer = new Utf8JsonWriter(ms);
-        var json = System.Text.Encoding.UTF8.GetString(ms.ToArray());
-        return new ValueTask<string>(json);
+        var ms = new MemoryStream();
+        using var writer = new Utf8JsonWriter(ms); // TODO
+        return new ValueTask<Stream>(ms);
     }
 }

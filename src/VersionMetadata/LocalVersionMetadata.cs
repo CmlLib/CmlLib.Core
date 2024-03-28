@@ -15,12 +15,12 @@ public class LocalVersionMetadata : JsonVersionMetadata
         Path = path;
     }
 
-    protected override async ValueTask<string> GetVersionJsonString()
+    protected override ValueTask<Stream> GetVersionJsonStream()
     {
         if (string.IsNullOrEmpty(Path))
             throw new InvalidOperationException("Path property was null");
         
         // FileNotFoundException will be thrown if Path does not exist.
-        return await AsyncIO.ReadFileAsync(Path);
+        return new ValueTask<Stream>(File.OpenRead(Path));
     }
 }

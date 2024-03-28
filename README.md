@@ -19,15 +19,14 @@ Supports all versions, Forge, and any custom version
 
 ## Features
 
-* Asynchronous APIs
-* Mojang Authentication
-* Microsoft Xbox Live Login
-* Download the game files from the Mojang file server
-* Launch any version (tested up to 1.18.2)
+* Authenticate with Microsoft Xbox account
+* Get vanilla versions and installed versions
+* Install vanilla versions
+* Launch any vanilla version (tested up to 1.20.4)
 * Launch Forge, Optifine, FabricMC, LiteLoader or any other custom version
 * Install Java runtime
 * Install LiteLoader, FabricMC
-* Launch with options (direct server connecting, screen resolution)
+* Launch with options (direct server connecting, screen resolution, JVM arguments)
 * Cross-platform (Windows, Linux, macOS)
 
 [Go to the wiki for all features](https://alphabs.gitbook.io/cmllib/cmllib.core/cmllib)
@@ -36,11 +35,61 @@ Supports all versions, Forge, and any custom version
 
 Install the [CmlLib.Core Nuget package](https://www.nuget.org/packages/CmlLib.Core)
 
-Write this at the top of your source code:
+## QuickStart
+
+### Get All Versions
+
+```csharp
+using CmlLib.Core;
+
+var launcher = new MinecraftLauncher();
+var versions = await launcher.GetAllVersionsAsync();
+foreach (var version in versions)
+{
+  Console.WriteLine($"{version.Type} {version.Name}");
+}
+```
+
+### Launch the Game
+
+```csharp
+using CmlLib.Core;
+using CmlLib.Core.ProcessBuilder;
+
+var launcher = new MinecraftLauncher();
+var process = await launcher.InstallAndBuildProcessAsync("1.20.4", new MLaunchOption());
+process.Start();
+```
+
+### Launch the Game with Options
 
 ```csharp
 using CmlLib.Core;
 using CmlLib.Core.Auth;
+using CmlLib.Core.ProcessBuilder;
+
+var path = new MinecraftPath("./my_game_dir");
+var launcher = new MinecraftLauncher(path);
+
+launcher.FileProgressChanged += (sender, args) =>
+{
+  Console.WriteLine($"Name: {args.Name}");
+  Console.WriteLine($"Type: {args.EventType}");
+  Console.WriteLine($"Total: {args.TotalTasks}");
+  Console.WriteLine($"Progressed: {args.ProgressedTasks}");
+};
+launcher.ByteProgressChanged += (sender, args) =>
+{
+  Console.WriteLine($"{args.ProgressedBytes} bytes / {args.TotalBytes} bytes");
+};
+
+await launcher.InstallAsync("1.20.4");
+var process = await launcher.BuildProcessAsync("1.20.4", new MLaunchOption
+{
+  Session = MSession.CreateOfflineSession("CmllibGamer123"),
+  MaximumRamMb = 4096
+});
+process.Start();
 ```
 
 ## Documentation

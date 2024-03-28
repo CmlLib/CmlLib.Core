@@ -1,7 +1,6 @@
 ﻿using CmlLib.Core.Internals;
 using CmlLib.Core.Files;
 using System.Diagnostics;
-using CmlLib.Core.Tasks;
 
 namespace CmlLib.Core.Installers;
 
