@@ -17,8 +17,8 @@ public interface IVersion
     string? Jar { get; }
     MLogFileMetadata? Logging { get; }
     string? MainClass { get; }
-    IReadOnlyCollection<MArgument> GameArguments { get; }
-    IReadOnlyCollection<MArgument> JvmArguments { get; }
+    IReadOnlyCollection<MArgument> GetGameArguments(bool isBaseVersion);
+    IReadOnlyCollection<MArgument> GetJvmArguments(bool isBaseVersion);
     DateTime ReleaseTime { get; }
     string? Type { get; }
 

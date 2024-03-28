@@ -101,7 +101,7 @@ public class LiteLoaderVersionMetadata : JsonVersionMetadata
             var newArguments = $"--tweakClass {tweakClass} {minecraftArguments}";
             writeVersion(writer, versionName, baseVersion.Id, newArguments, null);
         }
-        else if (baseVersion.GameArguments.Any())
+        else if (baseVersion.GetGameArguments(true).Any())
         {
             var tweakArg = new MArgument[]
             {
@@ -109,7 +109,7 @@ public class LiteLoaderVersionMetadata : JsonVersionMetadata
                 new MArgument(tweakClass!)
             };
 
-            var newArguments = tweakArg.Concat(baseVersion.GameArguments);
+            var newArguments = tweakArg.Concat(baseVersion.GetGameArguments(true));
             writeVersion(writer, versionName, baseVersion.Id, null, newArguments);
         }
 

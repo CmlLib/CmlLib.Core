@@ -52,11 +52,24 @@ public class JsonVersion : IVersion, IDisposable
     public string? Type => _model.Type;
 
     private IReadOnlyCollection<MArgument>? _gameArgs = null;
-    public IReadOnlyCollection<MArgument> GameArguments => _gameArgs ??= getGameArguments();
+    private IReadOnlyCollection<MArgument>? _gameArgsForBase = null;
+    public IReadOnlyCollection<MArgument> GetGameArguments(bool isBaseVersion)
+    {
+        if (isBaseVersion)
+            return _gameArgsForBase ??= getGameArguments(true);
+        else
+            return _gameArgs ??= getGameArguments(false);
+    }
 
     private IReadOnlyCollection<MArgument>? _jvmArgs = null;
-
-    public IReadOnlyCollection<MArgument> JvmArguments => _jvmArgs ??= getJvmArguments();
+    private IReadOnlyCollection<MArgument>? _jvmArgsForBase = null;
+    public IReadOnlyCollection<MArgument> GetJvmArguments(bool isBaseVersion)
+    {
+        if (isBaseVersion)
+            return _jvmArgsForBase ??= getJvmArguments(true);
+        else
+            return _jvmArgs ?? getJvmArguments(false);
+    }
 
     private string? getJarId()
     {
@@ -135,57 +148,69 @@ public class JsonVersion : IVersion, IDisposable
         }
     }
 
-    private IReadOnlyCollection<MArgument> getGameArguments()
+    private IReadOnlyCollection<MArgument> getGameArguments(bool isBaseVersion)
     {
         try
         {
             var prop = _json.RootElement
                 .GetProperty("arguments")
                 .GetProperty("game");
-            return JsonArgumentParser.Parse(prop);
+            var args = JsonArgumentParser.Parse(prop);
+            _gameArgs = args;
+            _gameArgsForBase = args;
         }
         catch (KeyNotFoundException)
         {
             var args = GetProperty("minecraftArguments");
             if (string.IsNullOrEmpty(args))
             {
-                return Array.Empty<MArgument>();
+                _gameArgs = Array.Empty<MArgument>();
+                _gameArgsForBase = Array.Empty<MArgument>();
             }
             else
             {
-                return args
+                _gameArgs = args
                     .Split(' ')
                     .Select(arg => new MArgument(arg))
                     .ToArray();
+                _gameArgsForBase = Array.Empty<MArgument>();
             }
         }
         catch (Exception)
         {
             if (!_options.SkipError)
                 throw;
-            return Array.Empty<MArgument>();
+            _gameArgs = Array.Empty<MArgument>();
+            _gameArgsForBase = Array.Empty<MArgument>();
         }
+
+        return isBaseVersion ? _gameArgsForBase : _gameArgs;
     }
 
-    private IReadOnlyCollection<MArgument> getJvmArguments()
+    private IReadOnlyCollection<MArgument> getJvmArguments(bool isBaseVersion)
     {
         try
         {
             var prop = _json.RootElement
                 .GetProperty("arguments")
                 .GetProperty("jvm");
-            return JsonArgumentParser.Parse(prop);
+            var args = JsonArgumentParser.Parse(prop);
+            _jvmArgs = args;
+            _jvmArgsForBase = args;
         }
         catch (KeyNotFoundException)
         {
-            return Array.Empty<MArgument>();
+            _jvmArgs = Array.Empty<MArgument>();
+            _jvmArgsForBase = Array.Empty<MArgument>();
         }
         catch (Exception)
         {
             if (!_options.SkipError)
                 throw;
-            return Array.Empty<MArgument>();
+            _jvmArgs = Array.Empty<MArgument>();
+            _jvmArgsForBase = Array.Empty<MArgument>();
         }
+        return isBaseVersion ? _jvmArgsForBase : _jvmArgs;
     }
 
     public string? GetProperty(string key)

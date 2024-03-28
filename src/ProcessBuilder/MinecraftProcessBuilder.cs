@@ -1,4 +1,4 @@
-﻿using CmlLib.Core.Rules;
+using CmlLib.Core.Rules;
 using CmlLib.Core.Version;
 using CmlLib.Core.Internals;
 using System.Diagnostics;
@@ -191,7 +191,7 @@ public class MinecraftProcessBuilder
         else
         {
             // version-specific jvm arguments
-            var jvmArgs = version.ConcatInheritedCollection(v => v.JvmArguments).ToList();
+            var jvmArgs = version.ConcatInheritedJvmArguments().ToList();
             if (jvmArgs.Any())
                 builder.AddArguments(jvmArgs);
             else
@@ -241,8 +241,7 @@ public class MinecraftProcessBuilder
     private void addGameArguments(MinecraftArgumentBuilder builder)
     {
         // game arguments
-        var gameArgs = version.ConcatInheritedCollection(v => v.GameArguments);
-        builder.AddArguments(gameArgs);
+        builder.AddArguments(version.ConcatInheritedGameArguments());
 
         // add extra game arguments
         builder.AddArguments(launchOption.ExtraGameArguments);
