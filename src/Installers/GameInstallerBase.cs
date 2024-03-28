@@ -42,8 +42,14 @@ public abstract class GameInstallerBase : IGameInstaller
             excludeSet.Add(excludeFile);
         }
 
-        await Install(gameFiles, cancellationToken);
-        IsRunning = false;
+        try
+        {
+            await Install(gameFiles, cancellationToken);
+        }
+        finally
+        { 
+            IsRunning = false;
+        }
     }
 
     protected abstract ValueTask Install(IEnumerable<GameFile> gameFiles, CancellationToken cancellationToken);
