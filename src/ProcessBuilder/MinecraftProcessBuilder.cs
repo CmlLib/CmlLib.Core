@@ -1,4 +1,4 @@
-using CmlLib.Core.Rules;
+﻿using CmlLib.Core.Rules;
 using CmlLib.Core.Version;
 using CmlLib.Core.Internals;
 using System.Diagnostics;
@@ -162,13 +162,24 @@ public class MinecraftProcessBuilder
             if (pathSet.Add(item))
                 yield return item;
         }
-            
+
         // <version>.jar file
-        // TODO: decide what Jar file should be used. current jar or parent jar
-        var jar = version.GetInheritedProperty(v => v.Jar);
-        if (string.IsNullOrEmpty(jar))
-            jar = version.Id; 
+        var jar = getJar(version);
         yield return minecraftPath.GetVersionJarPath(jar);
+    }
+
+    private string getJar(IVersion version)
+    {
+        IVersion? currentVersion = version;
+        IVersion rootVersion = version;
+        while (currentVersion != null)
+        {
+            if (!string.IsNullOrEmpty(currentVersion.Jar))
+                return currentVersion.Jar; 
+            rootVersion = currentVersion;
+            currentVersion = currentVersion.ParentVersion;
+        }
+        return rootVersion.Id;
     }
 
     private string? createAddress(string? ip, int port)
