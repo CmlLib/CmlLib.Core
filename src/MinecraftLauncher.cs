@@ -133,7 +133,13 @@ public class MinecraftLauncher
         IProgress<ByteProgress>? byteProgress,
         CancellationToken cancellationToken = default)
     {
-        var files = await ExtractFiles(version, cancellationToken);
+        var files = Enumerable.Empty<GameFile>();
+        foreach (var v in version.EnumerateToParent())
+        {
+            var f = await ExtractFiles(v, cancellationToken);
+            files = files.Concat(f);
+        }
+
         await GameInstaller.Install(
             files,
             fileProgress ?? _fileProgress,
