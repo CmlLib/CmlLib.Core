@@ -30,21 +30,16 @@ public class MinecraftLauncher
     public RulesEvaluatorContext RulesContext { get; set; }
     public VersionMetadataCollection? Versions { get; private set; }
 
-    public MinecraftLauncher(string path) : this(WithMinecraftPath(new MinecraftPath(path)))
+    public MinecraftLauncher(string path) : 
+        this(MinecraftLauncherParameters.CreateDefault(new MinecraftPath(path)))
     {
 
     }
 
-    public MinecraftLauncher(MinecraftPath path) : this(WithMinecraftPath(path))
+    public MinecraftLauncher(MinecraftPath path) : 
+        this(MinecraftLauncherParameters.CreateDefault(path))
     {
 
-    }
-
-    private static MinecraftLauncherParameters WithMinecraftPath(MinecraftPath path)
-    {
-        var parameters = MinecraftLauncherParameters.CreateDefault();
-        parameters.MinecraftPath = path;
-        return parameters;
     }
 
     public MinecraftLauncher(MinecraftLauncherParameters parameters)

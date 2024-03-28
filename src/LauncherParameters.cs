@@ -5,27 +5,29 @@ using CmlLib.Core.Java;
 using CmlLib.Core.Natives;
 using CmlLib.Core.Rules;
 using CmlLib.Core.VersionLoader;
-using CmlLib.Core.VersionMetadata;
 
 namespace CmlLib.Core;
 
 public class MinecraftLauncherParameters
 {
     public static MinecraftLauncherParameters CreateDefault() => 
-        CreateDefault(HttpUtil.SharedHttpClient.Value);
+        CreateDefault(new MinecraftPath(), HttpUtil.SharedHttpClient.Value);
 
-    public static MinecraftLauncherParameters CreateDefault(HttpClient httpClient)
+    public static MinecraftLauncherParameters CreateDefault(MinecraftPath path) =>
+        CreateDefault(path, HttpUtil.SharedHttpClient.Value);
+
+    public static MinecraftLauncherParameters CreateDefault(MinecraftPath path, HttpClient httpClient)
     {
         var parameters = new MinecraftLauncherParameters();
         parameters.HttpClient = httpClient;
-        parameters.MinecraftPath = new MinecraftPath();
+        parameters.MinecraftPath = path;
         parameters.RulesEvaluator = new RulesEvaluator();
-        parameters.VersionLoader = new MojangJsonVersionLoaderV2(parameters.MinecraftPath, httpClient);
-        parameters.JavaPathResolver = new MinecraftJavaPathResolver(parameters.MinecraftPath);
+        parameters.VersionLoader = new MojangJsonVersionLoaderV2(path, httpClient);
+        parameters.JavaPathResolver = new MinecraftJavaPathResolver(path);
         parameters.GameInstaller = ParallelGameInstaller.CreateAsCoreCount(httpClient);
         parameters.NativeLibraryExtractor = new NativeLibraryExtractor(parameters.RulesEvaluator);
         var extractors = DefaultFileExtractors.CreateDefault(
-            parameters.HttpClient, 
+            httpClient, 
             parameters.RulesEvaluator, 
             parameters.JavaPathResolver);
         parameters.FileExtractors = extractors.ToExtractorCollection();
