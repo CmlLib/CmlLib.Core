@@ -2,45 +2,45 @@
 using CmlLib.Core.Auth;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Reflection;
 using CmlLib.Core.VersionMetadata;
 using CmlLib.Core.Installers;
 using CmlLib.Core.ProcessBuilder;
+using CmlLib.Core.Rules;
 
 namespace CmlLibWinFormSample
 {
     public partial class MainForm : Form
     {
-        private readonly MSession session;
         private readonly HttpClient _httpClient = new();
 
-        public MainForm(MSession session)
+        public MainForm()
         {
-            this.session = session;
             InitializeComponent();
         }
 
-        CancellationToken cancellationToken = default;
+        CancellationTokenSource? cancellationToken;
         MinecraftLauncher? launcher;
-        string? javaPath;
 
         private async void MainForm_Shown(object sender, EventArgs e)
         {
-            lbLibraryVersion.Text = "CmlLib.Core " + getLibraryVersion();
-            
+            lbLibraryVersion.Text = "CmlLib.Core " + Util.GetLibraryVersion();
+            txtExtraJVMArguments.Text = string.Join(' ', MLaunchOption.DefaultExtraJvmArguments.SelectMany(arg => arg.Values));
+
+            var defaultSession = MSession.CreateOfflineSession("cmltester123");
+            txtUsername.Text = defaultSession.Username;
+            txtUUID.Text = defaultSession.UUID;
+            txtAccessToken.Text = defaultSession.AccessToken;
+            txtXUID.Text = defaultSession.Xuid;
+
             // Initialize launcher
             await initializeLauncher(new MinecraftPath());
         }
 
         private async Task initializeLauncher(MinecraftPath path)
         {
-            lbUsername.Text = session.Username;
             txtPath.Text = path.BasePath;
-            
-            var parameters = MinecraftLauncherParameters.CreateDefault();
-            parameters.MinecraftPath = path;
-            parameters.HttpClient = _httpClient;
 
+            var parameters = MinecraftLauncherParameters.CreateDefault(path, _httpClient);
             launcher = new MinecraftLauncher(parameters);
             await refreshVersions();
         }
@@ -50,7 +50,7 @@ namespace CmlLibWinFormSample
             await refreshVersions();
         }
 
-        private async Task refreshVersions(string? showVersion=null)
+        private async Task refreshVersions(string? showVersion = null)
         {
             if (launcher == null)
             {
@@ -79,7 +79,7 @@ namespace CmlLibWinFormSample
         {
             cbVersion.Text = launcher?.Versions?.LatestReleaseName;
         }
-        
+
         private void btnSortFilter_Click(object sender, EventArgs e)
         {
             if (launcher == null)
@@ -99,11 +99,6 @@ namespace CmlLibWinFormSample
                 MessageBox.Show("Initialize the launcher first");
                 return;
             }
-            if (session == null)
-            {
-                MessageBox.Show("Login First");
-                return;
-            }
             if (cbVersion.Text == "")
             {
                 MessageBox.Show("Select Version");
@@ -116,62 +111,103 @@ namespace CmlLibWinFormSample
             try
             {
                 // create LaunchOption
-                var launchOption = new CmlLib.Core.ProcessBuilder.MLaunchOption()
+                var launchOption = new MLaunchOption()
                 {
-                    MaximumRamMb = int.Parse(TxtXmx.Text),
-                    Session = this.session,
-
-                    VersionType = Txt_VersionType.Text,
-                    GameLauncherName = Txt_GLauncherName.Text,
-                    GameLauncherVersion = Txt_GLauncherVersion.Text,
-
+                    Session = new MSession
+                    {
+                        Username = txtUsername.Text,
+                        AccessToken = txtAccessToken.Text,
+                        UUID = txtUUID.Text,
+                        Xuid = txtXUID.Text
+                    },
+                    IsDemo = cbDemo.Checked,
                     FullScreen = cbFullscreen.Checked,
-
-                    ServerIp = Txt_ServerIp.Text,
-
-                    DockName = Txt_DockName.Text,
-                    DockIcon = Txt_DockIcon.Text
+                    JvmArgumentOverrides = new[] { MArgument.FromCommandLine(txtJVMArgumentOverrides.Text) },
+                    ExtraJvmArguments = new[] { MArgument.FromCommandLine(txtExtraJVMArguments.Text) },
+                    ExtraGameArguments = new[] { MArgument.FromCommandLine(txtExtraGameArguments.Text) },
                 };
 
-                if (!string.IsNullOrEmpty(javaPath))
-                    launchOption.JavaPath = javaPath;
-                
+                if (!cbJavaUseDefault.Checked)
+                    launchOption.JavaPath = txtJava.Text;
+
+                if (!string.IsNullOrEmpty(txtClientId.Text))
+                    launchOption.ClientId = txtClientId.Text;
+
+                if (!string.IsNullOrEmpty(txtVersionType.Text))
+                    launchOption.VersionType = txtVersionType.Text;
+
+                if (!string.IsNullOrEmpty(txtGLauncherName.Text))
+                    launchOption.GameLauncherName = txtGLauncherName.Text;
+
+                if (!string.IsNullOrEmpty(txtGLauncherVersion.Text))
+                    launchOption.GameLauncherVersion = txtGLauncherVersion.Text;
+
+                if (!string.IsNullOrEmpty(txtDockName.Text))
+                    launchOption.DockName = txtDockName.Text;
+
+                if (!string.IsNullOrEmpty(txtDockIcon.Text))
+                    launchOption.DockIcon = txtDockIcon.Text;
+
+                if (!string.IsNullOrEmpty(txtQuickPlayPath.Text))
+                    launchOption.QuickPlayPath = txtQuickPlayPath.Text;
+
+                if (!string.IsNullOrEmpty(txtQuickPlaySingleplay.Text))
+                    launchOption.QuickPlaySingleplayer = txtQuickPlaySingleplay.Text;
+
+                if (!string.IsNullOrEmpty(txtQuickPlayReamls.Text))
+                    launchOption.QuickPlayRealms = txtQuickPlayReamls.Text;
+
+                if (!string.IsNullOrEmpty(txtXmx.Text))
+                    launchOption.MaximumRamMb = int.Parse(txtXmx.Text);
+
                 if (!string.IsNullOrEmpty(txtXms.Text))
                     launchOption.MinimumRamMb = int.Parse(txtXms.Text);
 
-                if (!string.IsNullOrEmpty(Txt_ServerPort.Text))
-                    launchOption.ServerPort = int.Parse(Txt_ServerPort.Text);
+                if (!string.IsNullOrEmpty(txtServerIP.Text))
+                    launchOption.ServerIp = txtServerIP.Text;
 
-                if (!string.IsNullOrEmpty(Txt_ScWd.Text) && !string.IsNullOrEmpty(Txt_ScHt.Text))
+                if (!string.IsNullOrEmpty(txtServerPort.Text))
+                    launchOption.ServerPort = int.Parse(txtServerPort.Text);
+
+                if (!string.IsNullOrEmpty(txtScreenWidth.Text) && !string.IsNullOrEmpty(txtScreenHeight.Text))
                 {
-                    launchOption.ScreenHeight = int.Parse(Txt_ScHt.Text);
-                    launchOption.ScreenWidth = int.Parse(Txt_ScWd.Text);
+                    launchOption.ScreenHeight = int.Parse(txtScreenHeight.Text);
+                    launchOption.ScreenWidth = int.Parse(txtScreenWidth.Text);
                 }
 
-                if (!string.IsNullOrEmpty(Txt_JavaArgs.Text))
-                    launchOption.JvmArgumentOverrides = new [] { MArgument.FromCommandLine(Txt_JavaArgs.Text) };
+                if (!string.IsNullOrEmpty(txtFeatures.Text))
+                {
+                    launchOption.RulesContext = new RulesEvaluatorContext(LauncherOSRule.Current)
+                    {
+                        Features = txtFeatures.Text
+                            .Split(',')
+                            .Select(f => f.Trim())
+                            .Where(f => !string.IsNullOrWhiteSpace(f))
+                            .ToList()
+                    };
+                }
 
-                //if (cbSkipAssetsDownload.Checked)
-                //    launcher.GameFileCheckers.AssetFileChecker = null;
-                //else if (launcher.GameFileCheckers.AssetFileChecker == null)
-                //    launcher.GameFileCheckers.AssetFileChecker = new AssetChecker();
-                
-                // check file hash or don't check
-                //if (launcher.GameFileCheckers.AssetFileChecker != null)
-                //    launcher.GameFileCheckers.AssetFileChecker.CheckHash = !cbSkipHashCheck.Checked;
-                //if (launcher.GameFileCheckers.ClientFileChecker != null)
-                //    launcher.GameFileCheckers.ClientFileChecker.CheckHash = !cbSkipHashCheck.Checked;
-                //if (launcher.GameFileCheckers.LibraryFileChecker != null)
-                //    launcher.GameFileCheckers.LibraryFileChecker.CheckHash = !cbSkipHashCheck.Checked;
+                cancellationToken = new CancellationTokenSource();
 
-                var process = await launcher.InstallAndBuildProcessAsync(
-                    cbVersion.Text, 
-                    launchOption,
-                    new Progress<InstallerProgressChangedEventArgs>(Launcher_FileChanged),
-                    new Progress<ByteProgress>(Launcher_ProgressChanged),
-                    cancellationToken); // Create Arguments and Process
+                var version = cbVersion.Text;
+                var fileProgress = new SyncProgress<InstallerProgressChangedEventArgs>(Launcher_FileChanged);
+                var byteProgress = new SyncProgress<ByteProgress>(Launcher_ProgressChanged);
+                var stopwatch = new Stopwatch();
 
-                // process.Start(); // Just start game, or
+                var process = await Task.Run(async () =>
+                {
+                    stopwatch.Start();
+                    var result = await launcher.InstallAndBuildProcessAsync(
+                        version,
+                        launchOption,
+                        fileProgress,
+                        byteProgress,
+                        cancellationToken.Token);
+                    stopwatch.Stop();
+                    return result;
+                }); // Create Arguments and Process
+
+                lbTime.Text = stopwatch.Elapsed.ToString();
                 StartProcess(process); // Start Process with debug options
 
                 var gameLog = new GameLog(process);
@@ -196,23 +232,41 @@ namespace CmlLibWinFormSample
             }
         }
 
-        int lastProgress = 0;
+        ByteProgress byteProgress;
         private void Launcher_ProgressChanged(ByteProgress e)
         {
-            var progress = (int)(e.ProgressedBytes / (double)e.TotalBytes * 100);
-            if (progress >= 0 && progress <= 100 && progress != lastProgress)
-            {
-                lastProgress = progress;
-                Pb_Progress.Value = progress;
-                Pb_Progress.Maximum = 100;
-            }
+            byteProgress = e;
         }
 
+        InstallerProgressChangedEventArgs? fileProgress;
         private void Launcher_FileChanged(InstallerProgressChangedEventArgs e)
         {
             if (e.EventType == InstallerEventType.Done)
+                fileProgress = e;
+        }
+
+        private void eventTimer_Tick(object sender, EventArgs e)
+        {
+            var bytePercentage = (int)(byteProgress.ProgressedBytes / (double)byteProgress.TotalBytes * 100);
+            if (bytePercentage >= 0 && bytePercentage <= 100)
             {
-                Lv_Status.Text = $"[{e.ProgressedTasks}/{e.TotalTasks}] {e.Name}";
+                Pb_Progress.Value = bytePercentage;
+                Pb_Progress.Maximum = 100;
+            }
+
+            if (fileProgress != null)
+                Lv_Status.Text = $"[{fileProgress.ProgressedTasks}/{fileProgress.TotalTasks}] {fileProgress.Name}";
+        }
+
+        private void cbJavaUseDefault_CheckedChanged(object sender, EventArgs e)
+        {
+            if (cbJavaUseDefault.Checked)
+            {
+                txtJava.ReadOnly = true;
+            }
+            else
+            {
+                txtJava.ReadOnly = false;
             }
         }
 
@@ -226,18 +280,6 @@ namespace CmlLibWinFormSample
             var form = new PathForm(launcher.MinecraftPath);
             form.ShowDialog();
             await initializeLauncher(form.MinecraftPath);
-        }
-
-        private void btnChangeJava_Click(object sender, EventArgs e)
-        {
-            var form = new JavaForm(javaPath);
-            form.ShowDialog();
-            javaPath = form.JavaBinaryPath;
-            
-            if (string.IsNullOrEmpty(javaPath))
-                lbJavaPath.Text = "Use default java";
-            else
-                lbJavaPath.Text = javaPath;
         }
 
         private void btnAutoRamSet_Click(object sender, EventArgs e)
@@ -257,7 +299,7 @@ namespace CmlLibWinFormSample
 
             var min = max / 10;
 
-            TxtXmx.Text = max.ToString();
+            txtXmx.Text = max.ToString();
             txtXms.Text = min.ToString();
         }
 
@@ -266,13 +308,14 @@ namespace CmlLibWinFormSample
             groupBox1.Enabled = value;
             groupBox2.Enabled = value;
             groupBox3.Enabled = value;
-            groupBox4.Enabled = value;
+            btnLaunch.Enabled = value;
+            btnCancel.Enabled = !value;
         }
 
         private void StartProcess(Process process)
         {
             File.WriteAllText("launcher.txt", process.StartInfo.Arguments);
-            
+
             // process options to display game log
 
             process.StartInfo.UseShellExecute = false;
@@ -308,37 +351,27 @@ namespace CmlLibWinFormSample
 
         private void btnGithub_Click(object sender, EventArgs e)
         {
-            start("https://github.com/AlphaBs/CmlLib.Core");
+            Util.OpenUrl("https://github.com/AlphaBs/CmlLib.Core");
         }
 
         private void btnWiki_Click(object sender, EventArgs e)
         {
-            start("https://github.com/AlphaBs/CmlLib.Core/wiki/");
+            Util.OpenUrl("https://github.com/AlphaBs/CmlLib.Core/wiki/");
         }
 
-        private void start(string url)
+        private void btnCancel_Click(object sender, EventArgs e)
         {
-            try
-            {
-                Process.Start(url);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString());
-            }
+            cancellationToken?.Cancel();
         }
 
-        private string? getLibraryVersion()
+        private void btnLogin_Click(object sender, EventArgs e)
         {
-            try
-            {
-                return Assembly.GetAssembly(typeof(MinecraftLauncher))?.GetName().Version?.ToString();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                return null;
-            }
+
+        }
+
+        private void btnLogout_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
