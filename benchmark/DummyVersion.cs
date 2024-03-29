@@ -35,7 +35,7 @@ public class DummyVersion : IVersion
 
     public string? Type => throw new NotImplementedException();
 
-    public string? JarId => throw new NotImplementedException();
+    public string MainJarId => throw new NotImplementedException();
 
     public string? GetProperty(string key)
     {

@@ -21,7 +21,7 @@ public class JsonVersion : IVersion, IDisposable
     }
 
     public string Id { get; }
-    public string? JarId => getJarId();
+    public string MainJarId => getJarId();
 
     public string? InheritsFrom => _model.InheritsFrom;
 
@@ -47,7 +47,7 @@ public class JsonVersion : IVersion, IDisposable
 
     public string? MinecraftArguments => _model.MinecraftArguments;
 
-    public DateTime ReleaseTime => _model.ReleaseTime;
+    public DateTimeOffset ReleaseTime => _model.ReleaseTime;
 
     public string? Type => _model.Type;
 
@@ -71,12 +71,13 @@ public class JsonVersion : IVersion, IDisposable
             return _jvmArgs ?? getJvmArguments(false);
     }
 
-    private string? getJarId()
+    private string getJarId()
     {
         var jar = this.GetInheritedProperty(v => v.Jar);
         if (string.IsNullOrEmpty(jar))
             return Id;
-        return jar;
+        else
+            return jar;
     }
 
     private AssetMetadata? getAssetIndex()

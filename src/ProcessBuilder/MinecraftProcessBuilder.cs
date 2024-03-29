@@ -149,7 +149,8 @@ public class MinecraftProcessBuilder
     {
         // libraries
         var libPaths = version
-            .ConcatInheritedCollection(v => v.Libraries)
+            .EnumerateToParent()
+            .SelectMany(v => v.Libraries)
             .Where(lib => lib.CheckIsRequired(JsonVersionParserOptions.ClientSide))
             .Where(lib => lib.Rules == null || rulesEvaluator.Match(lib.Rules, context))
             .Where(lib => lib.Artifact != null)
@@ -164,22 +165,7 @@ public class MinecraftProcessBuilder
         }
 
         // <version>.jar file
-        var jar = getJar(version);
-        yield return minecraftPath.GetVersionJarPath(jar);
-    }
-
-    private string getJar(IVersion version)
-    {
-        IVersion? currentVersion = version;
-        IVersion rootVersion = version;
-        while (currentVersion != null)
-        {
-            if (!string.IsNullOrEmpty(currentVersion.Jar))
-                return currentVersion.Jar; 
-            rootVersion = currentVersion;
-            currentVersion = currentVersion.ParentVersion;
-        }
-        return rootVersion.Id;
+        yield return minecraftPath.GetVersionJarPath(version.MainJarId);
     }
 
     private string? createAddress(string? ip, int port)

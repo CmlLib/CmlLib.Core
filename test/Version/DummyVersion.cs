@@ -37,7 +37,7 @@ public class DummyVersion : IVersion
 
     public string? Type { get; set; }
 
-    public string? JarId { get; set; }
+    public string MainJarId { get; set; }
 
     public string? GetProperty(string key)
     {

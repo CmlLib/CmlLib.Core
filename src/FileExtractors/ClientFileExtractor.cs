@@ -18,19 +18,19 @@ public class ClientFileExtractor : IFileExtractor
 
     private IEnumerable<GameFile> extract(MinecraftPath path, IVersion version)
     {
-        var id = version.JarId;
-        var url = version.Client?.Url;
+        var id = version.MainJarId;
+        var client = version.GetInheritedProperty(v => v.Client);
         
-        if (string.IsNullOrEmpty(url) || string.IsNullOrEmpty(id))
+        if (string.IsNullOrEmpty(client?.Url) || string.IsNullOrEmpty(id))
             yield break;
 
         var clientPath = path.GetVersionJarPath(id);
         yield return new GameFile(id)
         {
             Path = clientPath,
-            Url = url,
-            Hash = version.Client?.GetSha1(),
-            Size = version.Client?.Size ?? 0
+            Url = client.Url,
+            Hash = client.GetSha1(),
+            Size = client.Size
         };
     }
 }
