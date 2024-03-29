@@ -1,10 +1,10 @@
-- [ ] 여기까지 하고 4.0.0-beta.1 내놓기
-
-- [x] Memory 위에서 mutable 한 IVersion 구현
 - [ ] 라이트로더 패브릭 tlauncher 등등 확장가능하게 테스트 케이스 작성
 - [ ] MLaunch 통합 테스트 작성. 주요 버전 파싱, 최종 argument 확인
 - [ ] excludes 구현
 - [ ] XML 로거 파서
+- [x] features, MLaunchOption 테스트 아직 안됨
+- [x] 여기까지 하고 4.0.0-beta.1 내놓기
+- [x] Memory 위에서 mutable 한 IVersion 구현
 - [x] LauncherTester 에서 자주 쓰는 버전들 미리추가 예를들면 1.12.2 1.14.4 1.16.5 1.20.4 그리고 3D shockwave 같은것들도
 - [x] MojangLauncher 와 호환성 확인: LibraryFileExtractorTests 에서 실제 url 에 파일 존재하는지, 실제 인스톨러는 어디다 설치하는지 확인
 - [x] master 브랜치에서 v3.4.0 으로 cherry-pick
