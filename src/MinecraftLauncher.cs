@@ -178,11 +178,11 @@ public class MinecraftLauncher
 
     public string? GetJavaPath(IVersion version)
     {
-        if (!version.JavaVersion.HasValue || string.IsNullOrEmpty(version.JavaVersion?.Component))
+        var javaVersion = version.GetInheritedProperty(v => v.JavaVersion);
+        if (!javaVersion.HasValue)
             return null;
-
         return JavaPathResolver.GetJavaBinaryPath(
-            version.JavaVersion.Value,
+            javaVersion.Value,
             RulesContext);
     }
 
