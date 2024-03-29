@@ -88,4 +88,27 @@ public static class Extensions
             yield return stack.Pop();
         }
     }
+
+    public static MinecraftVersion ToMutableVersion(this IVersion self)
+    {
+        return new MinecraftVersion(self.Id)
+        {
+            MainJarId = self.MainJarId,
+            InheritsFrom = self.InheritsFrom,
+            ParentVersion = self.ParentVersion,
+            AssetIndex = self.AssetIndex,
+            Client = self.Client,
+            JavaVersion = self.JavaVersion,
+            Libraries = self.Libraries,
+            Jar = self.Jar,
+            Logging = self.Logging,
+            MainClass = self.MainClass,
+            ReleaseTime = self.ReleaseTime,
+            Type = self.Type,
+            GameArguments = self.GetGameArguments(false),
+            GameArgumentsForBaseVersion = self.GetGameArguments(true),
+            JvmArguments = self.GetJvmArguments(false),
+            JvmArgumentsForBaseVersion = self.GetJvmArguments(true)
+        };
+    }
 }
