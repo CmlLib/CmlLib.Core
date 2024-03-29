@@ -1,5 +1,4 @@
 using CmlLib.Core.ProcessBuilder;
-using CmlLib.Core.Test.Version;
 using CmlLib.Core.Version;
 using CmlLib.Core.VersionMetadata;
 using Moq;
@@ -44,16 +43,41 @@ public class VersionMetadataCollectionTest
         Assert.Equal("parent_mainclass", version.GetInheritedProperty(v => v.MainClass));
     }
 
+    [Fact]
     public async Task get_inherited_collection()
     {
         var (collection, parent, child) = createMocks();
         var version = await collection.GetVersionAsync("child");
-        var concatArguments = version.ConcatInheritedCollection(v => v.GameArguments)
-            .SelectMany(args => args.Values ?? Enumerable.Empty<string>())
+        var concatLibraries = version.ConcatInheritedCollection(v => v.Libraries).Select(lib => lib.Name);
+
+        // should keep the order
+        Assert.Equal(["parent_lib", "child_lib"], concatLibraries);
+    }
+
+    [Fact]
+    public async Task get_game_arguments_with_base_arguments()
+    {
+        var (collection, parent, child) = createMocks();
+        var version = await collection.GetVersionAsync("child");
+        var gameArgs = version.ConcatInheritedGameArguments()
+            .SelectMany(arg => arg.Values)
             .ToArray();
 
         // should keep the order
-        Assert.Equal(new []{ "parent_arg", "child_arg" }, concatArguments);
+        Assert.Equal(["parent_base_arg", "child_arg"], gameArgs);
+    }
+
+    [Fact]
+    public async Task get_jvm_arguments_with_base_arguments()
+    {
+        var (collection, parent, child) = createMocks();
+        var version = await collection.GetVersionAsync("child");
+        var gameArgs = version.ConcatInheritedJvmArguments()
+            .SelectMany(arg => arg.Values)
+            .ToArray();
+
+        // should keep the order
+        Assert.Equal(["parent_base_arg", "child_arg"], gameArgs);
     }
 
     [Fact]
@@ -98,10 +122,10 @@ public class VersionMetadataCollectionTest
     [Fact]
     public void throw_too_deep_inheritance()
     {
-        var v1 = new DummyVersion("v1");
-        var v2 = new DummyVersion("v2");
-        var v3 = new DummyVersion("v3");
-        var v4 = new DummyVersion("v4");
+        var v1 = new MinecraftVersion("v1");
+        var v2 = new MinecraftVersion("v2");
+        var v3 = new MinecraftVersion("v3");
+        var v4 = new MinecraftVersion("v4");
 
         v4.InheritsFrom = v3.Id;
         v3.InheritsFrom = v2.Id;
@@ -125,10 +149,10 @@ public class VersionMetadataCollectionTest
 
     private (VersionMetadataCollection, VersionMetadataCollection) createTestCollections()
     {
-        var v1 = createMockVersionMetadata(new DummyVersion("v1"));
-        var v2 = createMockVersionMetadata(new DummyVersion("v2"));
-        var v3 = createMockVersionMetadata(new DummyVersion("v3"));
-        var v4 = createMockVersionMetadata(new DummyVersion("v4"));
+        var v1 = createMockVersionMetadata(new MinecraftVersion("v1"));
+        var v2 = createMockVersionMetadata(new MinecraftVersion("v2"));
+        var v3 = createMockVersionMetadata(new MinecraftVersion("v3"));
+        var v4 = createMockVersionMetadata(new MinecraftVersion("v4"));
 
         var collection1 = new VersionMetadataCollection(new IVersionMetadata[]
         {
@@ -160,30 +184,36 @@ public class VersionMetadataCollectionTest
         Assert.Equal("v4", collection1.LatestSnapshotName);
     }
 
-    private (VersionMetadataCollection, DummyVersion, DummyVersion) createMocks()
+    private (VersionMetadataCollection, MinecraftVersion, MinecraftVersion) createMocks()
     {
-        var parent = new DummyVersion("parent");
-        parent.MainClass = "parent_mainclass";
-        parent.AssetIndex = new Files.AssetMetadata
+        var parent = new MinecraftVersion("parent")
         {
-            Id = "parent_assetindex"
-        };
-        parent.GameArguments = new MArgument[]
-        {
-            new MArgument("parent_arg")
-        };
-
-        var child = new DummyVersion("child");
-        child.AssetIndex = new Files.AssetMetadata
-        {
-            Id = "child_assetindex"
-        };
-        child.GameArguments = new MArgument[]
-        {
-            new MArgument("child_arg")
+            MainClass = "parent_mainclass",
+            AssetIndex = new Files.AssetMetadata
+            {
+                Id = "parent_assetindex"
+            },
+            GameArguments = [new MArgument("parent_arg")],
+            GameArgumentsForBaseVersion = [new MArgument("parent_base_arg")],
+            JvmArguments = [new MArgument("parent_arg")],
+            JvmArgumentsForBaseVersion = [new MArgument("parent_base_arg")],
+            Libraries = [new MLibrary("parent_lib")]
         };
 
-        child.InheritsFrom = parent.Id;        
+        var child = new MinecraftVersion("child")
+        {
+            AssetIndex = new Files.AssetMetadata
+            {
+                Id = "child_assetindex"
+            },
+            GameArguments = [new MArgument("child_arg")],
+            GameArgumentsForBaseVersion = [new MArgument("child_base_arg")],
+            JvmArguments = [new MArgument("child_arg")],
+            JvmArgumentsForBaseVersion = [new MArgument("child_base_arg")],
+            Libraries = [new MLibrary("child_lib")],
+
+            InheritsFrom = parent.Id
+        };
 
         var collection = new VersionMetadataCollection(
             new IVersionMetadata[]
