@@ -13,10 +13,6 @@
 CmlLib.Core 是.NET上的一个Minecraft启动库\
 它支持所有版本，包括Forge。
 
-[한국어 README](https://github.com/AlphaBs/CmlLib.Core/blob/master/docs/README-kr.md)
-
-[简体中文 README](https://github.com/AlphaBs/CmlLib.Core/blob/master/docs/README-chs.md)
-
 ## 特点
 
 * 异步 API
@@ -30,7 +26,7 @@ CmlLib.Core 是.NET上的一个Minecraft启动库\
 * 自定义参数启动 (服务器直连, 屏幕分辨率)
 * 跨平台 (Windows, Linux, macOS)
 
-[去Wiki查看所有特性](https://github.com/CmlLib/CmlLib.Core/wiki)
+[去Wiki查看所有特性](https://alphabs.gitbook.io/cmllib/cmllib.core/cmllib)
 
 ## 安装
 
