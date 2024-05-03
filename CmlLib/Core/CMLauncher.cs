@@ -207,7 +207,7 @@ public class CMLauncher
         if (checkAndDownload)
             CheckAndDownload(option.StartVersion);
 
-        return CreateProcess(option);
+        return CreateProcess(option, checkAndDownload);
     }
 
     public async Task<Process> CreateProcessAsync(string versionName, MLaunchOption option,
@@ -244,21 +244,21 @@ public class CMLauncher
         if (checkAndDownload)
             await CheckAndDownloadAsync(option.StartVersion).ConfigureAwait(false);
 
-        return await CreateProcessAsync(option).ConfigureAwait(false);
+        return await CreateProcessAsync(option, checkAndDownload).ConfigureAwait(false);
     }
 
-    public Process CreateProcess(MLaunchOption option)
+    public Process CreateProcess(MLaunchOption option, bool needForce)
     {
         checkLaunchOption(option);
         var launch = new MLaunch(option);
-        return launch.GetProcess();
+        return launch.GetProcess(needForce);
     }
 
-    public async Task<Process> CreateProcessAsync(MLaunchOption option)
+    public async Task<Process> CreateProcessAsync(MLaunchOption option, bool needForce)
     {
         checkLaunchOption(option);
         var launch = new MLaunch(option);
-        return await Task.Run(launch.GetProcess).ConfigureAwait(false);
+        return await Task.Run(() => launch.GetProcess(needForce)).ConfigureAwait(false);
     }
 
     public Process Launch(string versionName, MLaunchOption option)
