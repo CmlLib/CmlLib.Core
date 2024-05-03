@@ -43,7 +43,7 @@ internal static class IOUtil
         return string.Join(";",
             paths.Select(x =>
             {
-                return Path.GetFullPath(x);;
+                return Path.GetFullPath(x);
             }));
     }
 
