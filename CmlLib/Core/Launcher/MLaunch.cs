@@ -82,13 +82,13 @@ public class MLaunch
         var version = launchOption.GetStartVersion();
         var args = new List<string>();
 
-        var classpath = createClassPath(version);
-        var nativePath = createNativePath(version, needForce);
+        var classpath = ValidatePath(createClassPath(version));
+        var nativePath = ValidatePath(createNativePath(version, needForce));
         var session = launchOption.GetSession();
 
         var argDict = new Dictionary<string, string?>
         {
-            { "library_directory", minecraftPath.Library },
+            { "library_directory", ValidatePath(minecraftPath.Library) },
             { "natives_directory", nativePath },
             { "launcher_name", useNotNull(launchOption.GameLauncherName, "minecraft-launcher") },
             { "launcher_version", useNotNull(launchOption.GameLauncherVersion, "2") },
@@ -103,8 +103,8 @@ public class MLaunch
             { "auth_session", session.AccessToken },
 
             { "version_name", version.Id },
-            { "game_directory", minecraftPath.BasePath },
-            { "assets_root", minecraftPath.Assets },
+            { "game_directory", ValidatePath(minecraftPath.BasePath) },
+            { "assets_root", ValidatePath(minecraftPath.Assets) },
             { "assets_index_name", version.AssetId ?? "legacy" },
             { "user_properties", "{}" },
             { "clientid", launchOption.ClientId ?? "clientId" },
@@ -119,6 +119,8 @@ public class MLaunch
             args.AddRange(Mapper.MapInterpolation(version.JvmArguments, argDict));
 
         // default jvm arguments
+
+        args.AddRange(DefaultJavaParameter);
         if (launchOption.JVMArguments != null && launchOption.JVMArguments.Any())
         {
             args.AddRange(launchOption.JVMArguments);
@@ -130,8 +132,6 @@ public class MLaunch
 
             if (launchOption.MinimumRamMb > 0)
                 args.Add("-Xms" + launchOption.MinimumRamMb + "m");
-
-            args.AddRange(DefaultJavaParameter);
         }
 
         if (version.JvmArguments == null)
@@ -151,7 +151,7 @@ public class MLaunch
         if (!string.IsNullOrEmpty(loggingArgument))
             args.Add(Mapper.Interpolation(loggingArgument, new Dictionary<string, string?>
             {
-                { "path", minecraftPath.GetLogConfigFilePath(version.LoggingClient?.Id ?? version.Id) }
+                { "path", ValidatePath(minecraftPath.GetLogConfigFilePath(version.LoggingClient?.Id ?? version.Id)) }
             }, true));
 
         // main class
@@ -187,6 +187,13 @@ public class MLaunch
             args.Add("--fullscreen");
 
         return args.ToArray();
+    }
+
+    private string? ValidatePath(string library)
+    {
+        return MRule.OSName == MRule.Windows
+            ? library.Replace("/", "\\")
+            : library.Replace("\\", "/");
     }
 
     // if input1 is null, return input2
