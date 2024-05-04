@@ -26,7 +26,6 @@ public class MNative
         if (version.Libraries == null) return path;
 
 
-
         foreach (var item in version.Libraries)
             // do not ignore exception
             if (item is { IsRequire: true, IsNative: true } && !string.IsNullOrEmpty(item.Path))

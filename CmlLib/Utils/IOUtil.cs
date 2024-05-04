@@ -41,10 +41,7 @@ internal static class IOUtil
     public static string CombinePath(string[] paths)
     {
         return string.Join(";",
-            paths.Select(x =>
-            {
-                return Path.GetFullPath(x);
-            }));
+            paths.Select(x => { return Path.GetFullPath(x); }));
     }
 
     public static void CopyDirectory(string org, string des, bool overwrite)
