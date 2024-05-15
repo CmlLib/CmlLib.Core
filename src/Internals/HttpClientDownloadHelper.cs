@@ -75,11 +75,7 @@ internal static class HttpClientDownloadHelper
             await destination.WriteAsync(copyBuffer, 0, bytesRead).ConfigureAwait(false);
 
             totalRead += bytesRead;
-            progress?.Report(new ByteProgress
-            {
-                TotalBytes = contentLength,
-                ProgressedBytes = totalRead
-            });
+            progress?.Report(new ByteProgress(contentLength, totalRead));
         }
     }
 }

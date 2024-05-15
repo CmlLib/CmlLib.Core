@@ -54,10 +54,10 @@ public class ThreadLocalBenchmark
                 {
                     var stored = bigThreadLocal.Value;
                     bigThreadLocal.Value = new ByteProgress
-                    {
-                        TotalBytes = stored.TotalBytes + i,
-                        ProgressedBytes = stored.ProgressedBytes + IterationCount - i
-                    };
+                    (
+                        totalBytes: stored.TotalBytes + i,
+                        progressedBytes: stored.ProgressedBytes + IterationCount - i
+                    );
                 }
             });
             threads.Add(thread);

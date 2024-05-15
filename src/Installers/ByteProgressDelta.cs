@@ -7,11 +7,7 @@ public class ByteProgressDelta : IProgress<ByteProgress>
 
     public ByteProgressDelta(long initialSize, Action<ByteProgress> action)
     {
-        lastProgress = new ByteProgress
-        {
-            TotalBytes = initialSize,
-            ProgressedBytes = 0
-        };
+        lastProgress = new ByteProgress(initialSize, 0);
         _action = action;
     }
 
@@ -23,21 +19,13 @@ public class ByteProgressDelta : IProgress<ByteProgress>
 
     public void Report(ByteProgress value)
     {
-        var delta = new ByteProgress
-        {
-            TotalBytes = value.TotalBytes - lastProgress.TotalBytes,
-            ProgressedBytes = value.ProgressedBytes - lastProgress.ProgressedBytes
-        };
+        var delta = value - lastProgress;
         lastProgress = value;
         _action(delta);
     }
 
     public void ReportDone()
     {
-        Report(new ByteProgress
-        {
-            TotalBytes = lastProgress.TotalBytes,
-            ProgressedBytes = lastProgress.TotalBytes
-        });
+        Report(new ByteProgress(lastProgress.TotalBytes, lastProgress.TotalBytes));
     }
 }

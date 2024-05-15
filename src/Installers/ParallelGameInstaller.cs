@@ -135,26 +135,17 @@ public class ParallelGameInstaller : GameInstallerBase
 
     private void addProgressToStorage(long totalBytes, long progressedBytes)
     {
-        var storedProgress = progressStorage!.Value;
-        progressStorage.Value = new ByteProgress
-        {
-            TotalBytes = storedProgress.TotalBytes + totalBytes,
-            ProgressedBytes = storedProgress.ProgressedBytes + progressedBytes
-        };
+        progressStorage!.Value += new ByteProgress(totalBytes, progressedBytes);
     }
 
     private void aggregateAndReportByteProgress()
     {
         Debug.Assert(progressStorage != null);
 
-        long aggregatedTotalBytes = 0;
-        long aggregatedProgressedBytes = 0;
-        foreach (var progress in progressStorage.Values)
-        {
-            aggregatedTotalBytes += progress.TotalBytes;
-            aggregatedProgressedBytes += progress.ProgressedBytes;
-        }
-
-        FireByteProgress(aggregatedTotalBytes, aggregatedProgressedBytes);
+        var aggregated = progressStorage.Values.Aggregate(
+            new ByteProgress(), 
+            (acc, progress) => acc + progress);
+            
+        FireByteProgress(aggregated);
     }
 }

@@ -41,7 +41,7 @@ public class BasicGameInstaller : GameInstallerBase
             {
                 totalBytes += delta.TotalBytes;
                 progressedBytes += delta.ProgressedBytes;
-                FireByteProgress(totalBytes, progressedBytes);
+                FireByteProgress(new ByteProgress(totalBytes, progressedBytes));
             });
 
             if (NeedUpdate(gameFile))

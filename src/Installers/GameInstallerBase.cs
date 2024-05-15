@@ -108,12 +108,8 @@ public abstract class GameInstallerBase : IGameInstaller
             type: type));
     }
 
-    protected void FireByteProgress(long totalBytes, long progressedBytes)
+    protected void FireByteProgress(ByteProgress progress)
     {
-        ByteProgress?.Report(new ByteProgress
-        {
-            TotalBytes = totalBytes,
-            ProgressedBytes = progressedBytes
-        });
+        ByteProgress?.Report(progress);
     }
 }

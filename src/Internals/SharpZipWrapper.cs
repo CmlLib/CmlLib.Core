@@ -37,11 +37,7 @@ internal static class SharpZipWrapper
                 // just skip 
             }
 
-            progress?.Report(new ByteProgress
-            {
-                TotalBytes = length,
-                ProgressedBytes = s.Position
-            });
+            progress?.Report(new ByteProgress(length, s.Position));
         }
     }
 }
