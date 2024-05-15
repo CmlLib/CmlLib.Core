@@ -66,22 +66,32 @@ public abstract class JsonVersionMetadata : IVersionMetadata
     public async Task<IVersion> GetAndSaveVersionAsync(MinecraftPath path)
     {
         using var versionStream = await GetVersionJsonStream().ConfigureAwait(false);
-        var version = JsonVersionParser.ParseFromJsonStream(versionStream, new JsonVersionParserOptions());
-        await saveMetdataJson(path, versionStream);
-        return version;
+        if (IsSaved)
+        {
+            return JsonVersionParser.ParseFromJsonStream(versionStream, new JsonVersionParserOptions());
+        }
+        else
+        {
+            using var fs = createVersionJsonFileStream(path);
+            using var piped = new PipedStream(versionStream, fs, writeToEndOnClose: true);
+            return JsonVersionParser.ParseFromJsonStream(piped, new JsonVersionParserOptions());
+        }
     }
 
     public async Task SaveVersionAsync(MinecraftPath path)
     {
         using var versionStream = await GetVersionJsonStream().ConfigureAwait(false);
-        await saveMetdataJson(path, versionStream);
+        if (!IsSaved)
+        {
+            using var fs = createVersionJsonFileStream(path);
+            await versionStream.CopyToAsync(fs);
+        }
     }
 
-    private async Task saveMetdataJson(MinecraftPath path, Stream stream)
+    private Stream createVersionJsonFileStream(MinecraftPath path)
     {
-        if (IsSaved) return;
         var metadataPath = path.GetVersionJsonPath(Name);
         IOUtil.CreateParentDirectory(metadataPath);
-        await AsyncIO.WriteFileAsync(metadataPath, stream);
+        return File.Create(metadataPath);
     }
 }

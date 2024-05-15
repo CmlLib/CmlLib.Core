@@ -65,21 +65,9 @@ public class AssetFileExtractor : IFileExtractor
                 return null;
 
             IOUtil.CreateParentDirectory(indexFilePath);
-
-            var ms = new MemoryStream();
-            using (var res = await httpClient.GetStreamAsync(assets.Url))
-            {
-                await res.CopyToAsync(ms);
-            } // dispose immediately
-
-            ms.Position = 0;
-            using (var fs = File.Create(indexFilePath))
-            {
-                await ms.CopyToAsync(fs);
-            } // dispose immediately
-
-            ms.Position = 0;
-            return ms;
+            var httpStream = await httpClient.GetStreamAsync(assets.Url);
+            var fileStream = File.Create(indexFilePath);
+            return new PipedStream(httpStream, fileStream, writeToEndOnClose: true);
         }
     }
 

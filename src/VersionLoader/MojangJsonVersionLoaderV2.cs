@@ -94,15 +94,9 @@ public class MojangJsonVersionLoaderV2 : IVersionLoader
     {
         try
         {
-            using var res = await _httpClient.GetStreamAsync(_endpoint);
-            var buffer = new MemoryStream();
-            await res.CopyToAsync(buffer);
-
-            using var saveTo = File.Create(_localManifestPath);
-            await buffer.CopyToAsync(saveTo);
-
-            buffer.Position = 0;
-            return buffer;
+            var res = await _httpClient.GetStreamAsync(_endpoint);
+            var saveTo = File.Create(_localManifestPath);
+            return new PipedStream(res, saveTo, writeToEndOnClose: true);
         }
         catch (HttpRequestException)
         {

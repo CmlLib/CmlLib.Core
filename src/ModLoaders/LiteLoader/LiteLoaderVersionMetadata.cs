@@ -120,7 +120,7 @@ public class LiteLoaderVersionMetadata : JsonVersionMetadata
 
     protected override ValueTask<Stream> GetVersionJsonStream()
     {
-        var ms = new MemoryStream();
+        using var ms = new MemoryStream();
         using var writer = new Utf8JsonWriter(ms); // TODO
         return new ValueTask<Stream>(ms);
     }
