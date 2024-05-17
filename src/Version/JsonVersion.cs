@@ -88,6 +88,10 @@ public class JsonVersion : IVersion, IDisposable
                 .GetProperty(_options.Side)
                 .Deserialize<MFileMetadata>();
         }
+        catch (KeyNotFoundException)
+        {
+            return null;
+        }
         catch (Exception)
         {
             if (!_options.SkipError)
@@ -110,6 +114,10 @@ public class JsonVersion : IVersion, IDisposable
             }
             return libList;
         }
+        catch (KeyNotFoundException)
+        {
+            return [];
+        }
         catch (Exception)
         {
             if (!_options.SkipError)
@@ -126,6 +134,10 @@ public class JsonVersion : IVersion, IDisposable
                 .GetProperty("logging")
                 .GetProperty(_options.Side)
                 .Deserialize<MLogFileMetadata>();
+        }
+        catch (KeyNotFoundException)
+        {
+            return null;
         }
         catch (Exception)
         {
