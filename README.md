@@ -13,7 +13,7 @@
 CmlLib.Core is a Minecraft launcher library for .NET\
 Supports all versions, Forge, and any custom version
 
-[한국어 문서](https://alphabs.gitbook.io/cmllib/v/ko/cmllib.core/cmllib)
+[한국어 문서](https://alphabs.gitbook.io/cmllib/v/ko/cmllib.core/cmllib.core)
 
 [简体中文 README](https://github.com/AlphaBs/CmlLib.Core/blob/master/docs/README-chs.md)
 
@@ -29,74 +29,16 @@ Supports all versions, Forge, and any custom version
 * Launch with options (direct server connecting, screen resolution, JVM arguments)
 * Cross-platform (Windows, Linux, macOS)
 
-[Go to the wiki for all features](https://alphabs.gitbook.io/cmllib/cmllib.core/cmllib)
+[Go to the wiki for all features](https://alphabs.gitbook.io/cmllib/cmllib.core/cmllib.core)
 
 ## Install
 
 Install the [CmlLib.Core Nuget package](https://www.nuget.org/packages/CmlLib.Core)
-
-## QuickStart
-
-### Get All Versions
-
-```csharp
-using CmlLib.Core;
-
-var launcher = new MinecraftLauncher();
-var versions = await launcher.GetAllVersionsAsync();
-foreach (var version in versions)
-{
-  Console.WriteLine($"{version.Type} {version.Name}");
-}
-```
-
-### Launch the Game
-
-```csharp
-using CmlLib.Core;
-using CmlLib.Core.ProcessBuilder;
-
-var launcher = new MinecraftLauncher();
-var process = await launcher.InstallAndBuildProcessAsync("1.20.4", new MLaunchOption());
-process.Start();
-```
-
-### Launch the Game with Options
-
-```csharp
-using CmlLib.Core;
-using CmlLib.Core.Auth;
-using CmlLib.Core.ProcessBuilder;
-
-var path = new MinecraftPath("./my_game_dir");
-var launcher = new MinecraftLauncher(path);
-
-launcher.FileProgressChanged += (sender, args) =>
-{
-  Console.WriteLine($"Name: {args.Name}");
-  Console.WriteLine($"Type: {args.EventType}");
-  Console.WriteLine($"Total: {args.TotalTasks}");
-  Console.WriteLine($"Progressed: {args.ProgressedTasks}");
-};
-launcher.ByteProgressChanged += (sender, args) =>
-{
-  Console.WriteLine($"{args.ProgressedBytes} bytes / {args.TotalBytes} bytes");
-};
-
-await launcher.InstallAsync("1.20.4");
-var process = await launcher.BuildProcessAsync("1.20.4", new MLaunchOption
-{
-  Session = MSession.CreateOfflineSession("CmllibGamer123"),
-  MaximumRamMb = 4096
-});
-process.Start();
-```
-
 ## Documentation
 
-**[Official documentation](https://alphabs.gitbook.io/cmllib/cmllib.core/cmllib)**
+**[Official documentation](https://alphabs.gitbook.io/cmllib/cmllib.core/cmllib.core)**
 
-**[한국어 문서](https://alphabs.gitbook.io/cmllib/v/ko/cmllib.core/cmllib)**
+**[한국어 문서](https://alphabs.gitbook.io/cmllib/v/ko/cmllib.core/cmllib.core)**
 
 ## Example
 
