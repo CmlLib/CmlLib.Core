@@ -30,26 +30,22 @@ public class MinecraftLauncher
     public RulesEvaluatorContext RulesContext { get; set; }
     public VersionMetadataCollection? Versions { get; private set; }
 
-    public MinecraftLauncher() : this(WithMinecraftPath(new MinecraftPath()))
-    {
-        
-    }
-
-    public MinecraftLauncher(string path) : this(WithMinecraftPath(new MinecraftPath(path)))
+    public MinecraftLauncher() : 
+        this(new MinecraftPath())
     {
 
     }
 
-    public MinecraftLauncher(MinecraftPath path) : this(WithMinecraftPath(path))
+    public MinecraftLauncher(string path) : 
+        this(MinecraftLauncherParameters.CreateDefault(new MinecraftPath(path)))
     {
 
     }
 
-    private static MinecraftLauncherParameters WithMinecraftPath(MinecraftPath path)
+    public MinecraftLauncher(MinecraftPath path) : 
+        this(MinecraftLauncherParameters.CreateDefault(path))
     {
-        var parameters = MinecraftLauncherParameters.CreateDefault();
-        parameters.MinecraftPath = path;
-        return parameters;
+
     }
 
     public MinecraftLauncher(MinecraftLauncherParameters parameters)
@@ -70,8 +66,8 @@ public class MinecraftLauncher
             ?? throw new ArgumentException(nameof(parameters.RulesEvaluator) + " was null");
         RulesContext = new RulesEvaluatorContext(LauncherOSRule.Current);
 
-        _fileProgress = new SyncProgress<InstallerProgressChangedEventArgs>(e => FileProgressChanged?.Invoke(this, e));
-        _byteProgress = new SyncProgress<ByteProgress>(e => ByteProgressChanged?.Invoke(this, e));
+        _fileProgress = new Progress<InstallerProgressChangedEventArgs>(e => FileProgressChanged?.Invoke(this, e));
+        _byteProgress = new Progress<ByteProgress>(e => ByteProgressChanged?.Invoke(this, e));
     }
 
     public async ValueTask<VersionMetadataCollection> GetAllVersionsAsync()
@@ -143,7 +139,13 @@ public class MinecraftLauncher
         IProgress<ByteProgress>? byteProgress,
         CancellationToken cancellationToken = default)
     {
-        var files = await ExtractFiles(version, cancellationToken);
+        var files = Enumerable.Empty<GameFile>();
+        foreach (var v in version.EnumerateToParent())
+        {
+            var f = await ExtractFiles(v, cancellationToken);
+            files = files.Concat(f);
+        }
+
         await GameInstaller.Install(
             files,
             fileProgress ?? _fileProgress,
@@ -176,11 +178,11 @@ public class MinecraftLauncher
 
     public string? GetJavaPath(IVersion version)
     {
-        if (!version.JavaVersion.HasValue || string.IsNullOrEmpty(version.JavaVersion?.Component))
+        var javaVersion = version.GetInheritedProperty(v => v.JavaVersion);
+        if (!javaVersion.HasValue)
             return null;
-
         return JavaPathResolver.GetJavaBinaryPath(
-            version.JavaVersion.Value,
+            javaVersion.Value,
             RulesContext);
     }
 

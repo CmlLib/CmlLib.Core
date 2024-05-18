@@ -28,686 +28,889 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.cbFullscreen = new System.Windows.Forms.CheckBox();
-            this.btnAutoRamSet = new System.Windows.Forms.Button();
-            this.Txt_DockIcon = new System.Windows.Forms.TextBox();
-            this.txtXms = new System.Windows.Forms.TextBox();
-            this.label17 = new System.Windows.Forms.Label();
-            this.Txt_DockName = new System.Windows.Forms.TextBox();
-            this.label21 = new System.Windows.Forms.Label();
-            this.label18 = new System.Windows.Forms.Label();
-            this.Txt_GLauncherVersion = new System.Windows.Forms.TextBox();
-            this.label16 = new System.Windows.Forms.Label();
-            this.Txt_GLauncherName = new System.Windows.Forms.TextBox();
-            this.label15 = new System.Windows.Forms.Label();
-            this.Txt_ServerPort = new System.Windows.Forms.TextBox();
-            this.TxtXmx = new System.Windows.Forms.TextBox();
-            this.label14 = new System.Windows.Forms.Label();
-            this.Txt_JavaArgs = new System.Windows.Forms.TextBox();
-            this.Xmx_RAM = new System.Windows.Forms.Label();
-            this.Txt_ScHt = new System.Windows.Forms.TextBox();
-            this.Txt_ScWd = new System.Windows.Forms.TextBox();
-            this.label11 = new System.Windows.Forms.Label();
-            this.label10 = new System.Windows.Forms.Label();
-            this.label9 = new System.Windows.Forms.Label();
-            this.Txt_ServerIp = new System.Windows.Forms.TextBox();
-            this.Txt_VersionType = new System.Windows.Forms.TextBox();
-            this.label8 = new System.Windows.Forms.Label();
-            this.label7 = new System.Windows.Forms.Label();
-            this.Pb_Progress = new System.Windows.Forms.ProgressBar();
-            this.Pb_File = new System.Windows.Forms.ProgressBar();
-            this.Lv_Status = new System.Windows.Forms.Label();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.btnChangeJava = new System.Windows.Forms.Button();
-            this.lbJavaPath = new System.Windows.Forms.Label();
-            this.lbUsername = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
-            this.btnChangePath = new System.Windows.Forms.Button();
-            this.txtPath = new System.Windows.Forms.TextBox();
-            this.label4 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.btnLaunch = new System.Windows.Forms.Button();
-            this.cbVersion = new System.Windows.Forms.ComboBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label12 = new System.Windows.Forms.Label();
-            this.btnGithub = new System.Windows.Forms.Button();
-            this.btnWiki = new System.Windows.Forms.Button();
-            this.btnChangelog = new System.Windows.Forms.Button();
-            this.rbSequenceDownload = new System.Windows.Forms.RadioButton();
-            this.rbParallelDownload = new System.Windows.Forms.RadioButton();
-            this.groupBox3 = new System.Windows.Forms.GroupBox();
-            this.cbSkipHashCheck = new System.Windows.Forms.CheckBox();
-            this.cbSkipAssetsDownload = new System.Windows.Forms.CheckBox();
-            this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.btnSortFilter = new System.Windows.Forms.Button();
-            this.btnRefreshVersion = new System.Windows.Forms.Button();
-            this.btnSetLastVersion = new System.Windows.Forms.Button();
-            this.btnOptions = new System.Windows.Forms.Button();
-            this.lbLibraryVersion = new System.Windows.Forms.Label();
-            this.groupBox2.SuspendLayout();
-            this.groupBox1.SuspendLayout();
-            this.groupBox3.SuspendLayout();
-            this.groupBox4.SuspendLayout();
-            this.SuspendLayout();
+            components = new System.ComponentModel.Container();
+            groupBox2 = new GroupBox();
+            txtFeatures = new TextBox();
+            label26 = new Label();
+            txtExtraGameArguments = new TextBox();
+            label25 = new Label();
+            txtExtraJVMArguments = new TextBox();
+            label24 = new Label();
+            txtJVMArgumentOverrides = new TextBox();
+            label11 = new Label();
+            cbDemo = new CheckBox();
+            txtClientId = new TextBox();
+            label23 = new Label();
+            txtQuickPlayReamls = new TextBox();
+            label22 = new Label();
+            txtQuickPlaySingleplay = new TextBox();
+            label20 = new Label();
+            txtQuickPlayPath = new TextBox();
+            label19 = new Label();
+            cbFullscreen = new CheckBox();
+            btnAutoRamSet = new Button();
+            txtDockIcon = new TextBox();
+            txtXms = new TextBox();
+            label17 = new Label();
+            txtDockName = new TextBox();
+            label21 = new Label();
+            label18 = new Label();
+            txtGLauncherVersion = new TextBox();
+            label16 = new Label();
+            txtGLauncherName = new TextBox();
+            label15 = new Label();
+            txtServerPort = new TextBox();
+            txtXmx = new TextBox();
+            label14 = new Label();
+            Xmx_RAM = new Label();
+            txtScreenHeight = new TextBox();
+            txtScreenWidth = new TextBox();
+            label10 = new Label();
+            label9 = new Label();
+            txtServerIP = new TextBox();
+            txtVersionType = new TextBox();
+            label8 = new Label();
+            label7 = new Label();
+            Pb_Progress = new ProgressBar();
+            Lv_Status = new Label();
+            groupBox1 = new GroupBox();
+            cbJavaUseDefault = new CheckBox();
+            txtJava = new TextBox();
+            label6 = new Label();
+            btnChangePath = new Button();
+            txtPath = new TextBox();
+            label4 = new Label();
+            btnLaunch = new Button();
+            cbVersion = new ComboBox();
+            label1 = new Label();
+            label12 = new Label();
+            btnGithub = new Button();
+            btnWiki = new Button();
+            btnChangelog = new Button();
+            groupBox4 = new GroupBox();
+            btnCancel = new Button();
+            btnSortFilter = new Button();
+            btnRefreshVersion = new Button();
+            btnSetLastVersion = new Button();
+            btnOptions = new Button();
+            lbLibraryVersion = new Label();
+            groupBox3 = new GroupBox();
+            btnLogout = new Button();
+            btnLogin = new Button();
+            label13 = new Label();
+            label5 = new Label();
+            label3 = new Label();
+            label2 = new Label();
+            txtXUID = new TextBox();
+            txtUUID = new TextBox();
+            txtAccessToken = new TextBox();
+            txtUsername = new TextBox();
+            lbTime = new Label();
+            eventTimer = new System.Windows.Forms.Timer(components);
+            groupBox2.SuspendLayout();
+            groupBox1.SuspendLayout();
+            groupBox4.SuspendLayout();
+            groupBox3.SuspendLayout();
+            SuspendLayout();
             // 
             // groupBox2
             // 
-            this.groupBox2.Controls.Add(this.cbFullscreen);
-            this.groupBox2.Controls.Add(this.btnAutoRamSet);
-            this.groupBox2.Controls.Add(this.Txt_DockIcon);
-            this.groupBox2.Controls.Add(this.txtXms);
-            this.groupBox2.Controls.Add(this.label17);
-            this.groupBox2.Controls.Add(this.Txt_DockName);
-            this.groupBox2.Controls.Add(this.label21);
-            this.groupBox2.Controls.Add(this.label18);
-            this.groupBox2.Controls.Add(this.Txt_GLauncherVersion);
-            this.groupBox2.Controls.Add(this.label16);
-            this.groupBox2.Controls.Add(this.Txt_GLauncherName);
-            this.groupBox2.Controls.Add(this.label15);
-            this.groupBox2.Controls.Add(this.Txt_ServerPort);
-            this.groupBox2.Controls.Add(this.TxtXmx);
-            this.groupBox2.Controls.Add(this.label14);
-            this.groupBox2.Controls.Add(this.Txt_JavaArgs);
-            this.groupBox2.Controls.Add(this.Xmx_RAM);
-            this.groupBox2.Controls.Add(this.Txt_ScHt);
-            this.groupBox2.Controls.Add(this.Txt_ScWd);
-            this.groupBox2.Controls.Add(this.label11);
-            this.groupBox2.Controls.Add(this.label10);
-            this.groupBox2.Controls.Add(this.label9);
-            this.groupBox2.Controls.Add(this.Txt_ServerIp);
-            this.groupBox2.Controls.Add(this.Txt_VersionType);
-            this.groupBox2.Controls.Add(this.label8);
-            this.groupBox2.Controls.Add(this.label7);
-            this.groupBox2.Location = new System.Drawing.Point(463, 15);
-            this.groupBox2.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Padding = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.groupBox2.Size = new System.Drawing.Size(440, 447);
-            this.groupBox2.TabIndex = 20;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Options (Empty textbox means using default option)";
+            groupBox2.Controls.Add(txtFeatures);
+            groupBox2.Controls.Add(label26);
+            groupBox2.Controls.Add(txtExtraGameArguments);
+            groupBox2.Controls.Add(label25);
+            groupBox2.Controls.Add(txtExtraJVMArguments);
+            groupBox2.Controls.Add(label24);
+            groupBox2.Controls.Add(txtJVMArgumentOverrides);
+            groupBox2.Controls.Add(label11);
+            groupBox2.Controls.Add(cbDemo);
+            groupBox2.Controls.Add(txtClientId);
+            groupBox2.Controls.Add(label23);
+            groupBox2.Controls.Add(txtQuickPlayReamls);
+            groupBox2.Controls.Add(label22);
+            groupBox2.Controls.Add(txtQuickPlaySingleplay);
+            groupBox2.Controls.Add(label20);
+            groupBox2.Controls.Add(txtQuickPlayPath);
+            groupBox2.Controls.Add(label19);
+            groupBox2.Controls.Add(cbFullscreen);
+            groupBox2.Controls.Add(btnAutoRamSet);
+            groupBox2.Controls.Add(txtDockIcon);
+            groupBox2.Controls.Add(txtXms);
+            groupBox2.Controls.Add(label17);
+            groupBox2.Controls.Add(txtDockName);
+            groupBox2.Controls.Add(label21);
+            groupBox2.Controls.Add(label18);
+            groupBox2.Controls.Add(txtGLauncherVersion);
+            groupBox2.Controls.Add(label16);
+            groupBox2.Controls.Add(txtGLauncherName);
+            groupBox2.Controls.Add(label15);
+            groupBox2.Controls.Add(txtServerPort);
+            groupBox2.Controls.Add(txtXmx);
+            groupBox2.Controls.Add(label14);
+            groupBox2.Controls.Add(Xmx_RAM);
+            groupBox2.Controls.Add(txtScreenHeight);
+            groupBox2.Controls.Add(txtScreenWidth);
+            groupBox2.Controls.Add(label10);
+            groupBox2.Controls.Add(label9);
+            groupBox2.Controls.Add(txtServerIP);
+            groupBox2.Controls.Add(txtVersionType);
+            groupBox2.Controls.Add(label8);
+            groupBox2.Controls.Add(label7);
+            groupBox2.Location = new Point(405, 15);
+            groupBox2.Margin = new Padding(3, 4, 3, 4);
+            groupBox2.Name = "groupBox2";
+            groupBox2.Padding = new Padding(3, 4, 3, 4);
+            groupBox2.Size = new Size(720, 447);
+            groupBox2.TabIndex = 20;
+            groupBox2.TabStop = false;
+            groupBox2.Text = "Options (Empty textbox means using default option)";
             // 
-            // cbFullscreen
+            // txtFeatures
             // 
-            this.cbFullscreen.AutoSize = true;
-            this.cbFullscreen.Location = new System.Drawing.Point(152, 359);
-            this.cbFullscreen.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.cbFullscreen.Name = "cbFullscreen";
-            this.cbFullscreen.Size = new System.Drawing.Size(95, 19);
-            this.cbFullscreen.TabIndex = 25;
-            this.cbFullscreen.Text = "Fullscreen";
-            this.cbFullscreen.UseVisualStyleBackColor = true;
+            txtFeatures.Location = new Point(383, 319);
+            txtFeatures.Name = "txtFeatures";
+            txtFeatures.Size = new Size(331, 23);
+            txtFeatures.TabIndex = 42;
             // 
-            // btnAutoRamSet
+            // label26
             // 
-            this.btnAutoRamSet.Location = new System.Drawing.Point(337, 400);
-            this.btnAutoRamSet.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.btnAutoRamSet.Name = "btnAutoRamSet";
-            this.btnAutoRamSet.Size = new System.Drawing.Size(86, 29);
-            this.btnAutoRamSet.TabIndex = 24;
-            this.btnAutoRamSet.Text = "Auto Set";
-            this.btnAutoRamSet.UseVisualStyleBackColor = true;
-            this.btnAutoRamSet.Click += new System.EventHandler(this.btnAutoRamSet_Click);
+            label26.AutoSize = true;
+            label26.Location = new Point(383, 301);
+            label26.Name = "label26";
+            label26.Size = new Size(174, 15);
+            label26.TabIndex = 41;
+            label26.Text = "Features: (separate by commas)";
             // 
-            // Txt_DockIcon
+            // txtExtraGameArguments
             // 
-            this.Txt_DockIcon.Location = new System.Drawing.Point(152, 332);
-            this.Txt_DockIcon.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.Txt_DockIcon.Name = "Txt_DockIcon";
-            this.Txt_DockIcon.Size = new System.Drawing.Size(255, 25);
-            this.Txt_DockIcon.TabIndex = 17;
+            txtExtraGameArguments.Location = new Point(383, 275);
+            txtExtraGameArguments.Name = "txtExtraGameArguments";
+            txtExtraGameArguments.Size = new Size(331, 23);
+            txtExtraGameArguments.TabIndex = 40;
             // 
-            // txtXms
+            // label25
             // 
-            this.txtXms.Location = new System.Drawing.Point(119, 382);
-            this.txtXms.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.txtXms.Name = "txtXms";
-            this.txtXms.Size = new System.Drawing.Size(207, 25);
-            this.txtXms.TabIndex = 23;
+            label25.AutoSize = true;
+            label25.Location = new Point(383, 257);
+            label25.Name = "label25";
+            label25.Size = new Size(126, 15);
+            label25.TabIndex = 39;
+            label25.Text = "ExtraGameArguments:";
             // 
-            // label17
+            // txtExtraJVMArguments
             // 
-            this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(65, 336);
-            this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(84, 15);
-            this.label17.TabIndex = 16;
-            this.label17.Text = "DockIcon : ";
+            txtExtraJVMArguments.Location = new Point(383, 231);
+            txtExtraJVMArguments.Name = "txtExtraJVMArguments";
+            txtExtraJVMArguments.Size = new Size(331, 23);
+            txtExtraJVMArguments.TabIndex = 38;
             // 
-            // Txt_DockName
+            // label24
             // 
-            this.Txt_DockName.Location = new System.Drawing.Point(152, 299);
-            this.Txt_DockName.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.Txt_DockName.Name = "Txt_DockName";
-            this.Txt_DockName.Size = new System.Drawing.Size(255, 25);
-            this.Txt_DockName.TabIndex = 15;
+            label24.AutoSize = true;
+            label24.Location = new Point(383, 214);
+            label24.Name = "label24";
+            label24.Size = new Size(117, 15);
+            label24.TabIndex = 37;
+            label24.Text = "ExtraJVMArguments:";
             // 
-            // label21
+            // txtJVMArgumentOverrides
             // 
-            this.label21.AutoSize = true;
-            this.label21.Location = new System.Drawing.Point(11, 388);
-            this.label21.Name = "label21";
-            this.label21.Size = new System.Drawing.Size(105, 15);
-            this.label21.TabIndex = 22;
-            this.label21.Text = "Xms(MinMb) : ";
-            // 
-            // label18
-            // 
-            this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(54, 302);
-            this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(92, 15);
-            this.label18.TabIndex = 14;
-            this.label18.Text = "DockName : ";
-            // 
-            // Txt_GLauncherVersion
-            // 
-            this.Txt_GLauncherVersion.Location = new System.Drawing.Point(152, 265);
-            this.Txt_GLauncherVersion.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.Txt_GLauncherVersion.Name = "Txt_GLauncherVersion";
-            this.Txt_GLauncherVersion.Size = new System.Drawing.Size(255, 25);
-            this.Txt_GLauncherVersion.TabIndex = 13;
-            // 
-            // label16
-            // 
-            this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(7, 269);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(141, 15);
-            this.label16.TabIndex = 12;
-            this.label16.Text = "GLauncherVersion : ";
-            // 
-            // Txt_GLauncherName
-            // 
-            this.Txt_GLauncherName.Location = new System.Drawing.Point(152, 231);
-            this.Txt_GLauncherName.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.Txt_GLauncherName.Name = "Txt_GLauncherName";
-            this.Txt_GLauncherName.Size = new System.Drawing.Size(255, 25);
-            this.Txt_GLauncherName.TabIndex = 11;
-            // 
-            // label15
-            // 
-            this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(16, 235);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(129, 15);
-            this.label15.TabIndex = 10;
-            this.label15.Text = "GLauncherName : ";
-            // 
-            // Txt_ServerPort
-            // 
-            this.Txt_ServerPort.Location = new System.Drawing.Point(152, 61);
-            this.Txt_ServerPort.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.Txt_ServerPort.Name = "Txt_ServerPort";
-            this.Txt_ServerPort.Size = new System.Drawing.Size(255, 25);
-            this.Txt_ServerPort.TabIndex = 9;
-            // 
-            // TxtXmx
-            // 
-            this.TxtXmx.Location = new System.Drawing.Point(119, 416);
-            this.TxtXmx.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.TxtXmx.Name = "TxtXmx";
-            this.TxtXmx.Size = new System.Drawing.Size(207, 25);
-            this.TxtXmx.TabIndex = 11;
-            this.TxtXmx.Text = "1024";
-            // 
-            // label14
-            // 
-            this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(55, 65);
-            this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(96, 15);
-            this.label14.TabIndex = 8;
-            this.label14.Text = "Server Port : ";
-            // 
-            // Txt_JavaArgs
-            // 
-            this.Txt_JavaArgs.Location = new System.Drawing.Point(152, 164);
-            this.Txt_JavaArgs.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.Txt_JavaArgs.Name = "Txt_JavaArgs";
-            this.Txt_JavaArgs.Size = new System.Drawing.Size(255, 25);
-            this.Txt_JavaArgs.TabIndex = 7;
-            // 
-            // Xmx_RAM
-            // 
-            this.Xmx_RAM.AutoSize = true;
-            this.Xmx_RAM.Location = new System.Drawing.Point(7, 419);
-            this.Xmx_RAM.Name = "Xmx_RAM";
-            this.Xmx_RAM.Size = new System.Drawing.Size(112, 15);
-            this.Xmx_RAM.TabIndex = 10;
-            this.Xmx_RAM.Text = "Xmx(MaxMb) : ";
-            // 
-            // Txt_ScHt
-            // 
-            this.Txt_ScHt.Location = new System.Drawing.Point(152, 130);
-            this.Txt_ScHt.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.Txt_ScHt.Name = "Txt_ScHt";
-            this.Txt_ScHt.Size = new System.Drawing.Size(255, 25);
-            this.Txt_ScHt.TabIndex = 6;
-            // 
-            // Txt_ScWd
-            // 
-            this.Txt_ScWd.Location = new System.Drawing.Point(152, 96);
-            this.Txt_ScWd.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.Txt_ScWd.Name = "Txt_ScWd";
-            this.Txt_ScWd.Size = new System.Drawing.Size(255, 25);
-            this.Txt_ScWd.TabIndex = 5;
+            txtJVMArgumentOverrides.Location = new Point(383, 188);
+            txtJVMArgumentOverrides.Name = "txtJVMArgumentOverrides";
+            txtJVMArgumentOverrides.Size = new Size(331, 23);
+            txtJVMArgumentOverrides.TabIndex = 36;
             // 
             // label11
             // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(22, 168);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(121, 15);
-            this.label11.TabIndex = 4;
-            this.label11.Text = "JVM Arguments : ";
+            label11.AutoSize = true;
+            label11.Location = new Point(383, 170);
+            label11.Name = "label11";
+            label11.Size = new Size(139, 15);
+            label11.TabIndex = 35;
+            label11.Text = "JVMArgumentOverrides: ";
+            // 
+            // cbDemo
+            // 
+            cbDemo.AutoSize = true;
+            cbDemo.Location = new Point(383, 130);
+            cbDemo.Name = "cbDemo";
+            cbDemo.Size = new Size(58, 19);
+            cbDemo.TabIndex = 34;
+            cbDemo.Text = "Demo";
+            cbDemo.UseVisualStyleBackColor = true;
+            // 
+            // txtClientId
+            // 
+            txtClientId.Location = new Point(133, 167);
+            txtClientId.Margin = new Padding(3, 4, 3, 4);
+            txtClientId.Name = "txtClientId";
+            txtClientId.Size = new Size(224, 23);
+            txtClientId.TabIndex = 33;
+            // 
+            // label23
+            // 
+            label23.AutoSize = true;
+            label23.Location = new Point(62, 170);
+            label23.Name = "label23";
+            label23.Size = new Size(54, 15);
+            label23.TabIndex = 32;
+            label23.Text = "ClientId: ";
+            // 
+            // txtQuickPlayReamls
+            // 
+            txtQuickPlayReamls.Location = new Point(490, 96);
+            txtQuickPlayReamls.Margin = new Padding(3, 4, 3, 4);
+            txtQuickPlayReamls.Name = "txtQuickPlayReamls";
+            txtQuickPlayReamls.Size = new Size(224, 23);
+            txtQuickPlayReamls.TabIndex = 31;
+            // 
+            // label22
+            // 
+            label22.AutoSize = true;
+            label22.Location = new Point(383, 99);
+            label22.Name = "label22";
+            label22.Size = new Size(101, 15);
+            label22.TabIndex = 30;
+            label22.Text = "QuickPlayRealms:";
+            // 
+            // txtQuickPlaySingleplay
+            // 
+            txtQuickPlaySingleplay.Location = new Point(490, 62);
+            txtQuickPlaySingleplay.Margin = new Padding(3, 4, 3, 4);
+            txtQuickPlaySingleplay.Name = "txtQuickPlaySingleplay";
+            txtQuickPlaySingleplay.Size = new Size(224, 23);
+            txtQuickPlaySingleplay.TabIndex = 29;
+            // 
+            // label20
+            // 
+            label20.AutoSize = true;
+            label20.Location = new Point(364, 66);
+            label20.Name = "label20";
+            label20.Size = new Size(120, 15);
+            label20.TabIndex = 28;
+            label20.Text = "QuickPlaySingleplay: ";
+            // 
+            // txtQuickPlayPath
+            // 
+            txtQuickPlayPath.Location = new Point(490, 28);
+            txtQuickPlayPath.Margin = new Padding(3, 4, 3, 4);
+            txtQuickPlayPath.Name = "txtQuickPlayPath";
+            txtQuickPlayPath.Size = new Size(224, 23);
+            txtQuickPlayPath.TabIndex = 27;
+            // 
+            // label19
+            // 
+            label19.AutoSize = true;
+            label19.Location = new Point(394, 33);
+            label19.Name = "label19";
+            label19.Size = new Size(90, 15);
+            label19.TabIndex = 26;
+            label19.Text = "QuickPlayPath: ";
+            // 
+            // cbFullscreen
+            // 
+            cbFullscreen.AutoSize = true;
+            cbFullscreen.Location = new Point(447, 130);
+            cbFullscreen.Margin = new Padding(3, 4, 3, 4);
+            cbFullscreen.Name = "cbFullscreen";
+            cbFullscreen.Size = new Size(79, 19);
+            cbFullscreen.TabIndex = 25;
+            cbFullscreen.Text = "Fullscreen";
+            cbFullscreen.UseVisualStyleBackColor = true;
+            // 
+            // btnAutoRamSet
+            // 
+            btnAutoRamSet.Location = new Point(325, 381);
+            btnAutoRamSet.Margin = new Padding(3, 4, 3, 4);
+            btnAutoRamSet.Name = "btnAutoRamSet";
+            btnAutoRamSet.Size = new Size(75, 29);
+            btnAutoRamSet.TabIndex = 24;
+            btnAutoRamSet.Text = "Auto Set";
+            btnAutoRamSet.UseVisualStyleBackColor = true;
+            btnAutoRamSet.Click += btnAutoRamSet_Click;
+            // 
+            // txtDockIcon
+            // 
+            txtDockIcon.Location = new Point(133, 332);
+            txtDockIcon.Margin = new Padding(3, 4, 3, 4);
+            txtDockIcon.Name = "txtDockIcon";
+            txtDockIcon.Size = new Size(224, 23);
+            txtDockIcon.TabIndex = 17;
+            // 
+            // txtXms
+            // 
+            txtXms.Location = new Point(134, 363);
+            txtXms.Margin = new Padding(3, 4, 3, 4);
+            txtXms.Name = "txtXms";
+            txtXms.Size = new Size(182, 23);
+            txtXms.TabIndex = 23;
+            // 
+            // label17
+            // 
+            label17.AutoSize = true;
+            label17.Location = new Point(57, 336);
+            label17.Name = "label17";
+            label17.Size = new Size(66, 15);
+            label17.TabIndex = 16;
+            label17.Text = "DockIcon : ";
+            // 
+            // txtDockName
+            // 
+            txtDockName.Location = new Point(133, 299);
+            txtDockName.Margin = new Padding(3, 4, 3, 4);
+            txtDockName.Name = "txtDockName";
+            txtDockName.Size = new Size(224, 23);
+            txtDockName.TabIndex = 15;
+            // 
+            // label21
+            // 
+            label21.AutoSize = true;
+            label21.Location = new Point(40, 369);
+            label21.Name = "label21";
+            label21.Size = new Size(86, 15);
+            label21.TabIndex = 22;
+            label21.Text = "Xms(MinMb) : ";
+            // 
+            // label18
+            // 
+            label18.AutoSize = true;
+            label18.Location = new Point(47, 302);
+            label18.Name = "label18";
+            label18.Size = new Size(75, 15);
+            label18.TabIndex = 14;
+            label18.Text = "DockName : ";
+            // 
+            // txtGLauncherVersion
+            // 
+            txtGLauncherVersion.Location = new Point(133, 265);
+            txtGLauncherVersion.Margin = new Padding(3, 4, 3, 4);
+            txtGLauncherVersion.Name = "txtGLauncherVersion";
+            txtGLauncherVersion.Size = new Size(224, 23);
+            txtGLauncherVersion.TabIndex = 13;
+            // 
+            // label16
+            // 
+            label16.AutoSize = true;
+            label16.Location = new Point(6, 269);
+            label16.Name = "label16";
+            label16.Size = new Size(111, 15);
+            label16.TabIndex = 12;
+            label16.Text = "GLauncherVersion : ";
+            // 
+            // txtGLauncherName
+            // 
+            txtGLauncherName.Location = new Point(133, 231);
+            txtGLauncherName.Margin = new Padding(3, 4, 3, 4);
+            txtGLauncherName.Name = "txtGLauncherName";
+            txtGLauncherName.Size = new Size(224, 23);
+            txtGLauncherName.TabIndex = 11;
+            // 
+            // label15
+            // 
+            label15.AutoSize = true;
+            label15.Location = new Point(14, 235);
+            label15.Name = "label15";
+            label15.Size = new Size(105, 15);
+            label15.TabIndex = 10;
+            label15.Text = "GLauncherName : ";
+            // 
+            // txtServerPort
+            // 
+            txtServerPort.Location = new Point(133, 61);
+            txtServerPort.Margin = new Padding(3, 4, 3, 4);
+            txtServerPort.Name = "txtServerPort";
+            txtServerPort.Size = new Size(224, 23);
+            txtServerPort.TabIndex = 9;
+            // 
+            // txtXmx
+            // 
+            txtXmx.Location = new Point(134, 397);
+            txtXmx.Margin = new Padding(3, 4, 3, 4);
+            txtXmx.Name = "txtXmx";
+            txtXmx.Size = new Size(182, 23);
+            txtXmx.TabIndex = 11;
+            txtXmx.Text = "1024";
+            // 
+            // label14
+            // 
+            label14.AutoSize = true;
+            label14.Location = new Point(48, 65);
+            label14.Name = "label14";
+            label14.Size = new Size(73, 15);
+            label14.TabIndex = 8;
+            label14.Text = "Server Port : ";
+            // 
+            // Xmx_RAM
+            // 
+            Xmx_RAM.AutoSize = true;
+            Xmx_RAM.Location = new Point(36, 400);
+            Xmx_RAM.Name = "Xmx_RAM";
+            Xmx_RAM.Size = new Size(89, 15);
+            Xmx_RAM.TabIndex = 10;
+            Xmx_RAM.Text = "Xmx(MaxMb) : ";
+            // 
+            // txtScreenHeight
+            // 
+            txtScreenHeight.Location = new Point(133, 130);
+            txtScreenHeight.Margin = new Padding(3, 4, 3, 4);
+            txtScreenHeight.Name = "txtScreenHeight";
+            txtScreenHeight.Size = new Size(224, 23);
+            txtScreenHeight.TabIndex = 6;
+            // 
+            // txtScreenWidth
+            // 
+            txtScreenWidth.Location = new Point(133, 96);
+            txtScreenWidth.Margin = new Padding(3, 4, 3, 4);
+            txtScreenWidth.Name = "txtScreenWidth";
+            txtScreenWidth.Size = new Size(224, 23);
+            txtScreenWidth.TabIndex = 5;
             // 
             // label10
             // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(35, 134);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(114, 15);
-            this.label10.TabIndex = 3;
-            this.label10.Text = "Screen Height : ";
+            label10.AutoSize = true;
+            label10.Location = new Point(31, 134);
+            label10.Name = "label10";
+            label10.Size = new Size(90, 15);
+            label10.TabIndex = 3;
+            label10.Text = "Screen Height : ";
             // 
             // label9
             // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(41, 100);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(110, 15);
-            this.label9.TabIndex = 2;
-            this.label9.Text = "Screen Width : ";
+            label9.AutoSize = true;
+            label9.Location = new Point(36, 100);
+            label9.Name = "label9";
+            label9.Size = new Size(86, 15);
+            label9.TabIndex = 2;
+            label9.Text = "Screen Width : ";
             // 
-            // Txt_ServerIp
+            // txtServerIP
             // 
-            this.Txt_ServerIp.Location = new System.Drawing.Point(152, 28);
-            this.Txt_ServerIp.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.Txt_ServerIp.Name = "Txt_ServerIp";
-            this.Txt_ServerIp.Size = new System.Drawing.Size(255, 25);
-            this.Txt_ServerIp.TabIndex = 1;
+            txtServerIP.Location = new Point(133, 28);
+            txtServerIP.Margin = new Padding(3, 4, 3, 4);
+            txtServerIP.Name = "txtServerIP";
+            txtServerIP.Size = new Size(224, 23);
+            txtServerIP.TabIndex = 1;
             // 
-            // Txt_VersionType
+            // txtVersionType
             // 
-            this.Txt_VersionType.Location = new System.Drawing.Point(152, 198);
-            this.Txt_VersionType.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.Txt_VersionType.Name = "Txt_VersionType";
-            this.Txt_VersionType.Size = new System.Drawing.Size(255, 25);
-            this.Txt_VersionType.TabIndex = 1;
+            txtVersionType.Location = new Point(133, 198);
+            txtVersionType.Margin = new Padding(3, 4, 3, 4);
+            txtVersionType.Name = "txtVersionType";
+            txtVersionType.Size = new Size(224, 23);
+            txtVersionType.TabIndex = 1;
             // 
             // label8
             // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(67, 31);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(82, 15);
-            this.label8.TabIndex = 0;
-            this.label8.Text = "Server IP : ";
+            label8.AutoSize = true;
+            label8.Location = new Point(59, 31);
+            label8.Name = "label8";
+            label8.Size = new Size(61, 15);
+            label8.TabIndex = 0;
+            label8.Text = "Server IP : ";
             // 
             // label7
             // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(43, 201);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(102, 15);
-            this.label7.TabIndex = 0;
-            this.label7.Text = "VersionType : ";
+            label7.AutoSize = true;
+            label7.Location = new Point(38, 201);
+            label7.Name = "label7";
+            label7.Size = new Size(78, 15);
+            label7.TabIndex = 0;
+            label7.Text = "VersionType : ";
             // 
             // Pb_Progress
             // 
-            this.Pb_Progress.Location = new System.Drawing.Point(16, 521);
-            this.Pb_Progress.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.Pb_Progress.Name = "Pb_Progress";
-            this.Pb_Progress.Size = new System.Drawing.Size(887, 29);
-            this.Pb_Progress.TabIndex = 19;
-            // 
-            // Pb_File
-            // 
-            this.Pb_File.Location = new System.Drawing.Point(16, 485);
-            this.Pb_File.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.Pb_File.Name = "Pb_File";
-            this.Pb_File.Size = new System.Drawing.Size(887, 29);
-            this.Pb_File.TabIndex = 18;
+            Pb_Progress.Location = new Point(14, 489);
+            Pb_Progress.Margin = new Padding(3, 4, 3, 4);
+            Pb_Progress.Name = "Pb_Progress";
+            Pb_Progress.Size = new Size(1105, 29);
+            Pb_Progress.TabIndex = 19;
             // 
             // Lv_Status
             // 
-            this.Lv_Status.AutoSize = true;
-            this.Lv_Status.Location = new System.Drawing.Point(14, 466);
-            this.Lv_Status.Name = "Lv_Status";
-            this.Lv_Status.Size = new System.Drawing.Size(49, 15);
-            this.Lv_Status.TabIndex = 17;
-            this.Lv_Status.Text = "Ready";
+            Lv_Status.AutoSize = true;
+            Lv_Status.Location = new Point(12, 466);
+            Lv_Status.Name = "Lv_Status";
+            Lv_Status.Size = new Size(39, 15);
+            Lv_Status.TabIndex = 17;
+            Lv_Status.Text = "Ready";
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.btnChangeJava);
-            this.groupBox1.Controls.Add(this.lbJavaPath);
-            this.groupBox1.Controls.Add(this.lbUsername);
-            this.groupBox1.Controls.Add(this.label6);
-            this.groupBox1.Controls.Add(this.btnChangePath);
-            this.groupBox1.Controls.Add(this.txtPath);
-            this.groupBox1.Controls.Add(this.label4);
-            this.groupBox1.Controls.Add(this.label2);
-            this.groupBox1.Location = new System.Drawing.Point(16, 15);
-            this.groupBox1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Padding = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.groupBox1.Size = new System.Drawing.Size(440, 145);
-            this.groupBox1.TabIndex = 16;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "CmlLib Sample Launcher";
+            groupBox1.Controls.Add(cbJavaUseDefault);
+            groupBox1.Controls.Add(txtJava);
+            groupBox1.Controls.Add(label6);
+            groupBox1.Controls.Add(btnChangePath);
+            groupBox1.Controls.Add(txtPath);
+            groupBox1.Controls.Add(label4);
+            groupBox1.Location = new Point(14, 15);
+            groupBox1.Margin = new Padding(3, 4, 3, 4);
+            groupBox1.Name = "groupBox1";
+            groupBox1.Padding = new Padding(3, 4, 3, 4);
+            groupBox1.Size = new Size(385, 99);
+            groupBox1.TabIndex = 16;
+            groupBox1.TabStop = false;
+            groupBox1.Text = "CmlLib Sample Launcher";
             // 
-            // btnChangeJava
+            // cbJavaUseDefault
             // 
-            this.btnChangeJava.Location = new System.Drawing.Point(362, 112);
-            this.btnChangeJava.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.btnChangeJava.Name = "btnChangeJava";
-            this.btnChangeJava.Size = new System.Drawing.Size(66, 29);
-            this.btnChangeJava.TabIndex = 21;
-            this.btnChangeJava.Text = "Change";
-            this.btnChangeJava.UseVisualStyleBackColor = true;
-            this.btnChangeJava.Click += new System.EventHandler(this.btnChangeJava_Click);
+            cbJavaUseDefault.AutoSize = true;
+            cbJavaUseDefault.Checked = true;
+            cbJavaUseDefault.CheckState = CheckState.Checked;
+            cbJavaUseDefault.Location = new Point(290, 60);
+            cbJavaUseDefault.Name = "cbJavaUseDefault";
+            cbJavaUseDefault.Size = new Size(85, 19);
+            cbJavaUseDefault.TabIndex = 14;
+            cbJavaUseDefault.Text = "Use default";
+            cbJavaUseDefault.UseVisualStyleBackColor = true;
+            cbJavaUseDefault.CheckedChanged += cbJavaUseDefault_CheckedChanged;
             // 
-            // lbJavaPath
+            // txtJava
             // 
-            this.lbJavaPath.AutoSize = true;
-            this.lbJavaPath.Location = new System.Drawing.Point(101, 115);
-            this.lbJavaPath.Name = "lbJavaPath";
-            this.lbJavaPath.Size = new System.Drawing.Size(113, 15);
-            this.lbJavaPath.TabIndex = 20;
-            this.lbJavaPath.Text = "Use default java";
-            // 
-            // lbUsername
-            // 
-            this.lbUsername.AutoSize = true;
-            this.lbUsername.Location = new System.Drawing.Point(101, 84);
-            this.lbUsername.Name = "lbUsername";
-            this.lbUsername.Size = new System.Drawing.Size(67, 15);
-            this.lbUsername.TabIndex = 18;
-            this.lbUsername.Text = "test_user";
+            txtJava.Location = new Point(52, 58);
+            txtJava.Margin = new Padding(3, 4, 3, 4);
+            txtJava.Name = "txtJava";
+            txtJava.ReadOnly = true;
+            txtJava.Size = new Size(226, 23);
+            txtJava.TabIndex = 13;
             // 
             // label6
             // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(47, 115);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(52, 15);
-            this.label6.TabIndex = 12;
-            this.label6.Text = "Java : ";
+            label6.AutoSize = true;
+            label6.Location = new Point(15, 61);
+            label6.Name = "label6";
+            label6.Size = new Size(38, 15);
+            label6.TabIndex = 12;
+            label6.Text = "Java : ";
             // 
             // btnChangePath
             // 
-            this.btnChangePath.Location = new System.Drawing.Point(362, 45);
-            this.btnChangePath.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.btnChangePath.Name = "btnChangePath";
-            this.btnChangePath.Size = new System.Drawing.Size(66, 29);
-            this.btnChangePath.TabIndex = 9;
-            this.btnChangePath.Text = "Change";
-            this.btnChangePath.UseVisualStyleBackColor = true;
-            this.btnChangePath.Click += new System.EventHandler(this.btnChangePath_Click);
+            btnChangePath.Location = new Point(317, 20);
+            btnChangePath.Margin = new Padding(3, 4, 3, 4);
+            btnChangePath.Name = "btnChangePath";
+            btnChangePath.Size = new Size(58, 29);
+            btnChangePath.TabIndex = 9;
+            btnChangePath.Text = "Change";
+            btnChangePath.UseVisualStyleBackColor = true;
+            btnChangePath.Click += btnChangePath_Click;
             // 
             // txtPath
             // 
-            this.txtPath.Location = new System.Drawing.Point(19, 46);
-            this.txtPath.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.txtPath.Name = "txtPath";
-            this.txtPath.ReadOnly = true;
-            this.txtPath.Size = new System.Drawing.Size(335, 25);
-            this.txtPath.TabIndex = 8;
+            txtPath.Location = new Point(85, 25);
+            txtPath.Margin = new Padding(3, 4, 3, 4);
+            txtPath.Name = "txtPath";
+            txtPath.ReadOnly = true;
+            txtPath.Size = new Size(226, 23);
+            txtPath.TabIndex = 8;
             // 
             // label4
             // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(17, 28);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(95, 15);
-            this.label4.TabIndex = 7;
-            this.label4.Text = "Game Path : ";
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(24, 84);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(76, 15);
-            this.label2.TabIndex = 3;
-            this.label2.Text = "Account : ";
+            label4.AutoSize = true;
+            label4.Location = new Point(15, 28);
+            label4.Name = "label4";
+            label4.Size = new Size(74, 15);
+            label4.TabIndex = 7;
+            label4.Text = "Game Path : ";
             // 
             // btnLaunch
             // 
-            this.btnLaunch.Location = new System.Drawing.Point(32, 102);
-            this.btnLaunch.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.btnLaunch.Name = "btnLaunch";
-            this.btnLaunch.Size = new System.Drawing.Size(377, 69);
-            this.btnLaunch.TabIndex = 2;
-            this.btnLaunch.Text = "Download and Launch";
-            this.btnLaunch.UseVisualStyleBackColor = true;
-            this.btnLaunch.Click += new System.EventHandler(this.Btn_Launch_Click);
+            btnLaunch.Location = new Point(28, 102);
+            btnLaunch.Margin = new Padding(3, 4, 3, 4);
+            btnLaunch.Name = "btnLaunch";
+            btnLaunch.Size = new Size(250, 69);
+            btnLaunch.TabIndex = 2;
+            btnLaunch.Text = "Install and Launch";
+            btnLaunch.UseVisualStyleBackColor = true;
+            btnLaunch.Click += Btn_Launch_Click;
             // 
             // cbVersion
             // 
-            this.cbVersion.FormattingEnabled = true;
-            this.cbVersion.Location = new System.Drawing.Point(105, 34);
-            this.cbVersion.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.cbVersion.Name = "cbVersion";
-            this.cbVersion.Size = new System.Drawing.Size(207, 23);
-            this.cbVersion.TabIndex = 1;
+            cbVersion.FormattingEnabled = true;
+            cbVersion.Location = new Point(92, 34);
+            cbVersion.Margin = new Padding(3, 4, 3, 4);
+            cbVersion.Name = "cbVersion";
+            cbVersion.Size = new Size(182, 23);
+            cbVersion.TabIndex = 1;
             // 
             // label1
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(30, 38);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(70, 15);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "Version : ";
+            label1.AutoSize = true;
+            label1.Location = new Point(26, 38);
+            label1.Name = "label1";
+            label1.Size = new Size(54, 15);
+            label1.TabIndex = 0;
+            label1.Text = "Version : ";
             // 
             // label12
             // 
-            this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(485, 559);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(242, 15);
-            this.label12.TabIndex = 23;
-            this.label12.Text = "AlphaBs (ksi123456ab@naver.com)";
+            label12.AutoSize = true;
+            label12.Location = new Point(756, 525);
+            label12.Name = "label12";
+            label12.Size = new Size(191, 15);
+            label12.TabIndex = 23;
+            label12.Text = "AlphaBs (ksi123456ab@naver.com)";
             // 
             // btnGithub
             // 
-            this.btnGithub.Location = new System.Drawing.Point(725, 558);
-            this.btnGithub.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.btnGithub.Name = "btnGithub";
-            this.btnGithub.Size = new System.Drawing.Size(86, 29);
-            this.btnGithub.TabIndex = 24;
-            this.btnGithub.Text = "GitHub";
-            this.btnGithub.UseVisualStyleBackColor = true;
-            this.btnGithub.Click += new System.EventHandler(this.btnGithub_Click);
+            btnGithub.Location = new Point(966, 524);
+            btnGithub.Margin = new Padding(3, 4, 3, 4);
+            btnGithub.Name = "btnGithub";
+            btnGithub.Size = new Size(75, 29);
+            btnGithub.TabIndex = 24;
+            btnGithub.Text = "GitHub";
+            btnGithub.UseVisualStyleBackColor = true;
+            btnGithub.Click += btnGithub_Click;
             // 
             // btnWiki
             // 
-            this.btnWiki.Location = new System.Drawing.Point(817, 558);
-            this.btnWiki.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.btnWiki.Name = "btnWiki";
-            this.btnWiki.Size = new System.Drawing.Size(86, 29);
-            this.btnWiki.TabIndex = 25;
-            this.btnWiki.Text = "Wiki";
-            this.btnWiki.UseVisualStyleBackColor = true;
-            this.btnWiki.Click += new System.EventHandler(this.btnWiki_Click);
+            btnWiki.Location = new Point(1047, 524);
+            btnWiki.Margin = new Padding(3, 4, 3, 4);
+            btnWiki.Name = "btnWiki";
+            btnWiki.Size = new Size(75, 29);
+            btnWiki.TabIndex = 25;
+            btnWiki.Text = "Wiki";
+            btnWiki.UseVisualStyleBackColor = true;
+            btnWiki.Click += btnWiki_Click;
             // 
             // btnChangelog
             // 
-            this.btnChangelog.Location = new System.Drawing.Point(14, 559);
-            this.btnChangelog.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.btnChangelog.Name = "btnChangelog";
-            this.btnChangelog.Size = new System.Drawing.Size(145, 29);
-            this.btnChangelog.TabIndex = 26;
-            this.btnChangelog.Text = "GameChangelog";
-            this.btnChangelog.UseVisualStyleBackColor = true;
-            this.btnChangelog.Click += new System.EventHandler(this.btnChangelog_Click);
-            // 
-            // rbSequenceDownload
-            // 
-            this.rbSequenceDownload.AutoSize = true;
-            this.rbSequenceDownload.Location = new System.Drawing.Point(44, 30);
-            this.rbSequenceDownload.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.rbSequenceDownload.Name = "rbSequenceDownload";
-            this.rbSequenceDownload.Size = new System.Drawing.Size(171, 19);
-            this.rbSequenceDownload.TabIndex = 22;
-            this.rbSequenceDownload.Text = "SequenceDownloader";
-            this.rbSequenceDownload.UseVisualStyleBackColor = true;
-            // 
-            // rbParallelDownload
-            // 
-            this.rbParallelDownload.AutoSize = true;
-            this.rbParallelDownload.Checked = true;
-            this.rbParallelDownload.Location = new System.Drawing.Point(221, 30);
-            this.rbParallelDownload.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.rbParallelDownload.Name = "rbParallelDownload";
-            this.rbParallelDownload.Size = new System.Drawing.Size(193, 19);
-            this.rbParallelDownload.TabIndex = 23;
-            this.rbParallelDownload.TabStop = true;
-            this.rbParallelDownload.Text = "AsyncParallelDownloader";
-            this.rbParallelDownload.UseVisualStyleBackColor = true;
-            // 
-            // groupBox3
-            // 
-            this.groupBox3.Controls.Add(this.cbSkipHashCheck);
-            this.groupBox3.Controls.Add(this.cbSkipAssetsDownload);
-            this.groupBox3.Controls.Add(this.rbSequenceDownload);
-            this.groupBox3.Controls.Add(this.rbParallelDownload);
-            this.groupBox3.Location = new System.Drawing.Point(16, 168);
-            this.groupBox3.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Padding = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.groupBox3.Size = new System.Drawing.Size(440, 98);
-            this.groupBox3.TabIndex = 27;
-            this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "Download Options";
-            // 
-            // cbSkipHashCheck
-            // 
-            this.cbSkipHashCheck.AutoSize = true;
-            this.cbSkipHashCheck.Location = new System.Drawing.Point(229, 57);
-            this.cbSkipHashCheck.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.cbSkipHashCheck.Name = "cbSkipHashCheck";
-            this.cbSkipHashCheck.Size = new System.Drawing.Size(157, 19);
-            this.cbSkipHashCheck.TabIndex = 26;
-            this.cbSkipHashCheck.Text = "Skip hash checking";
-            this.cbSkipHashCheck.UseVisualStyleBackColor = true;
-            // 
-            // cbSkipAssetsDownload
-            // 
-            this.cbSkipAssetsDownload.AutoSize = true;
-            this.cbSkipAssetsDownload.Location = new System.Drawing.Point(50, 57);
-            this.cbSkipAssetsDownload.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.cbSkipAssetsDownload.Name = "cbSkipAssetsDownload";
-            this.cbSkipAssetsDownload.Size = new System.Drawing.Size(166, 19);
-            this.cbSkipAssetsDownload.TabIndex = 25;
-            this.cbSkipAssetsDownload.Text = "Skip asset download";
-            this.cbSkipAssetsDownload.UseVisualStyleBackColor = true;
+            btnChangelog.Location = new Point(12, 525);
+            btnChangelog.Margin = new Padding(3, 4, 3, 4);
+            btnChangelog.Name = "btnChangelog";
+            btnChangelog.Size = new Size(127, 29);
+            btnChangelog.TabIndex = 26;
+            btnChangelog.Text = "GameChangelog";
+            btnChangelog.UseVisualStyleBackColor = true;
+            btnChangelog.Click += btnChangelog_Click;
             // 
             // groupBox4
             // 
-            this.groupBox4.Controls.Add(this.btnSortFilter);
-            this.groupBox4.Controls.Add(this.btnRefreshVersion);
-            this.groupBox4.Controls.Add(this.btnSetLastVersion);
-            this.groupBox4.Controls.Add(this.cbVersion);
-            this.groupBox4.Controls.Add(this.label1);
-            this.groupBox4.Controls.Add(this.btnLaunch);
-            this.groupBox4.Location = new System.Drawing.Point(16, 272);
-            this.groupBox4.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Padding = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.groupBox4.Size = new System.Drawing.Size(440, 190);
-            this.groupBox4.TabIndex = 28;
-            this.groupBox4.TabStop = false;
-            this.groupBox4.Text = "Launch";
+            groupBox4.Controls.Add(btnCancel);
+            groupBox4.Controls.Add(btnSortFilter);
+            groupBox4.Controls.Add(btnRefreshVersion);
+            groupBox4.Controls.Add(btnSetLastVersion);
+            groupBox4.Controls.Add(cbVersion);
+            groupBox4.Controls.Add(label1);
+            groupBox4.Controls.Add(btnLaunch);
+            groupBox4.Location = new Point(14, 272);
+            groupBox4.Margin = new Padding(3, 4, 3, 4);
+            groupBox4.Name = "groupBox4";
+            groupBox4.Padding = new Padding(3, 4, 3, 4);
+            groupBox4.Size = new Size(385, 190);
+            groupBox4.TabIndex = 28;
+            groupBox4.TabStop = false;
+            groupBox4.Text = "Launch";
+            // 
+            // btnCancel
+            // 
+            btnCancel.Location = new Point(284, 104);
+            btnCancel.Name = "btnCancel";
+            btnCancel.Size = new Size(75, 67);
+            btnCancel.TabIndex = 6;
+            btnCancel.Text = "Cancel";
+            btnCancel.UseVisualStyleBackColor = true;
+            btnCancel.Click += btnCancel_Click;
             // 
             // btnSortFilter
             // 
-            this.btnSortFilter.Location = new System.Drawing.Point(149, 65);
-            this.btnSortFilter.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.btnSortFilter.Name = "btnSortFilter";
-            this.btnSortFilter.Size = new System.Drawing.Size(163, 29);
-            this.btnSortFilter.TabIndex = 5;
-            this.btnSortFilter.Text = "Sort option";
-            this.btnSortFilter.UseVisualStyleBackColor = true;
-            this.btnSortFilter.Click += new System.EventHandler(this.btnSortFilter_Click);
+            btnSortFilter.Location = new Point(92, 65);
+            btnSortFilter.Margin = new Padding(3, 4, 3, 4);
+            btnSortFilter.Name = "btnSortFilter";
+            btnSortFilter.Size = new Size(182, 29);
+            btnSortFilter.TabIndex = 5;
+            btnSortFilter.Text = "Sort option";
+            btnSortFilter.UseVisualStyleBackColor = true;
+            btnSortFilter.Click += btnSortFilter_Click;
             // 
             // btnRefreshVersion
             // 
-            this.btnRefreshVersion.Location = new System.Drawing.Point(323, 65);
-            this.btnRefreshVersion.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.btnRefreshVersion.Name = "btnRefreshVersion";
-            this.btnRefreshVersion.Size = new System.Drawing.Size(86, 29);
-            this.btnRefreshVersion.TabIndex = 4;
-            this.btnRefreshVersion.Text = "Refresh";
-            this.btnRefreshVersion.UseVisualStyleBackColor = true;
-            this.btnRefreshVersion.Click += new System.EventHandler(this.btnRefreshVersion_Click);
+            btnRefreshVersion.Location = new Point(283, 65);
+            btnRefreshVersion.Margin = new Padding(3, 4, 3, 4);
+            btnRefreshVersion.Name = "btnRefreshVersion";
+            btnRefreshVersion.Size = new Size(75, 29);
+            btnRefreshVersion.TabIndex = 4;
+            btnRefreshVersion.Text = "Refresh";
+            btnRefreshVersion.UseVisualStyleBackColor = true;
+            btnRefreshVersion.Click += btnRefreshVersion_Click;
             // 
             // btnSetLastVersion
             // 
-            this.btnSetLastVersion.Location = new System.Drawing.Point(323, 31);
-            this.btnSetLastVersion.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.btnSetLastVersion.Name = "btnSetLastVersion";
-            this.btnSetLastVersion.Size = new System.Drawing.Size(86, 29);
-            this.btnSetLastVersion.TabIndex = 2;
-            this.btnSetLastVersion.Text = "Lastest\r\n";
-            this.btnSetLastVersion.UseVisualStyleBackColor = true;
-            this.btnSetLastVersion.Click += new System.EventHandler(this.btnSetLastVersion_Click);
+            btnSetLastVersion.Location = new Point(283, 31);
+            btnSetLastVersion.Margin = new Padding(3, 4, 3, 4);
+            btnSetLastVersion.Name = "btnSetLastVersion";
+            btnSetLastVersion.Size = new Size(75, 29);
+            btnSetLastVersion.TabIndex = 2;
+            btnSetLastVersion.Text = "Lastest\r\n";
+            btnSetLastVersion.UseVisualStyleBackColor = true;
+            btnSetLastVersion.Click += btnSetLastVersion_Click;
             // 
             // btnOptions
             // 
-            this.btnOptions.Location = new System.Drawing.Point(318, 559);
-            this.btnOptions.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.btnOptions.Name = "btnOptions";
-            this.btnOptions.Size = new System.Drawing.Size(138, 29);
-            this.btnOptions.TabIndex = 30;
-            this.btnOptions.Text = "options.txt";
-            this.btnOptions.UseVisualStyleBackColor = true;
-            this.btnOptions.Click += new System.EventHandler(this.btnOptions_Click);
+            btnOptions.Location = new Point(145, 526);
+            btnOptions.Margin = new Padding(3, 4, 3, 4);
+            btnOptions.Name = "btnOptions";
+            btnOptions.Size = new Size(121, 29);
+            btnOptions.TabIndex = 30;
+            btnOptions.Text = "options.txt";
+            btnOptions.UseVisualStyleBackColor = true;
+            btnOptions.Click += btnOptions_Click;
             // 
             // lbLibraryVersion
             // 
-            this.lbLibraryVersion.Location = new System.Drawing.Point(485, 576);
-            this.lbLibraryVersion.Name = "lbLibraryVersion";
-            this.lbLibraryVersion.Size = new System.Drawing.Size(234, 23);
-            this.lbLibraryVersion.TabIndex = 31;
-            this.lbLibraryVersion.Text = "CmlLib.Core";
+            lbLibraryVersion.Location = new Point(756, 542);
+            lbLibraryVersion.Name = "lbLibraryVersion";
+            lbLibraryVersion.Size = new Size(205, 23);
+            lbLibraryVersion.TabIndex = 31;
+            lbLibraryVersion.Text = "CmlLib.Core";
+            // 
+            // groupBox3
+            // 
+            groupBox3.Controls.Add(btnLogout);
+            groupBox3.Controls.Add(btnLogin);
+            groupBox3.Controls.Add(label13);
+            groupBox3.Controls.Add(label5);
+            groupBox3.Controls.Add(label3);
+            groupBox3.Controls.Add(label2);
+            groupBox3.Controls.Add(txtXUID);
+            groupBox3.Controls.Add(txtUUID);
+            groupBox3.Controls.Add(txtAccessToken);
+            groupBox3.Controls.Add(txtUsername);
+            groupBox3.Location = new Point(14, 121);
+            groupBox3.Name = "groupBox3";
+            groupBox3.Size = new Size(385, 144);
+            groupBox3.TabIndex = 32;
+            groupBox3.TabStop = false;
+            groupBox3.Text = "groupBox3";
+            // 
+            // btnLogout
+            // 
+            btnLogout.Location = new Point(317, 82);
+            btnLogout.Name = "btnLogout";
+            btnLogout.Size = new Size(58, 48);
+            btnLogout.TabIndex = 9;
+            btnLogout.Text = "Logout";
+            btnLogout.UseVisualStyleBackColor = true;
+            btnLogout.Click += btnLogout_Click;
+            // 
+            // btnLogin
+            // 
+            btnLogin.Location = new Point(317, 28);
+            btnLogin.Name = "btnLogin";
+            btnLogin.Size = new Size(58, 48);
+            btnLogin.TabIndex = 8;
+            btnLogin.Text = "Login";
+            btnLogin.UseVisualStyleBackColor = true;
+            btnLogin.Click += btnLogin_Click;
+            // 
+            // label13
+            // 
+            label13.AutoSize = true;
+            label13.Location = new Point(52, 114);
+            label13.Name = "label13";
+            label13.Size = new Size(33, 15);
+            label13.TabIndex = 7;
+            label13.Text = "XUID";
+            // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Location = new Point(52, 85);
+            label5.Name = "label5";
+            label5.Size = new Size(34, 15);
+            label5.TabIndex = 6;
+            label5.Text = "UUID";
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Location = new Point(15, 56);
+            label3.Name = "label3";
+            label3.Size = new Size(74, 15);
+            label3.TabIndex = 5;
+            label3.Text = "AccessToken";
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Location = new Point(31, 28);
+            label2.Name = "label2";
+            label2.Size = new Size(60, 15);
+            label2.TabIndex = 4;
+            label2.Text = "Username";
+            // 
+            // txtXUID
+            // 
+            txtXUID.Location = new Point(92, 111);
+            txtXUID.Name = "txtXUID";
+            txtXUID.Size = new Size(219, 23);
+            txtXUID.TabIndex = 3;
+            // 
+            // txtUUID
+            // 
+            txtUUID.Location = new Point(92, 82);
+            txtUUID.Name = "txtUUID";
+            txtUUID.Size = new Size(219, 23);
+            txtUUID.TabIndex = 2;
+            // 
+            // txtAccessToken
+            // 
+            txtAccessToken.Location = new Point(92, 53);
+            txtAccessToken.Name = "txtAccessToken";
+            txtAccessToken.Size = new Size(219, 23);
+            txtAccessToken.TabIndex = 1;
+            // 
+            // txtUsername
+            // 
+            txtUsername.Location = new Point(92, 24);
+            txtUsername.Name = "txtUsername";
+            txtUsername.Size = new Size(219, 23);
+            txtUsername.TabIndex = 0;
+            // 
+            // lbTime
+            // 
+            lbTime.AutoSize = true;
+            lbTime.Location = new Point(1002, 470);
+            lbTime.Name = "lbTime";
+            lbTime.Size = new Size(12, 15);
+            lbTime.TabIndex = 33;
+            lbTime.Text = "?";
+            // 
+            // eventTimer
+            // 
+            eventTimer.Enabled = true;
+            eventTimer.Tick += eventTimer_Tick;
             // 
             // MainForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(918, 608);
-            this.Controls.Add(this.lbLibraryVersion);
-            this.Controls.Add(this.btnOptions);
-            this.Controls.Add(this.groupBox4);
-            this.Controls.Add(this.groupBox3);
-            this.Controls.Add(this.btnChangelog);
-            this.Controls.Add(this.btnWiki);
-            this.Controls.Add(this.btnGithub);
-            this.Controls.Add(this.label12);
-            this.Controls.Add(this.groupBox2);
-            this.Controls.Add(this.Pb_Progress);
-            this.Controls.Add(this.Pb_File);
-            this.Controls.Add(this.Lv_Status);
-            this.Controls.Add(this.groupBox1);
-            this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.Name = "MainForm";
-            this.Text = "MainForm";
-            this.Shown += new System.EventHandler(this.MainForm_Shown);
-            this.groupBox2.ResumeLayout(false);
-            this.groupBox2.PerformLayout();
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
-            this.groupBox3.ResumeLayout(false);
-            this.groupBox3.PerformLayout();
-            this.groupBox4.ResumeLayout(false);
-            this.groupBox4.PerformLayout();
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(1137, 564);
+            Controls.Add(lbTime);
+            Controls.Add(groupBox3);
+            Controls.Add(lbLibraryVersion);
+            Controls.Add(btnOptions);
+            Controls.Add(groupBox4);
+            Controls.Add(btnChangelog);
+            Controls.Add(btnWiki);
+            Controls.Add(btnGithub);
+            Controls.Add(label12);
+            Controls.Add(groupBox2);
+            Controls.Add(Pb_Progress);
+            Controls.Add(Lv_Status);
+            Controls.Add(groupBox1);
+            Margin = new Padding(3, 4, 3, 4);
+            Name = "MainForm";
+            Text = "MainForm";
+            Shown += MainForm_Shown;
+            groupBox2.ResumeLayout(false);
+            groupBox2.PerformLayout();
+            groupBox1.ResumeLayout(false);
+            groupBox1.PerformLayout();
+            groupBox4.ResumeLayout(false);
+            groupBox4.PerformLayout();
+            groupBox3.ResumeLayout(false);
+            groupBox3.PerformLayout();
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         private System.Windows.Forms.Button btnSortFilter;
@@ -716,14 +919,12 @@
 
         #endregion
         private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.TextBox Txt_JavaArgs;
-        private System.Windows.Forms.TextBox Txt_ScHt;
-        private System.Windows.Forms.TextBox Txt_ScWd;
-        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.TextBox txtScreenHeight;
+        private System.Windows.Forms.TextBox txtScreenWidth;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.TextBox Txt_ServerIp;
-        private System.Windows.Forms.TextBox Txt_VersionType;
+        private System.Windows.Forms.TextBox txtServerIP;
+        private System.Windows.Forms.TextBox txtVersionType;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.ProgressBar Pb_Progress;
@@ -731,44 +932,68 @@
         private System.Windows.Forms.Label Lv_Status;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.TextBox TxtXmx;
+        private System.Windows.Forms.TextBox txtXmx;
         private System.Windows.Forms.Label Xmx_RAM;
         private System.Windows.Forms.Button btnChangePath;
         private System.Windows.Forms.TextBox txtPath;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button btnLaunch;
         private System.Windows.Forms.ComboBox cbVersion;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.Button btnGithub;
-        private System.Windows.Forms.TextBox Txt_ServerPort;
+        private System.Windows.Forms.TextBox txtServerPort;
         private System.Windows.Forms.Label label14;
-        private System.Windows.Forms.TextBox Txt_GLauncherVersion;
+        private System.Windows.Forms.TextBox txtGLauncherVersion;
         private System.Windows.Forms.Label label16;
-        private System.Windows.Forms.TextBox Txt_GLauncherName;
+        private System.Windows.Forms.TextBox txtGLauncherName;
         private System.Windows.Forms.Label label15;
-        private System.Windows.Forms.TextBox Txt_DockIcon;
+        private System.Windows.Forms.TextBox txtDockIcon;
         private System.Windows.Forms.Label label17;
-        private System.Windows.Forms.TextBox Txt_DockName;
+        private System.Windows.Forms.TextBox txtDockName;
         private System.Windows.Forms.Label label18;
         private System.Windows.Forms.Button btnWiki;
         private System.Windows.Forms.Button btnChangelog;
         private System.Windows.Forms.Button btnAutoRamSet;
         private System.Windows.Forms.TextBox txtXms;
         private System.Windows.Forms.Label label21;
-        private System.Windows.Forms.Button btnChangeJava;
-        private System.Windows.Forms.Label lbJavaPath;
-        private System.Windows.Forms.Label lbUsername;
-        private System.Windows.Forms.RadioButton rbSequenceDownload;
-        private System.Windows.Forms.RadioButton rbParallelDownload;
-        private System.Windows.Forms.GroupBox groupBox3;
-        private System.Windows.Forms.CheckBox cbSkipAssetsDownload;
         private System.Windows.Forms.GroupBox groupBox4;
         private System.Windows.Forms.Button btnSetLastVersion;
         private System.Windows.Forms.Button btnOptions;
         private System.Windows.Forms.Button btnRefreshVersion;
         private System.Windows.Forms.CheckBox cbFullscreen;
-        private System.Windows.Forms.CheckBox cbSkipHashCheck;
+        private GroupBox groupBox3;
+        private Button btnLogout;
+        private Button btnLogin;
+        private Label label13;
+        private Label label5;
+        private Label label3;
+        private Label label2;
+        private TextBox txtXUID;
+        private TextBox txtUUID;
+        private TextBox txtAccessToken;
+        private TextBox txtUsername;
+        private CheckBox cbJavaUseDefault;
+        private TextBox txtJava;
+        private TextBox txtQuickPlayPath;
+        private Label label19;
+        private TextBox txtQuickPlaySingleplay;
+        private Label label20;
+        private TextBox txtQuickPlayReamls;
+        private Label label22;
+        private TextBox txtClientId;
+        private Label label23;
+        private CheckBox cbDemo;
+        private Label label11;
+        private TextBox txtJVMArgumentOverrides;
+        private TextBox txtExtraJVMArguments;
+        private Label label24;
+        private TextBox txtExtraGameArguments;
+        private Label label25;
+        private TextBox txtFeatures;
+        private Label label26;
+        private Button btnCancel;
+        private Label lbTime;
+        private System.Windows.Forms.Timer eventTimer;
     }
 }

@@ -1,4 +1,7 @@
-﻿using System.Runtime.InteropServices;
+﻿using CmlLib.Core;
+using System.Diagnostics;
+using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace CmlLibWinFormSample
 {
@@ -20,6 +23,31 @@ namespace CmlLibWinFormSample
             }
             catch
             {
+                return null;
+            }
+        }
+
+        public static void OpenUrl(string url)
+        {
+            try
+            {
+                Process.Start(url);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+        }
+
+        public static string? GetLibraryVersion()
+        {
+            try
+            {
+                return Assembly.GetAssembly(typeof(MinecraftLauncher))?.GetName().Version?.ToString();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
                 return null;
             }
         }

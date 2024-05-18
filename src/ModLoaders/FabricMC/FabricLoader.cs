@@ -6,13 +6,17 @@ namespace CmlLib.Core.ModLoaders.FabricMC
     {
         [JsonPropertyName("separator")]
         public string? Separator { get; set; }
+
         [JsonPropertyName("build")]
-        public string? Build { get; set; }
+        public int Build { get; set; }
+
         [JsonPropertyName("maven")]
         public string? Maven { get; set; }
+
         [JsonPropertyName("version")]
         public string? Version { get; set; }
+
         [JsonPropertyName("stable")]
-        public bool Stable { get; set; }
+        public bool Stable { get; set; } = true;
     }
 }

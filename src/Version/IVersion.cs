@@ -7,7 +7,7 @@ namespace CmlLib.Core.Version;
 public interface IVersion
 {
     string Id { get; }
-    string? JarId { get; }
+    string MainJarId { get; }
     string? InheritsFrom { get; }
     IVersion? ParentVersion { get; set; }
     AssetMetadata? AssetIndex { get; }
@@ -17,9 +17,9 @@ public interface IVersion
     string? Jar { get; }
     MLogFileMetadata? Logging { get; }
     string? MainClass { get; }
-    IReadOnlyCollection<MArgument> GameArguments { get; }
-    IReadOnlyCollection<MArgument> JvmArguments { get; }
-    DateTime ReleaseTime { get; }
+    IReadOnlyCollection<MArgument> GetGameArguments(bool isBaseVersion);
+    IReadOnlyCollection<MArgument> GetJvmArguments(bool isBaseVersion);
+    DateTimeOffset ReleaseTime { get; }
     string? Type { get; }
 
     string? GetProperty(string key);

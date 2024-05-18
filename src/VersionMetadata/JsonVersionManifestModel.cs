@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using CmlLib.Core.Files;
+using CmlLib.Core.Internals;
 
 namespace CmlLib.Core.VersionMetadata;
 
@@ -27,9 +28,11 @@ public record JsonVersionMetadataModel : MFileMetadata
     public string? Type { get; set; }
 
     [JsonPropertyName("time")]
+    [JsonConverter(typeof(SafeDateTimeOffsetJsonConverter))]
     public DateTimeOffset Time { get; set; }
 
-    [JsonPropertyName("releaseTime")] 
+    [JsonPropertyName("releaseTime")]
+    [JsonConverter(typeof(SafeDateTimeOffsetJsonConverter))]
     public DateTimeOffset ReleaseTime { get; set; }
 
     [JsonPropertyName("complianceLevel")]

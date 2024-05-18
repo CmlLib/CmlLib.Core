@@ -80,7 +80,7 @@ public class LibraryFileExtractor : IFileExtractor
                 return null;
 
             if (url == null)
-                url = server + path;
+                url = server + path.Replace("\\", "/");
             else if (url == "")
                 url = null;
             else if (url.Split('/').Last() == "")

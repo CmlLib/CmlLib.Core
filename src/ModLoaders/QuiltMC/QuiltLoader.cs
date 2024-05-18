@@ -12,5 +12,7 @@ namespace CmlLib.Core.ModLoaders.QuiltMC
         public string? Maven { get; set; }
         [JsonPropertyName("version")]
         public string? Version { get; set; }
+        [JsonPropertyName("stable")]
+        public bool Stable { get; set; } = true;
     }
 }

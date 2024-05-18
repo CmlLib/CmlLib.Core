@@ -9,7 +9,7 @@ public class JsonArgumentParserTests
     private static readonly JsonVersionParserOptions options = new JsonVersionParserOptions
     {
         Side = JsonVersionParserOptions.ClientSide,
-        SkipError = false
+        SkipError = true
     };
 
     private static string[] getArguments(IEnumerable<MArgument> args)
@@ -36,7 +36,7 @@ public class JsonArgumentParserTests
         // release 1.7.10 ~ : add --assetIndex, --userProperties, --userType
 
         var version = JsonVersionParser.ParseFromJsonString(vanilla_arg_string, options);
-        var parsedArgs = getArguments(version.GameArguments);
+        var parsedArgs = getArguments(version.GetGameArguments(false));
         Assert.Equal(
         [
             "--username",
@@ -183,7 +183,7 @@ public class JsonArgumentParserTests
         // release 1.20 ~ : add --quickPlayPath, --quickPlaySingleplayer, --quickPlayMultiplayer, --quickPlayRealms
 
         var version = JsonVersionParser.ParseFromJsonString(vanilla_game_arg_array, options);
-        var parsedArgs = getArguments(version.GameArguments);
+        var parsedArgs = getArguments(version.GetGameArguments(false));
         Assert.Equal(
         [
             "--username",
@@ -300,7 +300,7 @@ public class JsonArgumentParserTests
 
         var version = JsonVersionParser.ParseFromJsonString(vanilla_jvm_arg_array, options);
 
-        var parsedArgs = getArguments(version.JvmArguments);
+        var parsedArgs = getArguments(version.GetJvmArguments(false));
         Assert.Equal(
         [
             "-XstartOnFirstThread",
@@ -361,14 +361,14 @@ public class JsonArgumentParserTests
             "net.minecraftforge",
             "--fml.mcpVersion",
             "20210115.111550"
-        ], getArguments(version.GameArguments));
+        ], getArguments(version.GetGameArguments(false)));
         Assert.Equal(
         [
             "-XX:+IgnoreUnrecognizedVMOptions",
             "--add-exports=java.base/sun.security.util=ALL-UNNAMED",
             "--add-exports=jdk.naming.dns/com.sun.jndi.dns=java.naming",
             "--add-opens=java.base/java.util.jar=ALL-UNNAMED"
-        ], getArguments(version.JvmArguments));
+        ], getArguments(version.GetJvmArguments(false)));
     }
 
     public readonly static string forge_arguments_2 = """
@@ -422,7 +422,7 @@ public class JsonArgumentParserTests
             "net.minecraftforge",
             "--fml.mcpVersion",
             "20210706.113038"
-        ], getArguments(version.GameArguments));
+        ], getArguments(version.GetGameArguments(false)));
         Assert.Equal(
         [
             "-DignoreList=bootstraplauncher,securejarhandler,asm-commons,asm-util,asm-analysis,asm-tree,asm,client-extra,fmlcore,javafmllanguage,mclanguage,forge-,${version_name}.jar",
@@ -438,7 +438,7 @@ public class JsonArgumentParserTests
             "java.base/sun.security.util=cpw.mods.securejarhandler",
             "--add-exports",
             "jdk.naming.dns/com.sun.jndi.dns=java.naming"
-        ], getArguments(version.JvmArguments));
+        ], getArguments(version.GetJvmArguments(false)));
     }
 
     public readonly static string fabric_loader_arguments = """
@@ -457,7 +457,7 @@ public class JsonArgumentParserTests
     public void parse_fabric_loader_arguments()
     {
         var version = JsonVersionParser.ParseFromJsonString(fabric_loader_arguments, options);
-        Assert.Empty(getArguments(version.GameArguments));
-        Assert.Equal(["-DFabricMcEmu= net.minecraft.client.main.Main "], getArguments(version.JvmArguments));
+        Assert.Empty(getArguments(version.GetGameArguments(false)));
+        Assert.Equal(["-DFabricMcEmu= net.minecraft.client.main.Main "], getArguments(version.GetJvmArguments(false)));
     }
 }

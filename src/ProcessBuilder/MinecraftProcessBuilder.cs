@@ -149,7 +149,8 @@ public class MinecraftProcessBuilder
     {
         // libraries
         var libPaths = version
-            .ConcatInheritedCollection(v => v.Libraries)
+            .EnumerateToParent()
+            .SelectMany(v => v.Libraries)
             .Where(lib => lib.CheckIsRequired(JsonVersionParserOptions.ClientSide))
             .Where(lib => lib.Rules == null || rulesEvaluator.Match(lib.Rules, context))
             .Where(lib => lib.Artifact != null)
@@ -162,13 +163,9 @@ public class MinecraftProcessBuilder
             if (pathSet.Add(item))
                 yield return item;
         }
-            
+
         // <version>.jar file
-        // TODO: decide what Jar file should be used. current jar or parent jar
-        var jar = version.GetInheritedProperty(v => v.Jar);
-        if (string.IsNullOrEmpty(jar))
-            jar = version.Id; 
-        yield return minecraftPath.GetVersionJarPath(jar);
+        yield return minecraftPath.GetVersionJarPath(version.MainJarId);
     }
 
     private string? createAddress(string? ip, int port)
@@ -191,7 +188,7 @@ public class MinecraftProcessBuilder
         else
         {
             // version-specific jvm arguments
-            var jvmArgs = version.ConcatInheritedCollection(v => v.JvmArguments).ToList();
+            var jvmArgs = version.ConcatInheritedJvmArguments().ToList();
             if (jvmArgs.Any())
                 builder.AddArguments(jvmArgs);
             else
@@ -241,8 +238,7 @@ public class MinecraftProcessBuilder
     private void addGameArguments(MinecraftArgumentBuilder builder)
     {
         // game arguments
-        var gameArgs = version.ConcatInheritedCollection(v => v.GameArguments);
-        builder.AddArguments(gameArgs);
+        builder.AddArguments(version.ConcatInheritedGameArguments());
 
         // add extra game arguments
         builder.AddArguments(launchOption.ExtraGameArguments);

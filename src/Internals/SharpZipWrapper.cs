@@ -20,21 +20,28 @@ internal static class SharpZipWrapper
             cancellationToken.ThrowIfCancellationRequested();
 
             var fullPath = Path.Combine(extractTo, e.Name);
-            IOUtil.CreateParentDirectory(fullPath);
-            var fileName = Path.GetFileName(fullPath);
+            if (e.IsFile)
+            {
+                IOUtil.CreateParentDirectory(fullPath);
+                var fileName = Path.GetFileName(fullPath);
 
-            try
-            {
-                using var output = File.Create(fullPath);
-                s.CopyTo(output);
+                try
+                {
+                    using var output = File.Create(fullPath);
+                    s.CopyTo(output);
+                }
+                catch (IOException)
+                {
+                    // just skip
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // just skip 
+                }
             }
-            catch (IOException)
+            else
             {
-                // just skip
-            }
-            catch (UnauthorizedAccessException)
-            {
-                // just skip 
+                Directory.CreateDirectory(fullPath);
             }
 
             progress?.Report(new ByteProgress(length, s.Position));

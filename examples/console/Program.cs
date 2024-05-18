@@ -14,33 +14,19 @@ class Program
         await p.Start();
         return;
 
-        var tester = new LauncherTester("a");
-        await tester.Start(new [] 
-        {
-            "1.0",
-            "1.2.5",
-            "1.3.2",
-            "1.4.7",
-            "1.5.2",
-            "1.6.4",
-            "1.7.2",
-            "1.7.4",
-            "1.7.10",
-            "1.8.9",
-            "1.9.4",
-            "1.10.2",
-            "1.11.2",
-            "1.12.2",
-            "1.13.2",
-            "1.14.4",
-            "1.15.2",
-            "1.16.5",
-            "1.17.1",
-            "1.18.2",
-            "1.19.4",
-            "1.20.4"
-        });
-        return;
+        //var path = new MinecraftPath("C:\\Users\\ksi12\\AppData\\Roaming\\minecraft test");
+        //var launcher = new MinecraftLauncher(path);
+
+        //var fabricTester = new FabricTester(path);
+        //await fabricTester.Test();
+        //return;
+
+        //var llTester = new LiteLoaderTester(launcher);
+        //await llTester.Test();
+        //return;
+
+        //var tester = new LauncherTester("b", launcher);
+        //await tester.Start();
     }
 
     private async Task Start()
@@ -50,10 +36,6 @@ class Program
         // initialize launcher
         var parameters = MinecraftLauncherParameters.CreateDefault();
         var launcher = new MinecraftLauncher(parameters);
-        
-        // add event handler
-        //launcher.FileProgressChanged += Launcher_FileProgressChanged;
-        //launcher.ByteProgressChanged += Launcher_ByteProgressChanged;
 
         // list versions
         var versions = await launcher.GetAllVersionsAsync();
@@ -96,7 +78,7 @@ class Program
         Console.WriteLine(process.StartInfo.FileName);
         Console.WriteLine("Arguments:");
         Console.WriteLine(process.StartInfo.Arguments);
-        return;
+
         var processWrapper = new ProcessWrapper(process);
         processWrapper.OutputReceived += (s, e) => Console.WriteLine(e);
         processWrapper.StartWithEvents();
