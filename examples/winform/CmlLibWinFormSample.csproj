@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <LangVersion>10.0</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <OutputType>WinExe</OutputType>
+        <UseWindowsForms>true</UseWindowsForms>
+        <TargetFramework>net6.0-windows</TargetFramework>
+        <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../../src/CmlLib.Core.csproj"/>
+    </ItemGroup>
+</Project>
