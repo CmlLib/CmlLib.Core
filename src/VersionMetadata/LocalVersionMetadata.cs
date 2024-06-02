@@ -1,6 +1,4 @@
-﻿using CmlLib.Core.Internals;
-
-namespace CmlLib.Core.VersionMetadata;
+﻿namespace CmlLib.Core.VersionMetadata;
 
 /// <summary>
 /// Represent metadata where the actual version data is in local file
@@ -15,7 +13,7 @@ public class LocalVersionMetadata : JsonVersionMetadata
         Path = path;
     }
 
-    protected override ValueTask<Stream> GetVersionJsonStream()
+    protected override ValueTask<Stream> GetVersionJsonStream(CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(Path))
             throw new InvalidOperationException("Path property was null");

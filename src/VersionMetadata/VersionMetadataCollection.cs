@@ -65,46 +65,62 @@ public class VersionMetadataCollection : IEnumerable<IVersionMetadata>
         return sorter.Sort(this);
     }
 
-    public Task<IVersion> GetVersionAsync(string name)
+    public Task<IVersion> GetVersionAsync(string name, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(name))
             throw new ArgumentNullException(nameof(name));
 
         var versionMetadata = GetVersionMetadata(name);
-        return GetVersionAsync(versionMetadata);
+        return GetVersionAsync(versionMetadata, cancellationToken);
     }
 
-    public Task<IVersion> GetAndSaveVersionAsync(string name, MinecraftPath path)
+    public Task<IVersion> GetAndSaveVersionAsync(
+        string name, 
+        MinecraftPath path, 
+        CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(name))
             throw new ArgumentNullException(nameof(name));
 
         var versionMetadata = GetVersionMetadata(name);
-        return GetAndSaveVersionAsync(versionMetadata, path);
+        return GetAndSaveVersionAsync(versionMetadata, path, cancellationToken);
     }
 
-    public Task<IVersion> GetVersionAsync(IVersionMetadata versionMetadata) =>
-        getVersionInternal(versionMetadata, null, new List<string>());
+    public Task<IVersion> GetVersionAsync(
+        IVersionMetadata versionMetadata, 
+        CancellationToken cancellationToken = default) =>
+        getVersionInternal(versionMetadata, null, new List<string>(), cancellationToken);
 
-    public Task<IVersion> GetAndSaveVersionAsync(IVersionMetadata versionMetadata, MinecraftPath path) =>
-        getVersionInternal(versionMetadata, path, new List<string>());
+    public Task<IVersion> GetAndSaveVersionAsync(
+        IVersionMetadata versionMetadata, 
+        MinecraftPath path, 
+        CancellationToken cancellationToken = default) =>
+        getVersionInternal(versionMetadata, path, new List<string>(), cancellationToken);
 
-    private async Task<IVersion> getVersionInternal(IVersionMetadata versionMetadata, MinecraftPath? path, List<string> visited)
+    private async Task<IVersion> getVersionInternal(
+        IVersionMetadata versionMetadata, 
+        MinecraftPath? path, 
+        List<string> visited, 
+        CancellationToken cancellationToken = default)
     {
         if (versionMetadata == null)
             throw new ArgumentNullException(nameof(versionMetadata));
 
         IVersion version;
         if (path == null)
-            version = await versionMetadata.GetVersionAsync();
+            version = await versionMetadata.GetVersionAsync(cancellationToken);
         else
-            version = await versionMetadata.GetAndSaveVersionAsync(path);
+            version = await versionMetadata.GetAndSaveVersionAsync(path, cancellationToken);
 
-        await inheritIfRequired(version, path, visited);
+        await inheritIfRequired(version, path, visited, cancellationToken);
         return version;
     }
 
-    private async Task inheritIfRequired(IVersion version, MinecraftPath? path, List<string> visited)
+    private async Task inheritIfRequired(
+        IVersion version, 
+        MinecraftPath? path, 
+        List<string> visited, 
+        CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(version.InheritsFrom))
             return;
@@ -112,13 +128,13 @@ public class VersionMetadataCollection : IEnumerable<IVersionMetadata>
             return;
 
         if (visited.Contains(version.InheritsFrom))
-            throw new InvalidDataException(); // declare new exception
+            throw new InvalidDataException(); // TODO: declare new exception
         visited.Add(version.Id);
         if (visited.Count >= MaxDepth)
-            throw new InvalidDataException(); // declare new exception
+            throw new InvalidDataException(); // TODO: declare new exception
 
         var baseVersionMetadata = GetVersionMetadata(version.InheritsFrom);
-        var baseVersion = await getVersionInternal(baseVersionMetadata, path, visited);
+        var baseVersion = await getVersionInternal(baseVersionMetadata, path, visited, cancellationToken);
         version.ParentVersion = baseVersion;
     }
 

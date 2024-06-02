@@ -12,7 +12,7 @@ public interface IVersionMetadata
     string? Type { get; }
     DateTimeOffset ReleaseTime { get; }
 
-    Task<IVersion> GetVersionAsync();
-    Task<IVersion> GetAndSaveVersionAsync(MinecraftPath minecraftPath);
-    Task SaveVersionAsync(MinecraftPath minecraftPath);
+    Task<IVersion> GetVersionAsync(CancellationToken cancellationToken = default);
+    Task<IVersion> GetAndSaveVersionAsync(MinecraftPath minecraftPath, CancellationToken cancellationToken = default);
+    Task SaveVersionAsync(MinecraftPath minecraftPath, CancellationToken cancellationToken = default);
 }

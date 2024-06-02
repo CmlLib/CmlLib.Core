@@ -11,7 +11,7 @@ public class LocalJsonVersionLoader : IVersionLoader
 
     private readonly MinecraftPath minecraftPath;
 
-    public ValueTask<VersionMetadataCollection> GetVersionMetadatasAsync()
+    public ValueTask<VersionMetadataCollection> GetVersionMetadatasAsync(CancellationToken cancellationToken = default)
     {
         var versions = GetVersionNameAndPaths()
             .Select(nameAndPath => toMetadata(nameAndPath.Item1, nameAndPath.Item2));

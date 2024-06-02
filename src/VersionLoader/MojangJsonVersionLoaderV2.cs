@@ -27,11 +27,11 @@ public class MojangJsonVersionLoaderV2 : IVersionLoader
 
     public bool UseLocalManifestWhenError { get; set; } = false;
 
-    public async ValueTask<VersionMetadataCollection> GetVersionMetadatasAsync()
+    public async ValueTask<VersionMetadataCollection> GetVersionMetadatasAsync(CancellationToken cancellationToken = default)
     {
         var localVersions = _localLoader.GetVersionNameAndPaths();
         var localVersionDict = localVersions.ToDictionary(nameAndPath => nameAndPath.Item1, nameAndPath => nameAndPath.Item2);
-        var mojangVersions = await getManifest();
+        var mojangVersions = await getManifest(cancellationToken);
 
         var vanillaVersions = new List<IVersionMetadata>();
         foreach (var mojangVersion in mojangVersions?.Versions ?? [])
@@ -84,19 +84,20 @@ public class MojangJsonVersionLoaderV2 : IVersionLoader
         );
     }
 
-    private async Task<JsonVersionManifestModel?> getManifest()
+    private async Task<JsonVersionManifestModel?> getManifest(CancellationToken cancellationToken)
     {
-        using var stream = await getManifestStream();
-        return await JsonSerializer.DeserializeAsync<JsonVersionManifestModel>(stream);
+        using var stream = await getManifestStream(cancellationToken);
+        return await JsonSerializer.DeserializeAsync<JsonVersionManifestModel>(stream, cancellationToken: cancellationToken);
     }
 
-    private async Task<Stream> getManifestStream()
+    private async Task<Stream> getManifestStream(CancellationToken cancellationToken)
     {
         try
         {
-            var res = await _httpClient.GetStreamAsync(_endpoint);
+            using var req = await _httpClient.GetAsync(_endpoint, cancellationToken);
+            var resStream = await req.Content.ReadAsStreamAsync();
             var saveTo = File.Create(_localManifestPath);
-            return new PipedStream(res, saveTo, writeToEndOnClose: true);
+            return new PipedStream(resStream, saveTo, writeToEndOnClose: true);
         }
         catch (HttpRequestException)
         {

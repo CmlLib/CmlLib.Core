@@ -55,17 +55,17 @@ public abstract class JsonVersionMetadata : IVersionMetadata
     /// Get actual version data as string
     /// </summary>
     /// <returns>Version metadata</returns>
-    protected abstract ValueTask<Stream> GetVersionJsonStream();
+    protected abstract ValueTask<Stream> GetVersionJsonStream(CancellationToken cancellationToken);
 
-    public async Task<IVersion> GetVersionAsync()
+    public async Task<IVersion> GetVersionAsync(CancellationToken cancellationToken = default)
     {
-        using var versionStream = await GetVersionJsonStream().ConfigureAwait(false);
+        using var versionStream = await GetVersionJsonStream(cancellationToken).ConfigureAwait(false);
         return JsonVersionParser.ParseFromJsonStream(versionStream, new JsonVersionParserOptions());
     }
 
-    public async Task<IVersion> GetAndSaveVersionAsync(MinecraftPath path)
+    public async Task<IVersion> GetAndSaveVersionAsync(MinecraftPath path, CancellationToken cancellationToken = default)
     {
-        using var versionStream = await GetVersionJsonStream().ConfigureAwait(false);
+        using var versionStream = await GetVersionJsonStream(cancellationToken).ConfigureAwait(false);
         if (IsSaved)
         {
             return JsonVersionParser.ParseFromJsonStream(versionStream, new JsonVersionParserOptions());
@@ -78,13 +78,13 @@ public abstract class JsonVersionMetadata : IVersionMetadata
         }
     }
 
-    public async Task SaveVersionAsync(MinecraftPath path)
+    public async Task SaveVersionAsync(MinecraftPath path, CancellationToken cancellationToken = default)
     {
-        using var versionStream = await GetVersionJsonStream().ConfigureAwait(false);
+        using var versionStream = await GetVersionJsonStream(cancellationToken).ConfigureAwait(false);
         if (!IsSaved)
         {
             using var fs = createVersionJsonFileStream(path);
-            await versionStream.CopyToAsync(fs);
+            await versionStream.CopyToAsync(fs, StreamHelper.GetCopyBufferSize(versionStream), cancellationToken);
         }
     }
 

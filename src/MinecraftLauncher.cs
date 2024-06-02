@@ -70,30 +70,32 @@ public class MinecraftLauncher
         _byteProgress = new Progress<ByteProgress>(e => ByteProgressChanged?.Invoke(this, e));
     }
 
-    public async ValueTask<VersionMetadataCollection> GetAllVersionsAsync()
+    public async ValueTask<VersionMetadataCollection> GetAllVersionsAsync(CancellationToken cancellationToken = default)
     {
-        Versions = await VersionLoader.GetVersionMetadatasAsync();
+        Versions = await VersionLoader.GetVersionMetadatasAsync(cancellationToken);
         return Versions;
     }
 
-    public async ValueTask<IVersion> GetVersionAsync(string versionName)
+    public async ValueTask<IVersion> GetVersionAsync(
+        string versionName, 
+        CancellationToken cancellationToken = default)
     {
         if (Versions == null)
-            Versions = await GetAllVersionsAsync();
+            Versions = await GetAllVersionsAsync(cancellationToken);
 
         if (Versions.TryGetVersionMetadata(versionName, out var version))
         {
-            return await Versions.GetAndSaveVersionAsync(version, MinecraftPath);
+            return await Versions.GetAndSaveVersionAsync(version, MinecraftPath, cancellationToken);
         }
         else
         {
-            Versions = await GetAllVersionsAsync();
-            return await Versions.GetAndSaveVersionAsync(versionName, MinecraftPath);
+            Versions = await GetAllVersionsAsync(cancellationToken);
+            return await Versions.GetAndSaveVersionAsync(versionName, MinecraftPath, cancellationToken);
         }
     }
 
     public async ValueTask<IEnumerable<GameFile>> ExtractFiles(
-        string versionName,
+        string versionName, 
         CancellationToken cancellationToken = default)
     {
         var version = await GetVersionAsync(versionName);
@@ -102,7 +104,7 @@ public class MinecraftLauncher
 
     public async ValueTask<IEnumerable<GameFile>> ExtractFiles(
         IVersion version,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         var allFiles = Enumerable.Empty<GameFile>();
         foreach (var extractor in FileExtractors)
@@ -155,9 +157,10 @@ public class MinecraftLauncher
 
     public async ValueTask<Process> BuildProcessAsync(
         string versionName,
-        MLaunchOption launchOption)
+        MLaunchOption launchOption,
+        CancellationToken cancellationToken = default)
     {
-        var version = await GetVersionAsync(versionName);
+        var version = await GetVersionAsync(versionName, cancellationToken);
         return BuildProcess(version, launchOption);
     }
 

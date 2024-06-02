@@ -1,5 +1,4 @@
 ﻿using CmlLib.Core.VersionMetadata;
-using CmlLib.Core.Internals;
 using System.Text.Json;
 
 namespace CmlLib.Core.VersionLoader;
@@ -15,18 +14,19 @@ public class MojangJsonVersionLoader : IVersionLoader
     public MojangJsonVersionLoader(HttpClient httpClient, string endpoint) =>
         (_httpClient, _endpoint) = (httpClient, endpoint);
 
-    public async ValueTask<VersionMetadataCollection> GetVersionMetadatasAsync()
+    public async ValueTask<VersionMetadataCollection> GetVersionMetadatasAsync(CancellationToken cancellationToken = default)
     {
-        var manifest = await GetManifestAsync();
+        var manifest = await GetManifestAsync(cancellationToken);
         return new VersionMetadataCollection(
             manifest?.Versions?.Select(v => new MojangVersionMetadata(v, _httpClient)) ?? [], 
             manifest?.Latest?.Release, 
             manifest?.Latest?.Snapshot);
     }
 
-    public async Task<JsonVersionManifestModel?> GetManifestAsync()
+    public async Task<JsonVersionManifestModel?> GetManifestAsync(CancellationToken cancellationToken = default)
     {
-        using var res = await _httpClient.GetStreamAsync(_endpoint);
-        return await JsonSerializer.DeserializeAsync<JsonVersionManifestModel>(res);
+        using var req = await _httpClient.GetAsync(_endpoint, cancellationToken);
+        using var resStream = await req.Content.ReadAsStreamAsync();
+        return await JsonSerializer.DeserializeAsync<JsonVersionManifestModel>(resStream, cancellationToken: cancellationToken);
     }
 }
