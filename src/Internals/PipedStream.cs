@@ -1,6 +1,6 @@
 namespace CmlLib.Core.Internals;
 
-public class PipedStream : Stream, IDisposable
+internal class PipedStream : Stream, IDisposable
 {
     private readonly Stream _source;
     private readonly Stream _writer;
