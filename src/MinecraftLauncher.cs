@@ -98,7 +98,7 @@ public class MinecraftLauncher
         string versionName, 
         CancellationToken cancellationToken = default)
     {
-        var version = await GetVersionAsync(versionName);
+        var version = await GetVersionAsync(versionName, cancellationToken);
         return await ExtractFiles(version, cancellationToken);
     }
 
@@ -126,7 +126,7 @@ public class MinecraftLauncher
         IProgress<ByteProgress>? byteProgress,
         CancellationToken cancellationToken = default)
     {
-        var version = await GetVersionAsync(versionName);
+        var version = await GetVersionAsync(versionName, cancellationToken);
         await InstallAsync(version, fileProgress, byteProgress, cancellationToken);
     }
 
@@ -213,7 +213,7 @@ public class MinecraftLauncher
         IProgress<ByteProgress>? byteProgress,
         CancellationToken cancellationToken = default)
     {
-        var version = await GetVersionAsync(versionName);
+        var version = await GetVersionAsync(versionName, cancellationToken);
         await InstallAsync(version, fileProgress, byteProgress, cancellationToken);
         return BuildProcess(version, launchOption);
     }
