@@ -182,10 +182,10 @@ public class MinecraftLauncher
     public string? GetJavaPath(IVersion version)
     {
         var javaVersion = version.GetInheritedProperty(v => v.JavaVersion);
-        if (!javaVersion.HasValue)
+        if (javaVersion == null)
             return null;
         return JavaPathResolver.GetJavaBinaryPath(
-            javaVersion.Value,
+            javaVersion,
             RulesContext);
     }
 

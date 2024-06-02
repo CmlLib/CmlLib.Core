@@ -28,10 +28,10 @@ public class JavaFileExtractor : IFileExtractor
         CancellationToken cancellationToken)
     {
         JavaVersion javaVersion;
-        if (!version.JavaVersion.HasValue || string.IsNullOrEmpty(version.JavaVersion.Value.Component))
+        if (string.IsNullOrEmpty(version.JavaVersion?.Component))
             javaVersion = MinecraftJavaPathResolver.JreLegacyVersion;
         else
-            javaVersion = version.JavaVersion.Value;
+            javaVersion = version.JavaVersion;
 
         var manifestResolver = new MinecraftJavaManifestResolver(_httpClient);
         manifestResolver.ManifestServer = JavaManifestServer;
