@@ -70,7 +70,7 @@ public class MinecraftJavaManifestResolver
 
     private async Task<JsonDocument> requestJsonManifest()
     {
-        var stream = await _httpClient.GetStreamAsync(ManifestServer);
+        using var stream = await _httpClient.GetStreamAsync(ManifestServer);
         return await JsonDocument.ParseAsync(stream);
     }
 

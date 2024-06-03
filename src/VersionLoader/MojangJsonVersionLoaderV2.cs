@@ -94,8 +94,10 @@ public class MojangJsonVersionLoaderV2 : IVersionLoader
     {
         try
         {
-            using var req = await _httpClient.GetAsync(_endpoint, cancellationToken);
-            var resStream = await req.Content.ReadAsStreamAsync();
+            var res = await _httpClient.GetAsync(_endpoint, cancellationToken);
+            var resStream = await res.Content.ReadAsStreamAsync();
+
+            IOUtil.CreateParentDirectory(_localManifestPath);
             var saveTo = File.Create(_localManifestPath);
             return new PipedStream(resStream, saveTo, writeToEndOnClose: true);
         }
