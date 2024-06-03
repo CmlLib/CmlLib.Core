@@ -1,8 +1,9 @@
 - [ ] MojangLauncher 와 호환성 확인: LibraryFileExtractorTests 에서 실제 url 에 파일 존재하는지, 실제 인스톨러는 어디다 설치하는지 확인 - runtime 내용이 다른거같음
 - [ ] MLaunch 통합 테스트 작성. 주요 버전 파싱, 최종 argument 확인
+- [ ] IDisposable 확인 https://stackoverflow.com/questions/4737056/detecting-leaked-idisposable-objects
+- [ ] Version 을 쉽게 바꿀 수 있는 무언가가 필요해
 
-- [ ] excludes 구현
-- [ ] XML 로거 파서
+- [x] excludes 구현
 - [x] json profile 파일 내용이 비어있음 - PipedStream 구현
 - [x] features, MLaunchOption 테스트 아직 안됨
 - [x] 여기까지 하고 4.0.0-beta.1 내놓기
