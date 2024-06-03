@@ -20,6 +20,25 @@ public static class JsonLibraryParser
         else
             rules = Array.Empty<LauncherRule>();
 
+        // extract.exclude
+        IReadOnlyCollection<string> extractExcludes = [];
+        if (element.TryGetProperty("extract", out var extractProp) && extractProp.TryGetProperty("exclude", out var excludeProp))
+        {
+            if (excludeProp.ValueKind == JsonValueKind.String)
+            {
+                var excludeStr = excludeProp.GetString();
+                if (!string.IsNullOrEmpty(excludeStr))
+                    extractExcludes = [excludeStr];
+            }
+            else if (excludeProp.ValueKind == JsonValueKind.Array)
+            {
+                extractExcludes = excludeProp.EnumerateArray()
+                    .Select(item => item.GetString())
+                    .Where(item => !string.IsNullOrEmpty(item))
+                    .ToList()!;
+            }
+        }
+
         // forge serverreq, clientreq
         var isServerRequired = element
             .GetPropertyOrNull("serverreq")?
@@ -64,6 +83,7 @@ public static class JsonLibraryParser
             Classifiers = classifiers,
             Natives = natives,
             Rules = rules,
+            ExtractExcludes = extractExcludes,
             IsClientRequired = isClientRequired,
             IsServerRequired = isServerRequired
         };

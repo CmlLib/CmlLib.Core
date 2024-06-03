@@ -11,7 +11,8 @@ public record MLibrary
     public MFileMetadata? Artifact { get; init; }
     public IReadOnlyDictionary<string, MFileMetadata>? Classifiers { get; init; }
     public IReadOnlyDictionary<string, string>? Natives { get; init; }
-    public IReadOnlyCollection<LauncherRule> Rules { get; init; } = Array.Empty<LauncherRule>();
+    public IReadOnlyCollection<LauncherRule> Rules { get; init; } = [];
+    public IReadOnlyCollection<string> ExtractExcludes { get; init; } = [];
     public string Name { get; }
     public bool IsServerRequired { get; init; } = true;
     public bool IsClientRequired { get; init; } = true;

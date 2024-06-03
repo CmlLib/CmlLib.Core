@@ -7,17 +7,19 @@ internal static class SharpZipWrapper
     public static void Unzip(
         string zipPath, 
         string extractTo, 
-        IProgress<ByteProgress>? progress,
+        IReadOnlyCollection<string> excludes,
         CancellationToken cancellationToken = default)
     {
         using var fs = File.OpenRead(zipPath);
         using var s = new ZipInputStream(fs);
 
-        long length = fs.Length;
         ZipEntry e;
         while ((e = s.GetNextEntry()) != null)
         {
             cancellationToken.ThrowIfCancellationRequested();
+
+            if (excludes.Any(e.Name.StartsWith)) 
+                continue;
 
             var fullPath = Path.Combine(extractTo, e.Name);
             if (e.IsFile)
@@ -43,8 +45,6 @@ internal static class SharpZipWrapper
             {
                 Directory.CreateDirectory(fullPath);
             }
-
-            progress?.Report(new ByteProgress(length, s.Position));
         }
     }
 }

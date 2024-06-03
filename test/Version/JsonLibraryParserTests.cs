@@ -140,6 +140,7 @@ public class JsonLibraryParserTests
             Url = "https://libraries.minecraft.net/org/lwjgl/lwjgl/lwjgl-platform/2.9.0/lwjgl-platform-2.9.0-natives-windows.jar"
         };
         Assert.Null(lib?.Artifact);
+        Assert.Equal(["META-INF/"], lib?.ExtractExcludes.ToHashSet());
         Assert.Equal(expected, nativeLib);
     }
 
@@ -266,7 +267,7 @@ public class JsonLibraryParserTests
         using var jsonDocument = JsonDocument.Parse(java_library_and_native_library);
         var lib = JsonLibraryParser.Parse(jsonDocument.RootElement);
 
-        var nativeLib = lib?.GetNativeLibrary(new Core.Rules.LauncherOSRule("windows", "32"));
+        var nativeLib = lib?.GetNativeLibrary(new LauncherOSRule("windows", "32"));
         Assert.Equal("org/lwjgl/lwjgl/lwjgl-platform/2.9.4-nightly-20150209/lwjgl-platform-2.9.4-nightly-20150209-natives-windows.jar", nativeLib?.Path);
 
         var javaLib = lib?.Artifact;

@@ -22,45 +22,36 @@ public class NativeLibraryExtractor : INativeLibraryExtractor
         var extractPath = path.GetNativePath(version.Id);
         Directory.CreateDirectory(extractPath);
 
-        var nativeLibraries = getNativeLibraryPaths(path, version, rulesContext);
-        foreach (var libPath in nativeLibraries)
+        var nativeLibraries = version
+            .ConcatInheritedCollection(v => v.Libraries)
+            .Where(lib => lib.IsClientRequired)
+            .Where(lib => lib.Rules == null || rulesEvaluator.Match(lib.Rules, rulesContext));
+
+        foreach (var nativeLibrary in nativeLibraries)
         {
-            if (File.Exists(libPath))
-                SharpZipWrapper.Unzip(libPath, extractPath, null);
+            var libPath = nativeLibrary.GetNativeLibraryPath(rulesContext.OS);
+            if (string.IsNullOrEmpty(libPath))
+                continue;    
+            
+            SharpZipWrapper.Unzip(
+                Path.Combine(path.Library, libPath), 
+                extractPath, 
+                nativeLibrary.ExtractExcludes, 
+                default);
         }
 
         return extractPath;
     }
 
-    private IEnumerable<string> getNativeLibraryPaths(
-        MinecraftPath path, 
-        IVersion version,
-        RulesEvaluatorContext rulesContext)
-    {
-        return version
-            .ConcatInheritedCollection(v => v.Libraries)
-            .Where(lib => lib.IsClientRequired)
-            .Where(lib => lib.Rules == null || rulesEvaluator.Match(lib.Rules, rulesContext))
-            .Select(lib => lib.GetNativeLibraryPath(rulesContext.OS))
-            .Where(libPath => !string.IsNullOrEmpty(libPath))
-            .Select(libPath => Path.Combine(path.Library, libPath!));
-    }
-
     public void Clean(MinecraftPath path, IVersion version)
     {
-
         try
         {
             var nativePath = path.GetNativePath(version.Id);
             DirectoryInfo di = new DirectoryInfo(nativePath);
-
             if (!di.Exists)
                 return;
-
-            foreach (var item in di.GetFiles())
-            {
-                item.Delete();
-            }
+            di.Delete(true);
         }
         catch
         {
