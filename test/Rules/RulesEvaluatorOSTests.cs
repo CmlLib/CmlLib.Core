@@ -397,7 +397,7 @@ public class RulesEvaluatorOSTest
 
     private bool testOSRule(string osname, string arch, IEnumerable<LauncherRule> rules)
     {
-        var os = new LauncherOSRule(osname, arch);
+        var os = new LauncherOSRule(osname, arch, "");
         return testOSRule(os, rules);
     }
 

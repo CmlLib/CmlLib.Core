@@ -15,9 +15,9 @@ public class LibraryFileExtractorTests
         Library = "libraries"
     };
     string TestServer = "https://libraryserver";
-    RulesEvaluatorContext TestWindows = new RulesEvaluatorContext(new LauncherOSRule(LauncherOSRule.Windows, LauncherOSRule.X64));
-    RulesEvaluatorContext TestOSX = new RulesEvaluatorContext(new LauncherOSRule(LauncherOSRule.OSX, LauncherOSRule.X64));
-    RulesEvaluatorContext TestLinux = new RulesEvaluatorContext(new LauncherOSRule(LauncherOSRule.Linux, LauncherOSRule.X64));
+    RulesEvaluatorContext TestWindows = new RulesEvaluatorContext(new LauncherOSRule(LauncherOSRule.Windows, LauncherOSRule.X64, ""));
+    RulesEvaluatorContext TestOSX = new RulesEvaluatorContext(new LauncherOSRule(LauncherOSRule.OSX, LauncherOSRule.X64, ""));
+    RulesEvaluatorContext TestLinux = new RulesEvaluatorContext(new LauncherOSRule(LauncherOSRule.Linux, LauncherOSRule.X64, ""));
 
     [Fact]
     public void extract_simple_java_library()

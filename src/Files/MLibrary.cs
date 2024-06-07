@@ -30,7 +30,7 @@ public record MLibrary
     public string? GetClassifierId(LauncherOSRule os)
     {
         if (string.IsNullOrEmpty(os.Name) || string.IsNullOrEmpty(os.Arch))
-            throw new ArgumentException();
+            throw new ArgumentException("Invalid LauncherOSRule: empty Name or Arch");
 
         var classifierId = Natives?[os.Name]?.Replace("${arch}", os.Arch);
         return classifierId;

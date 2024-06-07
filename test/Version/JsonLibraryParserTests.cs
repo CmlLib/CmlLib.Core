@@ -131,7 +131,7 @@ public class JsonLibraryParserTests
     {
         using var jsonDocument = JsonDocument.Parse(native_library);
         var lib = JsonLibraryParser.Parse(jsonDocument.RootElement);
-        var nativeLib = lib?.GetNativeLibrary(new LauncherOSRule(LauncherOSRule.Windows, LauncherOSRule.X64));
+        var nativeLib = lib?.GetNativeLibrary(new LauncherOSRule(LauncherOSRule.Windows, LauncherOSRule.X64, ""));
         var expected = new MFileMetadata
         {
             Path = "org/lwjgl/lwjgl/lwjgl-platform/2.9.0/lwjgl-platform-2.9.0-natives-windows.jar",
@@ -201,7 +201,7 @@ public class JsonLibraryParserTests
         var lib = JsonLibraryParser.Parse(jsonDocument.RootElement);
         Assert.Null(lib?.Artifact);
 
-        var nativeLib = lib?.GetNativeLibrary(new LauncherOSRule(LauncherOSRule.Windows, LauncherOSRule.X86));
+        var nativeLib = lib?.GetNativeLibrary(new LauncherOSRule(LauncherOSRule.Windows, LauncherOSRule.X86, ""));
         Assert.Equal("tv/twitch/twitch-platform/5.16/twitch-platform-5.16-natives-windows-32.jar", nativeLib?.Path);
     }
 
@@ -267,7 +267,7 @@ public class JsonLibraryParserTests
         using var jsonDocument = JsonDocument.Parse(java_library_and_native_library);
         var lib = JsonLibraryParser.Parse(jsonDocument.RootElement);
 
-        var nativeLib = lib?.GetNativeLibrary(new LauncherOSRule("windows", "32"));
+        var nativeLib = lib?.GetNativeLibrary(new LauncherOSRule("windows", "32", ""));
         Assert.Equal("org/lwjgl/lwjgl/lwjgl-platform/2.9.4-nightly-20150209/lwjgl-platform-2.9.4-nightly-20150209-natives-windows.jar", nativeLib?.Path);
 
         var javaLib = lib?.Artifact;
