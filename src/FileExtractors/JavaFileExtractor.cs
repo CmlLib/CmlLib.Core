@@ -74,7 +74,7 @@ public class JavaFileExtractor : IFileExtractor
 
         private async ValueTask<string?> findManifestUrl(JavaVersion javaVersion)
         {
-            var osName = MinecraftJavaManifestResolver.GetOSNameForJava(_rulesContext.OS) ?? "";
+            var osName = MinecraftJavaManifestResolver.GetOSNameForJava(_rulesContext.OS);
             var manifests = await _manifestResolver.GetManifestsForOS(osName);
             var manifestUrl = findManifestUrlFromMetadatas(manifests, javaVersion.Component);
 

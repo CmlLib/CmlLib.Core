@@ -160,8 +160,7 @@ public class RulesEvaluatorFeatureTest
         var context = new RulesEvaluatorContext(new LauncherOSRule
         {
             Name = "windows", Arch = "x86"
-        });
-        context.Features = ["feature1"];
+        }, ["feature1"]);
         var result = evaluator.Match(
         [
             new LauncherRule
@@ -194,8 +193,7 @@ public class RulesEvaluatorFeatureTest
     private bool testFeatures(string[] features, IEnumerable<LauncherRule> rules)
     {
         var evaluator = new RulesEvaluator();
-        var context = new RulesEvaluatorContext(TestOS);
-        context.Features = features;
+        var context = new RulesEvaluatorContext(TestOS, features);
         return evaluator.Match(rules, context);
     }
 }

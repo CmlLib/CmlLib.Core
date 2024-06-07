@@ -18,7 +18,7 @@ public class MinecraftJavaPathResolver : IJavaPathResolver
     {
         var dir = new DirectoryInfo(_path.Runtime);
         if (!dir.Exists)
-            return Array.Empty<string>();
+            return [];
 
         return dir.GetDirectories()
             .Select(x => x.Name)
@@ -47,20 +47,23 @@ public class MinecraftJavaPathResolver : IJavaPathResolver
     
     public string GetJavaBinaryPath(JavaVersion javaVersionName, RulesEvaluatorContext rules)
     {
-        return Path.Combine(
-            GetJavaDirPath(javaVersionName, rules), 
-            "bin", 
-            GetJavaBinaryName(rules.OS));
+        var runtime = GetJavaDirPath(javaVersionName, rules);
+        return (rules.OS.Name) switch
+        {
+            // bin/javaw.exe
+            LauncherOSRule.Windows => Path.Combine(runtime, "bin", "javaw.exe"),
+
+            // jre.bundle/Contents/Home/bin/java
+            LauncherOSRule.OSX => Path.Combine(runtime, "jre.bundle", "Contents", "Home", "bin", "java"),
+
+            // bin/java
+            _ => Path.Combine(runtime, "bin", "java")
+        };
     }
 
     public string GetJavaDirPath(JavaVersion javaVersionName, RulesEvaluatorContext rules) 
-        => Path.Combine(_path.Runtime, javaVersionName.Component);
-
-    public string GetJavaBinaryName(LauncherOSRule os)
-    {
-        string binaryName = "java";
-        if (os.Name == LauncherOSRule.Windows)
-            binaryName = "javaw.exe";
-        return binaryName;
-    }
+        => Path.Combine(
+            _path.Runtime, 
+            MinecraftJavaManifestResolver.GetOSNameForJava(rules.OS), 
+            javaVersionName.Component);
 }

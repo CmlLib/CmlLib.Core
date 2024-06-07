@@ -102,14 +102,20 @@ public class MinecraftLauncher
         return await ExtractFiles(version, cancellationToken);
     }
 
+    public ValueTask<IEnumerable<GameFile>> ExtractFiles(
+        IVersion version,
+        CancellationToken cancellationToken = default) =>
+        ExtractFiles(version, RulesContext, cancellationToken);
+
     public async ValueTask<IEnumerable<GameFile>> ExtractFiles(
         IVersion version,
+        RulesEvaluatorContext rulesContext,
         CancellationToken cancellationToken = default)
     {
         var allFiles = Enumerable.Empty<GameFile>();
         foreach (var extractor in FileExtractors)
         {
-            var files = await extractor.Extract(MinecraftPath, version, RulesContext, cancellationToken);
+            var files = await extractor.Extract(MinecraftPath, version, rulesContext, cancellationToken);
             allFiles = allFiles.Concat(files);
         }
         return allFiles;
@@ -168,36 +174,38 @@ public class MinecraftLauncher
         IVersion version,
         MLaunchOption launchOption)
     {
-        launchOption.NativesDirectory ??= createNativePath(version);
+        launchOption.RulesContext ??= RulesContext;
         launchOption.Path ??= MinecraftPath;
         launchOption.StartVersion ??= version;
-        launchOption.JavaPath ??= GetJavaPath(version) ?? GetDefaultJavaPath();
-        launchOption.RulesContext ??= RulesContext;
+        launchOption.NativesDirectory ??= createNativePath(version, launchOption.RulesContext);
+        launchOption.JavaPath ??= GetJavaPath(version, launchOption.RulesContext) ?? GetDefaultJavaPath(launchOption.RulesContext);
 
         var processBuilder = new MinecraftProcessBuilder(RulesEvaluator, launchOption);
         var process = processBuilder.CreateProcess();
         return process;
     }
 
-    public string? GetJavaPath(IVersion version)
+    public string? GetJavaPath(IVersion version, RulesEvaluatorContext rulesContext)
     {
         var javaVersion = version.GetInheritedProperty(v => v.JavaVersion);
         if (javaVersion == null)
             return null;
         return JavaPathResolver.GetJavaBinaryPath(
             javaVersion,
-            RulesContext);
+            rulesContext);
     }
 
-    public string? GetDefaultJavaPath()
+    public string? GetDefaultJavaPath() => GetDefaultJavaPath(RulesContext);
+
+    public string? GetDefaultJavaPath(RulesEvaluatorContext rulesContext)
     {
-        return JavaPathResolver.GetDefaultJavaBinaryPath(RulesContext);
+        return JavaPathResolver.GetDefaultJavaBinaryPath(rulesContext);
     }
 
-    private string createNativePath(IVersion version)
+    private string createNativePath(IVersion version, RulesEvaluatorContext rulesContext)
     {
         NativeLibraryExtractor.Clean(MinecraftPath, version);
-        return NativeLibraryExtractor.Extract(MinecraftPath, version, RulesContext);
+        return NativeLibraryExtractor.Extract(MinecraftPath, version, rulesContext);
     }
 
     public ValueTask<Process> InstallAndBuildProcessAsync(

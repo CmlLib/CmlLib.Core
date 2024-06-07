@@ -7,23 +7,23 @@ namespace CmlLib.Core.Java;
 
 public class MinecraftJavaManifestResolver
 {
-    public static string? GetOSNameForJava(LauncherOSRule os)
+    public static string GetOSNameForJava(LauncherOSRule os)
     {
         return (os.Name, os.Arch) switch
         {
             (LauncherOSRule.Windows, "64") => "windows-x64",
             (LauncherOSRule.Windows, "32") => "windows-x86",
             (LauncherOSRule.Windows, "arm64") => "windows-arm64",
-            (LauncherOSRule.Windows, _) => null,
+            (LauncherOSRule.Windows, _) => $"windows-{os.Arch}",
             (LauncherOSRule.Linux, "64") => "linux",
             (LauncherOSRule.Linux, "32") => "linux-i386",
-            (LauncherOSRule.Linux, _) => "linux",
+            (LauncherOSRule.Linux, _) => $"linux-{os.Arch}",
             (LauncherOSRule.OSX, "64") => "mac-os",
             (LauncherOSRule.OSX, "32") => "mac-os",
             (LauncherOSRule.OSX, "arm") => "mac-os-arm64",
             (LauncherOSRule.OSX, "arm64") => "mac-os-arm64",
-            (LauncherOSRule.OSX, _) => null,
-            (_, _) => null
+            (LauncherOSRule.OSX, _) => $"mac-os-{os.Arch}",
+            (_, _) => $"{os.Name}-{os.Arch}"
         };
     }
 
