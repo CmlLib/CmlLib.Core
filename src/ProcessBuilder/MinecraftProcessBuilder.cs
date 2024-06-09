@@ -9,22 +9,24 @@ public class MinecraftProcessBuilder
 {
     public MinecraftProcessBuilder(
         IRulesEvaluator evaluator, 
+        RulesEvaluatorContext context,
         MLaunchOption option)
     {
         option.CheckValid();
 
         Debug.Assert(option.StartVersion != null);
         Debug.Assert(option.Path != null);
-        Debug.Assert(option.RulesContext != null);
 
         launchOption = option;
         version = option.StartVersion;
         minecraftPath = option.Path;
         rulesEvaluator = evaluator;
+        baseRulesContext = context;
     }
 
     private readonly IVersion version;
     private readonly IRulesEvaluator rulesEvaluator;
+    private readonly RulesEvaluatorContext baseRulesContext;
     private readonly MinecraftPath minecraftPath;
     private readonly MLaunchOption launchOption;
     
@@ -41,9 +43,15 @@ public class MinecraftProcessBuilder
 
     public string BuildArguments()
     {
-        Debug.Assert(launchOption.RulesContext != null);
+        var features = baseRulesContext.Features
+            .Concat(launchOption.Features)
+            .Concat(addFeatures());
+            
+        var context = baseRulesContext with 
+        { 
+            Features = new HashSet<string>(features)
+        };
 
-        var context = addFeatures(launchOption.RulesContext);
         var argDict = buildArgumentDictionary(context);
 
         var builder = new MinecraftArgumentBuilder(rulesEvaluator, context, argDict);
@@ -52,45 +60,38 @@ public class MinecraftProcessBuilder
         return builder.Build();
     }
 
-    private RulesEvaluatorContext addFeatures(RulesEvaluatorContext context)
+    private IEnumerable<string> addFeatures()
     {
-        var featureSet = new HashSet<string>(context.Features);
-
         if (launchOption.IsDemo)
         {
-            featureSet.Add("is_demo_user");
+            yield return "is_demo_user";
         }
 
         if (launchOption.ScreenWidth > 0 && 
             launchOption.ScreenHeight > 0)
         {
-            featureSet.Add("has_custom_resolution");
+            yield return "has_custom_resolution";
         }
 
         if (!string.IsNullOrEmpty(launchOption.QuickPlayPath))
         {
-            featureSet.Add("has_quick_plays_support");
+            yield return "has_quick_plays_support";
         }
 
         if (!string.IsNullOrEmpty(launchOption.QuickPlaySingleplayer))
         {
-            featureSet.Add("is_quick_play_singleplayer");
+            yield return "is_quick_play_singleplayer";
         }
 
         if (!string.IsNullOrEmpty(launchOption.ServerIp))
         {
-            featureSet.Add("is_quick_play_multiplayer");
+            yield return "is_quick_play_multiplayer";
         }
 
         if (!string.IsNullOrEmpty(launchOption.QuickPlayRealms))
         {
-            featureSet.Add("is_quick_play_realms");
+            yield return "is_quick_play_realms";
         }
-
-        return new RulesEvaluatorContext(context.OS)
-        {
-            Features = featureSet
-        };
     }
 
     private IReadOnlyDictionary<string, string?> buildArgumentDictionary(RulesEvaluatorContext context)

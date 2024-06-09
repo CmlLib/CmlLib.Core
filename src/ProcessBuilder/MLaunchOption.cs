@@ -21,7 +21,7 @@ public partial class MLaunchOption
     public IVersion? StartVersion { get; set; }
     public MSession? Session { get; set; }
     public string? NativesDirectory { get; set; }
-    public RulesEvaluatorContext? RulesContext { get; set; }
+    public IEnumerable<string> Features { get; set; } = [];
     public string PathSeparator { get; set; } = System.IO.Path.PathSeparator.ToString();
 
     public string? JavaVersion { get; set; }
@@ -61,9 +61,6 @@ public partial class MLaunchOption
 
         if (string.IsNullOrEmpty(JavaPath))
             exMsg = "JavaPath is null";
-
-        if (RulesContext == null)
-            exMsg = "RulesContext is null";
 
         if (Path == null)
             exMsg = nameof(Path) + " is null";
