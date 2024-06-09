@@ -20,7 +20,7 @@ public class LegacyJavaExtractionTask : IUpdateTask
         // jre.lzma (file.Path) -> jre.zip -> /extracTo
         var zipPath = Path.Combine(Path.GetTempPath(), "jre.zip");
         SevenZipWrapper.DecompressFileLZMA(file.Path, zipPath);
-        SharpZipWrapper.Unzip(zipPath, ExtractTo, null, cancellationToken);
+        SharpZipWrapper.Unzip(zipPath, ExtractTo, [], cancellationToken);
 
         return new ValueTask();
     }
