@@ -8,8 +8,11 @@
         <TargetFramework>net6.0-windows</TargetFramework>
         <EnableWindowsTargeting>true</EnableWindowsTargeting>
     </PropertyGroup>
+    <ItemGroup>
+      <PackageReference Include="CmlLib.Core.Auth.Microsoft" Version="3.1.0-beta.4" />
+    </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="../../src/CmlLib.Core.csproj"/>
+        <ProjectReference Include="../../src/CmlLib.Core.csproj" />
     </ItemGroup>
 </Project>

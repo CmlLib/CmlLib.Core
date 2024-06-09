@@ -6,6 +6,7 @@ using CmlLib.Core.VersionMetadata;
 using CmlLib.Core.Installers;
 using CmlLib.Core.ProcessBuilder;
 using CmlLib.Core.Rules;
+using CmlLib.Core.Auth.Microsoft;
 
 namespace CmlLibWinFormSample
 {
@@ -177,14 +178,11 @@ namespace CmlLibWinFormSample
 
                 if (!string.IsNullOrEmpty(txtFeatures.Text))
                 {
-                    launchOption.RulesContext = new RulesEvaluatorContext(LauncherOSRule.Current)
-                    {
-                        Features = txtFeatures.Text
-                            .Split(',')
-                            .Select(f => f.Trim())
-                            .Where(f => !string.IsNullOrWhiteSpace(f))
-                            .ToList()
-                    };
+                    launchOption.Features = txtFeatures.Text
+                        .Split(',')
+                        .Select(f => f.Trim())
+                        .Where(f => !string.IsNullOrWhiteSpace(f))
+                        .ToList();
                 }
 
                 cancellationToken = new CancellationTokenSource();
@@ -364,14 +362,38 @@ namespace CmlLibWinFormSample
             cancellationToken?.Cancel();
         }
 
-        private void btnLogin_Click(object sender, EventArgs e)
-        {
+        JELoginHandler loginHandler = JELoginHandlerBuilder.BuildDefault();
 
+        private async void btnLogin_Click(object sender, EventArgs e)
+        {
+            setUIEnabled(false);
+            try
+            {
+                var session = await loginHandler.Authenticate();
+                txtAccessToken.Text = session.AccessToken;
+                txtUsername.Text = session.Username;
+                txtUUID.Text = session.UUID;
+                txtXUID.Text = session.Xuid;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+            setUIEnabled(true);
         }
 
-        private void btnLogout_Click(object sender, EventArgs e)
+        private async void btnLogout_Click(object sender, EventArgs e)
         {
-
+            setUIEnabled(false);
+            try
+            {
+                await loginHandler.SignoutWithBrowser();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+            setUIEnabled(true);
         }
     }
 }
