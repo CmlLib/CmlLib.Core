@@ -16,11 +16,9 @@ internal static class IOUtil
             .TrimEnd(Path.DirectorySeparatorChar);
     }
 
-    public static string CombinePath(IEnumerable<string> paths)
+    public static string CombinePath(IEnumerable<string> paths, string pathSeparator)
     {
-        return string.Join(
-            Path.PathSeparator.ToString(),
-            paths.Select(Path.GetFullPath));
+        return string.Join(pathSeparator, paths.Select(Path.GetFullPath));
     }
 
     public static bool CheckFileValidation(string path, string? compareHash)
