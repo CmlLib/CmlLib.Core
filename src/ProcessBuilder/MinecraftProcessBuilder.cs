@@ -99,7 +99,7 @@ public class MinecraftProcessBuilder
         Debug.Assert(launchOption.Session != null);
 
         var classpaths = getClasspaths(context);
-        var classpath = IOUtil.CombinePath(classpaths);
+        var classpath = IOUtil.CombinePath(classpaths, launchOption.PathSeparator);
         var assetId = version.GetInheritedProperty(version => version.AssetIndex?.Id) ?? "legacy";
         
         var argDict = new Dictionary<string, string?>

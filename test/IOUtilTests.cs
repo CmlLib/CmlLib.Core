@@ -33,7 +33,7 @@ public class IOUtilTest
         };
         var exp = @"C:\test\lib1.zip;""C:\test\lib space 2.zip""";
         
-        Assert.Equal(exp, IOUtil.CombinePath(paths));
+        Assert.Equal(exp, IOUtil.CombinePath(paths, Path.PathSeparator.ToString()));
     }
 
     [Fact(Skip = "Unix")]
@@ -45,6 +45,6 @@ public class IOUtilTest
         };
         var exp = @"/root/f1.zip:""/root/f2 space sss.txt""";
         
-        Assert.Equal(exp, IOUtil.CombinePath(paths));
+        Assert.Equal(exp, IOUtil.CombinePath(paths, Path.PathSeparator.ToString()));
     }
 }
