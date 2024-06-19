@@ -91,7 +91,7 @@ public static class Extensions
 
     public static MinecraftVersion ToMutableVersion(this IVersion self)
     {
-        return new MinecraftVersion(self.Id)
+        var version = new MinecraftVersion(self.Id)
         {
             MainJarId = self.MainJarId,
             InheritsFrom = self.InheritsFrom,
@@ -99,16 +99,18 @@ public static class Extensions
             AssetIndex = self.AssetIndex,
             Client = self.Client,
             JavaVersion = self.JavaVersion,
-            Libraries = self.Libraries,
             Jar = self.Jar,
             Logging = self.Logging,
             MainClass = self.MainClass,
             ReleaseTime = self.ReleaseTime,
             Type = self.Type,
-            GameArguments = self.GetGameArguments(false),
-            GameArgumentsForBaseVersion = self.GetGameArguments(true),
-            JvmArguments = self.GetJvmArguments(false),
-            JvmArgumentsForBaseVersion = self.GetJvmArguments(true)
         };
+
+        version.LibraryList.AddRange(self.Libraries);
+        version.GameArguments.AddRange(self.GetGameArguments(false));
+        version.GameArgumentsForBaseVersion.AddRange(self.GetGameArguments(true));
+        version.JvmArguments.AddRange(self.GetJvmArguments(false));
+        version.JvmArgumentsForBaseVersion.AddRange(self.GetJvmArguments(true));
+        return version;
     }
 }

@@ -19,17 +19,18 @@ public class MinecraftVersion : IVersion
     public AssetMetadata? AssetIndex { get; set; }
     public MFileMetadata? Client { get; set; }
     public JavaVersion? JavaVersion { get; set; }
-    public IReadOnlyCollection<MLibrary> Libraries { get; set; } = Array.Empty<MLibrary>();
+    public IReadOnlyCollection<MLibrary> Libraries => LibraryList;
+    public List<MLibrary> LibraryList { get; } = new List<MLibrary>();
     public string? Jar { get; set; }
     public MLogFileMetadata? Logging { get; set; }
     public string? MainClass { get; set; }
     public DateTimeOffset ReleaseTime { get; set; }
     public string? Type { get; set; }
 
-    public IReadOnlyCollection<MArgument> GameArguments { get; set; } = Array.Empty<MArgument>();
-    public IReadOnlyCollection<MArgument> GameArgumentsForBaseVersion { get; set; } = Array.Empty<MArgument>();
-    public IReadOnlyCollection<MArgument> JvmArguments { get; set; } = Array.Empty<MArgument>();
-    public IReadOnlyCollection<MArgument> JvmArgumentsForBaseVersion { get; set; } = Array.Empty<MArgument>();
+    public List<MArgument> GameArguments { get; set; } = [];
+    public List<MArgument> GameArgumentsForBaseVersion { get; set; } = [];
+    public List<MArgument> JvmArguments { get; set; } = [];
+    public List<MArgument> JvmArgumentsForBaseVersion { get; set; } = [];
 
     public IReadOnlyCollection<MArgument> GetGameArguments(bool isBaseVersion) =>
         isBaseVersion ? GameArgumentsForBaseVersion : GameArguments;

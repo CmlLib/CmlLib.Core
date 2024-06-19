@@ -197,7 +197,7 @@ public class VersionMetadataCollectionTest
             GameArgumentsForBaseVersion = [new MArgument("parent_base_arg")],
             JvmArguments = [new MArgument("parent_arg")],
             JvmArgumentsForBaseVersion = [new MArgument("parent_base_arg")],
-            Libraries = [new MLibrary("parent_lib")]
+            LibraryList = [new MLibrary("parent_lib")]
         };
 
         var child = new MinecraftVersion("child")
@@ -210,7 +210,7 @@ public class VersionMetadataCollectionTest
             GameArgumentsForBaseVersion = [new MArgument("child_base_arg")],
             JvmArguments = [new MArgument("child_arg")],
             JvmArgumentsForBaseVersion = [new MArgument("child_base_arg")],
-            Libraries = [new MLibrary("child_lib")],
+            LibraryList = [new MLibrary("child_lib")],
 
             InheritsFrom = parent.Id
         };
