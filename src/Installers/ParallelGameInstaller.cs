@@ -13,17 +13,18 @@ public class ParallelGameInstaller : GameInstallerBase
         maxChecker = Math.Max(1, maxChecker);
         maxChecker = Math.Min(4, maxChecker);
 
-        // 4 <= maxDownloader <= 6
+        // 4 <= maxDownloader <= 8
         var maxDownloader = Environment.ProcessorCount;
         maxDownloader = Math.Max(4, maxDownloader);
         maxDownloader = Math.Max(6, maxDownloader);
 
-        return new ParallelGameInstaller(maxChecker, maxDownloader, httpClient);
+        return new ParallelGameInstaller(maxChecker, maxDownloader, 1024,  httpClient);
     }
 
     public ParallelGameInstaller(
         int maxChecker,
         int maxDownloader,
+        int boundedCapacity,
         HttpClient httpClient) : base(httpClient)
     {
         if (maxChecker <= 0)
@@ -33,10 +34,12 @@ public class ParallelGameInstaller : GameInstallerBase
 
         MaxChecker = maxChecker;
         MaxDownloader = maxDownloader;
+        BoundedCapacity = boundedCapacity;
     }
 
     public int MaxChecker { get; }
     public int MaxDownloader { get; }
+    public int BoundedCapacity { get; }
 
     ThreadLocal<ByteProgress>? progressStorage;
     int totalFiles = 0;
@@ -98,6 +101,7 @@ public class ParallelGameInstaller : GameInstallerBase
         {
             CancellationToken = cancellationToken,
             MaxDegreeOfParallelism = MaxChecker,
+            BoundedCapacity = BoundedCapacity,
             EnsureOrdered = false
         });
         var downloadBlock = new ActionBlock<(GameFile GameFile, bool NeedUpdate)>(async result =>
@@ -123,7 +127,7 @@ public class ParallelGameInstaller : GameInstallerBase
         {
             CancellationToken = cancellationToken,
             MaxDegreeOfParallelism = MaxDownloader,
-            BoundedCapacity = 1000,
+            BoundedCapacity = BoundedCapacity,
             EnsureOrdered = false
         });
 
