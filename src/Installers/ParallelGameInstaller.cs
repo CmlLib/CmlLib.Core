@@ -16,9 +16,9 @@ public class ParallelGameInstaller : GameInstallerBase
         // 4 <= maxDownloader <= 8
         var maxDownloader = Environment.ProcessorCount;
         maxDownloader = Math.Max(4, maxDownloader);
-        maxDownloader = Math.Max(6, maxDownloader);
+        maxDownloader = Math.Max(8, maxDownloader);
 
-        return new ParallelGameInstaller(maxChecker, maxDownloader, 1024,  httpClient);
+        return new ParallelGameInstaller(maxChecker, maxDownloader, 2048,  httpClient);
     }
 
     public ParallelGameInstaller(
