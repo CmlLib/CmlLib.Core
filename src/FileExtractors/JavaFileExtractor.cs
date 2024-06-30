@@ -115,7 +115,7 @@ public class JavaFileExtractor : IFileExtractor
                 Path = filePath,
                 Url = javaFile.Url,
                 Size = javaFile.Size,
-                UpdateTask = javaFile.Executable ? new ChmodTask(NativeMethods.Chmod755) : null
+                UpdateTask = javaFile.Executable ? [new ChmodTask(NativeMethods.Chmod755)] : []
             };
         }
     }

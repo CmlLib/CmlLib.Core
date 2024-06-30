@@ -27,15 +27,17 @@ public class AssetFileExtractorTests
                 new AssetObject("icons/icon_128x128.png", "b62ca8ec10d07e6bf5ac8dae0c8c1d2e6a1e3356", 9101)  
             ]
         };
-        var result = AssetFileExtractor.Extractor.ExtractTasksFromAssetIndex(index, TestPath, TestAssetServer, false).ToArray();
+        var result = AssetFileExtractor.Extractor.ExtractTasksFromAssetIndex(index, TestPath, TestAssetServer, false).Single();
         var expected = new GameFile("icons/icon_128x128.png")
         {
             Hash = "b62ca8ec10d07e6bf5ac8dae0c8c1d2e6a1e3356",
             Size = 9101,
             Path = IOUtil.NormalizePath("assets/objects/b6/b62ca8ec10d07e6bf5ac8dae0c8c1d2e6a1e3356"),
-            Url = "https://assetserver/b6/b62ca8ec10d07e6bf5ac8dae0c8c1d2e6a1e3356"
+            Url = "https://assetserver/b6/b62ca8ec10d07e6bf5ac8dae0c8c1d2e6a1e3356",
+            UpdateTask = result.UpdateTask
         };
-        Assert.Equal([expected], result);
+        Assert.Equal(expected, result);
+        Assert.Empty(result.UpdateTask);
     }
 
     [Fact]
@@ -61,9 +63,9 @@ public class AssetFileExtractorTests
         };
         Assert.Equal([expected], result);
         
-        var task = result.First().UpdateTask as FileCopyTask;
+        var task = result.First().UpdateTask.First() as FileCopyTask;
         Assert.NotNull(task);
-        Assert.Equal([IOUtil.NormalizePath("assets/virtual/legacy/icons/icon_128x128.png")], task!.DestinationPaths);
+        Assert.Equal(IOUtil.NormalizePath("assets/virtual/legacy/icons/icon_128x128.png"), task!.DestinationPath);
     }
 
     [Fact]
@@ -89,8 +91,8 @@ public class AssetFileExtractorTests
         };
         Assert.Equal([expected], result);
         
-        var task = result.First().UpdateTask as FileCopyTask;
+        var task = result.First().UpdateTask.First() as FileCopyTask;
         Assert.NotNull(task);
-        Assert.Equal([IOUtil.NormalizePath("resources/icons/icon_128x128.png")], task!.DestinationPaths);
+        Assert.Equal(IOUtil.NormalizePath("resources/icons/icon_128x128.png"), task!.DestinationPath);
     }
 }

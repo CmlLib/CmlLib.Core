@@ -96,7 +96,7 @@ public class AssetFileExtractor : IFileExtractor
                     Hash = assetObject.Hash,
                     Size = assetObject.Size,
                     Url = assetServer + hashName,
-                    UpdateTask = copyPath.Any() ? new FileCopyTask(copyPath) : null
+                    UpdateTask = copyPath.Select(path => new FileCopyTask(path))
                 };
             }
 

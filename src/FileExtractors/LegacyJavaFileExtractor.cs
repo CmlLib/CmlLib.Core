@@ -50,9 +50,11 @@ public class LegacyJavaFileExtractor : IFileExtractor
             Path = Path.Combine(Path.GetTempPath(), "jre.lzma"),
             Hash = "0", // since the file is temporary it should be always downloaded again
             Url = javaUrl,
-            UpdateTask = CompositeUpdateTask.Create(
+            UpdateTask = 
+            [
                 new LegacyJavaExtractionTask(javaBinaryDir),
-                new ChmodTask(NativeMethods.Chmod755, javaBinaryPath))
+                new ChmodTask(NativeMethods.Chmod755, javaBinaryPath)
+            ]
         };
     }
 

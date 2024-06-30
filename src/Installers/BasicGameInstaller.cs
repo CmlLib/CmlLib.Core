@@ -6,7 +6,7 @@ public class BasicGameInstaller : GameInstallerBase
 {
     public BasicGameInstaller(HttpClient httpClient) : base(httpClient)
     {
-        
+
     }
 
     protected override async ValueTask Install(

@@ -20,7 +20,7 @@ public class MinecraftVersion : IVersion
     public MFileMetadata? Client { get; set; }
     public JavaVersion? JavaVersion { get; set; }
     public IReadOnlyCollection<MLibrary> Libraries => LibraryList;
-    public List<MLibrary> LibraryList { get; } = new List<MLibrary>();
+    public List<MLibrary> LibraryList { get; set; } = [];
     public string? Jar { get; set; }
     public MLogFileMetadata? Logging { get; set; }
     public string? MainClass { get; set; }

@@ -5,10 +5,10 @@ namespace CmlLib.Core.Tasks;
 
 public class FileCopyTask : IUpdateTask
 {
-    public FileCopyTask(IEnumerable<string> destPaths) =>
-        DestinationPaths = destPaths.ToArray();
+    public FileCopyTask(string dest) =>
+        DestinationPath = dest;
 
-    public string[] DestinationPaths { get; }
+    public string DestinationPath { get; }
 
     public ValueTask Execute(GameFile file, CancellationToken cancellationToken)
     {
@@ -16,16 +16,13 @@ public class FileCopyTask : IUpdateTask
             throw new InvalidOperationException("The source file does not exists");
 
         var orgFile = new FileInfo(file.Path);
-        foreach (var destination in DestinationPaths)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
+        cancellationToken.ThrowIfCancellationRequested();
 
-            var desFile = new FileInfo(destination);
-            if (!desFile.Exists || orgFile.Length != desFile.Length)
-            {
-                IOUtil.CreateParentDirectory(destination);
-                orgFile.CopyTo(desFile.FullName, true);
-            }
+        var desFile = new FileInfo(DestinationPath);
+        if (!desFile.Exists || orgFile.Length != desFile.Length)
+        {
+            IOUtil.CreateParentDirectory(DestinationPath);
+            orgFile.CopyTo(desFile.FullName, true);
         }
 
         return new ValueTask();

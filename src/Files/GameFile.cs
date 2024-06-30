@@ -12,11 +12,13 @@ public record GameFile
     public string? Hash { get; init; }
     public string? Url { get; init; }
     public long Size { get; init; }
-    public IUpdateTask? UpdateTask { get; init; }
+    public IEnumerable<IUpdateTask> UpdateTask { get; init; } = [];
 
     public async ValueTask ExecuteUpdateTask(CancellationToken cancellationToken)
     {
-        if (UpdateTask != null)
-            await UpdateTask.Execute(this, cancellationToken);
+        foreach (var task in UpdateTask)
+        {
+            await task.Execute(this, cancellationToken);
+        }
     }
 }
