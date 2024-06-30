@@ -3,7 +3,7 @@
 - [ ] 문서 작성
 - [ ] MLaunch 통합 테스트 작성. 주요 버전 파싱, 최종 argument 확인
 - [ ] IDisposable 확인 https://stackoverflow.com/questions/4737056/detecting-leaked-idisposable-objects
-- [ ] Version 을 쉽게 바꿀 수 있는 무언가가 필요해
+- [x] Version 을 쉽게 바꿀 수 있는 무언가가 필요해
 - [ ] QuickPlay 프로필
 
 - [x] RulesContext 가 MinecraftLauncher 에서도 설정 가능하고 LaunchOption 에서도 설정 가능한데 이거 해결할 필요가 있음 -> LaunchOption 에서 Feature 만 유저가 설정가능하게 제한하기
