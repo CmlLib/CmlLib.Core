@@ -391,4 +391,57 @@ public class JsonLibraryParserTests
         };
         Assert.Equal(expected, lib);
     }
+
+    // OptiFine 1.7.10 from third-party launcher
+    public static readonly string native_library_with_incorrect_classifier_id = """
+{
+  "name": "org.lwjgl.lwjgl:lwjgl-platform:2.9.1",
+  "natives": {
+    "linux": "natives-linux",
+    "osx": "natives-osx",
+    "windows": "natives-windows"
+  },
+  "extract": {
+    "exclude": [
+      "META-INF/"
+    ]
+  },
+  "classifies": {
+    "linux": {
+      "sha1": "aa9aae879af8eb378e22cfc64db56ec2ca9a44d1",
+      "size": 571424,
+      "path": "org/lwjgl/lwjgl/lwjgl-platform/2.9.1/lwjgl-platform-2.9.1-natives-linux.jar",
+      "url": "https://libraries.minecraft.net/org/lwjgl/lwjgl/lwjgl-platform/2.9.1/lwjgl-platform-2.9.1-natives-linux.jar"
+    },
+    "osx": {
+      "sha1": "2d12c83fdfbc04ecabf02c7bc8cc54d034f0daac",
+      "size": 527196,
+      "path": "org/lwjgl/lwjgl/lwjgl-platform/2.9.1/lwjgl-platform-2.9.1-natives-osx.jar",
+      "url": "https://libraries.minecraft.net/org/lwjgl/lwjgl/lwjgl-platform/2.9.1/lwjgl-platform-2.9.1-natives-osx.jar"
+    },
+    "windows": {
+      "sha1": "4c517eca808522457dd95ee8fc1fbcdbb602efbe",
+      "size": 611334,
+      "path": "org/lwjgl/lwjgl/lwjgl-platform/2.9.1/lwjgl-platform-2.9.1-natives-windows.jar",
+      "url": "https://libraries.minecraft.net/org/lwjgl/lwjgl/lwjgl-platform/2.9.1/lwjgl-platform-2.9.1-natives-windows.jar"
+    }
+  }
+}
+""";
+
+    [Fact]
+    public void get_native_library_with_incorrect_classifier_id()
+    {
+        using var jsonDocument = JsonDocument.Parse(native_library_with_incorrect_classifier_id);
+        var lib = JsonLibraryParser.Parse(jsonDocument.RootElement);
+
+        var windows = lib?.GetNativeLibrary(new LauncherOSRule(LauncherOSRule.Windows, LauncherOSRule.X64, ""));
+        Assert.Equal("4c517eca808522457dd95ee8fc1fbcdbb602efbe", windows?.GetSha1());
+
+        var linux = lib?.GetNativeLibrary(new LauncherOSRule(LauncherOSRule.Linux, LauncherOSRule.X64, ""));
+        Assert.Equal("aa9aae879af8eb378e22cfc64db56ec2ca9a44d1", linux?.GetSha1());
+
+        var osx = lib?.GetNativeLibrary(new LauncherOSRule(LauncherOSRule.OSX, LauncherOSRule.X64, ""));
+        Assert.Equal("2d12c83fdfbc04ecabf02c7bc8cc54d034f0daac", osx?.GetSha1());
+    }
 }

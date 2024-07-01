@@ -38,7 +38,7 @@ public class JsonVersionParserTests
         Assert.Equal("1.0", version.Id);
         Assert.Null(version.InheritsFrom);
         Assert.Equal("jre-legacy", version.JavaVersion?.Component);
-        Assert.Equal(8, version.JavaVersion?.MajorVersion);
+        Assert.Equal("8", version.JavaVersion?.MajorVersion);
         Assert.Null(version.Jar);
         Assert.Equal("net.minecraft.launchwrapper.Launch", version.MainClass);
         Assert.Equal("release", version.Type);
@@ -144,5 +144,34 @@ public class JsonVersionParserTests
         Assert.Equal(966, version.Logging?.LogFile?.Size);
         Assert.Equal("https://launcher.mojang.com/v1/objects/50c9cc4af6d853d9fc137c84bcd153e2bd3a9a82/client-1.7.xml", version.Logging?.LogFile?.Url);
         Assert.Equal("log4j2-xml", version.Logging?.Type);
+    }
+
+    [Fact]
+    public void parse_from_optifine()
+    {
+        // OptiFine 1.7.10 from third-party launcher
+
+        var json = """
+{
+    "id": "OptiFine 1.7.10",
+    "time": "2014-05-14T21:29:07+04:00",
+    "releaseTime": "2014-05-14T21:29:23+04:00",
+    "type": "modified",
+    "minecraftArguments": "--username ${auth_player_name} --version ${version_name} --gameDir ${game_directory} --assetsDir ${assets_root} --assetIndex ${assets_index_name} --uuid ${auth_uuid} --accessToken ${auth_access_token} --userProperties ${user_properties} --userType ${user_type} --tweakClass optifine.OptiFineTweaker",
+    "mainClass": "net.minecraft.launchwrapper.Launch",
+    "minimumLauncherVersion": 13,
+    "assets": "1.7.10",
+    "complianceLevel": 0.0,
+    "javaVersion": {
+        "component": "jre-legacy",
+        "majorVersion": 8.0
+    }
+}
+""";
+
+        var version = JsonVersionParser.ParseFromJsonString(json, options);
+        Assert.Equal("OptiFine 1.7.10", version.Id);
+        Assert.Equal("modified", version.Type);
+        Assert.Equal("8.0", version.JavaVersion?.MajorVersion);
     }
 }

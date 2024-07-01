@@ -1,16 +1,17 @@
+using CmlLib.Core.Internals;
 using System.Text.Json.Serialization;
 
 namespace CmlLib.Core.Java;
 
 public record JavaVersion
 {
-    public JavaVersion(string component) : this(component, 0)
+    public JavaVersion(string component) : this(component, null)
     {
 
     }
 
     [JsonConstructor]
-    public JavaVersion(string component, int majorVersion)
+    public JavaVersion(string component, string? majorVersion)
     {
         this.Component = component;
         this.MajorVersion = majorVersion;
@@ -20,5 +21,6 @@ public record JavaVersion
     public string Component { get; }
 
     [JsonPropertyName("majorVersion")]
-    public int MajorVersion { get; }
+    [JsonConverter(typeof(NumberToStringConverter))]
+    public string? MajorVersion { get; }
 }

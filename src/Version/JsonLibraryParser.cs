@@ -59,7 +59,7 @@ public static class JsonLibraryParser
 
         // classifiers
         IReadOnlyDictionary<string, MFileMetadata>? classifiers = null;
-        var classifiersProp = element.GetPropertyOrNull("classifies") ?? 
+        var classifiersProp = element.GetPropertyOrNull("classifies") ??
                               element.GetPropertyOrNull("downloads")?.GetPropertyOrNull("classifiers");
         if (classifiersProp.HasValue)
             classifiers = classifiersProp.Value.Deserialize<Dictionary<string, MFileMetadata>>();

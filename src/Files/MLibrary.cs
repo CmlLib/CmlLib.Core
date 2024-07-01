@@ -38,11 +38,14 @@ public record MLibrary
 
     public MFileMetadata? GetNativeLibrary(LauncherOSRule os)
     {
-        var classifierId = GetClassifierId(os);
-        if (string.IsNullOrEmpty(classifierId) || Classifiers == null)
+        if (Classifiers == null)
             return null;
 
-        if (Classifiers.TryGetValue(classifierId, out var classifier))
+        var classifierId = GetClassifierId(os);
+        MFileMetadata? classifier;
+        if (!string.IsNullOrEmpty(classifierId) && Classifiers.TryGetValue(classifierId, out classifier))
+            return classifier;
+        else if (!string.IsNullOrEmpty(os.Name) && Classifiers.TryGetValue(os.Name, out classifier))
             return classifier;
         else
             return null;

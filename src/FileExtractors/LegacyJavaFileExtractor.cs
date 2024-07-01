@@ -18,7 +18,7 @@ public class LegacyJavaFileExtractor : IFileExtractor
         IJavaPathResolver resolver) => 
         (_httpClient, _javaPathResolver) = (httpClient, resolver);
 
-    public JavaVersion JavaVersion = new JavaVersion("m-legacy", 17);
+    public JavaVersion JavaVersion = new JavaVersion("m-legacy", "17");
 
     public async ValueTask<IEnumerable<GameFile>> Extract(
         MinecraftPath path, 
