@@ -77,7 +77,7 @@ public static class Extensions
         while (v != null)
         {
             if (stack.Count >= maxDepth)
-                throw new Exception();
+                throw VersionDependencyException.CreateExcessiveDepthMessage(maxDepth, v.Id);
 
             stack.Push(v);
             v = v.ParentVersion;

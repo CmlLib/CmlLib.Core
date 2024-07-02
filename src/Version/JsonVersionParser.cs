@@ -22,13 +22,13 @@ public static class JsonVersionParser
         {
             return new JsonVersion(json, options);
         }
-        catch (MVersionParseException)
+        catch (VersionParseException)
         {
             throw;
         }
         catch (Exception ex)
         {
-            throw new MVersionParseException(ex);
+            throw new VersionParseException(ex);
         }
     }
 }

@@ -81,12 +81,12 @@ public class VersionMetadataCollectionTest
     }
 
     [Fact]
-    public void throw_circular_inheritance()
+    public async Task throw_circular_inheritance()
     {
         var (collection, parent, child) = createMocks();
         parent.InheritsFrom = child.Id;
 
-        Assert.ThrowsAsync<InvalidDataException>(async () =>
+        await Assert.ThrowsAsync<VersionDependencyException>(async () =>
         {
             await collection.GetVersionAsync("parent");
         });
@@ -108,19 +108,19 @@ public class VersionMetadataCollectionTest
     }
 
     [Fact]
-    public void throw_non_existent_parent_id()
+    public async Task throw_non_existent_parent_id()
     {
         var (collection, parent, child) = createMocks();
         child.InheritsFrom = "NON_EXISTENT_VERSION_ID";
 
-        Assert.ThrowsAsync<KeyNotFoundException>(async () =>
+        await Assert.ThrowsAsync<KeyNotFoundException>(async () =>
         {
             await collection.GetVersionAsync("child");
         });
     }
 
     [Fact]
-    public void throw_too_deep_inheritance()
+    public async Task throw_too_deep_inheritance()
     {
         var v1 = new MinecraftVersion("v1");
         var v2 = new MinecraftVersion("v2");
@@ -141,7 +141,7 @@ public class VersionMetadataCollectionTest
 
         collection.MaxDepth = 3;
 
-        Assert.ThrowsAsync<InvalidDataException>(async () => 
+        await Assert.ThrowsAsync<VersionDependencyException>(async () => 
         {
             await collection.GetVersionAsync("v4");
         });

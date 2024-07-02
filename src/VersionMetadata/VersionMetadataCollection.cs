@@ -128,10 +128,10 @@ public class VersionMetadataCollection : IEnumerable<IVersionMetadata>
             return;
 
         if (visited.Contains(version.InheritsFrom))
-            throw new InvalidDataException(); // TODO: declare new exception
+            throw VersionDependencyException.CreateCircularDependencyException(version.Id);
         visited.Add(version.Id);
         if (visited.Count >= MaxDepth)
-            throw new InvalidDataException(); // TODO: declare new exception
+            throw VersionDependencyException.CreateExcessiveDepthMessage(MaxDepth, version.Id);
 
         var baseVersionMetadata = GetVersionMetadata(version.InheritsFrom);
         var baseVersion = await getVersionInternal(baseVersionMetadata, path, visited, cancellationToken);

@@ -20,7 +20,7 @@ public class ChmodTask : IUpdateTask
     {
         var target = _filePath ?? file.Path;
         if (string.IsNullOrEmpty(target))
-            throw new InvalidOperationException();
+            throw new InvalidOperationException("Target path was null");
         if (LauncherOSRule.Current.Name != LauncherOSRule.Windows)
             NativeMethods.Chmod(target, Mode);
         return new ValueTask();
