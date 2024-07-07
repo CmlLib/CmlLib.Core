@@ -1,7 +1,11 @@
-- [ ] MLaunch 통합 테스트 작성. 주요 버전 파싱, 최종 argument 확인
-- [ ] IDisposable 확인 https://stackoverflow.com/questions/4737056/detecting-leaked-idisposable-objects
-- [ ] QuickPlay 프로필
+## next
 
+- [ ] QuickPlay 프로필
+- [ ] IDisposable 확인 https://stackoverflow.com/questions/4737056/detecting-leaked-idisposable-objects
+
+## 4.0.0
+
+- [x] MLaunch 통합 테스트 작성. 주요 버전 파싱, 최종 argument 확인
 - [x] exception 타입 확인 
 - [x] 다른 라이브러리와 호환성 확인하고 베타 버전 릴리즈하기
 - [x] 문서 작성
