@@ -444,4 +444,40 @@ public class JsonLibraryParserTests
         var osx = lib?.GetNativeLibrary(new LauncherOSRule(LauncherOSRule.OSX, LauncherOSRule.X64, ""));
         Assert.Equal("2d12c83fdfbc04ecabf02c7bc8cc54d034f0daac", osx?.GetSha1());
     }
+
+    // Butteracking Client v4
+    public static readonly string native_library_without_classifiers = """
+{
+  "name": "tv.twitch:twitch-external-platform:4.5",
+  "rules": [
+    {
+      "action": "allow",
+      "os": {
+        "name": "windows"
+      }
+    }
+  ],
+  "natives": {
+    "windows": "natives-windows-${arch}"
+  },
+  "extract": {
+    "exclude": [
+      "META-INF/"
+    ]
+  }
+}
+""";
+
+    [Fact]
+    public void get_native_library_without_classifiers()
+    {
+        using var jsonDocument = JsonDocument.Parse(native_library_without_classifiers);
+        var lib = JsonLibraryParser.Parse(jsonDocument.RootElement);
+
+        var win = lib?.GetNativeLibrary(new LauncherOSRule(LauncherOSRule.Windows, LauncherOSRule.X64, "10"));
+        Assert.Null(win);
+
+        var winPath = lib?.GetNativeLibraryPath(new LauncherOSRule(LauncherOSRule.Windows, LauncherOSRule.X64, "10"));
+        Assert.NotNull(winPath);
+    }
 }
