@@ -5,7 +5,7 @@
         <LangVersion>12.0</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Version>4.0.0</Version>
+        <Version>4.0.1</Version>
         <Description>Minecraft Launcher Library for .NET
         </Description>
         <Copyright>Copyright (c) 2023 AlphaBs</Copyright>
@@ -26,8 +26,8 @@
         <PackageReference Include="CmlLib.Core.Commons" Version="4.0.0" />
         <PackageReference Include="LZMA-SDK" Version="19.0.0" />
         <PackageReference Include="SharpZipLib" Version="1.4.2" />
-        <PackageReference Include="System.Text.Json" Version="8.0.3" />
-        <PackageReference Include="System.Threading.Tasks.Dataflow" Version="8.0.0" />
+        <PackageReference Include="System.Text.Json" Version="8.0.4" />
+        <PackageReference Include="System.Threading.Tasks.Dataflow" Version="8.0.1" />
     </ItemGroup>
 
     <ItemGroup>
