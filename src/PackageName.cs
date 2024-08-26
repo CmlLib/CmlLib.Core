@@ -1,5 +1,8 @@
 ﻿namespace CmlLib.Core;
 
+// maven naming convention
+// https://maven.apache.org/guides/mini/guide-naming-conventions.html
+
 public class PackageName
 {
     public static PackageName Parse(string name)
@@ -7,11 +10,11 @@ public class PackageName
         if (name == null)
             throw new ArgumentNullException(nameof(name));
 
-        var spliter = name.Split(':');
-        if (spliter.Length < 3)
+        var part = name.Split(':');
+        if (part.Length < 3)
             throw new ArgumentException("invalid name");
 
-        return new PackageName(spliter);
+        return new PackageName(part);
     }
 
     private PackageName(string[] names)
@@ -20,51 +23,57 @@ public class PackageName
     }
 
     private readonly string[] names;
-
     public string this[int index] => names[index];
 
+    /// <summary>
+    /// groupId
+    /// </summary>
     public string Package => names[0];
+
+    /// <summary>
+    /// artifactId
+    /// </summary>
     public string Name => names[1];
+
+    /// <summary>
+    /// version
+    /// </summary>
     public string Version => names[2];
 
-    public string GetPath()
+    public string GetPath(string? nativeId, char separator)
     {
-        return GetPath("");
+        return GetPath(nativeId, "jar", separator);
     }
 
-    public string GetPath(string? nativeId)
+    public string GetPath(string? nativeId, string extension, char separator)
     {
-        return GetPath(nativeId, "jar");
+        var filename = GetFilename(nativeId, extension);
+        var directory = GetDirectory(separator);
+        return $"{directory}{separator}{filename}";
     }
 
-    public string GetPath(string? nativeId, string extension)
+    public string GetFilename(string? nativeId, string extension)
     {
-        // de.oceanlabs.mcp : mcp_config : 1.16.2-20200812.004259 : mappings
-        // de\oceanlabs\mcp \ mcp_config \ 1.16.2-20200812.004259 \ mcp_config-1.16.2-20200812.004259.zip
-
-        // [de.oceanlabs.mcp:mcp_config:1.16.2-20200812.004259@zip]
-        // \libraries\de\oceanlabs\mcp\mcp_config\1.16.2-20200812.004259\mcp_config-1.16.2-20200812.004259.zip
-
-        // [net.minecraft:client:1.16.2-20200812.004259:slim]
-        // /libraries\net\minecraft\client\1.16.2-20200812.004259\client-1.16.2-20200812.004259-slim.jar
-
-        string filename = string.Join("-", names, 1, names.Length - 1);
-
+        var filename = string.Join("-", names.Skip(1));
         if (!string.IsNullOrEmpty(nativeId))
             filename += "-" + nativeId;
         filename += "." + extension;
-
-        return Path.Combine(GetDirectory(), filename);
+        return filename;
     }
 
-    public string GetDirectory()
+    public string GetDirectory(char separator)
     {
-        string dir = Package.Replace('.', Path.DirectorySeparatorChar);
-        return Path.Combine(dir, Name, Version);
+        string dir = Package.Replace('.', separator);
+        return $"{dir}{separator}{Name}{separator}{Version}";
     }
 
-    public string GetClassPath()
+    public override string ToString()
     {
-        return Package + "." + Name;
+        return $"{Package}:{Name}:{Version}";
+    }
+
+    public override int GetHashCode()
+    {
+        return ToString().GetHashCode();
     }
 }
