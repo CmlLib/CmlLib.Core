@@ -63,13 +63,18 @@ public class PackageName
 
     public string GetDirectory(char separator)
     {
-        string dir = Package.Replace('.', separator);
+        var dir = Package.Replace('.', separator);
         return $"{dir}{separator}{Name}{separator}{Version}";
+    }
+
+    public string GetIdentifier()
+    {
+        return string.Join(":", names.Take(2).Concat(names.Skip(3)));
     }
 
     public override string ToString()
     {
-        return $"{Package}:{Name}:{Version}";
+        return string.Join(":", names);
     }
 
     public override int GetHashCode()

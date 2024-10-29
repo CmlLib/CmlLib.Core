@@ -148,25 +148,30 @@ public class MinecraftProcessBuilder
     // make library files into jvm classpath string
     private IEnumerable<string> getClasspaths(RulesEvaluatorContext context)
     {
-        // libraries
+        var libNames = new HashSet<string>();
         var libPaths = version
             .EnumerateToParent()
             .SelectMany(v => v.Libraries)
             .Where(lib => lib.CheckIsRequired(JsonVersionParserOptions.ClientSide))
             .Where(lib => lib.Rules == null || rulesEvaluator.Match(lib.Rules, context))
             .Where(lib => lib.Artifact != null)
-            .Select(lib => Path.Combine(minecraftPath.Library, lib.GetLibraryPath()));
+            .Where(lib => libNames.Add(getLibName(lib)))
+            .Select(lib => Path.Combine(minecraftPath.Library, lib.GetLibraryPath()))
+            .Concat([minecraftPath.GetVersionJarPath(version.MainJarId)]);
+        return libPaths;
 
-        // filter duplicated paths
-        var pathSet = new HashSet<string>();
-        foreach (var item in libPaths)
+        static string getLibName(MLibrary lib)
         {
-            if (pathSet.Add(item))
-                yield return item;
+            try
+            {
+                var package = PackageName.Parse(lib.Name);
+                return package.GetIdentifier();
+            }
+            catch
+            {
+                return lib.Name;
+            }
         }
-
-        // <version>.jar file
-        yield return minecraftPath.GetVersionJarPath(version.MainJarId);
     }
 
     private string? createAddress(string? ip, int port)
