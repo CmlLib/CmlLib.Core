@@ -18,19 +18,19 @@ class Program
         await p.Start();
         return;
 
-        //var path = new MinecraftPath("C:\\Users\\ksi12\\AppData\\Roaming\\minecraft test");
-        //var launcher = new MinecraftLauncher(path);
-
-        //var fabricTester = new FabricTester(path);
-        //await fabricTester.Test();
-        //return;
-
-        //var llTester = new LiteLoaderTester(launcher);
-        //await llTester.Test();
-        //return;
-
-        //var tester = new LauncherTester("b", launcher);
-        //await tester.Start();
+        // var path = new MinecraftPath("D:\\Games\\minecraft");
+        // var launcher = new MinecraftLauncher(path);
+        //
+        // var quiltTester = new QuiltTester(path);
+        // await quiltTester.LaunchOldest();
+        // return;
+        //
+        // var llTester = new LiteLoaderTester(launcher);
+        // await llTester.Test();
+        // return;
+        //
+        // var tester = new LauncherTester("b", launcher);
+        // await tester.Start();
     }
 
     private async Task Start()
