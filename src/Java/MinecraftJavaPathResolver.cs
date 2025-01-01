@@ -14,20 +14,33 @@ public class MinecraftJavaPathResolver : IJavaPathResolver
         this._path = path;
     }
 
-    public string[] GetInstalledJavaVersions()
+    public IReadOnlyCollection<string> GetInstalledJavaVersions()
     {
         var dir = new DirectoryInfo(_path.Runtime);
         if (!dir.Exists)
             return [];
 
         return dir.GetDirectories()
-            .Select(x => x.Name)
-            .ToArray();
+            .SelectMany(x => new DirectoryInfo(Path.Combine(_path.Runtime, x.Name)).GetDirectories())
+            .Select(dir => dir.Name)
+            .Distinct()
+            .ToList();
+    }
+
+    public IReadOnlyCollection<string> GetInstalledJavaVersions(RulesEvaluatorContext rules)
+    {
+        var dir = new DirectoryInfo(getJavaDirPathForOS(rules));
+        if (!dir.Exists)
+            return [];
+
+        return dir.GetDirectories()
+            .Select(dir => dir.Name)
+            .ToList();
     }
 
     public string? GetDefaultJavaBinaryPath(RulesEvaluatorContext rules)
     {
-        var javaVersions = GetInstalledJavaVersions();
+        var javaVersions = GetInstalledJavaVersions(rules);
         string? javaPath = null;
         
         if (string.IsNullOrEmpty(javaPath) &&
@@ -39,8 +52,8 @@ public class MinecraftJavaPathResolver : IJavaPathResolver
             javaPath = GetJavaBinaryPath(MinecraftJavaPathResolver.CmlLegacyVersion, rules);
 
         if (string.IsNullOrEmpty(javaPath) && 
-            javaVersions.Length > 0)
-            javaPath = GetJavaBinaryPath(new JavaVersion(javaVersions[0]), rules);
+            javaVersions.Any())
+            javaPath = GetJavaBinaryPath(new JavaVersion(javaVersions.First()), rules);
 
         return javaPath;
     }
@@ -63,7 +76,11 @@ public class MinecraftJavaPathResolver : IJavaPathResolver
 
     public string GetJavaDirPath(JavaVersion javaVersionName, RulesEvaluatorContext rules) 
         => Path.Combine(
-            _path.Runtime, 
-            MinecraftJavaManifestResolver.GetOSNameForJava(rules.OS), 
+            getJavaDirPathForOS(rules),
             javaVersionName.Component);
+
+    private string getJavaDirPathForOS(RulesEvaluatorContext rules) =>
+        Path.Combine(
+            _path.Runtime, 
+            MinecraftJavaManifestResolver.GetOSNameForJava(rules.OS));
 }

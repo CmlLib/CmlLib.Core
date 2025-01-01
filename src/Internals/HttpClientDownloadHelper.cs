@@ -38,6 +38,8 @@ internal static class HttpClientDownloadHelper
         using var response = await httpClient.GetAsync(
             url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
+        response.EnsureSuccessStatusCode();
+
         var contentLength = response.Content.Headers.ContentLength ?? size;
         using var download = await response.Content.ReadAsStreamAsync();
 

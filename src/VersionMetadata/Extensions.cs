@@ -4,6 +4,9 @@ public static class Extensions
 {
     public static MVersionType GetVersionType(this IVersionMetadata version)
     {
-        return MVersionTypeConverter.FromString(version.Type);
+        if (string.IsNullOrEmpty(version.Type))
+            return MVersionType.Custom;
+        else
+            return MVersionTypeConverter.Parse(version.Type);
     }
 }

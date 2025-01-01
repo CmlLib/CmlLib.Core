@@ -141,6 +141,21 @@ public class LibraryFileExtractorTests
         Assert.Equal([expected], result);
     }
 
+    [Fact]
+    public void extract_native_library_without_classifier()
+    {
+        var library = parseLibrary(JsonLibraryParserTests.native_library_without_classifiers);
+        var result = LibraryFileExtractor.Extractor.ExtractTasks(TestServer, TestPath, library, TestWindows);
+        var expected = new GameFile("tv.twitch:twitch-external-platform:4.5")
+        {
+            Path = IOUtil.NormalizePath("libraries/tv/twitch/twitch-external-platform/4.5/twitch-external-platform-4.5-natives-windows-64.jar"),
+            Url = "https://libraryserver/tv/twitch/twitch-external-platform/4.5/twitch-external-platform-4.5-natives-windows-64.jar",
+            Hash = null,
+            Size = 0
+        };
+        Assert.Equal([expected], result);
+    }
+
     private static MLibrary parseLibrary(string json)
     {
         using var jsonDocument = JsonDocument.Parse(json);

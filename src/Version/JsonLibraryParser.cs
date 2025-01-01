@@ -72,7 +72,7 @@ public static class JsonLibraryParser
 
         // some libraries (forge, optifine, fabric) lack 'artifacts' or 'classifiers' property;
         // instead they have metadata properties directly
-        if (artifact == null && classifiers == null)
+        if (artifact == null && natives == null)
         {
             artifact = element.Deserialize<MFileMetadata>();
         }

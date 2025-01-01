@@ -58,27 +58,21 @@ public class LibraryFileExtractor : IFileExtractor
 
             // native library (*.dll, *.so)
             var native = library.GetNativeLibrary(rulesContext.OS);
-            if (native != null)
+            var nativePath = library.GetNativeLibraryPath(rulesContext.OS);
+            if (!string.IsNullOrEmpty(nativePath))
             {
-                var libPath = library.GetNativeLibraryPath(rulesContext.OS);
-                if (!string.IsNullOrEmpty(libPath))
+                yield return new GameFile(library.Name)
                 {
-                    yield return new GameFile(library.Name)
-                    {
-                        Path = IOUtil.NormalizePath(Path.Combine(path.Library, libPath)),
-                        Url = createDownloadUrl(libraryServer, native.Url, libPath),
-                        Hash = native.GetSha1(),
-                        Size = native.Size
-                    };
-                }
+                    Path = IOUtil.NormalizePath(Path.Combine(path.Library, nativePath)),
+                    Url = createDownloadUrl(libraryServer, native?.Url, nativePath),
+                    Hash = native?.GetSha1(),
+                    Size = native?.Size ?? 0
+                };
             }
         }
 
         private static string? createDownloadUrl(string server, string? url, string path)
         {
-            if (string.IsNullOrEmpty(url) && string.IsNullOrEmpty(path))
-                return null;
-
             if (url == null)
                 url = server + path.Replace("\\", "/");
             else if (url == "")

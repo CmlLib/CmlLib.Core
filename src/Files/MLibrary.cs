@@ -57,7 +57,7 @@ public record MLibrary
         if (!string.IsNullOrEmpty(path))
             return path;
         
-        return PackageName.Parse(Name).GetPath(null);
+        return PackageName.Parse(Name).GetPath(null, Path.DirectorySeparatorChar);
     }
 
     public string? GetNativeLibraryPath(LauncherOSRule os)
@@ -69,6 +69,6 @@ public record MLibrary
         var classifierId = GetClassifierId(os);
         if (string.IsNullOrEmpty(classifierId))
             return null;
-        return PackageName.Parse(Name).GetPath(classifierId);
+        return PackageName.Parse(Name).GetPath(classifierId, Path.DirectorySeparatorChar);
     }
 }

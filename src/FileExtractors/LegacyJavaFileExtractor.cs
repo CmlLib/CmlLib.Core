@@ -60,7 +60,10 @@ public class LegacyJavaFileExtractor : IFileExtractor
 
     public async Task<string> GetJavaUrlAsync(CancellationToken cancellationToken)
     {
-        using var res = await _httpClient.GetAsync(MojangServer.LauncherMeta, cancellationToken);
+        using var res = await _httpClient.GetAsync(
+            MojangServer.LauncherMeta, 
+            HttpCompletionOption.ResponseHeadersRead, 
+            cancellationToken);
         var resStr = await res.Content.ReadAsStringAsync();
         return parseLauncherMetadata(resStr);
     }

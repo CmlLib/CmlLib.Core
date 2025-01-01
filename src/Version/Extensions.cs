@@ -7,7 +7,10 @@ public static class Extensions
 {
     public static MVersionType GetVersionType(this IVersion version)
     {
-        return MVersionTypeConverter.FromString(version.Type);
+        if (string.IsNullOrEmpty(version.Type))
+            return MVersionType.Custom;
+        else
+            return MVersionTypeConverter.Parse(version.Type);
     }
 
     public static T? GetInheritedProperty<T>(this IVersion self, Func<IVersion, T> prop)
