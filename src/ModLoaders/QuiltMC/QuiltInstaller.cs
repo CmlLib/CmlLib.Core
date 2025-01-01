@@ -5,7 +5,7 @@ namespace CmlLib.Core.ModLoaders.QuiltMC;
 
 public class QuiltInstaller
 {
-    public static readonly string DefaultApiServerHost = "https://meta.Quiltmc.net";
+    public static readonly string DefaultApiServerHost = "https://meta.quiltmc.org";
     private readonly HttpClient _httpClient;
     private readonly string _host;
 
