@@ -94,7 +94,9 @@ public class MojangJsonVersionLoaderV2 : IVersionLoader
     {
         try
         {
-            var res = await _httpClient.GetAsync(_endpoint, cancellationToken);
+            // do not dispose res and resStream here! it will be returned as PipedStream
+            var res = await _httpClient.GetAsync(_endpoint, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            res.EnsureSuccessStatusCode();
             var resStream = await res.Content.ReadAsStreamAsync();
 
             IOUtil.CreateParentDirectory(_localManifestPath);

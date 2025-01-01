@@ -116,7 +116,11 @@ public class MinecraftJavaManifestResolver
         string manifestUrl, 
         CancellationToken cancellationToken)
     {
-        using var res = await _httpClient.GetAsync(manifestUrl, cancellationToken);
+        using var res = await _httpClient.GetAsync(
+            manifestUrl,
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken);
+        res.EnsureSuccessStatusCode();
         using var stream = await res.Content.ReadAsStreamAsync();
         var json = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken); // should be disposed after extraction
         return parseJavaFilesAndDispose(json);

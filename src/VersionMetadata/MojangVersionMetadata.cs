@@ -19,7 +19,8 @@ public class MojangVersionMetadata : JsonVersionMetadata
 
     protected override async ValueTask<Stream> GetVersionJsonStream(CancellationToken cancellationToken)
     {
-        var res = await _httpClient.GetAsync(Url, cancellationToken);
+        var res = await _httpClient.GetAsync(Url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        res.EnsureSuccessStatusCode();
         return await res.Content.ReadAsStreamAsync();
     }
 }
