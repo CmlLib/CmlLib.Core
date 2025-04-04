@@ -480,4 +480,41 @@ public class JsonLibraryParserTests
         var winPath = lib?.GetNativeLibraryPath(new LauncherOSRule(LauncherOSRule.Windows, LauncherOSRule.X64, "10"));
         Assert.NotNull(winPath);
     }
+
+
+    // 1.7.2-Forge10.12.2.1161-mc172
+    public static readonly string native_library_for_osx = """
+{
+    "name": "org.lwjgl.lwjgl:lwjgl-platform:2.9.1-nightly-20131017",
+	"rules": [
+	    {
+		    "action": "allow",
+			"os": {
+			    "name": "osx"
+			}
+		}
+	],
+	"natives": {
+		"osx": "natives-osx"
+	},
+	"extract": {
+		"exclude": [
+			"META-INF/"
+		]
+	}
+}
+""";
+
+    [Fact]
+    public void get_native_library_on_unsupported_os()
+    {
+        using var jsonDocument = JsonDocument.Parse(native_library_without_classifiers);
+        var lib = JsonLibraryParser.Parse(jsonDocument.RootElement);
+
+        var win = lib?.GetNativeLibrary(new LauncherOSRule(LauncherOSRule.Windows, LauncherOSRule.X64, "10"));
+        Assert.Null(win); // return null instead of throwing an exception
+
+        var winPath = lib?.GetNativeLibraryPath(new LauncherOSRule(LauncherOSRule.Windows, LauncherOSRule.X64, "10"));
+        Assert.NotNull(winPath);
+    }
 }

@@ -32,8 +32,10 @@ public record MLibrary
         if (string.IsNullOrEmpty(os.Name) || string.IsNullOrEmpty(os.Arch))
             throw new ArgumentException("Invalid LauncherOSRule: empty Name or Arch");
 
-        var classifierId = Natives?[os.Name]?.Replace("${arch}", os.Arch);
-        return classifierId;
+        if (Natives == null || !Natives.TryGetValue(os.Name, out var native) || string.IsNullOrEmpty(native))
+            return null;
+
+        return native.Replace("${arch}", os.Arch);
     }
 
     public MFileMetadata? GetNativeLibrary(LauncherOSRule os)
