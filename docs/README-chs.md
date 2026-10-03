@@ -1,5 +1,5 @@
 # CmlLib.Core
-
+**语言:** [English](README.md) | [Українська](docs/README-uk.md) | [简体中文](docs/README-chs.md)
 ## Minecraft 启动器库
 
 <img src='https://raw.githubusercontent.com/CmlLib/CmlLib.Core/master/icon.png' width=128>
