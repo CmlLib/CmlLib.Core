@@ -28,7 +28,8 @@
     "resource": [
       {
         "files": [
-          "images/**"
+          "images/**",
+          "benchmark/AotComparison/results/**/*.{json,csv}"
         ]
       }
     ],
