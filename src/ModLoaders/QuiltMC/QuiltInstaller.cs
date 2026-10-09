@@ -23,7 +23,7 @@ public class QuiltInstaller
     public async Task<IReadOnlyCollection<string>> GetSupportedVersionNames()
     {
         using var res = await _httpClient.GetStreamAsync($"{_host}/v3/versions/game");
-        var list = await JsonSerializer.DeserializeAsync<IEnumerable<QuiltLoader>>(res);
+        var list = await JsonSerializer.DeserializeAsync(res, ModLoaderJsonSerializerContext.Default.QuiltLoaders);
         if (list == null)
             return Array.Empty<string>();
 
@@ -36,7 +36,7 @@ public class QuiltInstaller
     public async Task<IReadOnlyCollection<QuiltLoader>> GetLoaders()
     {
         using var res = await _httpClient.GetStreamAsync($"{_host}/v3/versions/loader");
-        var list = await JsonSerializer.DeserializeAsync<IReadOnlyCollection<QuiltLoader>>(res);
+        var list = await JsonSerializer.DeserializeAsync(res, ModLoaderJsonSerializerContext.Default.QuiltLoaders);
         if (list == null)
             return Array.Empty<QuiltLoader>();
         else
@@ -71,7 +71,7 @@ public class QuiltInstaller
         {
             if (item.ValueKind != JsonValueKind.Object)
                 continue;
-            var loader = item.GetPropertyOrNull("loader")?.Deserialize<QuiltLoader>();
+            var loader = item.GetPropertyOrNull("loader")?.Deserialize(ModLoaderJsonSerializerContext.Default.QuiltLoader);
             if (loader != null)
                 yield return loader;
         }

@@ -66,7 +66,7 @@ public class LiteLoaderInstaller
                 var latestLiteLoader = libObj?
                     .GetPropertyOrNull(LiteLoaderLibName)?
                     .GetPropertyOrNull("latest")?
-                    .Deserialize<LiteLoaderVersion>();
+                    .Deserialize(ModLoaderJsonSerializerContext.Default.LiteLoaderVersion);
 
                 if (latestLiteLoader == null)
                     continue;
@@ -117,16 +117,14 @@ public class LiteLoaderInstaller
                 yield return item;
         }
 
-        await JsonSerializer.SerializeAsync(versionJsonFile, new
+        await JsonSerializer.SerializeAsync(versionJsonFile, new LiteLoaderProfile
         {
-            id = versionName,
-            type = "release",
-            mainClass = "net.minecraft.launchwrapper.Launch",
-            inheritsFrom = baseVersion.Id,
-            jar = baseVersion.Id,
-            libraries = createLibraries(),
-            minecraftArguments = string.Join(" ", createGameArguments())
-        });
+            Id = versionName,
+            InheritsFrom = baseVersion.Id,
+            Jar = baseVersion.Id,
+            Libraries = createLibraries(),
+            MinecraftArguments = string.Join(" ", createGameArguments())
+        }, ModLoaderJsonSerializerContext.Default.LiteLoaderProfile);
         return versionName;
     }
     

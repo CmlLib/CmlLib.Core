@@ -87,7 +87,7 @@ public class MojangJsonVersionLoaderV2 : IVersionLoader
     private async Task<JsonVersionManifestModel?> getManifest(CancellationToken cancellationToken)
     {
         using var stream = await getManifestStream(cancellationToken);
-        return await JsonSerializer.DeserializeAsync<JsonVersionManifestModel>(stream, cancellationToken: cancellationToken);
+        return await JsonSerializer.DeserializeAsync(stream, VersionJsonSerializerContext.Default.JsonVersionManifestModel, cancellationToken);
     }
 
     private async Task<Stream> getManifestStream(CancellationToken cancellationToken)

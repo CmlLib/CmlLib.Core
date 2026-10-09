@@ -21,6 +21,6 @@ public record JavaVersion
     public string Component { get; }
 
     [JsonPropertyName("majorVersion")]
-    [JsonConverter(typeof(NumberToStringConverter))]
+    [JsonConverter(typeof(NumberToStringValueConverter))]
     public string? MajorVersion { get; }
 }
