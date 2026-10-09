@@ -1,0 +1,47 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
+  "metadata": [
+    {
+      "src": [
+        {
+          "src": ".",
+          "files": [
+            "src/CmlLib.Core.csproj"
+          ]
+        }
+      ],
+      "dest": "api",
+      "outputFormat": "markdown"
+    }
+  ],
+  "build": {
+    "content": [
+      {
+        "files": [
+          "**/*.{md,yml}"
+        ],
+        "exclude": [
+          "_site/**"
+        ]
+      }
+    ],
+    "resource": [
+      {
+        "files": [
+          "images/**"
+        ]
+      }
+    ],
+    "output": "_site",
+    "template": [
+      "default",
+      "modern"
+    ],
+    "globalMetadata": {
+      "_appName": "CmlLib.Core",
+      "_appTitle": "CmlLib.Core",
+      "_enableSearch": true,
+      "pdf": false
+    }
+  }
+}

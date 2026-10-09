@@ -1,5 +1,5 @@
 # CmlLib.Core
-
+**Languages:** [English](README.md) | [Українська](docs/README-uk.md) | [简体中文](docs/README-chs.md)
 ## Minecraft Launcher Library
 
 <img src='https://raw.githubusercontent.com/CmlLib/CmlLib.Core/master/icon.png' width=128>
@@ -13,9 +13,9 @@
 CmlLib.Core is a Minecraft launcher library for .NET\
 support all vanilla and mod versions (including Forge, Fabric, etc...)
 
-[한국어 문서](https://alphabs.gitbook.io/cmllib/v/v4-kr)
+[한국어 문서](https://cmllib.github.io/CmlLib.Core-wiki/ko/)
 
-[AD: 런처를 직접 만들어 드립니다!](https://minecraft.alphabeta.pw/launcher)
+[AD: 런처를 직접 만들어 드립니다!](https://cmllib.github.io/CmlLib.Core-wiki/ko/ad/)
 
 ## Features
 
@@ -29,7 +29,7 @@ support all vanilla and mod versions (including Forge, Fabric, etc...)
 * Launch with options (direct server connecting, screen resolution, JVM arguments)
 * Cross-platform (Windows, Linux, macOS)
 
-[Go to the wiki for all features](https://alphabs.gitbook.io/cmllib)
+[Go to the wiki for all features](https://cmllib.github.io/CmlLib.Core-wiki/en/)
 
 ## Install
 
@@ -93,9 +93,9 @@ process.Start();
 
 ## Documentation
 
-**[Official documentation](https://alphabs.gitbook.io/cmllib)**
+**[Official documentation](https://cmllib.github.io/CmlLib.Core-wiki/en/)**
 
-**[한국어 문서](https://alphabs.gitbook.io/cmllib/v/v4-kr)**
+**[한국어 문서](https://cmllib.github.io/CmlLib.Core-wiki/ko/)**
 
 ## Example
 
