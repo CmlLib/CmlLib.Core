@@ -18,7 +18,11 @@ public class VersionMetadataSorter
 
         var propertyList = new List<MVersionSortPropertyOption>();
         propertyList.Add(option.PropertyOrderBy);
+#if NET8_0_OR_GREATER
+        foreach (var item in Enum.GetValues<MVersionSortPropertyOption>())
+#else
         foreach (MVersionSortPropertyOption item in Enum.GetValues(typeof(MVersionSortPropertyOption)))
+#endif
         {
             if (option.PropertyOrderBy != item)
                 propertyList.Add(item);

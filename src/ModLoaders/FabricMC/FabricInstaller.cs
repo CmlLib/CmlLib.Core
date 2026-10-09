@@ -23,7 +23,7 @@ public class FabricInstaller
     public async Task<IReadOnlyCollection<string>> GetSupportedVersionNames()
     {
         using var res = await _httpClient.GetStreamAsync($"{_host}/v2/versions/game");
-        var list = await JsonSerializer.DeserializeAsync<IEnumerable<FabricLoader>>(res);
+        var list = await JsonSerializer.DeserializeAsync(res, ModLoaderJsonSerializerContext.Default.FabricLoaders);
         if (list == null)
             return Array.Empty<string>();
         
@@ -36,7 +36,7 @@ public class FabricInstaller
     public async Task<IReadOnlyCollection<FabricLoader>> GetLoaders()
     {
         using var res = await _httpClient.GetStreamAsync($"{_host}/v2/versions/loader");
-        var list = await JsonSerializer.DeserializeAsync<IReadOnlyCollection<FabricLoader>>(res);
+        var list = await JsonSerializer.DeserializeAsync(res, ModLoaderJsonSerializerContext.Default.FabricLoaders);
         if (list == null)
             return Array.Empty<FabricLoader>();
         else
@@ -71,7 +71,7 @@ public class FabricInstaller
         {
             if (item.ValueKind != JsonValueKind.Object)
                 continue;
-            var loader = item.GetPropertyOrNull("loader")?.Deserialize<FabricLoader>();
+            var loader = item.GetPropertyOrNull("loader")?.Deserialize(ModLoaderJsonSerializerContext.Default.FabricLoader);
             if (loader != null)
                 yield return loader;
         }
