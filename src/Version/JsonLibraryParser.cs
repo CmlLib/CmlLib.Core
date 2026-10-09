@@ -55,26 +55,26 @@ public static class JsonLibraryParser
         var artifactProp = element.GetPropertyOrNull("artifact") ?? 
                            element.GetPropertyOrNull("downloads")?.GetPropertyOrNull("artifact");
         if (artifactProp.HasValue)
-            artifact = artifactProp.Value.Deserialize<MFileMetadata>();
+            artifact = artifactProp.Value.Deserialize(VersionJsonSerializerContext.Default.MFileMetadata);
 
         // classifiers
         IReadOnlyDictionary<string, MFileMetadata>? classifiers = null;
         var classifiersProp = element.GetPropertyOrNull("classifies") ??
                               element.GetPropertyOrNull("downloads")?.GetPropertyOrNull("classifiers");
         if (classifiersProp.HasValue)
-            classifiers = classifiersProp.Value.Deserialize<Dictionary<string, MFileMetadata>>();
+            classifiers = classifiersProp.Value.Deserialize(VersionJsonSerializerContext.Default.FileMetadataDictionary);
 
         // natives
         IReadOnlyDictionary<string, string>? natives = null;
         var nativesProp = element.GetPropertyOrNull("natives");
         if (nativesProp.HasValue)
-            natives = nativesProp.Value.Deserialize<Dictionary<string, string>>();
+            natives = nativesProp.Value.Deserialize(VersionJsonSerializerContext.Default.StringDictionary);
 
         // some libraries (forge, optifine, fabric) lack 'artifacts' or 'classifiers' property;
         // instead they have metadata properties directly
         if (artifact == null && natives == null)
         {
-            artifact = element.Deserialize<MFileMetadata>();
+            artifact = element.Deserialize(VersionJsonSerializerContext.Default.MFileMetadata);
         }
 
         return new MLibrary(name)

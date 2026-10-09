@@ -20,7 +20,7 @@ public class JsonVersionDTO
     public string? Id { get; set; }
 
     [JsonPropertyName("complianceLevel")]
-    [JsonConverter(typeof(NumberToStringConverter))]
+    [JsonConverter(typeof(NumberToStringValueConverter))]
     public string? ComplianceLevel { get; set; }
 
     [JsonPropertyName("javaVersion")]
@@ -36,7 +36,7 @@ public class JsonVersionDTO
     public string? MinecraftArguments { get; set; }
 
     [JsonPropertyName("minimumLauncherVersion")]
-    [JsonConverter(typeof(NumberToStringConverter))]
+    [JsonConverter(typeof(NumberToStringValueConverter))]
     public string? MinimumLauncherVersion { get; set; }
 
     [JsonPropertyName("releaseTime")]
@@ -48,6 +48,6 @@ public class JsonVersionDTO
     public DateTimeOffset Time { get; set; }
 
     [JsonPropertyName("type")]
-    [JsonConverter(typeof(NumberToStringConverter))]
+    [JsonConverter(typeof(NumberToStringValueConverter))]
     public string? Type { get; set; }
 }
