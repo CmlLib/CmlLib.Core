@@ -4,6 +4,8 @@ This app runs deterministic JSON scenarios shared with the test suite, with JSON
 reflection disabled. It checks version manifests and metadata, Java manifests,
 Fabric/Quilt loaders, LiteLoader profile generation, and version sorting. HTTP
 responses are local fixtures; no Minecraft downloads or live services are needed.
+Public DTOs also round-trip through a generated context in a separate consumer
+assembly without friend access to Core internals.
 
 The entire `CmlLib.Core` assembly is rooted during publishing so AOT/trimming
 analysis also checks library methods outside the executed scenarios. Warnings

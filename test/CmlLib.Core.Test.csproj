@@ -33,6 +33,8 @@
     </ItemGroup>
     
     <ItemGroup>
+      <Compile Remove="ExternalJsonConsumer/**/*.cs" />
       <ProjectReference Include="../src/CmlLib.Core.csproj" />
+      <ProjectReference Include="ExternalJsonConsumer/CmlLib.Core.ExternalJsonConsumer.csproj" />
     </ItemGroup>
 </Project>

@@ -11,6 +11,7 @@
     </PropertyGroup>
     <ItemGroup>
         <ProjectReference Include="../../src/CmlLib.Core.csproj" />
+        <ProjectReference Include="../../test/ExternalJsonConsumer/CmlLib.Core.ExternalJsonConsumer.csproj" />
         <TrimmerRootAssembly Include="CmlLib.Core" />
         <Compile Include="../../test/Fixtures/AotJsonScenarios.cs" Link="AotJsonScenarios.cs" />
     </ItemGroup>

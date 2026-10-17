@@ -1,4 +1,5 @@
 using System.Text.Json;
+using CmlLib.Core.ExternalJsonConsumer;
 using CmlLib.Core.Test.Fixtures;
 
 if (JsonSerializer.IsReflectionEnabledByDefault)
@@ -11,4 +12,5 @@ await AotJsonScenarios.ModLoaders(quilt: true);
 await AotJsonScenarios.ModLoaders(quilt: false, empty: true);
 await AotJsonScenarios.ModLoaders(quilt: true, empty: true);
 await AotJsonScenarios.LiteLoader();
+PublicModelJsonConsumer.VerifyRoundTrips();
 Console.WriteLine("Native AOT JSON smoke tests passed.");

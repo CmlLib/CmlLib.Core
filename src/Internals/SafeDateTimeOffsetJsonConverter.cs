@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace CmlLib.Core.Internals;
 
-internal class SafeDateTimeOffsetJsonConverter : JsonConverter<DateTimeOffset>
+public class SafeDateTimeOffsetJsonConverter : JsonConverter<DateTimeOffset>
 {
     public override DateTimeOffset Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
