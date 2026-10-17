@@ -96,7 +96,7 @@ public class MinecraftJavaManifestResolver
     {
         return new MinecraftJavaManifestMetadata(os, component)
         {
-            Metadata = json.GetPropertyOrNull("manifest")?.Deserialize<MFileMetadata>(),
+            Metadata = json.GetPropertyOrNull("manifest")?.Deserialize(VersionJsonSerializerContext.Default.MFileMetadata),
             VersionName = json.GetPropertyOrNull("version")?.GetPropertyOrNull("name")?.GetString(),
             VersionReleased = json.GetPropertyOrNull("version")?.GetPropertyOrNull("released")?.GetString()
         };
