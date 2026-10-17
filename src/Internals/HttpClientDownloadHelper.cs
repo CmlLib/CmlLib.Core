@@ -57,24 +57,30 @@ internal static class HttpClientDownloadHelper
         var bufferSize = (contentLength == -1 || contentLength > DefaultDownloadBufferLength)
             ? DefaultDownloadBufferLength
             : contentLength;
-        var copyBuffer = new byte[bufferSize];
+        var readBuffer = new byte[bufferSize];
+        var writeBuffer = new byte[bufferSize];
+        var writeSlice = new ArraySegment<byte>(writeBuffer, 0, 0);
 
         long totalRead = 0;
         while (true)
         {
-            if (cancellationToken.IsCancellationRequested)
-                return;
+            cancellationToken.ThrowIfCancellationRequested();
 
-            int bytesRead = await download.ReadAsync(
-                copyBuffer, 
+            var writing = destination.WriteAsync(writeSlice.Array!, writeSlice.Offset, writeSlice.Count);
+
+            var reading = download.ReadAsync(
+                readBuffer, 
                 0, 
-                copyBuffer.Length)
-                .ConfigureAwait(false);
+                readBuffer.Length);
+
+            await Task.WhenAll(writing, reading);
+            int bytesRead = await reading;
 
             if (bytesRead == 0)
                 break;
 
-            await destination.WriteAsync(copyBuffer, 0, bytesRead).ConfigureAwait(false);
+            writeSlice = new(readBuffer, 0, bytesRead);
+            (readBuffer, writeBuffer) = (writeBuffer, readBuffer);
 
             totalRead += bytesRead;
             progress?.Report(new ByteProgress(contentLength, totalRead));
