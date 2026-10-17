@@ -75,7 +75,7 @@ internal static class NativeMethods
     [SecurityCritical]
     public static string GetWindowsVersion(string fallback)
     {
-        var osVersionInfo = new OSVERSIONINFOEX { OSVersionInfoSize = Marshal.SizeOf(typeof(OSVERSIONINFOEX)) };
+        var osVersionInfo = new OSVERSIONINFOEX { OSVersionInfoSize = Marshal.SizeOf<OSVERSIONINFOEX>() };
         if (RtlGetVersion(ref osVersionInfo) != 0) // NTSTATUS.STATUS_SUCCESS
             return fallback;
         return $"{osVersionInfo.MajorVersion}.{osVersionInfo.MinorVersion}.{osVersionInfo.BuildNumber}";

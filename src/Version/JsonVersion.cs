@@ -1,5 +1,6 @@
 using System.Text.Json;
 using CmlLib.Core.Files;
+using CmlLib.Core.Internals;
 using CmlLib.Core.Java;
 using CmlLib.Core.ProcessBuilder;
 
@@ -15,7 +16,7 @@ public class JsonVersion : IVersion, IDisposable
     {
         _options = options;
         _json = jsonDocument;
-        _model = jsonDocument.RootElement.Deserialize<JsonVersionDTO>() ?? 
+        _model = jsonDocument.RootElement.Deserialize(VersionJsonSerializerContext.Default.JsonVersionDTO) ??
             throw new ArgumentNullException();
         Id = _model.Id ?? throw new ArgumentException("Null Id");
     }
@@ -100,7 +101,7 @@ public class JsonVersion : IVersion, IDisposable
             return _json.RootElement
                 .GetProperty("downloads")
                 .GetProperty(_options.Side)
-                .Deserialize<MFileMetadata>();
+                .Deserialize(VersionJsonSerializerContext.Default.MFileMetadata);
         }
         catch (KeyNotFoundException)
         {
@@ -147,7 +148,7 @@ public class JsonVersion : IVersion, IDisposable
             return _json.RootElement
                 .GetProperty("logging")
                 .GetProperty(_options.Side)
-                .Deserialize<MLogFileMetadata>();
+                .Deserialize(VersionJsonSerializerContext.Default.MLogFileMetadata);
         }
         catch (KeyNotFoundException)
         {

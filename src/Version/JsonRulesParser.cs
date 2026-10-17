@@ -1,4 +1,5 @@
 using System.Text.Json;
+using CmlLib.Core.Internals;
 using CmlLib.Core.Rules;
 
 namespace CmlLib.Core.Version;
@@ -33,6 +34,6 @@ public static class JsonRulesParser
         if (element.ValueKind != JsonValueKind.Object)
             return null;
 
-        return element.Deserialize<LauncherRule>();
+        return element.Deserialize(VersionJsonSerializerContext.Default.LauncherRule);
     }
 }

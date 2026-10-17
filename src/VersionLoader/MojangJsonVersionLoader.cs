@@ -1,5 +1,6 @@
 ﻿using CmlLib.Core.VersionMetadata;
 using System.Text.Json;
+using CmlLib.Core.Internals;
 
 namespace CmlLib.Core.VersionLoader;
 
@@ -28,6 +29,6 @@ public class MojangJsonVersionLoader : IVersionLoader
         using var res = await _httpClient.GetAsync(_endpoint, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
         res.EnsureSuccessStatusCode();
         using var resStream = await res.Content.ReadAsStreamAsync();
-        return await JsonSerializer.DeserializeAsync<JsonVersionManifestModel>(resStream, cancellationToken: cancellationToken);
+        return await JsonSerializer.DeserializeAsync(resStream, VersionJsonSerializerContext.Default.JsonVersionManifestModel, cancellationToken);
     }
 }
