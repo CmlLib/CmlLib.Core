@@ -54,39 +54,80 @@ public class ParallelGameInstaller : GameInstallerBase
         totalFiles = 0;
         progressedFiles = 0;
 
-        var (firstBlock, lastBlock) = buildBlock(cancellationToken);
+        using var pipelineCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        var (firstBlock, lastBlock) = buildBlock(pipelineCancellation.Token);
+        var completion = Task.WhenAll(
+            firstBlock.Completion,
+            cancelPipelineOnFailure(lastBlock, pipelineCancellation));
 
-        var queue = new HashSet<GameFile>(GameFilePathComparer.Default);
-        foreach (var gameFile in gameFiles)
+        try
         {
-            if (string.IsNullOrEmpty(gameFile.Url) || string.IsNullOrEmpty(gameFile.Path))
-                continue;
+            var queue = new HashSet<GameFile>(GameFilePathComparer.Default);
+            foreach (var gameFile in gameFiles)
+            {
+                if (string.IsNullOrEmpty(gameFile.Url) || string.IsNullOrEmpty(gameFile.Path))
+                    continue;
 
-            if (!queue.Add(gameFile))
-                continue;
+                if (!queue.Add(gameFile))
+                    continue;
 
-            if (IsExcludedPath(gameFile.Path))
-                continue;
+                if (IsExcludedPath(gameFile.Path))
+                    continue;
 
-            addProgressToStorage(gameFile.Size, 0);
-            Interlocked.Increment(ref totalFiles);
+                addProgressToStorage(gameFile.Size, 0);
+                Interlocked.Increment(ref totalFiles);
 
-            FireFileProgress(totalFiles, progressedFiles, gameFile.Name, InstallerEventType.Queued);
-            await firstBlock.SendAsync(gameFile, cancellationToken);
-        }
-        firstBlock.Complete();
+                FireFileProgress(totalFiles, progressedFiles, gameFile.Name, InstallerEventType.Queued);
+                if (!await firstBlock.SendAsync(gameFile, pipelineCancellation.Token))
+                    break;
+            }
+            firstBlock.Complete();
 
-        while (!lastBlock.Completion.IsCompleted)
-        {
+            while (!completion.IsCompleted)
+            {
+                aggregateAndReportByteProgress();
+                await Task.WhenAny(Task.Delay(500), completion);
+            }
+
+            await completion;
             aggregateAndReportByteProgress();
-            await Task.WhenAny(Task.Delay(500), lastBlock.Completion);
         }
+        catch (Exception exception)
+        {
+            pipelineCancellation.Cancel();
+            try
+            {
+                await completion;
+            }
+            catch when (exception is not OperationCanceledException || cancellationToken.IsCancellationRequested)
+            {
+                // 정리 중 발생한 예외를 회수하되, 입력·진행률 오류나 호출자의 취소를 덮어쓰지 않는다.
+            }
 
-        await lastBlock.Completion; // throw exception if exists
-        aggregateAndReportByteProgress(); // report 100%
+            throw;
+        }
+        finally
+        {
+            // 모든 작업이 종료된 후에만 진행률 저장소를 해제한다.
+            progressStorage.Dispose();
+            progressStorage = null;
+        }
+    }
 
-        progressStorage.Dispose();
-        progressStorage = null;
+    private async Task cancelPipelineOnFailure(
+        IDataflowBlock lastBlock,
+        CancellationTokenSource pipelineCancellation)
+    {
+        try
+        {
+            await lastBlock.Completion;
+        }
+        catch
+        {
+            // 다운로드 실패 시 큐 입력과 검사 블록도 중단해 제한된 큐에서 대기하지 않게 한다.
+            pipelineCancellation.Cancel();
+            throw;
+        }
     }
 
     private (ITargetBlock<GameFile>, IDataflowBlock) buildBlock(CancellationToken cancellationToken)
