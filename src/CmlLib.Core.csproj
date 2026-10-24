@@ -22,9 +22,9 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
-        <IsAotCompatible>true</IsAotCompatible>
-    </PropertyGroup>
+	<PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net10.0'))">
+		<IsAotCompatible>true</IsAotCompatible>
+	</PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="CmlLib.Core.Commons" Version="4.0.0" />
