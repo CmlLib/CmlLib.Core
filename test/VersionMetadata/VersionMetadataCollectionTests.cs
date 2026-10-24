@@ -235,8 +235,8 @@ public class VersionMetadataCollectionTest
         mock.Setup(v => v.Name)
             .Returns(returnValue.Id);
 
-        mock.Setup(v => v.GetVersionAsync(default).Result)
-            .Returns(returnValue);
+        mock.Setup(v => v.GetVersionAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(returnValue);
 
         return mock.Object;
     }
