@@ -9,7 +9,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/examples/console/bin/Debug/net6.0/CmlLibCoreSample.dll",
+            "program": "${workspaceFolder}/examples/console/bin/Debug/net10.0/CmlLibCoreSample.dll",
             "args": [],
             "cwd": "${workspaceFolder}/examples/console",
             "console": "internalConsole",
