@@ -928,7 +928,6 @@
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.ProgressBar Pb_Progress;
-        private System.Windows.Forms.ProgressBar Pb_File;
         private System.Windows.Forms.Label Lv_Status;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Label label6;
