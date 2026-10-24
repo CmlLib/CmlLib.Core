@@ -29,7 +29,7 @@ jobs:
     - name: Dotnet Setup
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 8.x
+        global-json-file: global.json
 
     - run: dotnet tool update -g docfx
     - run: docfx metadata docfx.json
