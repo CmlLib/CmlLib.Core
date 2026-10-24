@@ -1,5 +1,5 @@
 # Your GitHub workflow file under .github/workflows/
-# Trigger the action on push to main
+# Trigger the action on push to master
 on:
   push:
     branches:
@@ -7,6 +7,7 @@ on:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
+  contents: read
   actions: read
   pages: write
   id-token: write
@@ -25,9 +26,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v7
     - name: Dotnet Setup
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v6
       with:
         global-json-file: global.json
 
@@ -39,10 +40,10 @@ jobs:
       run: cp -r api/* _site/api
 
     - name: Upload site
-      uses: actions/upload-pages-artifact@v3
+      uses: actions/upload-pages-artifact@v5
       with:
         path: '_site'
 
     - name: Deploy to GitHub Pages
       id: deployment
-      uses: actions/deploy-pages@v4
+      uses: actions/deploy-pages@v5
