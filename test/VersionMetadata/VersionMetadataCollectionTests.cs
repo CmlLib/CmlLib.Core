@@ -38,7 +38,7 @@ public class VersionMetadataCollectionTest
     public async Task get_inherited_property()
     {
         var (collection, parent, child) = createMocks();
-        var version = await collection.GetVersionAsync("child");
+        var version = await collection.GetVersionAsync("child", TestContext.Current.CancellationToken);
         Assert.Equal("child_assetindex", version.GetInheritedProperty(v => v.AssetIndex)?.Id);
         Assert.Equal("parent_mainclass", version.GetInheritedProperty(v => v.MainClass));
     }
@@ -47,7 +47,7 @@ public class VersionMetadataCollectionTest
     public async Task get_inherited_collection()
     {
         var (collection, parent, child) = createMocks();
-        var version = await collection.GetVersionAsync("child");
+        var version = await collection.GetVersionAsync("child", TestContext.Current.CancellationToken);
         var concatLibraries = version.ConcatInheritedCollection(v => v.Libraries).Select(lib => lib.Name);
 
         // should keep the order
@@ -58,7 +58,7 @@ public class VersionMetadataCollectionTest
     public async Task get_game_arguments_with_base_arguments()
     {
         var (collection, parent, child) = createMocks();
-        var version = await collection.GetVersionAsync("child");
+        var version = await collection.GetVersionAsync("child", TestContext.Current.CancellationToken);
         var gameArgs = version.ConcatInheritedGameArguments()
             .SelectMany(arg => arg.Values)
             .ToArray();
@@ -71,7 +71,7 @@ public class VersionMetadataCollectionTest
     public async Task get_jvm_arguments_with_base_arguments()
     {
         var (collection, parent, child) = createMocks();
-        var version = await collection.GetVersionAsync("child");
+        var version = await collection.GetVersionAsync("child", TestContext.Current.CancellationToken);
         var gameArgs = version.ConcatInheritedJvmArguments()
             .SelectMany(arg => arg.Values)
             .ToArray();
@@ -88,7 +88,7 @@ public class VersionMetadataCollectionTest
 
         await Assert.ThrowsAsync<VersionDependencyException>(async () =>
         {
-            await collection.GetVersionAsync("parent");
+            await collection.GetVersionAsync("parent", TestContext.Current.CancellationToken);
         });
     }
 
@@ -100,7 +100,7 @@ public class VersionMetadataCollectionTest
         child.InheritsFrom = child.Id;
 
         // When
-        var selfInherited = await collection.GetVersionAsync("child");
+        var selfInherited = await collection.GetVersionAsync("child", TestContext.Current.CancellationToken);
 
         // Then
         Assert.Equal("child", selfInherited.InheritsFrom);
@@ -115,7 +115,7 @@ public class VersionMetadataCollectionTest
 
         await Assert.ThrowsAsync<KeyNotFoundException>(async () =>
         {
-            await collection.GetVersionAsync("child");
+            await collection.GetVersionAsync("child", TestContext.Current.CancellationToken);
         });
     }
 
@@ -143,7 +143,7 @@ public class VersionMetadataCollectionTest
 
         await Assert.ThrowsAsync<VersionDependencyException>(async () => 
         {
-            await collection.GetVersionAsync("v4");
+            await collection.GetVersionAsync("v4", TestContext.Current.CancellationToken);
         });
     }
 
