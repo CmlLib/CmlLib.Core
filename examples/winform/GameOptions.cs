@@ -4,7 +4,7 @@ namespace CmlLibWinFormSample
 {
     public partial class GameOptions : Form
     {
-        public string Path { get; set; }
+        private string Path { get; set; }
 
         public GameOptions(string path)
         {
