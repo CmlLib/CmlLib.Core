@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/examples/">
+    <Project Path="examples/aot/CmlLibAotSample.csproj" />
+    <Project Path="examples/console/CmlLibCoreSample.csproj" />
+    <Project Path="examples/winform/CmlLibWinFormSample.csproj" />
+  </Folder>
+  <Project Path="benchmark/CmlLib.Core.Benchmarks.csproj" />
+  <Project Path="src/CmlLib.Core.csproj" />
+  <Project Path="test/CmlLib.Core.Test.csproj" />
+</Solution>

@@ -1,15 +1,15 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <LangVersion>10.0</LangVersion>
+        <LangVersion>14</LangVersion>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <OutputType>WinExe</OutputType>
         <UseWindowsForms>true</UseWindowsForms>
-        <TargetFramework>net6.0-windows</TargetFramework>
+        <TargetFramework>net10.0-windows7.0</TargetFramework>
         <EnableWindowsTargeting>true</EnableWindowsTargeting>
     </PropertyGroup>
     <ItemGroup>
-      <PackageReference Include="CmlLib.Core.Auth.Microsoft" Version="3.1.0-beta.4" />
+      <PackageReference Include="CmlLib.Core.Auth.Microsoft" Version="3.4.0" />
     </ItemGroup>
 
     <ItemGroup>

@@ -1,8 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
-        <LangVersion>12.0</LangVersion>
+        <TargetFrameworks>netstandard2.0;net10.0</TargetFrameworks>
+        <LangVersion>14.0</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <Version>4.1.0</Version>
@@ -14,6 +14,7 @@
         <PackageIcon>icon.png</PackageIcon>
         <RepositoryType>git</RepositoryType>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <IsPublishable>false</IsPublishable>
         <PackageTags>Minecraft Launcher forge optifine mojang Crossplatform C#</PackageTags>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <Authors>AlphaBs</Authors>
@@ -22,23 +23,23 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
-        <IsAotCompatible>true</IsAotCompatible>
-    </PropertyGroup>
+	<PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net10.0'))">
+		<IsAotCompatible>true</IsAotCompatible>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="CmlLib.Core.Commons" Version="4.0.0" />
+		<PackageReference Include="LZMA-SDK" Version="22.1.1" />
+		<PackageReference Include="SharpZipLib" Version="1.4.2" />
+		<PackageReference Include="System.Text.Json" Version="10.0.13" />
+		<PackageReference Include="System.Threading.Tasks.Dataflow" Version="10.0.13" />
+	</ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="CmlLib.Core.Commons" Version="4.0.0" />
-        <PackageReference Include="LZMA-SDK" Version="19.0.0" />
-        <PackageReference Include="SharpZipLib" Version="1.4.2" />
-        <PackageReference Include="System.Text.Json" Version="8.0.5" />
-        <PackageReference Include="System.Threading.Tasks.Dataflow" Version="8.0.1" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="ConfigureAwait.Fody" Version="3.3.2">
+        <PackageReference Include="ConfigureAwait.Fody" Version="3.4.1">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Fody" Version="6.8.1">
+        <PackageReference Include="Fody" Version="6.9.3">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -54,8 +55,6 @@
         <None Include="../icon.png" Pack="true" Visible="false" PackagePath="" />
         <None Include="../README.md" Pack="true" Visible="false" PackagePath="" />
 
-        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-            <_Parameter1>CmlLib.Core.Test</_Parameter1>
-        </AssemblyAttribute>
+        <InternalsVisibleTo Include="CmlLib.Core.Test" />
     </ItemGroup>
 </Project>

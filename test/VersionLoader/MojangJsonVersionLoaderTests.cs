@@ -29,7 +29,7 @@ public class MojangJsonVersionLoaderTests
         using var client = new HttpClient(new ManifestHandler());
         var loader = new MojangJsonVersionLoader(client, "https://example.com/manifest.json");
 
-        var manifest = await loader.GetManifestAsync();
+        var manifest = await loader.GetManifestAsync(TestContext.Current.CancellationToken);
 
         Assert.NotNull(manifest);
         Assert.Equal("1.20", manifest.Latest?.Release);
@@ -58,19 +58,19 @@ public class MojangJsonVersionLoaderTests
         try
         {
             if (useCachedManifest)
-                await File.WriteAllTextAsync(manifestPath, Manifest);
+                await File.WriteAllTextAsync(manifestPath, Manifest, TestContext.Current.CancellationToken);
             using var client = new HttpClient(new ManifestHandler(useCachedManifest));
             var loader = new MojangJsonVersionLoaderV2(path, client, "https://example.com/manifest.json")
             {
                 UseLocalManifestWhenError = useCachedManifest
             };
 
-            var versions = await loader.GetVersionMetadatasAsync();
+            var versions = await loader.GetVersionMetadatasAsync(TestContext.Current.CancellationToken);
 
             Assert.Equal("1.20", versions.LatestReleaseName);
             Assert.Equal("23w18a", versions.LatestSnapshotName);
             Assert.Equal("1.20", Assert.Single(versions).Name);
-            Assert.Equal(Manifest, await File.ReadAllTextAsync(manifestPath));
+            Assert.Equal(Manifest, await File.ReadAllTextAsync(manifestPath, TestContext.Current.CancellationToken));
         }
         finally
         {

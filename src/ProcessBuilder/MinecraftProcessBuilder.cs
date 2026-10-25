@@ -94,7 +94,7 @@ public class MinecraftProcessBuilder
         }
     }
 
-    private IReadOnlyDictionary<string, string?> buildArgumentDictionary(RulesEvaluatorContext context)
+    private Dictionary<string, string?> buildArgumentDictionary(RulesEvaluatorContext context)
     {
         Debug.Assert(launchOption.Session != null);
 
@@ -195,7 +195,7 @@ public class MinecraftProcessBuilder
         {
             // version-specific jvm arguments
             var jvmArgs = version.ConcatInheritedJvmArguments().ToList();
-            if (jvmArgs.Any())
+            if (jvmArgs.Count > 0)
                 builder.AddArguments(jvmArgs);
             else
                 builder.AddArguments(MLaunchOption.DefaultJvmArguments);
